@@ -54,6 +54,12 @@ void vMNUmain(void)
 	// текстовый буфер предварительно очистим
 	clearTextBuf();
 	eKEY tmp = eKEYget();
+	if (tmp != KEY_NO)
+	{
+		if (tmp == KEY_FUNC)
+			tmp = KEY_NO;
+		vLCDsetLED(LED_SWITCH);
+	}
 	level[eMenuLvl](tmp);
 
 #ifdef DEBUG

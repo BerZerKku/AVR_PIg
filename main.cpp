@@ -47,6 +47,7 @@ int __attribute__ ((OS_main)) main (void)
 			// задачи выполняемые раз в 1с
 
 			// обновление экрана
+			// выполняется с периодом LCD_REFRESH_PERIOD * 100мс
 			if (++cnt_lcd >= LCD_REFRESH_PERIOD)
 			{
 				vMNUmain();
@@ -66,10 +67,6 @@ int __attribute__ ((OS_main)) main (void)
 ISR(TIMER0_COMP_vect)
 {
 	static uint_fast8_t cnt = 0;
-
-#ifdef DEBUG
-	PORT_DBG ^= PIN_TP1;
-#endif
 
 	// Обработчик клавиатуры вызываем раз в 10мс
 	if (cnt >  0)

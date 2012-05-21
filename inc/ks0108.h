@@ -22,7 +22,11 @@ enum eLCD_LED
 };
 
 /// Время работы кратковременной подсветки * 10мс
+#ifdef DEBUG
+#define LCD_TIME_LED_ON 500
+#else
 #define LCD_TIME_LED_ON 6000
+#endif
 
 #define PORT_RST 	PORTC
 #define PIN_RST 	(1 << 5)

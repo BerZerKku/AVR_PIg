@@ -8,7 +8,6 @@
 #include <avr/io.h>
 #include "keyboard.h"
 #include "debug.h"
-#include "ks0108.h"
 
 /// код нажатой кнопки
 static eKEY keyPressed;
@@ -101,14 +100,13 @@ void vKEYmain(void)
 		}
 		else
 		{
-			vLCDsetLED(LED_SWITCH);
 			delay = TIME_DELAY_REPEAT;
 		}
 	}
 
 	// Если предыдущее нажатие уже обработано, вернем новое нажатие
 	// Нажатие одной кнопки функция - игнорируется
-	if ( (keyPressed == KEY_NO) && (tmpKey != KEY_FUNC) )
+	if (keyPressed == KEY_NO)
 		keyPressed = (eKEY) tmpKey;
 }
 
