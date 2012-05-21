@@ -9,7 +9,7 @@
 #define KEYBOARD_H_
 
 /// Время антидребезга * 10мс
-#define TIME_DELAY 3
+#define TIME_DELAY 10
 /// Время до повторного определения
 #define TIME_DELAY_REPEAT 100
 

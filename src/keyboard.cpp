@@ -86,6 +86,7 @@ void vKEYmain(void)
 	if (tmpKey != keyPrev)
 	{
 		keyPrev = tmpKey;
+		tmpKey = KEY_NO;
 		delay = TIME_DELAY;
 	}
 	else

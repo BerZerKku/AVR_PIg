@@ -14,9 +14,10 @@
 
 static enum eMNU_LVL eMenuLvl = MNU_LVL_START;
 
-static void lvlStart(eKEY key);
-static void lvlParam(eKEY key);
-static void lvlFirst(eKEY key);
+static void lvlStart		(eKEY key);
+static void lvlParam		(eKEY key);
+static void lvlFirst		(eKEY key);
+static void clearTextBuf	(void);
 
 static void (*level []) (eKEY key) =
 {
@@ -50,12 +51,26 @@ void vMNUmain(void)
 	}
 
 	// считывание кода нажатой кнопки и переход в текущий уровень меню
-	uint_fast8_t tmp = eKEYget();
-	level[eMenuLvl]((eKEY) tmp);
+	// текстовый буфер предварительно очистим
+	clearTextBuf();
+	eKEY tmp = eKEYget();
+	level[eMenuLvl](tmp);
 
 #ifdef DEBUG
+	static char cnt = 0;
+	static eKEY lastkey = KEY_NO;
+	if (tmp != KEY_NO)
+	{
+		if (tmp != lastkey)
+		{
+			lastkey = tmp;
+			cnt = 0;
+		}
+		else
+			cnt++;
+	}
 	// вывод кода нажатой кнопки
-	snprintf(&vLCDbuf[147], 22, "Кнопка %02X", tmp);
+	snprintf(&vLCDbuf[147], 22, "Кнопка %02X Нажатий %d", tmp, cnt);
 #endif
 
 	// очистка дисплея
@@ -74,16 +89,16 @@ static void lvlStart(eKEY key)
 	snprintf(&vLCDbuf[0], 22, "Мама, мыла раму! = %d", 2111);
 	snprintf(&vLCDbuf[21], 22, "А роза упала на лапу азора");
 
-//	switch(key)
-//	{
-//		case KEY_LEFT:
-//		case KEY_RIGHT:
-//			eMenuLvl = MNU_LVL_PARAM;
-//			break;
-//
-//		default:
-//			break;
-//	}
+	switch(key)
+	{
+		case KEY_LEFT:
+		case KEY_RIGHT:
+			eMenuLvl = MNU_LVL_PARAM;
+			break;
+
+		default:
+			break;
+	}
 }
 
 /** Уровень отображения параметров
@@ -101,16 +116,16 @@ static void lvlParam(eKEY key)
 	snprintf_P(&vLCDbuf[74], 10, fcTime, 19, 15, 54);
 
 
-//	switch(key)
-//	{
-//		case KEY_LEFT:
-//		case KEY_RIGHT:
-//			eMenuLvl = MNU_LVL_START;
-//			break;
-//
-//		default:
-//			break;
-//	}
+	switch(key)
+	{
+		case KEY_LEFT:
+		case KEY_RIGHT:
+			eMenuLvl = MNU_LVL_START;
+			break;
+
+		default:
+			break;
+	}
 }
 
 /** Уровень меню первый
@@ -119,4 +134,14 @@ static void lvlParam(eKEY key)
  */
 static void lvlFirst(eKEY key)
 {
+}
+
+/** Очистка текстового буфера
+ * 	@param Нет
+ * 	@return Нет
+ */
+static void clearTextBuf(void)
+{
+	for(uint_fast8_t i = 0; i < sizeof(vLCDbuf);i++)
+		vLCDbuf[i] = ' ';
 }
