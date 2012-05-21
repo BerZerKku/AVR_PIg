@@ -1,0 +1,104 @@
+/*
+ * setup.cpp
+ *
+ *  Created on: 01.05.2012
+ *      Author: Хозяин
+ */
+
+#include <avr/io.h>
+#include "debug.h"
+#include "setup.h"
+
+/**	Инициализация периферии
+ * 	Неиспользуемые порты по умолчанию настроены на вход с подтяжкой к +
+ * 	@param Нет
+ * 	@return Нет
+ */
+void vSETUP(void)
+{
+	// Включение подтяжки
+	SFIOR &= ~(1 << PUD);
+
+	// Порт А
+	// Двунаправленная шина
+	DDRA = 0xFF;
+	PORTA= 0x00;
+
+	// Порт B
+	DDRB = 0x00;
+	PORTB = ~0x00;
+
+	// Порт С
+	// PORTC.0 = KEY5	- вход +
+	// PORTC.1 = KEY6	- вход +
+	// PORTC.2 = KEY7	- вход +
+	// PORTC.3 = KEY8	- вход +
+	// PORTC.4 = KEY9	- вход +
+	// PORTC.5 = RST	- выход 0
+	// PORTC.6 = CS2	- выход 0
+	// PORTC.7 = CS1	- выход 0
+	DDRC = (1 << DDC5) | (1 << DDC6) | (1 << DDC7);
+	PORTC= (char) ~((1 << PC7) | (1 << PC6) | (1 << PC5));
+
+	// Порт D
+	// PORTD.0 = SCL	- альтер.
+	// PORTD.1 = SDA 	- альтер.
+	// PORTD.2 = RXD1	- альтер.
+	// PORTD.3 = TXD1	- альтер.
+	// PORTD.4 = MUX	- выход 0
+	// PORTD.5 = LED	- выход 0
+	// PORTD.6 = KEY1	- вход +
+	// PORTD.7 = KEY2	- вход +
+	DDRD = (1 << DDD5) | (1 << DDD4);
+	PORTD= (1 << PD6) | (1 << PD7);
+
+	// Порт Е
+	// PORTE.0 = RXD0	- альтер.
+	// PORTE.1 = TXD0	- альтер.
+	DDRE = 0x00;
+	PORTE = ~((1 << PE1) | (1 << PE0));
+
+	// Порт F
+	// PORTF.1 = RS		- выход 0
+	// PORTF.2 = RW		- выход 0
+	// PORTF.3 = E_STR	- выход 0
+	DDRF = (1 << DDF3) | (1 << DDF2) | (1 << DDF1);
+	PORTF = ~((1 << PF3) | (1 << PF2) | (1 << PF1));
+
+	// Порт G
+	// PORTG.0 = KEY3	- вход +
+	// PORTG.1 = KEY4	- вход +
+	DDRG = 0x00;
+	PORTG= ~0x00;
+
+#ifdef DEBUG
+	DDR_DBG |= (PIN_TP1 | PIN_TP2);
+#endif
+
+	// Обнуление регистра
+	TIMSK = 0;
+
+	// Таймер 0
+	// режим сброс по совпадению
+	// делитель N = 64, счет до OCR = 124
+	// частота = F_CPU / (2 * N * (1 + OCR)
+	// при F_CPU = 16МГц получим 5000Гц
+	TCCR0 = (1 << WGM01) | (0 << WGM00) | (1 << CS02) | (0 << CS01) | (0 << CS00);
+	OCR0  = 24;
+	TIMSK |= (1 << OCIE0);
+
+	// Таймер 1
+	// режим сброс по совпадению
+	// делитель N = 256, счет до OCR = 6248
+	// частота = F_CPU / (2 * N * (1 + OCR)
+	// при F_CPU = 16МГц получим 5Гц
+	TCCR1A 	= (0 << WGM11) | (0 << WGM10);
+	TCCR1B 	= (0 << WGM13) | (1 << WGM12) | (1 << CS12) | (0 << CS11) | (0 << CS10);
+	TCCR1C 	= 0;
+	TCNT1 	= 0;
+	OCR1A 	= 6249;
+	TIMSK 	|= (1 << OCIE1A);
+}
+
+
+
