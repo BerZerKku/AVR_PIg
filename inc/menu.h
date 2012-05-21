@@ -15,7 +15,7 @@ enum eMNU_LVL
 {
 	MNU_LVL_START = 0,
 	MNU_LVL_PARAM,
-	MNU_LEVEL_FIRST
+	MNU_LVL_FIRST
 };
 
 void vMNUmain	(void);

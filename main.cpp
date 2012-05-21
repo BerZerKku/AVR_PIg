@@ -67,6 +67,10 @@ ISR(TIMER0_COMP_vect)
 {
 	static uint_fast8_t cnt = 0;
 
+#ifdef DEBUG
+	PORT_DBG ^= PIN_TP1;
+#endif
+
 	// Îáğàáîò÷èê êëàâèàòóğû âûçûâàåì ğàç â 10ìñ
 	if (cnt >  0)
 		cnt--;

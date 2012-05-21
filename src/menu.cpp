@@ -33,7 +33,7 @@ static char vLCDbuf[169];
  * 	@param Нет
  * 	@return Нет
  */
-void vMNUmain	(void)
+void vMNUmain(void)
 {
 	// Счетчик времени до переинициализации ЖКИ
 	static uint8_t reInit = false;
@@ -49,9 +49,6 @@ void vMNUmain	(void)
 		vLCDinit();
 	}
 
-	// очистка дисплея
-	vLCDclear();
-
 	// считывание кода нажатой кнопки и переход в текущий уровень меню
 	uint_fast8_t tmp = eKEYget();
 	level[eMenuLvl]((eKEY) tmp);
@@ -61,6 +58,8 @@ void vMNUmain	(void)
 	snprintf(&vLCDbuf[147], 22, "Кнопка %02X", tmp);
 #endif
 
+	// очистка дисплея
+	vLCDclear();
 	// Преобразование строки символов в данные и вывод на ЖКИ
 	vLCDputchar(vLCDbuf);
 	vLCDrefresh();
@@ -75,15 +74,16 @@ static void lvlStart(eKEY key)
 	snprintf(&vLCDbuf[0], 22, "Мама, мыла раму! = %d", 2111);
 	snprintf(&vLCDbuf[21], 22, "А роза упала на лапу азора");
 
-	switch(key)
-	{
-		case KEY_RIGHT:
-
-		break;
-
-		default:
-			break;
-	}
+//	switch(key)
+//	{
+//		case KEY_LEFT:
+//		case KEY_RIGHT:
+//			eMenuLvl = MNU_LVL_PARAM;
+//			break;
+//
+//		default:
+//			break;
+//	}
 }
 
 /** Уровень отображения параметров
@@ -99,6 +99,18 @@ static void lvlParam(eKEY key)
 
 	snprintf_P(&vLCDbuf[63], 10, fcDate, 1, 5, 12);
 	snprintf_P(&vLCDbuf[74], 10, fcTime, 19, 15, 54);
+
+
+//	switch(key)
+//	{
+//		case KEY_LEFT:
+//		case KEY_RIGHT:
+//			eMenuLvl = MNU_LVL_START;
+//			break;
+//
+//		default:
+//			break;
+//	}
 }
 
 /** Уровень меню первый
