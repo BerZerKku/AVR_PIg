@@ -75,7 +75,15 @@ static void lvlStart(eKEY key)
 	snprintf(&vLCDbuf[0], 22, "Мама, мыла раму! = %d", 2111);
 	snprintf(&vLCDbuf[21], 22, "А роза упала на лапу азора");
 
+	switch(key)
+	{
+		case KEY_RIGHT:
 
+		break;
+
+		default:
+			break;
+	}
 }
 
 /** Уровень отображения параметров
