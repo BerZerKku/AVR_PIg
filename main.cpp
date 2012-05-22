@@ -15,6 +15,7 @@
 #include "ks0108.h"
 #include "menu.h"
 #include "keyboard.h"
+#include "uart.h"
 
 /// период обновления экрана * 100 мс
 #define LCD_REFRESH_PERIOD 2
@@ -37,11 +38,14 @@ int __attribute__ ((OS_main)) main (void)
 
 	vLCDinit();
 	vLCDclear();
+	vUART1init(19200);
 
 	while(1)
 	{
 		if (b100ms)
 		{
+			vUART1trByte(cnt_lcd);
+			UDR1 = 0x46;
 			// задачи выполняемые раз в 100мс
 
 			// задачи выполняемые раз в 1с

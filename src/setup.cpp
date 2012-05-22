@@ -43,14 +43,14 @@ void vSETUP(void)
 	// Порт D
 	// PORTD.0 = SCL	- альтер.
 	// PORTD.1 = SDA 	- альтер.
-	// PORTD.2 = RXD1	- альтер.
-	// PORTD.3 = TXD1	- альтер.
+	// PORTD.2 = RXD1	- альтер. вход 1
+	// PORTD.3 = TXD1	- альтер. выход 1
 	// PORTD.4 = MUX	- выход 0
 	// PORTD.5 = LED	- выход 0
 	// PORTD.6 = KEY1	- вход +
 	// PORTD.7 = KEY2	- вход +
-	DDRD = (1 << DDD5) | (1 << DDD4);
-	PORTD= (1 << PD6) | (1 << PD7);
+	DDRD = (1 << DDD5) | (1 << DDD4) | (1 << DDD3);
+	PORTD= (1 << PD7) | (1 << PD6) | (1 << PD3) | (1 << PD2);
 
 	// Порт Е
 	// PORTE.0 = RXD0	- альтер.

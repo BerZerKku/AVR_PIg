@@ -76,6 +76,7 @@ void vMNUmain(void)
 			cnt++;
 	}
 	// вывод кода нажатой кнопки
+	snprintf(&vLCDbuf[126], 22, "UBRR1 = %02X%02X", UBRR1H, UBRR1L);
 	snprintf(&vLCDbuf[147], 22, "Кнопка %02X Нажатий %d", tmp, cnt);
 #endif
 
