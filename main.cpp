@@ -26,7 +26,8 @@
 static volatile bool b100ms = false;
 
 
-clUart uartPC(UART1);
+clUart uartPC	(UART1, 32);
+clUart uartBSP	(UART0, 32);
 
 /**	main.c
  * 	@param Нет
@@ -34,27 +35,32 @@ clUart uartPC(UART1);
  */
 int __attribute__ ((OS_main)) main (void)
 {
-	// счетчик 1с
+	// счетчик для обновления ЖКИ
 	uint_fast8_t cnt_lcd = 0;
+	uint_fast8_t cnt_1s = 0;
+
 
 	vSETUP();
-
 	sei();
 
 	vLCDinit();
 	vLCDclear();
 	uartPC.init(19200);
-	uartPC.trByte(0x1);
 
 	while(1)
 	{
 
 		if (b100ms)
 		{
+			//uartPC.trByte(0x1);
+
 			// задачи выполняемые раз в 100мс
 
 			// задачи выполняемые раз в 1с
-
+			if (++cnt_1s >= 10)
+			{
+				cnt_1s = 0;
+			}
 			// обновление экрана
 			// выполняется с периодом LCD_REFRESH_PERIOD * 100мс
 			if (++cnt_lcd >= LCD_REFRESH_PERIOD)
@@ -106,21 +112,23 @@ ISR(TIMER1_COMPA_vect)
  */
 ISR(USART1_UDRE_vect)
 {
-	// *uartPC.udr = 0x55;
-	// UDR1 = 0x55;
-	*uartPC.udr = 33;
-
+	uartPC.isrUDR();
 }
 
 /** Прерывание по окончанию передачи данных UART1
- * 	Запретим прерывание по опустошению буфера
- * 	Разрешим прерывание по приему.
  * 	@param Нет
  * 	@return Нет
  */
 ISR(USART1_TX_vect)
 {
-	//UCSR1B &= ~(1 << UDRIE1);
-	//UCSR1B |= (1 << RXCIE1);
+	uartPC.isrTX();
 }
 
+/** Прерывание по получению данных UART1
+ * 	@param Нет
+ * 	@return Нет
+ */
+ISR(USART1_RX_vect)
+{
+	uartPC.isrRX();
+}

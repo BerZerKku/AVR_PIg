@@ -17,18 +17,60 @@ enum eUART_PORT
 class clUart
 {
 public:
-	clUart(eUART_PORT port);
-//	~clUart();
 
-	volatile uint8_t* udr;
+	~clUart();
+	clUart(eUART_PORT port, uint8_t size);
 
-	void init	(uint16_t baudrate);
-	void trByte	(uint8_t byte);
+	volatile uint8_t *udr;
 
-	uint8_t	*buf;
-	uint8_t size;
+	void 	init	(uint16_t baudrate);
+	void 	trByte	(uint8_t byte);
+	uint8_t trData	(const uint8_t *buf, uint8_t size);
+
+	/**	Обработчик прерывания опустошения буфера передачика.
+	 * 	Не забыть расположить в нужном прерывании !!!
+	 */
+	inline void isrUDR()
+	{
+		if (cnt > 0)
+		{
+			*udr = *ptr++;
+			cnt--;
+		}
+		else
+			*ucsrb &= ~(1 << UDRIE1);
+	}
+
+	/**	Обработчик прерывания окончания передачи.
+	 * 	Не забыть расположить в нужном прерывании !!!
+	 */
+	inline void isrTX()
+	{
+		*ucsrb |= (1 << RXCIE1);
+		*ucsrb &= ~(1 << TXCIE1);
+		ptr = buf;
+		cnt = 0;
+	}
+
+	/**	Обработчик прерывания по прихожду байта в буфер приемника.
+	 * 	Не забыть расположить в нужном прерывании !!!
+	 */
+	inline void isrRX()
+	{
+		uint8_t tmp;
+
+		tmp = *udr;
+		*udr = tmp;
+		*ptr++ = tmp;
+		cnt++;
+	}
 
 private:
+	uint8_t	*buf;
+	uint8_t size;
+	volatile uint8_t *ptr;
+	volatile uint8_t cnt;
+
 	volatile uint8_t *ubbrh;
 	volatile uint8_t *ubbrl;
 	volatile uint8_t *ucsrc;
