@@ -8,7 +8,17 @@
 #include <avr/interrupt.h>
 #include "uart.h"
 
-void vUART1trByte(uint8_t byte)
+clUart::clUart(uint8_t port)
+{
+
+}
+
+clUart::clUart(uint16_t port, uint16_t size)
+{
+
+}
+
+void clUart::trByte(uint8_t byte)
 {
 	UDR1 = byte;
 }
@@ -18,7 +28,7 @@ void vUART1trByte(uint8_t byte)
  * 	@param baudrate Скорость работы порта
  * 	@return Нет
  */
-void vUART1init(uint16_t baudrate)
+void clUart::init(uint16_t baudrate)
 {
 	uint16_t tmp;
 

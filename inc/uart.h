@@ -8,7 +8,15 @@
 #ifndef UART_H_
 #define UART_H_
 
-void vUART1init		(uint16_t baudrate);
-void vUART1trByte	(uint8_t byte);
+class clUart
+{
+public:
+	clUart(uint16_t port, uint16_t size);
+	clUart(uint8_t port);
+
+	void init	(uint16_t baudrate);
+	void trByte	(uint8_t byte);
+
+};
 
 #endif /* UART_H_ */

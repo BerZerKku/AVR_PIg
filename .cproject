@@ -27,7 +27,7 @@
 							<builder buildPath="${workspace_loc:/PIg_mcu/Debug}" id="de.innot.avreclipse.target.builder.winavr.app.debug.1421499776" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="AVR GNU Make Builder" superClass="de.innot.avreclipse.target.builder.winavr.app.debug"/>
 							<tool id="de.innot.avreclipse.tool.assembler.winavr.app.debug.110844912" name="AVR Assembler" superClass="de.innot.avreclipse.tool.assembler.winavr.app.debug">
 								<option id="de.innot.avreclipse.assembler.option.debug.level.1740873076" name="Generate Debugging Info" superClass="de.innot.avreclipse.assembler.option.debug.level"/>
-								<option id="de.innot.avreclipse.asm.option.include.paths.1461942354" superClass="de.innot.avreclipse.asm.option.include.paths" valueType="includePath">
+								<option id="de.innot.avreclipse.asm.option.include.paths.1461942354" name="#include paths for preprocessor(-I)" superClass="de.innot.avreclipse.asm.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
 								</option>
 								<inputType id="de.innot.avreclipse.tool.assembler.input.894843985" superClass="de.innot.avreclipse.tool.assembler.input"/>
@@ -52,6 +52,7 @@
 								<option id="de.innot.avreclipse.cppcompiler.option.def.235958750" name="Define Syms (-D)" superClass="de.innot.avreclipse.cppcompiler.option.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="DEBUG"/>
 								</option>
+								<option id="de.innot.avreclipse.cppcompiler.option.std.1789506295" superClass="de.innot.avreclipse.cppcompiler.option.std" value="de.innot.avreclipse.cppcompiler.option.std.cpp98" valueType="enumerated"/>
 								<inputType id="de.innot.avreclipse.cppcompiler.input.590926730" superClass="de.innot.avreclipse.cppcompiler.input"/>
 							</tool>
 							<tool id="de.innot.avreclipse.tool.linker.winavr.app.debug.518268193" name="AVR C Linker" superClass="de.innot.avreclipse.tool.linker.winavr.app.debug"/>

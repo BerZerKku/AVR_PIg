@@ -7,6 +7,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <stdio.h>
 //#include <math.h>
 //#include <util/delay.h>
 
@@ -17,11 +18,16 @@
 #include "keyboard.h"
 #include "uart.h"
 
+
 /// период обновления экрана * 100 мс
 #define LCD_REFRESH_PERIOD 2
 
 /// флаг, устанавливается каждые 100мс
 static volatile bool b100ms = false;
+
+clUart uartPC(2, 3);
+//clUart uartPC(2);
+
 
 /**	main.c
  * 	@param Нет
@@ -38,13 +44,13 @@ int __attribute__ ((OS_main)) main (void)
 
 	vLCDinit();
 	vLCDclear();
-	vUART1init(19200);
+	uartPC.init(19200);
 
 	while(1)
 	{
 		if (b100ms)
 		{
-			vUART1trByte(cnt_lcd);
+			uartPC.trByte(cnt_lcd);
 			UDR1 = 0x46;
 			// задачи выполняемые раз в 100мс
 
