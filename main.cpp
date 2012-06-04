@@ -23,6 +23,9 @@
 /// флаг, устанавливается каждые 100мс
 static volatile bool b100ms = false;
 
+///
+clUart uartPC(UART1, 64);
+
 /**	main.c
  * 	@param Нет
  * 	@return Нет
@@ -38,14 +41,14 @@ int __attribute__ ((OS_main)) main (void)
 
 	vLCDinit();
 	vLCDclear();
-	vUART1init(19200);
+	uartPC.init(19200);
+	uartPC.trByte(0x1);
 
 	while(1)
 	{
+
 		if (b100ms)
 		{
-			vUART1trByte(cnt_lcd);
-			UDR1 = 0x46;
 			// задачи выполняемые раз в 100мс
 
 			// задачи выполняемые раз в 1с
@@ -95,4 +98,27 @@ ISR(TIMER1_COMPA_vect)
 	b100ms = true;
 }
 
+/**	Прерывание по опустошению передающего буфера UART1
+ * 	@param Нет
+ * 	@return Нет
+ */
+ISR(USART1_UDRE_vect)
+{
+	// *uartPC.udr = 0x55;
+	// UDR1 = 0x55;
+	*uartPC.udr = 33;
+
+}
+
+/** Прерывание по окончанию передачи данных UART1
+ * 	Запретим прерывание по опустошению буфера
+ * 	Разрешим прерывание по приему.
+ * 	@param Нет
+ * 	@return Нет
+ */
+ISR(USART1_TX_vect)
+{
+	//UCSR1B &= ~(1 << UDRIE1);
+	//UCSR1B |= (1 << RXCIE1);
+}
 

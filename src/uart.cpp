@@ -6,19 +6,66 @@
  */
 #include <avr/io.h>
 #include <avr/interrupt.h>
+
 #include "uart.h"
 
-void vUART1trByte(uint8_t byte)
+/** Конструктор
+ * 	Порты ввода-вывода должны быть настроены заранее
+ * 	@param port Имя порта
+ * 	@arg UART0
+ * 	@arg UART1
+ * 	@param size Размер буфера
+ */
+clUart::clUart(eUART_PORT port, uint8_t size)
 {
-	UDR1 = byte;
+	if (port == UART0)
+	{
+		udr = &UDR0;
+		ubbrh = &UBRR0H;
+		ubbrl = &UBRR0L;
+		ucsrc = &UCSR0C;
+		ucsrb = &UCSR0B;
+	}
+	else if (port == UART1)
+	{
+		udr = &UDR1;
+		ubbrh = &UBRR1H;
+		ubbrl = &UBRR1L;
+		ucsrc = &UCSR1C;
+		ucsrb = &UCSR1B;
+	}
+
+	// Выделим место под массив требуемого размера
+//	this->size = size;
+//	buf = (uint8_t *) malloc(sizeof(uint8_t) * size);
 }
 
-/**	Настройка uart1
- * 	Не забыть сконфигурировать пины ввода/вывода !!!
+/**	Деструктор
+ * 	Уничтожим буфер
+ * 	@param Нет
+ * 	@return Нет
+ */
+//clUart::~clUart()
+//{
+////	free(buf);
+//}
+
+/*	Отправка байта данных
+ * 	@param byte Данные
+ * 	@return Нет
+ */
+void
+clUart::trByte(uint8_t byte)
+{
+	*udr = byte;
+}
+
+/**	Настройка порта
  * 	@param baudrate Скорость работы порта
  * 	@return Нет
  */
-void vUART1init(uint16_t baudrate)
+void
+clUart::init(uint16_t baudrate)
 {
 	uint16_t tmp;
 
@@ -31,34 +78,13 @@ void vUART1init(uint16_t baudrate)
 
 	// рассчет скорости без установленного бита ускорения
 	tmp = (uint16_t) ( F_CPU / (16 * (uint32_t) baudrate)) - 1;
-	UBRR1H = (uint8_t) tmp >> 8;
-	UBRR1L = (uint8_t) tmp;
+	*ubbrh = (uint8_t) tmp >> 8;
+	*ubbrl = (uint8_t) tmp;
 
 	// асинхронная работа, 8-бит данных, 2 стоп-бита
-	UCSR1C = (1 << USBS1) | (1 << UCSZ11) | (1 << UCSZ10);
+	*ucsrc = (1 << USBS1) | (1 << UCSZ11) | (1 << UCSZ10);
 
 	// разрешение работы передатчика
 	// прерывания по окончанию передачи
-	UCSR1B = (1 << TXCIE1) | (1<<TXEN1);
-}
-
-/**	Прерывание по опустошению передающего буфера UART1
- * 	@param Нет
- * 	@return Нет
- */
-ISR(USART1_UDRE_vect)
-{
-	UDR1 = 0x55;
-}
-
-/** Прерывание по окончанию передачи данных UART1
- * 	Запретим прерывание по опустошению буфера
- * 	Разрешим прерывание по приему.
- * 	@param Нет
- * 	@return Нет
- */
-ISR(USART1_TX_vect)
-{
-	UCSR1B &= ~(1 << UDRIE1);
-	UCSR1B |= (1 << RXCIE1);
+	*ucsrb = (1 << TXCIE1) | (1<<TXEN1) | (1 << UDRIE1);
 }
