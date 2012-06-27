@@ -25,9 +25,12 @@
 /// флаг, устанавливается каждые 100мс
 static volatile bool b100ms = false;
 
+/// Буфер для UART
+uint8_t uBufUart0[32];
+uint8_t uBufUart1[32];
 
-clUart uartPC	(UART1, 32);
-clUart uartBSP	(UART0, 32);
+clUart uartPC	(UART1, uBufUart0, sizeof(uBufUart0) / sizeof(uBufUart0[0]));
+clUart uartBSP	(UART0, uBufUart1, sizeof(uBufUart1) / sizeof(uBufUart1[0]));
 
 /**	main.c
  * 	@param Нет
@@ -39,12 +42,12 @@ int __attribute__ ((OS_main)) main (void)
 	uint_fast8_t cnt_lcd = 0;
 	uint_fast8_t cnt_1s = 0;
 
-
 	vSETUP();
 	sei();
 
 	vLCDinit();
 	vLCDclear();
+
 	uartPC.init(19200);
 
 	while(1)
@@ -52,8 +55,6 @@ int __attribute__ ((OS_main)) main (void)
 
 		if (b100ms)
 		{
-			//uartPC.trByte(0x1);
-
 			// задачи выполняемые раз в 100мс
 
 			// задачи выполняемые раз в 1с

@@ -18,8 +18,8 @@ class clUart
 {
 public:
 
-	~clUart();
-	clUart(eUART_PORT port, uint8_t size);
+//	~clUart();
+	clUart(eUART_PORT port, uint8_t *buf, uint8_t size);
 
 	volatile uint8_t *udr;
 
@@ -30,7 +30,7 @@ public:
 	/**	Обработчик прерывания опустошения буфера передачика.
 	 * 	Не забыть расположить в нужном прерывании !!!
 	 */
-	inline void isrUDR()
+	void isrUDR()
 	{
 		if (cnt > 0)
 		{
@@ -42,35 +42,44 @@ public:
 	}
 
 	/**	Обработчик прерывания окончания передачи.
+	 * 	Запрещаем передачу, разрешаем прием.
 	 * 	Не забыть расположить в нужном прерывании !!!
 	 */
-	inline void isrTX()
+	void isrTX()
 	{
-		*ucsrb |= (1 << RXCIE1);
-		*ucsrb &= ~(1 << TXCIE1);
 		ptr = buf;
 		cnt = 0;
+		*ucsrb |= (1 << RXCIE1);
+		*ucsrb &= ~(1 << TXCIE1);
+
 	}
 
 	/**	Обработчик прерывания по прихожду байта в буфер приемника.
 	 * 	Не забыть расположить в нужном прерывании !!!
 	 */
-	inline void isrRX()
+	void isrRX()
 	{
-		uint8_t tmp;
+		uint8_t tmp  = *udr;
 
-		tmp = *udr;
-		*udr = tmp;
-		*ptr++ = tmp;
-		cnt++;
+		if (cnt < size)
+		{
+			*ptr++ = tmp;
+			cnt++;
+		}
 	}
 
 private:
-	uint8_t	*buf;
-	uint8_t size;
-	volatile uint8_t *ptr;
+	// кол-во принятых/полученных данных
 	volatile uint8_t cnt;
+	// указатель на буфер
+	uint8_t	* const buf;
+	// размер буфера
+	const uint8_t size;
+	//
+	volatile uint8_t *ptr;
 
+
+	// регистры настройки
 	volatile uint8_t *ubbrh;
 	volatile uint8_t *ubbrl;
 	volatile uint8_t *ucsrc;

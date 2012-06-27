@@ -18,7 +18,7 @@
  * 	@arg UART1
  * 	@param size Размер буфера
  */
-clUart::clUart(eUART_PORT port, uint8_t size)
+clUart::clUart(eUART_PORT port, uint8_t *buf, uint8_t size)  : buf(buf), size(size)
 {
 	if (port == UART0)
 	{
@@ -36,10 +36,6 @@ clUart::clUart(eUART_PORT port, uint8_t size)
 		ucsrc = &UCSR1C;
 		ucsrb = &UCSR1B;
 	}
-
-	this->size = size;
-	buf = (uint8_t *) malloc(sizeof(uint8_t) * size);
-	this->ptr = buf;
 }
 
 /**	Деструктор
@@ -47,10 +43,9 @@ clUart::clUart(eUART_PORT port, uint8_t size)
  * 	@param Нет
  * 	@return Нет
  */
-clUart::~clUart()
-{
-	free(buf);
-}
+//clUart::~clUart()
+//{
+//}
 
 /*	Отправка байта данных
  * 	@param byte Данные
@@ -59,13 +54,14 @@ clUart::~clUart()
 void
 clUart::trByte(uint8_t byte)
 {
-	ptr = buf;
-	*ptr = byte;
+	// запретим прием
+	*ucsrb &= ~(1 << RXCIE);
+
 	cnt = 0;
 	*udr = byte;
 
-	*ucsrb &= ~(1 << RXCIE);
-	*ucsrb |= (1 << UDRIE1);
+	// разрешим прерывание по окончанию передачи
+	*ucsrb |= (1 << TXCIE1);
 }
 
 /**	Отправка заданного кол-ва данных
@@ -77,18 +73,28 @@ uint8_t
 clUart::trData(const uint8_t *buf, uint8_t size)
 {
 	uint8_t *tmp;
-	tmp = this->buf;
+	uint8_t cnt;
 
+	// Запретим прием
+	*ucsrb &= ~(1 << RXCIE);
+
+	// Скопируем данные в буфер
 	if (size != 0)
 	{
+		tmp = this->buf;
 		for(cnt = 0; cnt < size; cnt++)
 			*tmp++ = *buf++;
 	}
 
+	// отправим первый байт
 	ptr = this->buf;
-	*ucsrb &= ~(1 << RXCIE);
-	*ucsrb |= (1 << UDRIE1);
+	*udr = *ptr++;
+	cnt--;
 
+	// Разрешим прерывание по опустошению буфера UART и окончанию передачи
+	*ucsrb |= (1 << UDRIE1) | (1 << TXCIE1);
+
+	this->cnt = cnt;
 	return cnt ;
 }
 
@@ -108,7 +114,7 @@ clUart::init(uint16_t baudrate)
 //	PORTD&=~(1<<PORTD2);
 //	PORTD|=(1<<PORTD3);
 
-	// рассчет скорости без установленного бита ускорения
+	// расчет скорости без установленного бита ускорения
 	tmp = (uint16_t) ( F_CPU / (16 * (uint32_t) baudrate)) - 1;
 	*ubbrh = (uint8_t) tmp >> 8;
 	*ubbrl = (uint8_t) tmp;
