@@ -6,11 +6,13 @@
  */
 #include <stdio.h>
 
-#include "debug.h"
 #include "menu.h"
+#include "debug.h"
 #include "ks0108.h"
 #include "flash.h"
 #include "keyboard.h"
+
+extern stMNUparam sParam;
 
 static enum eMNU_LVL eMenuLvl = MNU_LVL_START;
 
@@ -95,8 +97,12 @@ void vMNUmain(void)
  */
 static void lvlStart(eKEY key)
 {
-	snprintf_P(&vLCDbuf[0], 10, fcDate, sDebug.byte4, sDebug.byte5, sDebug.byte6);
-	snprintf_P(&vLCDbuf[11], 10, fcTime, sDebug.byte3, sDebug.byte2, sDebug.byte1);
+	snprintf_P(&vLCDbuf[1] , 10, fcDate, sParam.day , sParam.month , sParam.year);
+	snprintf_P(&vLCDbuf[11], 10, fcTime, sParam.hour, sParam.minute, sParam.second);
+	snprintf_P(&vLCDbuf[22], 10, fcUout, sParam.voltOutInt, sParam.voltOutFract);
+	snprintf_P(&vLCDbuf[32], 10, fcUcf, sParam.voltCF);
+	snprintf_P(&vLCDbuf[43], 10, fcUn, 	sParam.voltNoise);
+	snprintf_P(&vLCDbuf[53], 10, fcUz, 	sParam.voltDef);
 
 	switch(key)
 	{

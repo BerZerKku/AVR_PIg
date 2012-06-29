@@ -29,10 +29,13 @@ static volatile bool b100ms = false;
 uint8_t uBufUart0[32];
 uint8_t uBufUart1[32];
 
+/// параметры БСП
+stMNUparam sParam;
+
 clUart 		uartPC	(UART1, uBufUart0, sizeof(uBufUart0) / sizeof(uBufUart0[0]));
 clUart 		uartBSP	(UART0, uBufUart1, sizeof(uBufUart1) / sizeof(uBufUart1[0]));
-clProtocolS	protPCs	(uBufUart0, sizeof(uBufUart1) / sizeof(uBufUart1[0]));
-clProtocolS protBSPs(uBufUart1, sizeof(uBufUart1) / sizeof(uBufUart1[0]));
+clProtocolS	protPCs	(uBufUart0, sizeof(uBufUart1) / sizeof(uBufUart1[0]), &sParam);
+clProtocolS protBSPs(uBufUart1, sizeof(uBufUart1) / sizeof(uBufUart1[0]), &sParam);
 
 /**	main.c
  * 	@param Нет
@@ -59,6 +62,8 @@ main (void)
 	uartBSP.init(4800);
 	protBSPs.setEnable();
 
+	sParam.voltCF = -13;
+
 	while(1)
 	{
 		if (b100ms)
@@ -68,11 +73,10 @@ main (void)
 			if (protBSPs.isRdy())
 			{
 				if (protBSPs.checkCRC())
-					uartPC.trData(protPCs.trData(0x32, 12, uBufUart1));
-				else
-					uartPC.trByte(0x44);
-
-				protBSPs.getData();
+				{
+					protBSPs.getData();
+				}
+				protBSPs.clrRdy();
 			}
 
 			// Получена посылка по стандартному протоколу

@@ -9,13 +9,13 @@
 #include "protocolS.h"
 #include "debug.h"
 
-clProtocolS::clProtocolS(uint8_t *buf, uint8_t size) : buf(buf), size(size)
+clProtocolS::clProtocolS(uint8_t *buf, uint8_t size, stMNUparam *param) :
+							buf(buf), size(size), param(param)
 {
 	enable = false;
 	rdy = false;
 	cnt = 0;
 	maxLen = 0;
-
 }
 
 /**	Проверка принятой контрольной суммы
@@ -109,12 +109,12 @@ clProtocolS::getData()
 			tmp = true;
 			break;
 		case 0x32:
-			sDebug.byte1 = buf[4];
-			sDebug.byte2 = buf[5];
-			sDebug.byte3 = buf[6];
-			sDebug.byte4 = buf[7];
-			sDebug.byte5 = buf[8];
-			sDebug.byte6 = buf[9];
+			param->day = buf[4];
+			param->month = buf[5];
+			param->year = buf[6];
+			param->hour = buf[7];
+			param->minute = buf[8];
+			param->second = buf[9];
 			tmp = true;
 			break;
 	}

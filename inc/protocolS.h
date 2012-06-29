@@ -8,17 +8,17 @@
 #ifndef PROTOCOLS_H_
 #define PROTOCOLS_H_
 
+#include <menu.h>
+
 class clProtocolS
 {
 public:
-	clProtocolS(uint8_t *buf, uint8_t size);
+	clProtocolS(uint8_t *buf, uint8_t size, stMNUparam *param);
 
 	bool checkCRC	();
 	uint8_t trData	(uint8_t com, uint8_t size, const uint8_t * buf);
 	uint8_t trByte	(uint8_t com, uint8_t byte);
 	bool getData	();
-
-	uint8_t tmp;
 
 	// Проверка принятого байта на соответствие протоколу
 	// возвращает false в случае ошибки
@@ -71,6 +71,9 @@ public:
 	/// Проверка текущего состояния протокола
 	bool isEnable() const { return enable; }
 
+	/// Кол-во данных в посылке
+	uint8_t getLenPackage() const { return cnt; }
+
 private:
 	// Счетчик принятого байта по протоколу
 	uint8_t cnt;
@@ -84,6 +87,8 @@ private:
 	bool rdy;
 	// Текущее состояние протокола. true - запущен
 	bool enable;
+	//
+	stMNUparam *param;
 
 	// добавление к посылке контрольной суммы
 	bool setCRC();

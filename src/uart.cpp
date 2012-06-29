@@ -19,7 +19,7 @@
  * 	@param *buf Указатель на буфер данных
  * 	@param size Размер буфера
  */
-clUart::clUart(eUART_PORT port, uint8_t *buf, uint8_t size)  : buf(buf), size(size)
+clUart::clUart(eUART_PORT port, uint8_t * const buf, uint8_t size)  : buf(buf), size(size)
 {
 	if (port == UART0)
 	{

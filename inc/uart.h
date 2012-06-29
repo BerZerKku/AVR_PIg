@@ -22,7 +22,7 @@ class clUart
 public:
 
 //	~clUart();
-	clUart(eUART_PORT port, uint8_t *buf, uint8_t size);
+	clUart(eUART_PORT port, uint8_t * const buf, uint8_t size);
 
 	volatile uint8_t *udr;
 
