@@ -14,7 +14,8 @@
  * 	@param Нет
  * 	@return Нет
  */
-void vSETUP(void)
+void
+vSETUP(void)
 {
 	// Включение подтяжки
 	SFIOR &= ~(1 << PUD);

@@ -16,8 +16,8 @@ const char fcRout[] PROGMEM = "R=%uŒÏ";
 const char fcUz[] 	PROGMEM	= "UÁ=%.2d‰¡";
 const char fcUcf[] 	PROGMEM	= "UÍ=%.2d‰¡";
 const char fcUn[] 	PROGMEM	= "U¯=%.2d‰¡";
-const char fcDate[] PROGMEM = "%.2u.%.2u.%.2u";
-const char fcTime[] PROGMEM = "%.2u:%.2u:%.2u";
+const char fcDate[] PROGMEM = "%02X.%02X.%02X";
+const char fcTime[] PROGMEM = "%02X:%02X:%02X";
 
 
 //#endif /* FLASH_H_ */

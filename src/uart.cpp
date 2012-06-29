@@ -16,6 +16,7 @@
  * 	@param port Имя порта
  * 	@arg UART0
  * 	@arg UART1
+ * 	@param *buf Указатель на буфер данных
  * 	@param size Размер буфера
  */
 clUart::clUart(eUART_PORT port, uint8_t *buf, uint8_t size)  : buf(buf), size(size)
@@ -36,6 +37,9 @@ clUart::clUart(eUART_PORT port, uint8_t *buf, uint8_t size)  : buf(buf), size(si
 		ucsrc = &UCSR1C;
 		ucsrb = &UCSR1B;
 	}
+
+	numTrByte = 0;
+	cnt = 0;
 }
 
 /**	Деструктор
@@ -64,38 +68,92 @@ clUart::trByte(uint8_t byte)
 	*ucsrb |= (1 << TXCIE1);
 }
 
-/**	Отправка заданного кол-ва данных
+/**	Отправка заданного кол-ва данных, заранее помещенных в буфер
  * 	@param *buf Указатель на начало данных
  * 	@param size Кол-во байт данных
  * 	@return Кол-во отправляемых байт данных
  */
 uint8_t
-clUart::trData(const uint8_t *buf, uint8_t size)
+clUart::trData(uint8_t size)
+{
+	// Скопируем данные в буфер
+	if (size != 0)
+	{
+		// Запретим прием
+		*ucsrb &= ~(1 << RXCIE);
+
+		numTrByte = size;
+
+		// отправим первый байт
+		*udr = buf[0];
+		this->cnt = 1;
+
+		// Разрешим прерывание по опустошению буфера UART и окончанию передачи
+		*ucsrb |= (1 << UDRIE1) | (1 << TXCIE1);
+	}
+	else
+		numTrByte = 0;
+
+	return numTrByte;
+}
+
+/**	Отправка заданного кол-ва данных из массива
+ * 	@param *buf Указатель на начало данных
+ * 	@param size Кол-во байт данных
+ * 	@return Кол-во отправляемых байт данных
+ */
+uint8_t
+clUart::trData(uint8_t size, const uint8_t *buf)
 {
 	uint8_t *tmp;
-	uint8_t cnt;
-
-	// Запретим прием
-	*ucsrb &= ~(1 << RXCIE);
+	uint8_t cnt = 0;
 
 	// Скопируем данные в буфер
 	if (size != 0)
 	{
+		// Запретим прием
+		*ucsrb &= ~(1 << RXCIE);
+
 		tmp = this->buf;
-		for(cnt = 0; cnt < size; cnt++)
-			*tmp++ = *buf++;
+		for(; cnt < size; cnt++)
+			this->buf[cnt] = buf[cnt];
+
+		numTrByte = cnt;
+
+		// отправим первый байт
+		*udr = buf[0];
+		this->cnt = 1;
+
+		// Разрешим прерывание по опустошению буфера UART и окончанию передачи
+		*ucsrb |= (1 << UDRIE1) | (1 << TXCIE1);
+	}
+	else
+	{
+		numTrByte = 0;
 	}
 
+	return numTrByte;
+}
+
+/** Отправка буфера данных
+ * 	@param Нет
+ * 	@return Кол-во передаваемых байт данных
+ */
+uint8_t
+clUart::trBuf()
+{
+	// Запретим прием
+	*ucsrb &= ~(1 << RXCIE);
+
+	numTrByte = size;
+
 	// отправим первый байт
-	ptr = this->buf;
-	*udr = *ptr++;
-	cnt--;
+	*udr = buf[cnt++];
 
 	// Разрешим прерывание по опустошению буфера UART и окончанию передачи
 	*ucsrb |= (1 << UDRIE1) | (1 << TXCIE1);
 
-	this->cnt = cnt;
-	return cnt ;
+	return numTrByte;
 }
 
 /**	Настройка порта

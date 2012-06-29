@@ -24,7 +24,8 @@ static volatile bool bRefresh = false;
  * 	@param Нет
  * 	@return false - занято.
  */
-bool vLCDcheckBusy(void)
+bool
+vLCDcheckBusy(void)
 {
 	uint8_t data = 0;
 
@@ -57,7 +58,8 @@ bool vLCDcheckBusy(void)
  * 	@param cs Выбор кристалла
  * 	@return Нет
  */
-void vLCDcom(uint8_t com, uint8_t cs)
+void
+vLCDcom(uint8_t com, uint8_t cs)
 {
 	PORT_CS |= cs;
 	PORT_RS &= ~PIN_RS;
@@ -79,7 +81,8 @@ void vLCDcom(uint8_t com, uint8_t cs)
  * 	@param Нет
  * 	@return Нет
  */
-void vLCDclear(void)
+void
+vLCDclear(void)
 {
 	for(uint_fast16_t i = 0; i < 1024; i++)
 	{
@@ -92,7 +95,8 @@ void vLCDclear(void)
  * 	@param cs Выбор кристалла
  * 	@return Нет
  */
-void vLCDdata(uint8_t data, uint8_t cs)
+void
+vLCDdata(uint8_t data, uint8_t cs)
 {
 	PORT_CS |= cs;
 	PORT_RS |= PIN_RS;
@@ -115,7 +119,8 @@ void vLCDdata(uint8_t data, uint8_t cs)
  * 	@param cs Выбор кристалла
  * 	@return Нет
  */
-void vLCDwriteData(uint8_t data)
+void
+vLCDwriteData(uint8_t data)
 {
 	uBuf[uCnt++] = data;
 }
@@ -124,7 +129,8 @@ void vLCDwriteData(uint8_t data)
  * 	@param Нет
  * 	@return Нет
  */
-void vLCDinit(void)
+void
+vLCDinit(void)
 {
 	if ( !(PORT_RST & PIN_RST) )
 	{
@@ -145,7 +151,8 @@ void vLCDinit(void)
  * 	@param cs Выбор кристалла
  * 	@return Нет
  */
-void vLCDsetXY(uint8_t x, uint8_t y)
+void
+vLCDsetXY(uint8_t x, uint8_t y)
 {
 	uCnt = (y * 128) + x - 1;
 }
@@ -154,7 +161,8 @@ void vLCDsetXY(uint8_t x, uint8_t y)
  * 	@param Нет
  * 	@return Нет
  */
-void vLCDrefresh(void)
+void
+vLCDrefresh(void)
 {
 	bRefresh = true;
 }
@@ -163,7 +171,8 @@ void vLCDrefresh(void)
  * 	@param Нет
  * 	@return Нет
  */
-void vLCDmain(void)
+void
+vLCDmain(void)
 {
 	static uint8_t x = 0;
 	static uint8_t y = 0;
@@ -221,7 +230,8 @@ void vLCDmain(void)
  *	@param symb Символ
  *	@return Нет
  */
-void vLCDputchar(const char* buf)
+void
+vLCDputchar(const char* buf)
 {
 	uint_fast8_t tmp;
 	uint_fast16_t cnt = 0;
@@ -269,7 +279,8 @@ void vLCDputchar(const char* buf)
  * 	@arg LED_OFF Выключить подсветку
  * 	@return Нет
  */
-void vLCDsetLED(eLCD_LED val)
+void
+vLCDsetLED(eLCD_LED val)
 {
 	if (val == LED_SWITCH)
 		uLedTimeOn = LCD_TIME_LED_ON;

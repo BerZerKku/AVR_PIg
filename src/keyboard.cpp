@@ -16,7 +16,8 @@ static eKEY keyPressed;
  * 	@param Нет
  * 	@return eKEY Код нажатой кнопки
  */
-eKEY eKEYget(void)
+eKEY
+eKEYget(void)
 {
 	eKEY key_tmp = keyPressed;
 
@@ -33,7 +34,8 @@ eKEY eKEYget(void)
  * 	@param Нет
  * 	@return Нет
  */
-void vKEYmain(void)
+void
+vKEYmain(void)
 {
 	static uint_fast8_t delay = TIME_DELAY;	// счетчик антидребезга
 	static uint_fast8_t keyPrev = KEY_NO;	// предыдущее значение кнопки

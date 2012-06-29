@@ -17,6 +17,18 @@
 #define PIN_TP1		(1 << 6)
 #define PIN_TP2		(1 << 7)
 
+struct stDebug
+{
+	uint8_t byte1;
+	uint8_t byte2;
+	uint8_t byte3;
+	uint8_t byte4;
+	uint8_t byte5;
+	uint8_t byte6;
+};
+
+extern stDebug sDebug;
+
 #endif
 
 #endif /* DEBUG_H_ */

@@ -17,7 +17,7 @@
 #include "menu.h"
 #include "keyboard.h"
 #include "uart.h"
-
+#include "protocolS.h"
 
 /// период обновления экрана * 100 мс
 #define LCD_REFRESH_PERIOD 2
@@ -29,18 +29,23 @@ static volatile bool b100ms = false;
 uint8_t uBufUart0[32];
 uint8_t uBufUart1[32];
 
-clUart uartPC	(UART1, uBufUart0, sizeof(uBufUart0) / sizeof(uBufUart0[0]));
-clUart uartBSP	(UART0, uBufUart1, sizeof(uBufUart1) / sizeof(uBufUart1[0]));
+clUart 		uartPC	(UART1, uBufUart0, sizeof(uBufUart0) / sizeof(uBufUart0[0]));
+clUart 		uartBSP	(UART0, uBufUart1, sizeof(uBufUart1) / sizeof(uBufUart1[0]));
+clProtocolS	protPCs	(uBufUart0, sizeof(uBufUart1) / sizeof(uBufUart1[0]));
+clProtocolS protBSPs(uBufUart1, sizeof(uBufUart1) / sizeof(uBufUart1[0]));
 
 /**	main.c
  * 	@param Нет
  * 	@return Нет
  */
-int __attribute__ ((OS_main)) main (void)
+int __attribute__ ((OS_main))
+main (void)
 {
 	// счетчик для обновления ЖКИ
 	uint_fast8_t cnt_lcd = 0;
 	uint_fast8_t cnt_1s = 0;
+
+	uint8_t time[] = {0x55, 0xAA, 0x32, 0x00, 0x32};
 
 	vSETUP();
 	sei();
@@ -49,19 +54,49 @@ int __attribute__ ((OS_main)) main (void)
 	vLCDclear();
 
 	uartPC.init(19200);
+	protPCs.setEnable();
+
+	uartBSP.init(4800);
+	protBSPs.setEnable();
 
 	while(1)
 	{
-
 		if (b100ms)
 		{
 			// задачи выполняемые раз в 100мс
+
+			if (protBSPs.isRdy())
+			{
+				if (protBSPs.checkCRC())
+					uartPC.trData(protPCs.trData(0x32, 12, uBufUart1));
+				else
+					uartPC.trByte(0x44);
+
+				protBSPs.getData();
+			}
+
+			// Получена посылка по стандартному протоколу
+			if (protPCs.isRdy())
+			{
+				if (protPCs.checkCRC())
+				{
+					//uartPC.trData(sizeof(ppp), ppp);
+					//uartPC.trData(protS.trData(0x33, sizeof(ppp), ppp));
+					uartPC.trData(protPCs.trByte(0x22, 'A'));
+				}
+
+				protPCs.clrRdy();
+			}
+
+
+			uartBSP.trData(sizeof(time), time);
 
 			// задачи выполняемые раз в 1с
 			if (++cnt_1s >= 10)
 			{
 				cnt_1s = 0;
 			}
+
 			// обновление экрана
 			// выполняется с периодом LCD_REFRESH_PERIOD * 100мс
 			if (++cnt_lcd >= LCD_REFRESH_PERIOD)
@@ -93,7 +128,7 @@ ISR(TIMER0_COMP_vect)
 		vKEYmain();
 	}
 
-	// Обработчик ЖКИ вызываем раз в 100мкс
+	// Обработчик ЖКИ
 	vLCDmain();
 }
 
@@ -131,5 +166,56 @@ ISR(USART1_TX_vect)
  */
 ISR(USART1_RX_vect)
 {
-	uartPC.isrRX();
+	uint8_t tmp = UDR1;
+
+	uartPC.isrRX(tmp);
+
+	// обработчик протокола "Стандартный"
+	if (protPCs.isEnable())
+	{
+		if (!protPCs.isRdy())
+		{
+			if (!protPCs.checkByte(tmp))
+				uartPC.clrCnt();
+		}
+	}
+}
+
+/**	Прерывание по опустошению передающего буфера UART1
+ * 	@param Нет
+ * 	@return Нет
+ */
+ISR(USART0_UDRE_vect)
+{
+	uartBSP.isrUDR();
+}
+
+/** Прерывание по окончанию передачи данных UART1
+ * 	@param Нет
+ * 	@return Нет
+ */
+ISR(USART0_TX_vect)
+{
+	uartBSP.isrTX();
+}
+
+/** Прерывание по получению данных UART1
+ * 	@param Нет
+ * 	@return Нет
+ */
+ISR(USART0_RX_vect)
+{
+	uint8_t tmp = UDR0;
+
+	uartBSP.isrRX(tmp);
+
+	// обработчик протокола "Стандартный"
+	if (protBSPs.isEnable())
+	{
+		if (!protBSPs.isRdy())
+		{
+			if (!protBSPs.checkByte(tmp))
+				uartBSP.clrCnt();
+		}
+	}
 }

@@ -1,8 +1,11 @@
-/*
+/**
  * uart.h
  *
  *  Created on: 22.05.2012
  *      Author: Shcheblykin
+ *
+ *     Работа с UART.
+ *     Настройка портов ввода вывода производится заранее.
  */
 
 #ifndef UART_H_
@@ -25,20 +28,29 @@ public:
 
 	void 	init	(uint16_t baudrate);
 	void 	trByte	(uint8_t byte);
-	uint8_t trData	(const uint8_t *buf, uint8_t size);
+	uint8_t trData	(uint8_t size);
+	uint8_t trData	(uint8_t size, const uint8_t *buf);
+	uint8_t trBuf	();
+
+	/// Считывание счетчика байт данных в буфере
+	uint8_t getCnt() const { return cnt; }
+
+	/// Сбросить счетчик байт данных в буфере
+	void clrCnt() {cnt = 0;}
 
 	/**	Обработчик прерывания опустошения буфера передачика.
 	 * 	Не забыть расположить в нужном прерывании !!!
 	 */
 	void isrUDR()
 	{
-		if (cnt > 0)
+		if (cnt < numTrByte)
 		{
-			*udr = *ptr++;
-			cnt--;
+			*udr = buf[cnt++];
 		}
 		else
+		{
 			*ucsrb &= ~(1 << UDRIE1);
+		}
 	}
 
 	/**	Обработчик прерывания окончания передачи.
@@ -47,24 +59,22 @@ public:
 	 */
 	void isrTX()
 	{
-		ptr = buf;
 		cnt = 0;
+		numTrByte = 0;
 		*ucsrb |= (1 << RXCIE1);
 		*ucsrb &= ~(1 << TXCIE1);
 
 	}
 
 	/**	Обработчик прерывания по прихожду байта в буфер приемника.
+	 * 	@param byte Принятый байт данных
 	 * 	Не забыть расположить в нужном прерывании !!!
 	 */
-	void isrRX()
+	void isrRX(uint8_t byte)
 	{
-		uint8_t tmp  = *udr;
-
 		if (cnt < size)
 		{
-			*ptr++ = tmp;
-			cnt++;
+			buf[cnt++] = byte;
 		}
 	}
 
@@ -75,8 +85,8 @@ private:
 	uint8_t	* const buf;
 	// размер буфера
 	const uint8_t size;
-	//
-	volatile uint8_t *ptr;
+	// кол-во данных на передачу
+	uint8_t numTrByte;
 
 
 	// регистры настройки

@@ -95,8 +95,8 @@ void vMNUmain(void)
  */
 static void lvlStart(eKEY key)
 {
-	snprintf(&vLCDbuf[0], 22, "Мама, мыла раму! = %d", 2111);
-	snprintf(&vLCDbuf[21], 22, "А роза упала на лапу азора");
+	snprintf_P(&vLCDbuf[0], 10, fcDate, sDebug.byte4, sDebug.byte5, sDebug.byte6);
+	snprintf_P(&vLCDbuf[11], 10, fcTime, sDebug.byte3, sDebug.byte2, sDebug.byte1);
 
 	switch(key)
 	{
