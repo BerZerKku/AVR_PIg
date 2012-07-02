@@ -10,33 +10,32 @@
 #include "debug.h"
 #include "ks0108.h"
 #include "flash.h"
-#include "keyboard.h"
 
-extern stMNUparam sParam;
-
-static enum eMNU_LVL eMenuLvl = MNU_LVL_START;
-
-static void lvlStart		(eKEY key);
-static void lvlParam		(eKEY key);
-static void lvlFirst		(eKEY key);
-static void clearTextBuf	(void);
-
-static void (*level []) (eKEY key) =
-{
-	lvlStart,
-	lvlParam,
-	lvlFirst
-};
+//static void (*level []) (eKEY key) =
+//{
+//	lvlStart,
+//	lvlParam,
+//	lvlFirst
+//};
 
 /// буфер текста выводимого на ЖКИ
-static char vLCDbuf[169];
+static char vLCDbuf[SIZE_BUF_STRING];
+
+clMenu::clMenu(stMNUparam *param) : sParam(param)
+{
+	lvlMenu = &clMenu::lvlStart;
+	lineParam = 3;
+
+	lvlCreate = true;
+}
 
 
 /**	Работа с текущим уровнем меню
  * 	@param Нет
  * 	@return Нет
  */
-void vMNUmain(void)
+void
+clMenu::main(void)
 {
 	// Счетчик времени до переинициализации ЖКИ
 	static uint8_t reInit = false;
@@ -52,42 +51,33 @@ void vMNUmain(void)
 		vLCDinit();
 	}
 
-	// считывание кода нажатой кнопки и переход в текущий уровень меню
-	// текстовый буфер предварительно очистим
-	clearTextBuf();
+	// Считаем код с клавиатуры, если кнопка нажата зажгем подсветку
 	eKEY tmp = eKEYget();
 	if (tmp != KEY_NO)
 	{
 		if (tmp == KEY_FUNC)
 			tmp = KEY_NO;
 		vLCDsetLED(LED_SWITCH);
+		key = tmp;
 	}
-	level[eMenuLvl](tmp);
 
-#ifdef DEBUG
-	static char cnt = 0;
-	static eKEY lastkey = KEY_NO;
-	if (tmp != KEY_NO)
+	// очистим буфер и нарисуем границы
+	// при необходимости создания уровня меню
+	if (lvlCreate)
 	{
-		if (tmp != lastkey)
-		{
-			lastkey = tmp;
-			cnt = 0;
-		}
-		else
-			cnt++;
+		vLCDclear();
+		vLCDdrawBoard(lineParam);
 	}
-	// вывод кода нажатой кнопки
-	snprintf(&vLCDbuf[84],  22, "UCSR1B = %02X", UCSR1B);
-	snprintf(&vLCDbuf[105], 22, "UCSR1C = %02X", UCSR1C);
-	snprintf(&vLCDbuf[126], 22, "UBRR1 = %02X%02X", UBRR1H, UBRR1L);
-	snprintf(&vLCDbuf[147], 22, "Кнопка %02X Нажатий %d", tmp, cnt);
-#endif
 
-	// очистка дисплея
-	vLCDclear();
-	// Преобразование строки символов в данные и вывод на ЖКИ
-	vLCDputchar(vLCDbuf);
+	// очистим текстовый буфер и перейдем на нужный уровень меню
+	clearTextBuf();
+	(this->*lvlMenu) ();
+	key = KEY_NO;
+
+	// Преобразование строки символов в данные для вывода на экран
+	//vLCDputchar(vLCDbuf, lineParam);
+
+	// запуск обновления инф-ии на ЖКИ
 	vLCDrefresh();
 }
 
@@ -95,20 +85,43 @@ void vMNUmain(void)
  * 	@param Нет
  * 	@return Нет
  */
-static void lvlStart(eKEY key)
+void
+clMenu::lvlStart()
 {
-	snprintf_P(&vLCDbuf[1] , 10, fcDate, sParam.day , sParam.month , sParam.year);
-	snprintf_P(&vLCDbuf[11], 10, fcTime, sParam.hour, sParam.minute, sParam.second);
-	snprintf_P(&vLCDbuf[22], 10, fcUout, sParam.voltOutInt, sParam.voltOutFract);
-	snprintf_P(&vLCDbuf[32], 10, fcUcf, sParam.voltCF);
-	snprintf_P(&vLCDbuf[43], 10, fcUn, 	sParam.voltNoise);
-	snprintf_P(&vLCDbuf[53], 10, fcUz, 	sParam.voltDef);
+	if (lvlCreate)
+	{
+		lvlCreate = false;
+
+	}
+
+	//snprintf_P(&vLCDbuf[0] , 10, fcDate, sParam.day , sParam.month , sParam.year);
+	snprintf_P(&vLCDbuf[00], 11, fcTime, sParam->hour, sParam->minute, sParam->second);
+	snprintf_P(&vLCDbuf[12], 11, fcUz, sParam->voltDef);
+	snprintf_P(&vLCDbuf[20], 11, fcUout, sParam->voltOutInt, sParam->voltOutFract);
+	snprintf_P(&vLCDbuf[32], 11, fcUcf, sParam->voltCF);
+	snprintf_P(&vLCDbuf[40], 11, fcIout, sParam->curOut);
+	snprintf_P(&vLCDbuf[52], 11, fcUn, sParam->voltNoise);
+
+	// вывод режима\состояния устройств
+	snprintf_P(&vLCDbuf[60], 21, fcDef, fcRegime[0], fcDefSost[0]);
+	snprintf_P(&vLCDbuf[80], 21, fcPrm, fcRegime[1], fcPrmSost[1]);
+	snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[2], fcPrdSost[2]);
 
 	switch(key)
 	{
-		case KEY_LEFT:
-		case KEY_RIGHT:
-			eMenuLvl = MNU_LVL_PARAM;
+		case KEY_UP:
+			if (lineParam > 0)
+				lineParam--;
+			lvlCreate = true;
+			break;
+		case KEY_DOWN:
+			if (lineParam < 6)
+				lineParam++;
+			lvlCreate = true;
+			break;
+
+		case KEY_ENTER:
+			lvlMenu = &clMenu::lvlParam;
 			break;
 
 		default:
@@ -120,8 +133,16 @@ static void lvlStart(eKEY key)
  * 	@param Нет
  * 	@return Нет
  */
-static void lvlParam(eKEY key)
+void
+clMenu::lvlParam()
 {
+	if (lvlCreate)
+	{
+		lvlCreate = false;
+
+		vLCDdrawBoard(lineParam);
+	}
+
 	uint16_t uUout = 251;
 
 	snprintf_P(&vLCDbuf[42], 10, fcUout, uUout/10, uUout%10);
@@ -135,7 +156,11 @@ static void lvlParam(eKEY key)
 	{
 		case KEY_LEFT:
 		case KEY_RIGHT:
-			eMenuLvl = MNU_LVL_START;
+
+			break;
+
+		case KEY_ENTER:
+			lvlMenu = &clMenu::lvlStart;
 			break;
 
 		default:
@@ -147,15 +172,21 @@ static void lvlParam(eKEY key)
  * 	@param Нет
  * 	@return Нет
  */
-static void lvlFirst(eKEY key)
+void
+clMenu::lvlFirst()
 {
+	if (lvlCreate)
+	{
+		lvlCreate = false;
+	}
 }
 
 /** Очистка текстового буфера
  * 	@param Нет
  * 	@return Нет
  */
-static void clearTextBuf(void)
+void
+clMenu::clearTextBuf()
 {
 	for(uint_fast8_t i = 0; i < sizeof(vLCDbuf);i++)
 		vLCDbuf[i] = ' ';

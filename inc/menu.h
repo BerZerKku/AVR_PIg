@@ -8,15 +8,10 @@
 #ifndef MENU_H_
 #define MENU_H_
 
+#include "keyboard.h"
+
 /// время до переинициализации дисплея (* время цикла ЖКИ)
 #define TIME_TO_REINIT_LCD 50
-
-enum eMNU_LVL
-{
-	MNU_LVL_START = 0,
-	MNU_LVL_PARAM,
-	MNU_LVL_FIRST
-};
 
 /// Структура параметров БСП
 struct stMNUparam
@@ -39,8 +34,34 @@ struct stMNUparam
 	uint16_t resistOut;
 };
 
-void vMNUmain	(void);
+class clMenu
+{
+public:
+	clMenu(stMNUparam *param);
+	void main	();
+
+	// возвращает кол-во линий отведенных для параметров
+	uint8_t getLineParam() { return lineParam; }
+
+private:
+	// код кнопки
+	eKEY key;
+	// кол-во отображаемых параметров
+	uint8_t lineParam;
+	// создание уровня меню
+	bool lvlCreate;
+
+	stMNUparam * const sParam;
+
+	void clearTextBuf();
+
+	void lvlStart	();
+	void lvlFirst	();
+	void lvlParam	();
+
+	void (clMenu:: *lvlMenu) ();
 
 
+};
 
 #endif /* MENU_H_ */

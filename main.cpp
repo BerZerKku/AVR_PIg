@@ -32,6 +32,8 @@ uint8_t uBufUart1[32];
 /// параметры БСП
 stMNUparam sParam;
 
+
+clMenu		menu	(&sParam);
 clUart 		uartPC	(UART1, uBufUart0, sizeof(uBufUart0) / sizeof(uBufUart0[0]));
 clUart 		uartBSP	(UART0, uBufUart1, sizeof(uBufUart1) / sizeof(uBufUart1[0]));
 clProtocolS	protPCs	(uBufUart0, sizeof(uBufUart1) / sizeof(uBufUart1[0]), &sParam);
@@ -84,16 +86,11 @@ main (void)
 			{
 				if (protPCs.checkCRC())
 				{
-					//uartPC.trData(sizeof(ppp), ppp);
-					//uartPC.trData(protS.trData(0x33, sizeof(ppp), ppp));
-					uartPC.trData(protPCs.trByte(0x22, 'A'));
+					uartPC.trData(protPCs.trCom(0x22, 'A'));
 				}
 
 				protPCs.clrRdy();
 			}
-
-
-			uartBSP.trData(sizeof(time), time);
 
 			// задачи выполняемые раз в 1с
 			if (++cnt_1s >= 10)
@@ -105,9 +102,13 @@ main (void)
 			// выполняется с периодом LCD_REFRESH_PERIOD * 100мс
 			if (++cnt_lcd >= LCD_REFRESH_PERIOD)
 			{
-				vMNUmain();
 				cnt_lcd = 0;
+
+				menu.main();
 			}
+
+			// Отправляем запрос в БСП
+			uartBSP.trData(sizeof(time), time);
 
 			b100ms = false;
 		}

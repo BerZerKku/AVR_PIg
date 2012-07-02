@@ -173,7 +173,8 @@ clUart::init(uint16_t baudrate)
 //	PORTD|=(1<<PORTD3);
 
 	// расчет скорости без установленного бита ускорения
-	tmp = (uint16_t) ( F_CPU / (16 * (uint32_t) baudrate)) - 1;
+	tmp = (uint16_t) ((F_CPU + baudrate * 8L) / (baudrate * 16L) - 1);
+	//tmp = (uint16_t) ( F_CPU / (16 * (uint32_t) baudrate)) - 1;
 	*ubbrh = (uint8_t) tmp >> 8;
 	*ubbrl = (uint8_t) tmp;
 

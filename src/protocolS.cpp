@@ -43,7 +43,7 @@ clProtocolS::checkCRC()
  * 	@return Кол-во отправляемых байт данных
  */
 uint8_t
-clProtocolS::trData(uint8_t com, uint8_t size, const uint8_t *buf)
+clProtocolS::trCom(uint8_t com, uint8_t size, const uint8_t *buf)
 {
 	uint8_t cnt = 0;
 
@@ -54,15 +54,14 @@ clProtocolS::trData(uint8_t com, uint8_t size, const uint8_t *buf)
 		this->buf[cnt++] = com;
 		this->buf[cnt++] = size;
 
-		// Скопируем данные в буфер
+		// Скопируем данные в буфер передатчика
 		for(uint8_t i = 0; i < size; i++, cnt++)
 			this->buf[cnt] = buf[i];
 
-		setCRC();
+		this->buf[cnt++] = getCRC();
 	}
 
-	// +1 - учет контрольной суммы
-	return (cnt + 1);
+	return cnt;
 }
 
 /**	Заполнение буфера для отправки одного байта данных
@@ -71,7 +70,7 @@ clProtocolS::trData(uint8_t com, uint8_t size, const uint8_t *buf)
  * 	@return Кол-во отправляемых байт данных
  */
 uint8_t
-clProtocolS::trByte(uint8_t com, uint8_t byte)
+clProtocolS::trCom(uint8_t com, uint8_t byte)
 {
 	uint8_t cnt = 0;
 
@@ -80,17 +79,57 @@ clProtocolS::trByte(uint8_t com, uint8_t byte)
 		this->buf[cnt++] = 0x55;
 		this->buf[cnt++] = 0xAA;
 		this->buf[cnt++] = com;
-		this->buf[cnt++] = 01;
+		this->buf[cnt++] = 0x01;
 		this->buf[cnt++] = byte;
-
-		setCRC();
+		this->buf[cnt++] = com + 0x01 + byte;
 	}
 
-	// +1 - учет контрольной суммы
-	return (cnt + 1);
+	return cnt;
 }
 
-/** Обработка принятой посылки, извлекаем данные
+/**	Заполнение буфера для отправки команды без данных
+ * 	@param *buf Указатель на начало данных
+ * 	@param size Кол-во байт данных
+ * 	@return Кол-во отправляемых байт данных
+ */
+uint8_t
+clProtocolS::trCom(uint8_t com)
+{
+	uint8_t cnt = 0;
+
+	if (size >= 4)
+	{
+		this->buf[cnt++] = 0x55;
+		this->buf[cnt++] = 0xAA;
+		this->buf[cnt++] = com;
+		this->buf[cnt++] = 00;
+		this->buf[cnt++] = com;
+	}
+
+	return cnt;
+}
+
+/** Отправка запроса
+ * 	@param com Код команды
+ * 	@param val Байт данных, если необходимо
+ * 	@return кол-во передаваемых байт данных
+ */
+uint8_t
+clProtocolS::addCom(uint8_t com, ePRTS_ACTION act)
+{
+	uint8_t cnt = 0;
+
+	if (act == PRTS_READ_COM)
+	{
+		trCom(0x34, 00);
+	}
+	else
+		trCom(com);
+
+	return cnt;
+}
+
+/** Обработка принятой посылки, извлечение данных
  * 	@param Нет
  * 	@return false - если такой команды нет
  */
@@ -128,19 +167,18 @@ clProtocolS::getData()
  * 	@return false - в случае нехватки места в буфере для КС
  *
  */
-bool
-clProtocolS::setCRC()
+uint8_t
+clProtocolS::getCRC()
 {
 	uint8_t crc = 0;
 	uint8_t len = buf[3] + 5;
 	uint8_t i = 2;
 
 	if (len > size)
-		return false;
+		return 0;
 
 	for(; i < (len - 1); i++)
 		crc += buf[i];
-	buf[i] = crc;
 
-	return true;
+	return crc;
 }

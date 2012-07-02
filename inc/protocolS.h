@@ -10,19 +10,28 @@
 
 #include <menu.h>
 
+enum ePRTS_ACTION
+{
+	PRTS_READ_COM,
+	PRTS_WRITE_COM
+};
+
 class clProtocolS
 {
 public:
-	clProtocolS(uint8_t *buf, uint8_t size, stMNUparam *param);
+	clProtocolS		(uint8_t *buf, uint8_t size, stMNUparam *param);
 
 	bool checkCRC	();
-	uint8_t trData	(uint8_t com, uint8_t size, const uint8_t * buf);
-	uint8_t trByte	(uint8_t com, uint8_t byte);
+	uint8_t trCom	(uint8_t com);
+	uint8_t trCom	(uint8_t com, uint8_t byte);
+	uint8_t trCom	(uint8_t com, uint8_t size, const uint8_t * buf);
+
+	uint8_t addCom	(uint8_t com, ePRTS_ACTION act);
 	bool getData	();
 
-	// ѕроверка прин€того байта на соответствие протоколу
-	// возвращает false в случае ошибки
-	// !!! ѕомещаетс€ в прерывание по приему
+	/// ѕроверка прин€того байта на соответствие протоколу
+	/// возвращает false в случае ошибки
+	/// !!! ѕомещаетс€ в прерывание по приему
 	bool checkByte(uint8_t byte)
 	{
 		switch(cnt)
@@ -87,11 +96,11 @@ private:
 	bool rdy;
 	// “екущее состо€ние протокола. true - запущен
 	bool enable;
-	//
+	// ”казатель на структуру параметров
 	stMNUparam *param;
 
-	// добавление к посылке контрольной суммы
-	bool setCRC();
+	// вычисление контрольной суммы содержимого буфера
+	uint8_t getCRC();
 };
 
 

@@ -19,6 +19,7 @@ static eLCD_LED eLed = LED_OFF;
 /// обновление информации
 static volatile bool bRefresh = false;
 
+static void vLCDdrawSymb(uint16_t poz, uint8_t val);
 
 /**	Проверка флага занятости ЖКИ
  * 	@param Нет
@@ -139,7 +140,7 @@ vLCDinit(void)
 	}
     vLCDsetXY(0, 0);
     _delay_us(2);
-    vLCDcom(0xc0, PIN_CS);
+    vLCDcom(0xc4, PIN_CS);
     _delay_us(2);
     vLCDcom(0x3f, PIN_CS);
     _delay_us(5);
@@ -154,7 +155,7 @@ vLCDinit(void)
 void
 vLCDsetXY(uint8_t x, uint8_t y)
 {
-	uCnt = (y * 128) + x - 1;
+	uCnt = (y * NUM_POINT_HOR) + x - 1;
 }
 
 /** Старт обновления содержимого ЖКИ
@@ -208,8 +209,8 @@ vLCDmain(void)
 
 		if (x < 64)
 		{
-			vLCDdata(uBuf[x + y * 128], PIN_CS1);
-			vLCDdata(uBuf[x + 64 + y * 128], PIN_CS2);
+			vLCDdata(uBuf[x + y * NUM_POINT_HOR], PIN_CS1);
+			vLCDdata(uBuf[x + 64 + y * NUM_POINT_HOR], PIN_CS2);
 			x++;
 		}
 		else if (y < 7)
@@ -228,48 +229,42 @@ vLCDmain(void)
 
 /** Вывод строки на экран
  *	@param symb Символ
- *	@return Нет
+ *	@param num Кол-во линий для параметров
+ *	@return true - в случае удачного вывода
  */
-void
-vLCDputchar(const char* buf)
+bool
+vLCDputchar(const char* buf, uint8_t num)
 {
-	uint_fast8_t tmp;
-	uint_fast16_t cnt = 0;
+	uint_fast16_t poz = 0;
 
-	for(uint_fast8_t j = 0; j < 168; j++)
+	if ( (num != 2) && (num != 3) )
+		return false;
+
+	// вывод параметров
+	// начало : вторая строка дисплея + смещение от края на 4 точек
+	poz = NUM_POINT_HOR + 4;
+	for (uint_fast8_t i = 0; i < 20 * num; i++, poz += 6)
 	{
-		tmp = *buf;
+		vLCDdrawSymb(poz, *buf++);
 
-		if (j % 21 == 0)
-			uBuf[cnt++] = 0;
-
-		if (tmp < 0x20)
-			tmp = 0;
-		else if (tmp < 0x80)
-			tmp -= 0x20;
-		else if (tmp >= 0xC0)
-			tmp -= 0x60;
-		else
-			tmp = 0;
-
-		for(uint_fast8_t i = 0; i < 5; i++)
-		{
-			uBuf[cnt++] = pgm_read_byte(&sym[tmp] [i]);
-		}
-
-		uBuf[cnt++] = 0;
-
-
-		// в строке 21 символ
-		// первый и последний столбец обнуляем
-		if (j % 21 == 0)
-			uBuf[cnt++] = 0;
-
-		if (cnt >= 1024)
-			cnt = 0;
-
-		buf++;
+		// если достигли конца строки, сделаем сдвижку на 8 пунктов
+		if ( (i == 19) || (i == 39) )
+			poz += 8;
 	}
+
+	// вывод основного меню
+	// начало : пятая строка дисплея + смещение от края на 4 точеки
+	poz = (num +2) * NUM_POINT_HOR + 4;
+	for (uint_fast8_t i = 20 * num; i < SIZE_BUF_STRING; i++, poz += 6)
+	{
+		vLCDdrawSymb(poz, *buf++);
+
+		// если достигли конца строки. сделаем сдвижку на 10 пунктов
+		if ( (i == 59) || (i == 79) || (i == 99) )
+			poz += 8;
+	}
+
+	return true;
 }
 
 /**	Управление подсветкой ЖКИ
@@ -286,4 +281,88 @@ vLCDsetLED(eLCD_LED val)
 		uLedTimeOn = LCD_TIME_LED_ON;
 	else
 		eLed = val;
+}
+
+/** Рисование рамки
+ * 	@param num Кол-во линий параметров 2 или 3
+ * 	@return true - в случае успешной отрисовки
+ */
+bool
+vLCDdrawBoard(uint8_t num)
+{
+	// задано ошибочное кол-во строк для отображения параметров
+	if ( num > 6 )
+		return false;
+
+	uint16_t poz = 0;
+
+	// нарисуем основную рамку
+
+	// горизонтальные границы
+	for(uint8_t i = 3; i < 125; i++)
+	{
+		uBuf[i] = 0x5A;
+	}
+
+	// вертикальные границы
+	poz = 128;
+	for(uint8_t i = 0; i < 7; i++, poz+= NUM_POINT_HOR)
+	{
+		uBuf[poz] = 0xff;
+		uBuf[poz + 2] = 0xff;
+		uBuf[poz + 125] = 0xff;
+		uBuf[poz + 127] = 0xff;
+	}
+
+	// углы
+	uBuf[0] = uBuf[127] = 0xff;
+	uBuf[1] = uBuf[126] = 0x18;
+	uBuf[2] = uBuf[125] = 0xDB;
+
+	// нарисуем разделение на два поля, если надо
+
+	if (num < 7)
+	{
+		// горизонтальная граница
+		poz = (num + 1) * NUM_POINT_HOR + 3;
+		for(uint8_t i = 3; i < 125; i++)
+		{
+			uBuf[poz++] =  0x5A;
+		}
+
+		// углы
+		poz = (num + 1) * NUM_POINT_HOR;
+		uBuf[poz + 1] = uBuf[poz + 127 - 1] = 0x18;
+		uBuf[poz + 2] = uBuf[poz + 127 - 2] = 0xDB;
+	}
+
+
+
+
+	return true;
+}
+
+/** Преобразивание символа в данные для вывода на экран
+ * 	@param poz Начальная позиция в буфере
+ * 	@param val символ
+ */
+static void
+vLCDdrawSymb(uint16_t poz, uint8_t val)
+{
+	// установим соответствие между символом и имеющейся таблицей данных
+	if (val < 0x20)
+			val = 0;
+	else if (val < 0x80)
+		val -= 0x20;
+	else if (val >= 0xC0)
+		val -= 0x60;
+	else
+		val = 0;
+
+	// копируем значения из таблицы в буфер
+	for(uint_fast8_t i = 0; i < 5; i++)
+	{
+		uBuf[poz++] = pgm_read_byte(&sym[val] [i]);
+	}
+	uBuf[poz] = 0;
 }

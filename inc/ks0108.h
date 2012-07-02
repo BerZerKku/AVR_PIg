@@ -46,6 +46,14 @@ enum eLCD_LED
 #define PORT_LED	PORTD
 #define PIN_LED		(1 << PD5)
 
+// размер массива данных
+#define SIZE_BUF_STRING 120
+// кол-во точек по горизонтали
+#define NUM_POINT_HOR 128
+#define NUM_POINT_VERT 64
+#define NUM_LINE (NUM_PINT_VERT / 8)
+
+
 bool vLCDcheckBusy	(void);
 void vLCDclear		(void);
 void vLCDcom		(uint8_t com, uint8_t cs);
@@ -54,8 +62,8 @@ void vLCDinit		(void);
 void vLCDmain		(void);
 void vLCDrefresh	(void);
 void vLCDsetXY		(uint8_t x, uint8_t y);
-
-void vLCDputchar	(const char* buf);
+bool vLCDdrawBoard	(uint8_t num);
+bool vLCDputchar	(const char* buf, uint8_t num);
 
 void vLCDsetLED		(eLCD_LED val);
 
