@@ -38,6 +38,8 @@ class clMenu
 {
 public:
 	clMenu(stMNUparam *param);
+
+	// тело
 	void main	();
 
 	// возвращает кол-во линий отведенных для параметров
@@ -50,18 +52,36 @@ private:
 	uint8_t lineParam;
 	// создание уровня меню
 	bool lvlCreate;
+	// положение курсора
+	uint8_t cursorLine;
+	// состояние курсора
+	bool cursorEnable;
 
 	stMNUparam * const sParam;
 
+	// очистка текстового буфера
 	void clearTextBuf();
 
-	void lvlStart	();
-	void lvlFirst	();
-	void lvlParam	();
+	// Уровни меню
+	void lvlStart();
+	void lvlFirst();
+	void lvlJournal();
+	void lvlJournalEvent();
+	void lvlJournalDef();
+	void lvlJournalPrm();
+	void lvlJournalPrd();
+	void lvlControl();
+	void lvlSetup();
+	void lvlSetupParam();
+	void lvlSetupParamDef();
+	void lvlSetupParamPrm();
+	void lvlSetupParamPrd();
+	void lvlSetupParamGlb();
+	void lvlSetupDT();
+	void lvlInfo();
 
+	// текущий уровень меню
 	void (clMenu:: *lvlMenu) ();
-
-
 };
 
 #endif /* MENU_H_ */

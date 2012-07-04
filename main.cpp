@@ -64,8 +64,6 @@ main (void)
 	uartBSP.init(4800);
 	protBSPs.setEnable();
 
-	sParam.voltCF = -13;
-
 	while(1)
 	{
 		if (b100ms)

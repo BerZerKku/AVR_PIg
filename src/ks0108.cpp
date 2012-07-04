@@ -237,7 +237,7 @@ vLCDputchar(const char* buf, uint8_t num)
 {
 	uint_fast16_t poz = 0;
 
-	if ( (num != 2) && (num != 3) )
+	if ( num > 7 )
 		return false;
 
 	// вывод параметров
@@ -248,7 +248,7 @@ vLCDputchar(const char* buf, uint8_t num)
 		vLCDdrawSymb(poz, *buf++);
 
 		// если достигли конца строки, сделаем сдвижку на 8 пунктов
-		if ( (i == 19) || (i == 39) )
+		if ( (i % 20)  == 19)
 			poz += 8;
 	}
 
@@ -260,7 +260,7 @@ vLCDputchar(const char* buf, uint8_t num)
 		vLCDdrawSymb(poz, *buf++);
 
 		// если достигли конца строки. сделаем сдвижку на 10 пунктов
-		if ( (i == 59) || (i == 79) || (i == 99) )
+		if ( (i % 20) == 19 )
 			poz += 8;
 	}
 
