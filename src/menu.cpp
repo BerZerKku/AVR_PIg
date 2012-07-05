@@ -29,6 +29,8 @@ clMenu::clMenu(stMNUparam *param) : sParam(param)
 	sParam->curOut = 133;
 
 	cursorEnable= false;
+
+	vLCDsetLED(LED_ON);
 }
 
 
