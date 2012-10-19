@@ -34,6 +34,14 @@ struct stMNUparam
 	uint16_t resistOut;
 };
 
+enum eMNU_TYPE_DEVICE
+{
+	AVANT_R400 = 1,
+	AVANT_R400_MSK,
+	AVANT_RZSK,
+	AVANT_K400
+};
+
 class clMenu
 {
 public:
@@ -44,6 +52,9 @@ public:
 
 	// возвращает кол-во линий отведенных для параметров
 	uint8_t getLineParam() { return lineParam; }
+
+	// установка типа аппарата
+	void setTypeDevice(eMNU_TYPE_DEVICE device) {typeDevice = device;}
 
 private:
 	// код кнопки
@@ -56,6 +67,8 @@ private:
 	uint8_t cursorLine;
 	// состояние курсора
 	bool cursorEnable;
+	// тип аппарата
+	eMNU_TYPE_DEVICE typeDevice;
 
 	stMNUparam * const sParam;
 

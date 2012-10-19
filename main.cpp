@@ -64,6 +64,10 @@ main (void)
 	uartBSP.init(4800);
 	protBSPs.setEnable();
 
+
+	// зададим тип аппарата
+	menu.setTypeDevice(AVANT_K400);
+
 	while(1)
 	{
 		if (b100ms)
