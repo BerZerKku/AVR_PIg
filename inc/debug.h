@@ -17,6 +17,14 @@
 #define PIN_TP1		(1 << 6)
 #define PIN_TP2		(1 << 7)
 
+#define SET_TP1 PORTE |= PIN_TP1
+#define CLR_TP1 PORTE &= ~PIN_TP1
+#define TOG_TP1 PORTE ^= PIN_TP1
+
+#define SET_TP2 PORTE |= PIN_TP2
+#define CLR_TP2 PORTE &= ~PIN_TP2
+#define TOG_TP2 PORTE ^= PIN_TP2
+
 struct stDebug
 {
 	uint8_t byte1;

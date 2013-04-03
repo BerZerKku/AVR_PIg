@@ -56,7 +56,9 @@ vSETUP(void)
 	// Порт Е
 	// PORTE.0 = RXD0	- альтер.
 	// PORTE.1 = TXD0	- альтер.
-	DDRE = 0x00;
+	// PORTE.6 = TP1 	- выход 0
+	// PORTE.7 = TP2 	- выход 0
+	DDRE = (1 << PE7) | (1 << PE6);
 	PORTE = ~((1 << PE1) | (1 << PE0));
 
 	// Порт F

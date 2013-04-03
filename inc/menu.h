@@ -61,7 +61,19 @@ public:
 	uint8_t getLineParam() { return lineParam; }
 
 	// установка типа аппарата
-	void setTypeDevice(eMNU_TYPE_DEVICE device) {typeDevice = device;}
+	void setTypeDevice(eMNU_TYPE_DEVICE device)
+	{
+		typeDevice = device;
+	}
+
+	// возвращает текущий тип аппарата
+	eMNU_TYPE_DEVICE getTypeDevice()
+	{
+		return typeDevice;
+	}
+
+	// возвращает имеющуюся команду на исполнение
+	uint8_t txCommand();
 
 private:
 	// код кнопки
@@ -76,12 +88,13 @@ private:
 	bool cursorEnable;
 	// тип аппарата
 	eMNU_TYPE_DEVICE typeDevice;
+	// команда на исполнение
+	uint8_t com;
 
 	stMNUparam * const sParam;
 
 	// очистка текстового буфера
 	void clearTextBuf();
-
 	// Уровни меню
 	void lvlStart();
 	void lvlFirst();

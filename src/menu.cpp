@@ -32,6 +32,7 @@ clMenu::clMenu(stMNUparam *param) : sParam(param)
 	cursorLine = 0;
 	key = KEY_NO;
 	typeDevice = AVANT_R400;
+	com = 0;
 
 	vLCDsetLED(LED_ON);
 }
@@ -161,6 +162,18 @@ clMenu::lvlStart()
 		case KEY_ENTER:
 			lvlMenu = &clMenu::lvlFirst;
 			lvlCreate = true;
+			break;
+
+		case KEY_FUNC_RES_IND:
+			com = 1;
+			break;
+
+		case KEY_FUNC_ENTER:
+			com = 2;
+			break;
+
+		case KEY_FUNC_RESET:
+			com = 3;
 			break;
 
 		default:
@@ -1448,4 +1461,13 @@ clMenu::lvlSetupDT()
 		default:
 			break;
 	}
+}
+
+uint8_t
+clMenu::txCommand()
+{
+	uint_fast8_t t = com;
+	com = 0;
+
+	return t;
 }

@@ -50,7 +50,9 @@ main (void)
 	uint_fast8_t cnt_1s = 0;
 
 	uint8_t time[] = {0x55, 0xAA, 0x32, 0x00, 0x32};
-	uint8_t clear[] = {0x55, 0xAA, 0x32, 0x00, 0x32};
+	uint8_t clear[] = {0x55, 0xAA, 0xAA, 0x00, 0xAA};
+	uint8_t pusk[] = {0x55, 0xAA, 0x51, 0x00, 0x51};
+	uint8_t reset[] = {0x55, 0xAA, 0x72, 0x01, 0x01, 0x74};
 
 	vSETUP();
 	sei();
@@ -109,7 +111,40 @@ main (void)
 			}
 
 			// Отправляем запрос в БСП
-			uartBSP.trData(sizeof(time), time);
+			uint8_t com = menu.txCommand();
+			if (com != 0)
+			{
+				eMNU_TYPE_DEVICE type = menu.getTypeDevice();
+
+				// сброс индикации
+				if (com == 1)
+				{
+					if ( (type == AVANT_K400_OPTIC) ||
+						 (type == AVANT_R400) ||
+						 (type == AVANT_RZSK) )
+					{
+						uartBSP.trData(sizeof(clear), clear);
+					}
+				}
+				else if (com == 2)
+				{
+					if ( (type == AVANT_K400_OPTIC) ||
+						 (type == AVANT_R400) ||
+						 (type == AVANT_RZSK) )
+					{
+						uartBSP.trData(sizeof(pusk), pusk);
+					}
+				}
+				else if (com == 3)
+				{
+					uartBSP.trData(sizeof(reset), reset);
+
+					SET_TP2;
+					CLR_TP2;
+				}
+			}
+			else
+				uartBSP.trData(sizeof(time), time);
 
 			b100ms = false;
 		}
@@ -225,3 +260,4 @@ ISR(USART0_RX_vect)
 		}
 	}
 }
+
