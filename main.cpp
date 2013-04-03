@@ -32,7 +32,6 @@ uint8_t uBufUart1[32];
 /// параметры БСП
 stMNUparam sParam;
 
-
 clMenu		menu	(&sParam);
 clUart 		uartPC	(UART1, uBufUart0, sizeof(uBufUart0) / sizeof(uBufUart0[0]));
 clUart 		uartBSP	(UART0, uBufUart1, sizeof(uBufUart1) / sizeof(uBufUart1[0]));
@@ -51,6 +50,7 @@ main (void)
 	uint_fast8_t cnt_1s = 0;
 
 	uint8_t time[] = {0x55, 0xAA, 0x32, 0x00, 0x32};
+	uint8_t clear[] = {0x55, 0xAA, 0x32, 0x00, 0x32};
 
 	vSETUP();
 	sei();
@@ -64,9 +64,8 @@ main (void)
 	uartBSP.init(4800);
 	protBSPs.setEnable();
 
-
 	// зададим тип аппарата
-	menu.setTypeDevice(AVANT_K400);
+	menu.setTypeDevice(AVANT_K400_OPTIC);
 
 	while(1)
 	{

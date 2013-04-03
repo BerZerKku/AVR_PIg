@@ -39,8 +39,15 @@ enum eMNU_TYPE_DEVICE
 	AVANT_R400 = 1,
 	AVANT_R400_MSK,
 	AVANT_RZSK,
-	AVANT_K400
+	AVANT_K400,
+	AVANT_K400_OPTIC
 };
+
+enum eMNU_TYPE_LINE
+{
+	UM,
+};
+
 
 class clMenu
 {
@@ -48,7 +55,7 @@ public:
 	clMenu(stMNUparam *param);
 
 	// тело
-	void main	();
+	void main();
 
 	// возвращает кол-во линий отведенных для параметров
 	uint8_t getLineParam() { return lineParam; }

@@ -140,7 +140,15 @@ clMenu::lvlStart()
 		snprintf_P(&vLCDbuf[80], 21, fcPrm, fcRegime[2], fcPrmSost[1]);
 		snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[2], fcPrdSost[1]);
 	}
+	else if (typeDevice == AVANT_K400_OPTIC)
+	{
+		snprintf_P(&vLCDbuf[00], 11, fcTime, sParam->hour, sParam->minute, sParam->second);
+		snprintf_P(&vLCDbuf[12], 11, fcDate, sParam->day, sParam->month, sParam->year);
 
+		// вывод режима\состояния устройств
+		snprintf_P(&vLCDbuf[80], 21, fcPrm, fcRegime[2], fcPrmSost[1]);
+		snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[2], fcPrdSost[1]);
+	}
 
 
 	switch(key)
@@ -332,6 +340,13 @@ clMenu::lvlJournal()
 			punkt[numPunkt++] = punkt4;
 		}
 		else if (typeDevice == AVANT_K400)
+		{
+			numPunkt = 0;
+			punkt[numPunkt++] = punkt1;
+			punkt[numPunkt++] = punkt3;
+			punkt[numPunkt++] = punkt4;
+		}
+		else if (typeDevice == AVANT_K400_OPTIC)
 		{
 			numPunkt = 0;
 			punkt[numPunkt++] = punkt1;
@@ -724,6 +739,12 @@ clMenu::lvlControl()
 			punkt[numPunkt++] = punkt3;
 			punkt[numPunkt++] = punkt4;
 		}
+		else if (typeDevice == AVANT_K400_OPTIC)
+		{
+			numPunkt = 0;
+			punkt[numPunkt++] = punkt3;
+			punkt[numPunkt++] = punkt4;
+		}
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -878,6 +899,13 @@ clMenu::lvlSetupParam()
 			punkt[numPunkt++] = punkt4;
 		}
 		else if (typeDevice == AVANT_K400)
+		{
+			numPunkt = 0;
+			punkt[numPunkt++] = punkt2;
+			punkt[numPunkt++] = punkt3;
+			punkt[numPunkt++] = punkt4;
+		}
+		else if (typeDevice == AVANT_K400_OPTIC)
 		{
 			numPunkt = 0;
 			punkt[numPunkt++] = punkt2;
@@ -1217,111 +1245,145 @@ clMenu::lvlSetupParamGlb()
 	static char title[] PROGMEM = "Параметры\\Общие";
 
 	static char punkt1[] [21] PROGMEM =
-		{
-				"Номер: 1  Всего: 7",
-				"Контроль вых.сигнала",
-				"Значение: вкл.",
-				"Диапазон: список"
-		};
-		static char punkt2[] [21] PROGMEM =
-		{
-				"Номер: 2  Всего: 7",
-				"Время перезапуска",
-				"Значение: 5сек",
-				"Диапазон: 0..5сек"
-		};
-		static char punkt3[] [21] PROGMEM =
-		{
-				"Номер: 3  Всего: 7",
-				"Порог предупр. по КЧ",
-				"Значение: 10дБ",
-				"Диапазон: 0..15дБ"
-		};
-		static char punkt4[] [21] PROGMEM =
-		{
-				"Номер: 4  Всего: 7",
-				"Удерж. реле ком. ПРД",
-				"Значение: выкл.",
-				"Диапазон: список"
-		};
-		static char punkt5[] [21] PROGMEM =
-		{
-				"Номер: 5  Всего: 7",
-				"Удерж. реле ком. ПРМ",
-				"Значение: выкл.",
-				"Диапазон: список"
-		};
-		static char punkt6[] [21] PROGMEM =
-		{
-				"Номер: 6  Всего: 7",
-				"Загруб.чувств. по РЗ",
-				"Значение: 0дБ",
-				"Диапазон: 0..32дБ"
-		};
-		static char punkt7[] [21] PROGMEM =
-		{
-				"Номер: 7  Всего: 7",
-				"Протокол связи",
-				"Значение: стандарт",
-				"Диапазон: список"
-		};
+	{
+			"Номер: 1  Всего: 7",
+			"Контроль вых.сигнала",
+			"Значение: вкл.",
+			"Диапазон: список"
+	};
+	static char punkt2[] [21] PROGMEM =
+	{
+			"Номер: 2  Всего: 7",
+			"Время перезапуска",
+			"Значение: 5сек",
+			"Диапазон: 0..5сек"
+	};
+	static char punkt3[] [21] PROGMEM =
+	{
+			"Номер: 3  Всего: 7",
+			"Порог предупр. по КЧ",
+			"Значение: 10дБ",
+			"Диапазон: 0..15дБ"
+	};
+	static char punkt4[] [21] PROGMEM =
+	{
+			"Номер: 4  Всего: 7",
+			"Удерж. реле ком. ПРД",
+			"Значение: выкл.",
+			"Диапазон: список"
+	};
+	static char punkt5[] [21] PROGMEM =
+	{
+			"Номер: 5  Всего: 7",
+			"Удерж. реле ком. ПРМ",
+			"Значение: выкл.",
+			"Диапазон: список"
+	};
+	static char punkt6[] [21] PROGMEM =
+	{
+			"Номер: 6  Всего: 7",
+			"Загруб.чувств. по РЗ",
+			"Значение: 0дБ",
+			"Диапазон: 0..32дБ"
+	};
+	static char punkt7[] [21] PROGMEM =
+	{
+			"Номер: 7  Всего: 7",
+			"Протокол связи",
+			"Значение: стандарт",
+			"Диапазон: список"
+	};
 
-		if (lvlCreate)
-		{
-			lvlCreate = false;
+	if (lvlCreate)
+	{
+		lvlCreate = false;
 
-			cursorLine = 1;
-			cursorEnable = true;
+		cursorLine = 1;
+		if (typeDevice == AVANT_K400_OPTIC)
+			cursorLine = 2;
+		cursorEnable = true;
 
-			lineParam = 1;
-			vLCDclear();
-			vLCDdrawBoard(lineParam);
-		}
+		lineParam = 1;
+		vLCDclear();
+		vLCDdrawBoard(lineParam);
+	}
 
-		snprintf_P(&vLCDbuf[0], 21, title);
+	snprintf_P(&vLCDbuf[0], 21, title);
 
-		for(uint_fast8_t i = 0; i < 4; i++)
-		{
-			if (cursorLine == 1)
-				snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt1[i]);
-			else if (cursorLine == 2)
-				snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt2[i]);
-			else if (cursorLine == 3)
-				snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt3[i]);
-			else if (cursorLine == 4)
-				snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt4[i]);
-			else if (cursorLine == 5)
-				snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt5[i]);
-			else if (cursorLine == 6)
-				snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt6[i]);
-			else if (cursorLine == 7)
-				snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt7[i]);
-		}
 
-		switch(key)
-		{
-			case KEY_UP:
-				if (cursorLine > 1)
+
+	for(uint_fast8_t i = 0; i < 4; i++)
+	{
+		if (cursorLine == 1)
+			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt1[i]);
+		else if (cursorLine == 2)
+			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt2[i]);
+		else if (cursorLine == 3)
+			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt3[i]);
+		else if (cursorLine == 4)
+			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt4[i]);
+		else if (cursorLine == 5)
+			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt5[i]);
+		else if (cursorLine == 6)
+			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt6[i]);
+		else if (cursorLine == 7)
+			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt7[i]);
+	}
+
+	switch(key)
+	{
+		case KEY_UP:
+			if (cursorLine > 1)
+				cursorLine--;
+
+			if (typeDevice == AVANT_K400)
+			{
+				if (cursorLine == 6)
+					cursorLine = 5;
+			}
+			else if (typeDevice == AVANT_K400_OPTIC)
+			{
+				if (cursorLine <= 2)
+					cursorLine = 2;
+
+				if ((cursorLine == 3) || (cursorLine == 6))
+				{
 					cursorLine--;
-				break;
-			case KEY_DOWN:
-				if (cursorLine < 7)
+				}
+			}
+
+			break;
+		case KEY_DOWN:
+			if (cursorLine < 7)
+				cursorLine++;
+
+			if (typeDevice == AVANT_K400)
+			{
+				if (cursorLine == 6)
+					cursorLine = 7;
+			}
+			else if (typeDevice == AVANT_K400_OPTIC)
+			{
+				if ((cursorLine == 3) || (cursorLine == 6))
+				{
 					cursorLine++;
-				break;
+				}
+			}
+			break;
 
-			case KEY_LEFT:
-				lvlMenu = &clMenu::lvlSetupParam;
-				lvlCreate = true;
-				break;
-			case KEY_RIGHT:
-				break;
+		case KEY_LEFT:
+			lvlMenu = &clMenu::lvlSetupParam;
+			lvlCreate = true;
+			break;
+		case KEY_RIGHT:
+			break;
 
-			case KEY_ENTER:
-				break;
+		case KEY_ENTER:
+			break;
 
-			default:
-				break;
-		}
+		default:
+			break;
+	}
 }
 
 /** Уровень меню. Настройка дата/время.
