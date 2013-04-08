@@ -140,11 +140,31 @@ clProtocolS::getData()
 	switch(buf[2])
 	{
 		case 0x30:
-			sDebug.byte1= 0x30;
+			param->def_regime = buf[4];
+			param->def_sost = buf[5];
+			param->def_dop = buf[6];
+
+			param->prm_regime = buf[7];
+			param->prm_sost = buf[8];
+			param->prm_dop = buf[9];
+
+			param->prd_regime = buf[10];
+			param->prd_sost = buf[11];
+			param->prd_dop = buf[12];
 			tmp = true;
 			break;
 		case 0x31:
-			sDebug.byte1= 0x31;
+			param->def_avar = (((uint16_t) buf[4]) << 8) + buf[5];
+			param->def_warn = buf[6];
+
+			param->prm_avar = (((uint16_t) buf[8]) << 8) + buf[9];
+			param->prm_warn = buf[11];
+
+			param->prd_avar = (((uint16_t) buf[12]) << 8) + buf[13];
+			param->prd_warn = buf[15];
+
+			param->glb_avar = (((uint16_t) buf[16]) << 8) + buf[17];
+			param->glb_warn = buf[19];
 			tmp = true;
 			break;
 		case 0x32:

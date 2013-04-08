@@ -7,6 +7,8 @@
 
 #include <avr/pgmspace.h>
 
+const char fcNull[] PROGMEM = "";
+
 const char fcUout[] PROGMEM = "U=%u.%uВ";
 const char fcIout[] PROGMEM	= "I=%uмА";
 const char fcRout[] PROGMEM = "R=%uОм";
@@ -19,7 +21,6 @@ const char fcTime[] PROGMEM = "%02X:%02X:%02X";
 const char fcDef[] PROGMEM = "ЗАЩ:%S%S";
 const char fcPrm[] PROGMEM = "ПРМ:%S%S";
 const char fcPrd[] PROGMEM = "ПРД:%S%S";
-
 
 const char fcDDD[] PROGMEM = "Проверка";
 
@@ -105,6 +106,16 @@ const char fcGlbError[] [17] PROGMEM =
 	"Неиспр. 0х8000  "	// 0х8000
 };
 
+// Предупреждения общие
+const char fcGlbWarning[] [17] PROGMEM =
+{
+	"Установите часы ", // 0x0001
+	"Отказ резерв.лин", // 0х0002
+	"Удал.пост неиспр", // 0х0004
+	"Удал.ПРД неиспр.", // 0х0008
+	"Удал.ПРМ неиспр."	// 0x0010
+};
+
 // Неисправности защиты
 const char fcDefError[] [17] PROGMEM =
 {
@@ -147,6 +158,15 @@ const char fcPrmError[] [17] PROGMEM =
 	"Прием блок. Ком."	// 0х8000
 };
 
+// Предупреждения приемника
+const char fcPrmWarningOptic[] [17] PROGMEM =
+{
+	"Нет КЧ          ", // 0x0001
+	"Предупр. 0х0002 ", // 0х0002
+	"Предупр. 0х0004 ", // 0х0004
+	"Предупр. 0х0008 "  // 0х0008
+};
+
 // Неисправности передатчика
 const char fcPrdError[] [17] PROGMEM =
 {
@@ -167,3 +187,13 @@ const char fcPrdError[] [17] PROGMEM =
 	"Неиспр. 0х4000  ",	// 0х4000
 	"Неиспр. 0х8000  "	// 0х8000
 };
+
+// Предупреждения передатчика
+const char fcPrdWarning[] [17] PROGMEM =
+{
+	"Предупр. 0х0001 ", // 0x0001
+	"Предупр. 0х0002 ", // 0х0002
+	"Предупр. 0х0004 ", // 0х0004
+	"Предупр. 0х0008 "  // 0х0008
+};
+

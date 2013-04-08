@@ -32,6 +32,33 @@ struct stMNUparam
 	uint8_t voltOutFract;
 	uint16_t curOut;
 	uint16_t resistOut;
+
+	// состояние общее
+	uint16_t glb_avar;
+	uint16_t glb_warn;
+
+	// состояние защиты
+	uint16_t def_avar;
+	uint16_t def_warn;
+	uint8_t def_regime;
+	uint8_t def_sost;
+	uint8_t def_dop;
+
+	// состояние приемника
+	uint16_t prm_avar;
+	uint16_t prm_warn;
+	uint8_t prm_regime;
+	uint8_t prm_sost;
+	uint8_t prm_dop;
+
+	// состояние передатчика
+	uint16_t prd_avar;
+	uint16_t prd_warn;
+	uint8_t prd_regime;
+	uint8_t prd_sost;
+	uint8_t prd_dop;
+
+
 };
 
 enum eMNU_TYPE_DEVICE
@@ -90,6 +117,9 @@ private:
 	eMNU_TYPE_DEVICE typeDevice;
 	// команда на исполнение
 	uint8_t com;
+
+	// возвращает текущий номер неисправности/предупреждения
+	uint8_t getNumError(uint16_t val);
 
 	stMNUparam * const sParam;
 

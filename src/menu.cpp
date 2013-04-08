@@ -112,7 +112,7 @@ clMenu::lvlStart()
 		vLCDdrawBoard(lineParam);
 	}
 
-	if (typeDevice == AVANT_RZSK)//snprintf_P(&vLCDbuf[0] , 10, fcDate, sParam.day , sParam.month , sParam.year);
+	if (typeDevice == AVANT_RZSK)
 	{
 		// вывод параметров
 		snprintf_P(&vLCDbuf[00], 11, fcTime, sParam->hour, sParam->minute, sParam->second);
@@ -123,9 +123,12 @@ clMenu::lvlStart()
 		snprintf_P(&vLCDbuf[52], 11, fcUn, sParam->voltNoise);
 
 		// вывод режима\состояния устройств
-		snprintf_P(&vLCDbuf[60], 21, fcDef, fcRegime[2], fcDefSost[1]);
-		snprintf_P(&vLCDbuf[80], 21, fcPrm, fcRegime[2], fcPrmSost[1]);
-		snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[2], fcPrdSost[1]);
+		snprintf_P(&vLCDbuf[60], 21, fcDef, fcRegime[sParam->def_regime], //
+											fcDefSost[sParam->def_sost]);
+		snprintf_P(&vLCDbuf[80], 21, fcPrm, fcRegime[sParam->prm_regime], //
+											fcDefSost[sParam->prm_sost]);
+		snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[sParam->prd_regime], //
+											 fcDefSost[sParam->prd_sost]);
 	}
 	else if (typeDevice == AVANT_K400)
 	{
@@ -138,17 +141,82 @@ clMenu::lvlStart()
 		snprintf_P(&vLCDbuf[52], 11, fcUn, sParam->voltNoise);
 
 		// вывод режима\состояния устройств
-		snprintf_P(&vLCDbuf[80], 21, fcPrm, fcRegime[2], fcPrmSost[1]);
-		snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[2], fcPrdSost[1]);
+		snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[sParam->prd_regime], //
+											 fcDefSost[sParam->prd_sost]);
 	}
 	else if (typeDevice == AVANT_K400_OPTIC)
 	{
 		snprintf_P(&vLCDbuf[00], 11, fcTime, sParam->hour, sParam->minute, sParam->second);
 		snprintf_P(&vLCDbuf[12], 11, fcDate, sParam->day, sParam->month, sParam->year);
 
-		// вывод режима\состояния устройств
-		snprintf_P(&vLCDbuf[80], 21, fcPrm, fcRegime[2], fcPrmSost[1]);
-		snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[2], fcPrdSost[1]);
+		if (sParam->glb_avar != 0)
+		{
+			uint_fast8_t tmp = 0;
+
+			tmp = getNumError(sParam->glb_avar);
+			snprintf_P(&vLCDbuf[80], 21, fcPrm, fcGlbError[tmp], fcNull);
+			snprintf_P(&vLCDbuf[100], 21, fcPrd, fcGlbError[tmp], fcNull);
+
+		}
+		else if (sParam->glb_warn != 0)
+		{
+			uint_fast8_t tmp = 0;
+
+			tmp = getNumError(sParam->glb_warn);
+			snprintf_P(&vLCDbuf[80], 21, fcPrm, fcGlbWarning[tmp], fcNull);
+			snprintf_P(&vLCDbuf[100], 21, fcPrd, fcGlbWarning[tmp], fcNull);
+		}
+		else
+		{
+			// вывод режима\состояния устройств
+			if (sParam->prm_avar == 0)
+			{
+				if (sParam->prm_warn == 0)
+				{
+					snprintf_P(&vLCDbuf[80], 21, fcPrm, fcRegime[sParam->prm_regime], //
+													fcDefSost[sParam->prm_sost]);
+				}
+				else
+				{
+					uint_fast8_t tmp = 0;
+
+					tmp = getNumError(sParam->prm_warn);
+					snprintf_P(&vLCDbuf[80], 21, fcPrm, fcPrmWarningOptic[tmp], fcNull);
+				}
+			}
+			else
+			{
+				uint_fast8_t tmp = 0;
+
+				tmp = getNumError(sParam->prm_avar);
+				snprintf_P(&vLCDbuf[80], 21, fcPrm, fcPrmError[tmp], fcNull);
+
+			}
+
+			if (sParam->prd_avar == 0)
+			{
+				if (sParam->prd_warn == 0)
+				{
+					snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[sParam->prd_regime],//
+														 fcDefSost[sParam->prd_sost]);
+				}
+				else
+				{
+					uint_fast8_t tmp = 0;
+
+					tmp = getNumError(sParam->prd_warn);
+					snprintf_P(&vLCDbuf[100], 21, fcPrd, fcPrdWarning[tmp], fcNull);
+				}
+			}
+			else
+			{
+				uint_fast8_t tmp = 0;
+
+				tmp = getNumError(sParam->prd_avar);
+				snprintf_P(&vLCDbuf[100], 21, fcPrd, fcPrdError[tmp], fcNull);
+
+			}
+		}
 	}
 
 
@@ -1470,4 +1538,18 @@ clMenu::txCommand()
 	com = 0;
 
 	return t;
+}
+
+uint8_t
+clMenu::getNumError(uint16_t val)
+{
+	uint_fast8_t tmp = 0;
+
+	while ((val & 0x0001) == 0)
+	{
+		tmp++;
+		val >>= 1;
+	}
+
+	return tmp;
 }
