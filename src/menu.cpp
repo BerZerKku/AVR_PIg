@@ -112,7 +112,32 @@ clMenu::lvlStart()
 		vLCDdrawBoard(lineParam);
 	}
 
-	if (typeDevice == AVANT_RZSK)
+#ifdef REGIME_OFF
+	sParam->def_regime = 2;
+	sParam->prd_regime = 2;
+	sParam->prm_regime = 2;
+#endif
+#ifdef SOST_OFF
+	sParam->def_sost = 1;
+	sParam->prm_sost = 1;
+	sParam->prd_sost = 1;
+#endif
+
+	if (typeDevice == AVANT_R400)
+	{
+		// вывод параметров
+		snprintf_P(&vLCDbuf[00], 11, fcTime, sParam->hour, sParam->minute, sParam->second);
+		snprintf_P(&vLCDbuf[12], 11, fcUz, sParam->voltDef);
+		snprintf_P(&vLCDbuf[20], 11, fcUout, sParam->voltOutInt, sParam->voltOutFract);
+		snprintf_P(&vLCDbuf[32], 11, fcUcf, sParam->voltCF);
+		snprintf_P(&vLCDbuf[40], 11, fcIout, sParam->curOut);
+		snprintf_P(&vLCDbuf[52], 11, fcUn, sParam->voltNoise);
+
+		// вывод режима\состояния устройств
+		snprintf_P(&vLCDbuf[60], 21, fcDef, fcRegime[sParam->def_regime], //
+											fcDefSost[sParam->def_sost]);
+	}
+	else if (typeDevice == AVANT_RZSK)
 	{
 		// вывод параметров
 		snprintf_P(&vLCDbuf[00], 11, fcTime, sParam->hour, sParam->minute, sParam->second);
@@ -412,7 +437,13 @@ clMenu::lvlJournal()
 		vLCDclear();
 		vLCDdrawBoard(lineParam);
 
-		if (typeDevice == AVANT_RZSK)
+		if (typeDevice == AVANT_R400)
+		{
+			numPunkt = 0;
+			punkt[numPunkt++] = punkt1;
+			punkt[numPunkt++] = punkt2;
+		}
+		else if (typeDevice == AVANT_RZSK)
 		{
 			numPunkt = 0;
 			punkt[numPunkt++] = punkt1;
@@ -805,7 +836,8 @@ clMenu::lvlControl()
 		vLCDclear();
 		vLCDdrawBoard(lineParam);
 
-		if (typeDevice == AVANT_RZSK)
+
+		if ((typeDevice == AVANT_RZSK) || (typeDevice == AVANT_R400))
 		{
 			numPunkt = 0;
 			punkt[numPunkt++] = punkt1;
@@ -971,7 +1003,13 @@ clMenu::lvlSetupParam()
 		vLCDclear();
 		vLCDdrawBoard(lineParam);
 
-		if (typeDevice == AVANT_RZSK)
+		if (typeDevice == AVANT_R400)
+		{
+			numPunkt = 0;
+			punkt[numPunkt++] = punkt1;
+			punkt[numPunkt++] = punkt4;
+		}
+		else if (typeDevice == AVANT_RZSK)
 		{
 			numPunkt = 0;
 			punkt[numPunkt++] = punkt1;
@@ -1426,11 +1464,17 @@ clMenu::lvlSetupParamGlb()
 			{
 				if (cursorLine <= 2)
 					cursorLine = 2;
-
-				if ((cursorLine == 3) || (cursorLine == 6))
+				else if ((cursorLine == 3) || (cursorLine == 6))
 				{
 					cursorLine--;
 				}
+			}
+			else if (typeDevice == AVANT_R400)
+			{
+				if (cursorLine == 2)
+					cursorLine = 1;
+				else if ((cursorLine == 4) || (cursorLine == 5))
+					cursorLine = 3;
 			}
 
 			break;
@@ -1449,6 +1493,13 @@ clMenu::lvlSetupParamGlb()
 				{
 					cursorLine++;
 				}
+			}
+			else if (typeDevice == AVANT_R400)
+			{
+				if (cursorLine == 2)
+					cursorLine = 3;
+				else if ((cursorLine == 4) || (cursorLine == 5))
+					cursorLine = 6;
 			}
 			break;
 
