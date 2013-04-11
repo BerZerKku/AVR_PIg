@@ -71,7 +71,7 @@ main (void)
 	protBSPs.setEnable();
 
 	// зададим тип аппарата
-	menu.setTypeDevice(AVANT_R400);
+	menu.setTypeDevice(AVANT_K400_OPTIC);
 
 	while(1)
 	{

@@ -13,9 +13,9 @@
 #warning "Включен режим отладки!!!"
 
 // отключает обработку неисправностей, режима, состояния
-#define ERROR_OFF
-#define REGIME_OFF
-#define SOST_OFF
+//#define ERROR_OFF
+//#define REGIME_OFF
+//#define SOST_OFF
 
 // тестовые пины
 #define DDR_DBG		DDRE

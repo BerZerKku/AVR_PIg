@@ -151,9 +151,9 @@ clMenu::lvlStart()
 		snprintf_P(&vLCDbuf[60], 21, fcDef, fcRegime[sParam->def_regime], //
 											fcDefSost[sParam->def_sost]);
 		snprintf_P(&vLCDbuf[80], 21, fcPrm, fcRegime[sParam->prm_regime], //
-											fcDefSost[sParam->prm_sost]);
+											fcPrmSost[sParam->prm_sost]);
 		snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[sParam->prd_regime], //
-											 fcDefSost[sParam->prd_sost]);
+											 fcPrdSost[sParam->prd_sost]);
 	}
 	else if (typeDevice == AVANT_K400)
 	{
@@ -199,7 +199,7 @@ clMenu::lvlStart()
 				if (sParam->prm_warn == 0)
 				{
 					snprintf_P(&vLCDbuf[80], 21, fcPrm, fcRegime[sParam->prm_regime], //
-													fcDefSost[sParam->prm_sost]);
+													fcPrmSost[sParam->prm_sost]);
 				}
 				else
 				{
@@ -223,7 +223,7 @@ clMenu::lvlStart()
 				if (sParam->prd_warn == 0)
 				{
 					snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[sParam->prd_regime],//
-														 fcDefSost[sParam->prd_sost]);
+														 fcPrdSost[sParam->prd_sost]);
 				}
 				else
 				{
