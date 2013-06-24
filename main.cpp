@@ -167,29 +167,30 @@ main (void)
  */
 ISR(TIMER0_COMP_vect)
 {
-	static uint_fast8_t cnt = 0;
-
-	// Обработчик клавиатуры вызываем раз в 10мс
-	if (cnt >  0)
-		cnt--;
-	else
-	{
-		cnt = 100 - 1;
-		vKEYmain();
-	}
-
 	// Обработчик ЖКИ
 	vLCDmain();
 }
 
 /**	Прерывание по совпадению А Таймер1
- * 	Срабатывает раз в 100 мс
+ * 	Срабатывает раз в 10 мс
  * 	@param Нет
  * 	@return Нет
  */
 ISR(TIMER1_COMPA_vect)
 {
-	b100ms = true;
+	static uint_fast8_t cnt = 0;
+
+	// Обработчик клавиатуры вызываем раз в 10мс
+	vKEYmain();
+
+	// установка флага раз в 100мс
+	if (cnt >  0)
+		cnt--;
+	else
+	{
+		cnt = 10 - 1;
+		b100ms = true;
+	}
 }
 
 /**	Прерывание по опустошению передающего буфера UART1
