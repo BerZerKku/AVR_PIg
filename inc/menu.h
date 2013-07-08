@@ -9,6 +9,7 @@
 #define MENU_H_
 
 #include "keyboard.h"
+#include "protocolS.h"
 
 /// время до переинициализации дисплея (* время цикла ЖКИ)
 #define TIME_TO_REINIT_LCD 50
@@ -66,6 +67,7 @@ enum eMNU_TYPE_DEVICE
 	AVANT_R400 = 1,
 	AVANT_R400_MSK,
 	AVANT_RZSK,
+	AVANT_RZSK_OPTIC,
 	AVANT_K400,
 	AVANT_K400_OPTIC
 };
@@ -73,19 +75,23 @@ enum eMNU_TYPE_DEVICE
 enum eMNU_TYPE_LINE
 {
 	UM,
+	OPTIC
 };
 
 
 class clMenu
 {
 public:
-	clMenu(stMNUparam *param);
+	clMenu(clProtocolS *protocol);
 
 	// тело
 	void main();
 
 	// возвращает кол-во линий отведенных для параметров
-	uint8_t getLineParam() { return lineParam; }
+	uint8_t getLineParam() const
+	{
+		return lineParam;
+	}
 
 	// установка типа аппарата
 	void setTypeDevice(eMNU_TYPE_DEVICE device)
@@ -94,7 +100,7 @@ public:
 	}
 
 	// возвращает текущий тип аппарата
-	eMNU_TYPE_DEVICE getTypeDevice()
+	eMNU_TYPE_DEVICE getTypeDevice() const
 	{
 		return typeDevice;
 	}
@@ -102,26 +108,36 @@ public:
 	// возвращает имеющуюся команду на исполнение
 	uint8_t txCommand();
 
+	// структура параметров аппарата
+	stMNUparam sParam;
+
+	// протокол работы с БСП
+	const clProtocolS *pProtocol;
+
 private:
 	// код кнопки
 	eKEY key;
+
 	// кол-во отображаемых параметров
 	uint8_t lineParam;
+
 	// создание уровня меню
 	bool lvlCreate;
+
 	// положение курсора
 	uint8_t cursorLine;
+
 	// состояние курсора
 	bool cursorEnable;
+
 	// тип аппарата
 	eMNU_TYPE_DEVICE typeDevice;
+
 	// команда на исполнение
 	uint8_t com;
 
 	// возвращает текущий номер неисправности/предупреждения
 	uint8_t getNumError(uint16_t val);
-
-	stMNUparam * const sParam;
 
 	// очистка текстового буфера
 	void clearTextBuf();

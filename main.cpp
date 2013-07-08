@@ -29,14 +29,11 @@ static volatile bool b100ms = false;
 uint8_t uBufUart0[32];
 uint8_t uBufUart1[32];
 
-/// параметры БСП
-stMNUparam sParam;
-
-clMenu		menu	(&sParam);
 clUart 		uartPC	(UART1, uBufUart0, sizeof(uBufUart0) / sizeof(uBufUart0[0]));
 clUart 		uartBSP	(UART0, uBufUart1, sizeof(uBufUart1) / sizeof(uBufUart1[0]));
-clProtocolS	protPCs	(uBufUart0, sizeof(uBufUart1) / sizeof(uBufUart1[0]), &sParam);
-clProtocolS protBSPs(uBufUart1, sizeof(uBufUart1) / sizeof(uBufUart1[0]), &sParam);
+clProtocolS	protPCs	(uBufUart0, sizeof(uBufUart1) / sizeof(uBufUart1[0]));
+clProtocolS protBSPs(uBufUart1, sizeof(uBufUart1) / sizeof(uBufUart1[0]));
+clMenu		menu	(&protPCs);
 
 /**	main.c
  * 	@param Нет
@@ -49,14 +46,8 @@ main (void)
 	uint_fast8_t cnt_lcd = 0;
 	uint_fast8_t cnt_1s = 0;
 
-	uint8_t cnt_uart = 0;
-
-	uint8_t time[] = {0x55, 0xAA, 0x32, 0x00, 0x32};
-	uint8_t clear[] = {0x55, 0xAA, 0xAA, 0x00, 0xAA};
-	uint8_t pusk[] = {0x55, 0xAA, 0x51, 0x00, 0x51};
-	uint8_t reset[] = {0x55, 0xAA, 0x72, 0x01, 0x01, 0x74};
-	uint8_t regime[] = {0x55, 0xAA, 0x30, 0x00, 0x30};
-	uint8_t avar[] = {0x55, 0xAA, 0x31, 0x00, 0x31};
+	// код запрашиваемой с ПК команды
+	uint8_t lastPcCom = 0;
 
 	vSETUP();
 	sei();
@@ -79,25 +70,56 @@ main (void)
 		{
 			// задачи выполняемые раз в 100мс
 
-			if (protBSPs.isRdy())
+//			if (protBSPs.isRdy())
+//			{
+				// при необходимости пересылаем посылку в БСП
+//				if ((lastPcCom != 0) && (lastPcCom == protBSPs.getCurrentCom()))
+////				{
+//					protPCs.copyCommandFrom(protBSPs.buf);
+////				}
+//				protPCs.getData();
+//
+//				lastPcCom = 0;
+//				protBSPs.clrRdy();
+//			}
+
+			// Проверка наличия команды с БСП и ее обработка
+			// Проверка наличия команды с ПК и ее обработка
+			if (protBSPs.getCurrentStatus() == PRTS_STATUS_READ)
 			{
-				if (protBSPs.checkCRC())
+				protBSPs.checkReadData();
+
+				if (protBSPs.getCurrentStatus() == PRTS_STATUS_READ_OK)
 				{
 					protBSPs.getData();
+					protPCs.copyCommandFrom(protBSPs.buf);
 				}
-				protBSPs.clrRdy();
 			}
 
-			// Получена посылка по стандартному протоколу
-			if (protPCs.isRdy())
+			// Проверка наличия команды с ПК и ее обработка
+			if (protPCs.getCurrentStatus() == PRTS_STATUS_READ)
 			{
-				if (protPCs.checkCRC())
-				{
-					uartPC.trData(protPCs.trCom(0x22, 'A'));
-				}
+				protPCs.checkReadData();
 
-				protPCs.clrRdy();
+				if (protPCs.getCurrentStatus() == PRTS_STATUS_READ_OK)
+				{
+					protPCs.getData();
+					protBSPs.copyCommandFrom(protPCs.buf);
+				}
 			}
+
+			// Проверка необходимости передачи команды на ПК и ее отправка
+			if (protPCs.getCurrentStatus() == PRTS_STATUS_WRITE)
+			{
+				uartPC.trData(protPCs.trCom());
+			}
+
+			// Проверка необходимости передачи команды на ПК и ее отправка
+			if (protBSPs.getCurrentStatus() == PRTS_STATUS_WRITE)
+			{
+				uartBSP.trData(protBSPs.trCom());
+			}
+
 
 			// задачи выполняемые раз в 1с
 			if (++cnt_1s >= 10)
@@ -120,39 +142,39 @@ main (void)
 			{
 				eMNU_TYPE_DEVICE type = menu.getTypeDevice();
 
-				// сброс индикации
-				if (com == 1)
-				{
-					if ( (type == AVANT_K400_OPTIC) ||
-						 (type == AVANT_R400) ||
-						 (type == AVANT_RZSK) )
-					{
-						uartBSP.trData(sizeof(clear), clear);
-					}
-				}
-				else if (com == 2)
-				{
-					if ( (type == AVANT_K400_OPTIC) ||
-						 (type == AVANT_K400) ||
-						 (type == AVANT_RZSK) )
-					{
-						uartBSP.trData(sizeof(pusk), pusk);
-					}
-				}
-				else if (com == 3)
-				{
-					uartBSP.trData(sizeof(reset), reset);
-				}
-			}
-			else
-			{
-				cnt_uart = (cnt_uart < 2) ? cnt_uart + 1 : 0;
-				if (cnt_uart == 0)
-					uartBSP.trData(sizeof(time), time);
-				else if (cnt_uart == 1)
-					uartBSP.trData(sizeof(regime), regime);
-				else if (cnt_uart == 2)
-					uartBSP.trData(sizeof(avar), avar);
+//				// сброс индикации
+//				if (com == 1)
+//				{
+//					if ( (type == AVANT_K400_OPTIC) ||
+//						 (type == AVANT_R400) ||
+//						 (type == AVANT_RZSK) )
+//					{
+//						uartBSP.trData(sizeof(clear), clear);
+//					}
+//				}
+//				else if (com == 2)
+//				{
+//					if ( (type == AVANT_K400_OPTIC) ||
+//						 (type == AVANT_K400) ||
+//						 (type == AVANT_RZSK) )
+//					{
+//						uartBSP.trData(sizeof(pusk), pusk);
+//					}
+//				}
+//				else if (com == 3)
+//				{
+//					uartBSP.trData(sizeof(reset), reset);
+//				}
+//			}
+//			else
+//			{
+//				cnt_uart = (cnt_uart < 2) ? cnt_uart + 1 : 0;
+//				if (cnt_uart == 0)
+//					uartBSP.trData(sizeof(time), time);
+//				else if (cnt_uart == 1)
+//					uartBSP.trData(sizeof(regime), regime);
+//				else if (cnt_uart == 2)
+//					uartBSP.trData(sizeof(avar), avar);
 			}
 
 			b100ms = false;
@@ -224,7 +246,8 @@ ISR(USART1_RX_vect)
 	// обработчик протокола "Стандартный"
 	if (protPCs.isEnable())
 	{
-		if (!protPCs.isRdy())
+		if ( (protPCs.getCurrentStatus() == PRTS_STATUS_NO) ||
+			 (protPCs.getCurrentStatus() == PRTS_STATUS_READ) )
 		{
 			if (!protPCs.checkByte(tmp))
 				uartPC.clrCnt();
@@ -263,7 +286,8 @@ ISR(USART0_RX_vect)
 	// обработчик протокола "Стандартный"
 	if (protBSPs.isEnable())
 	{
-		if (!protBSPs.isRdy())
+		if ( (protBSPs.getCurrentStatus() == PRTS_STATUS_NO) ||
+			 (protBSPs.getCurrentStatus() == PRTS_STATUS_READ) )
 		{
 			if (!protBSPs.checkByte(tmp))
 				uartBSP.clrCnt();

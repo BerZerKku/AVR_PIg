@@ -8,96 +8,126 @@
 #ifndef PROTOCOLS_H_
 #define PROTOCOLS_H_
 
-#include <menu.h>
-
 enum ePRTS_ACTION
 {
 	PRTS_READ_COM,
 	PRTS_WRITE_COM
 };
 
+enum ePRTS_STATUS
+{
+	PRTS_STATUS_NO = 0,		// состояние по-умолочанию (в том числе ошибочное)
+	PRTS_STATUS_READ,		// считана команда, но еще не проверена КС
+	PRTS_STATUS_READ_OK,	// считана команда и проверена КС
+	PRTS_STATUS_WRITE,		// в буфере есть команда, надо передать
+};
+
 class clProtocolS
 {
+
 public:
-	clProtocolS		(uint8_t *buf, uint8_t size, stMNUparam *param);
+	clProtocolS	(uint8_t *buf, uint8_t size);
 
-	bool checkCRC	();
-	uint8_t trCom	(uint8_t com);
-	uint8_t trCom	(uint8_t com, uint8_t byte);
-	uint8_t trCom	(uint8_t com, uint8_t size, const uint8_t * buf);
+//	uint8_t addCom	(uint8_t com, ePRTS_ACTION act);
+//	bool getData	(stMNUparam *param);
 
-	uint8_t addCom	(uint8_t com, ePRTS_ACTION act);
-	bool getData	();
+	// указатель на буфер
+	uint8_t * const buf;
+
+	/// Проверка флага наличия принятой посылки
+	bool checkReadData();
+
+	/// Сброс флага принятой посылки
+//	void clrRdy() { this->rdy = false; this->cnt = 0; }
+
+	/// Запуск работы данного протокола
+	void setEnable() { this->enable = true; this->stat = PRTS_STATUS_NO;}
+
+	/// Остановка работы данного протокола
+	void setDisable() { this->enable = false; }
+
+	/// Проверка текущего состояния протокола
+	bool isEnable() const { return this->enable; }
+
+	/// Отправка сообщения, возвращает длинну передаваемой посылки
+	uint8_t trCom() { this->stat = PRTS_STATUS_NO; return this->cnt; }
+
+	/// Текущая команда в буфере
+	uint8_t getCurrentCom() const { return this->buf[2]; }
+
+	/// Текущий статус работы протокола
+	ePRTS_STATUS getCurrentStatus() const { return this->stat; }
+
+	/// Копирование посылки из другого буфера
+	bool copyCommandFrom(uint8_t * const bufSource);
+
+	///
+	bool getData();
 
 	/// Проверка принятого байта на соответствие протоколу
 	/// возвращает false в случае ошибки
 	/// !!! Помещается в прерывание по приему
 	bool checkByte(uint8_t byte)
 	{
+		uint8_t cnt = this->cnt;
+
 		switch(cnt)
 		{
-			case 0:
-				if (byte == 0x55)
-					cnt++;
-				break;
-			case 1:
-				cnt = (byte == 0xAA) ? 2 : 0;
-				break;
-			case 2:
+		case 0:
+			if (byte == 0x55)
 				cnt++;
-				break;
-			case 3:
-				if (byte < (size - 5))
-				{
-					cnt++;
-					maxLen = byte + 5;
-				}
-				else
-					cnt = 0;
-				break;
-			default:
+			break;
+		case 1:
+			cnt = (byte == 0xAA) ? 2 : 0;
+			break;
+		case 2:
+			cnt++;
+			break;
+		case 3:
+			if (byte < (this->size - 5))
+			{
 				cnt++;
-				if (cnt >= maxLen)
-					rdy = true;
-				break;
+				this->maxLen = byte + 5;
+			}
+			else
+				cnt = 0;
+			break;
+		default:
+			cnt++;
+			if (cnt >= this->maxLen)
+				this->stat = PRTS_STATUS_READ;
+			break;
 		}
 
+		this->cnt = cnt;
 		return cnt;
 	}
 
-	/// Проверка флага принятой посылки
-	bool isRdy() const { return rdy; };
-
-	/// Сброс флага принятой посылки
-	void clrRdy() { rdy = false; cnt = 0;}
-
-	/// Запуск работы данного протокола
-	void setEnable() { enable = true; clrRdy(); }
-
-	/// Остановка работы данного протокола
-	void setDisable() { enable = false; }
-
-	/// Проверка текущего состояния протокола
-	bool isEnable() const { return enable; }
-
-	/// Кол-во данных в посылке
-	uint8_t getLenPackage() const { return cnt; }
-
 private:
+	// текущий статус работы протокола
+	ePRTS_STATUS stat;
+
 	// Счетчик принятого байта по протоколу
 	uint8_t cnt;
+
 	// Заявленное кол-во байт данных в посылке
 	uint8_t maxLen;
-	// указатель на буфер
-	uint8_t * const buf;
+
 	// размер буфера
 	const uint8_t size;
-	// флаг проверки на соответствие протоколу
-	bool rdy;
+
 	// Текущее состояние протокола. true - запущен
 	bool enable;
-	// Указатель на структуру параметров
-	stMNUparam *param;
+
+	// Подготовка к отправке команды без данных (заполнение буфера)
+	uint8_t addCom	(uint8_t com);
+	// Подготовка к отправке команды с 1 байтом данных (заполнение буфера)
+	uint8_t addCom	(uint8_t com, uint8_t byte);
+	// Подготовка к отправке команды с данными (заполнение буфера)
+	uint8_t addCom	(uint8_t com, uint8_t size, const uint8_t * buf);
+
+	// Проверка принятой контрольной суммы
+	bool checkCRC();
 
 	// вычисление контрольной суммы содержимого буфера
 	uint8_t getCRC();

@@ -19,7 +19,8 @@
  * 	@param *buf Указатель на буфер данных
  * 	@param size Размер буфера
  */
-clUart::clUart(eUART_PORT port, uint8_t * const buf, uint8_t size)  : buf(buf), size(size)
+clUart::clUart(eUART_PORT port, uint8_t * const buf, uint8_t size):
+														buf(buf), size(size)
 {
 	if (port == UART0)
 	{
@@ -41,15 +42,6 @@ clUart::clUart(eUART_PORT port, uint8_t * const buf, uint8_t size)  : buf(buf), 
 	numTrByte = 0;
 	cnt = 0;
 }
-
-/**	Деструктор
- * 	Уничтожим буфер
- * 	@param Нет
- * 	@return Нет
- */
-//clUart::~clUart()
-//{
-//}
 
 /*	Отправка байта данных
  * 	@param byte Данные
@@ -76,7 +68,6 @@ clUart::trByte(uint8_t byte)
 uint8_t
 clUart::trData(uint8_t size)
 {
-	// Скопируем данные в буфер
 	if (size != 0)
 	{
 		// Запретим прием

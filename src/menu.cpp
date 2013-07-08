@@ -14,26 +14,23 @@
 /// буфер текста выводимого на ЖКИ
 static char vLCDbuf[SIZE_BUF_STRING];
 
-clMenu::clMenu(stMNUparam *param) : sParam(param)
+clMenu::clMenu(clProtocolS *protocol) : pProtocol(protocol)
 {
 	lvlMenu = &clMenu::lvlStart;
 	lineParam = 3;
 
 	lvlCreate = true;
 
-	sParam->voltCF = 16;
-	sParam->voltDef = 10;
-	sParam->voltNoise = 5;
-	sParam->voltOutInt = 10;
-	sParam->voltOutFract = 0;
-	sParam->curOut = 133;
-
 	cursorEnable= false;
 	cursorLine = 0;
+
 	key = KEY_NO;
+
 	typeDevice = AVANT_R400;
+
 	com = 0;
 
+	// включение постоянной подсветки
 	vLCDsetLED(LED_ON);
 }
 
@@ -59,27 +56,28 @@ clMenu::main(void)
 		vLCDinit();
 	}
 
-	// Считаем код с клавиатуры, если кнопка нажата зажгем подсветку
+	// Считаем код с клавиатуры
+	// Если нажата любая кнопка - включится кратковременная подсветка
 	eKEY tmp = eKEYget();
 	if (tmp != KEY_NO)
 	{
 		if (tmp == KEY_FUNC)
 			tmp = KEY_NO;
-		vLCDsetLED(LED_SWITCH);
 		key = tmp;
+
+		vLCDsetLED(LED_SWITCH);
 	}
 
-	// очистим текстовый буфер и перейдем на нужный уровень меню
+	// очистка текстового буфера и переход на текущий уровень меню
 	clearTextBuf();
 	(this->*lvlMenu) ();
 	key = KEY_NO;
 
-	// Преобразование строки символов в данные для вывода на экран
+	// преобразование строки символов в данные для вывода на экран
 	vLCDputchar(vLCDbuf, lineParam);
 
 	// запуск обновления инф-ии на ЖКИ
 	vLCDrefresh();
-	PORT_DBG &= ~PIN_TP2;
 }
 
 /** Очистка текстового буфера
@@ -113,99 +111,99 @@ clMenu::lvlStart()
 	}
 
 #ifdef REGIME_OFF
-	sParam->def_regime = 2;
-	sParam->prd_regime = 2;
-	sParam->prm_regime = 2;
+	sParam.def_regime = 2;
+	sParam.prd_regime = 2;
+	sParam.prm_regime = 2;
 #endif
 #ifdef SOST_OFF
-	sParam->def_sost = 1;
-	sParam->prm_sost = 1;
-	sParam->prd_sost = 1;
+	sParam.def_sost = 1;
+	sParam.prm_sost = 1;
+	sParam.prd_sost = 1;
 #endif
 
 	if (typeDevice == AVANT_R400)
 	{
 		// вывод параметров
-		snprintf_P(&vLCDbuf[00], 11, fcTime, sParam->hour, sParam->minute, sParam->second);
-		snprintf_P(&vLCDbuf[12], 11, fcUz, sParam->voltDef);
-		snprintf_P(&vLCDbuf[20], 11, fcUout, sParam->voltOutInt, sParam->voltOutFract);
-		snprintf_P(&vLCDbuf[32], 11, fcUcf, sParam->voltCF);
-		snprintf_P(&vLCDbuf[40], 11, fcIout, sParam->curOut);
-		snprintf_P(&vLCDbuf[52], 11, fcUn, sParam->voltNoise);
+		snprintf_P(&vLCDbuf[00], 11, fcTime, sParam.hour, sParam.minute, sParam.second);
+		snprintf_P(&vLCDbuf[12], 11, fcUz, sParam.voltDef);
+		snprintf_P(&vLCDbuf[20], 11, fcUout, sParam.voltOutInt, sParam.voltOutFract);
+		snprintf_P(&vLCDbuf[32], 11, fcUcf, sParam.voltCF);
+		snprintf_P(&vLCDbuf[40], 11, fcIout, sParam.curOut);
+		snprintf_P(&vLCDbuf[52], 11, fcUn, sParam.voltNoise);
 
 		// вывод режима\состояния устройств
-		snprintf_P(&vLCDbuf[60], 21, fcDef, fcRegime[sParam->def_regime], //
-											fcDefSost[sParam->def_sost]);
+		snprintf_P(&vLCDbuf[60], 21, fcDef, fcRegime[sParam.def_regime], //
+											fcDefSost[sParam.def_sost]);
 	}
 	else if (typeDevice == AVANT_RZSK)
 	{
 		// вывод параметров
-		snprintf_P(&vLCDbuf[00], 11, fcTime, sParam->hour, sParam->minute, sParam->second);
-		snprintf_P(&vLCDbuf[12], 11, fcUz, sParam->voltDef);
-		snprintf_P(&vLCDbuf[20], 11, fcUout, sParam->voltOutInt, sParam->voltOutFract);
-		snprintf_P(&vLCDbuf[32], 11, fcUcf, sParam->voltCF);
-		snprintf_P(&vLCDbuf[40], 11, fcIout, sParam->curOut);
-		snprintf_P(&vLCDbuf[52], 11, fcUn, sParam->voltNoise);
+		snprintf_P(&vLCDbuf[00], 11, fcTime, sParam.hour, sParam.minute, sParam.second);
+		snprintf_P(&vLCDbuf[12], 11, fcUz, sParam.voltDef);
+		snprintf_P(&vLCDbuf[20], 11, fcUout, sParam.voltOutInt, sParam.voltOutFract);
+		snprintf_P(&vLCDbuf[32], 11, fcUcf, sParam.voltCF);
+		snprintf_P(&vLCDbuf[40], 11, fcIout, sParam.curOut);
+		snprintf_P(&vLCDbuf[52], 11, fcUn, sParam.voltNoise);
 
 		// вывод режима\состояния устройств
-		snprintf_P(&vLCDbuf[60], 21, fcDef, fcRegime[sParam->def_regime], //
-											fcDefSost[sParam->def_sost]);
-		snprintf_P(&vLCDbuf[80], 21, fcPrm, fcRegime[sParam->prm_regime], //
-											fcPrmSost[sParam->prm_sost]);
-		snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[sParam->prd_regime], //
-											 fcPrdSost[sParam->prd_sost]);
+		snprintf_P(&vLCDbuf[60], 21, fcDef, fcRegime[sParam.def_regime], //
+											fcDefSost[sParam.def_sost]);
+		snprintf_P(&vLCDbuf[80], 21, fcPrm, fcRegime[sParam.prm_regime], //
+											fcPrmSost[sParam.prm_sost]);
+		snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[sParam.prd_regime], //
+											 fcPrdSost[sParam.prd_sost]);
 	}
 	else if (typeDevice == AVANT_K400)
 	{
 		// вывод параметров
-		snprintf_P(&vLCDbuf[00], 11, fcTime, sParam->hour, sParam->minute, sParam->second);
-		snprintf_P(&vLCDbuf[12], 11, fcDate, sParam->day, sParam->month, sParam->year);
-		snprintf_P(&vLCDbuf[20], 11, fcUout, sParam->voltOutInt, sParam->voltOutFract);
-		snprintf_P(&vLCDbuf[32], 11, fcUcf, sParam->voltCF);
-		snprintf_P(&vLCDbuf[40], 11, fcIout, sParam->curOut);
-		snprintf_P(&vLCDbuf[52], 11, fcUn, sParam->voltNoise);
+		snprintf_P(&vLCDbuf[00], 11, fcTime, sParam.hour, sParam.minute, sParam.second);
+		snprintf_P(&vLCDbuf[12], 11, fcDate, sParam.day, sParam.month, sParam.year);
+		snprintf_P(&vLCDbuf[20], 11, fcUout, sParam.voltOutInt, sParam.voltOutFract);
+		snprintf_P(&vLCDbuf[32], 11, fcUcf, sParam.voltCF);
+		snprintf_P(&vLCDbuf[40], 11, fcIout, sParam.curOut);
+		snprintf_P(&vLCDbuf[52], 11, fcUn, sParam.voltNoise);
 
 		// вывод режима\состояния устройств
-		snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[sParam->prd_regime], //
-											 fcDefSost[sParam->prd_sost]);
+		snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[sParam.prd_regime], //
+											 fcDefSost[sParam.prd_sost]);
 	}
 	else if (typeDevice == AVANT_K400_OPTIC)
 	{
-		snprintf_P(&vLCDbuf[00], 11, fcTime, sParam->hour, sParam->minute, sParam->second);
-		snprintf_P(&vLCDbuf[12], 11, fcDate, sParam->day, sParam->month, sParam->year);
+		snprintf_P(&vLCDbuf[00], 11, fcTime, sParam.hour, sParam.minute, sParam.second);
+		snprintf_P(&vLCDbuf[12], 11, fcDate, sParam.day, sParam.month, sParam.year);
 
-		if (sParam->glb_avar != 0)
+		if (sParam.glb_avar != 0)
 		{
 			uint_fast8_t tmp = 0;
 
-			tmp = getNumError(sParam->glb_avar);
+			tmp = getNumError(sParam.glb_avar);
 			snprintf_P(&vLCDbuf[80], 21, fcPrm, fcGlbError[tmp], fcNull);
 			snprintf_P(&vLCDbuf[100], 21, fcPrd, fcGlbError[tmp], fcNull);
 
 		}
-		else if (sParam->glb_warn != 0)
+		else if (sParam.glb_warn != 0)
 		{
 			uint_fast8_t tmp = 0;
 
-			tmp = getNumError(sParam->glb_warn);
+			tmp = getNumError(sParam.glb_warn);
 			snprintf_P(&vLCDbuf[80], 21, fcPrm, fcGlbWarning[tmp], fcNull);
 			snprintf_P(&vLCDbuf[100], 21, fcPrd, fcGlbWarning[tmp], fcNull);
 		}
 		else
 		{
 			// вывод режима\состояния устройств
-			if (sParam->prm_avar == 0)
+			if (sParam.prm_avar == 0)
 			{
-				if (sParam->prm_warn == 0)
+				if (sParam.prm_warn == 0)
 				{
-					snprintf_P(&vLCDbuf[80], 21, fcPrm, fcRegime[sParam->prm_regime], //
-													fcPrmSost[sParam->prm_sost]);
+					snprintf_P(&vLCDbuf[80], 21, fcPrm, fcRegime[sParam.prm_regime], //
+													fcPrmSost[sParam.prm_sost]);
 				}
 				else
 				{
 					uint_fast8_t tmp = 0;
 
-					tmp = getNumError(sParam->prm_warn);
+					tmp = getNumError(sParam.prm_warn);
 					snprintf_P(&vLCDbuf[80], 21, fcPrm, fcPrmWarningOptic[tmp], fcNull);
 				}
 			}
@@ -213,23 +211,23 @@ clMenu::lvlStart()
 			{
 				uint_fast8_t tmp = 0;
 
-				tmp = getNumError(sParam->prm_avar);
+				tmp = getNumError(sParam.prm_avar);
 				snprintf_P(&vLCDbuf[80], 21, fcPrm, fcPrmError[tmp], fcNull);
 
 			}
 
-			if (sParam->prd_avar == 0)
+			if (sParam.prd_avar == 0)
 			{
-				if (sParam->prd_warn == 0)
+				if (sParam.prd_warn == 0)
 				{
-					snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[sParam->prd_regime],//
-														 fcPrdSost[sParam->prd_sost]);
+					snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[sParam.prd_regime],//
+														 fcPrdSost[sParam.prd_sost]);
 				}
 				else
 				{
 					uint_fast8_t tmp = 0;
 
-					tmp = getNumError(sParam->prd_warn);
+					tmp = getNumError(sParam.prd_warn);
 					snprintf_P(&vLCDbuf[100], 21, fcPrd, fcPrdWarning[tmp], fcNull);
 				}
 			}
@@ -237,7 +235,7 @@ clMenu::lvlStart()
 			{
 				uint_fast8_t tmp = 0;
 
-				tmp = getNumError(sParam->prd_avar);
+				tmp = getNumError(sParam.prd_avar);
 				snprintf_P(&vLCDbuf[100], 21, fcPrd, fcPrdError[tmp], fcNull);
 
 			}
