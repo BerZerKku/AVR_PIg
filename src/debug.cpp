@@ -5,8 +5,13 @@
  *      Author: Shcheblykin
  */
 #include <stdio.h>
+
+#ifdef DEBUG
+
 #include "debug.h"
 
 stDebug sDebug;
+
+#endif
 
 

@@ -22,7 +22,7 @@
 clUart::clUart(eUART_PORT port, uint8_t * const buf, uint8_t size):
 														buf(buf), size(size)
 {
-	if (port == UART0)
+	if (port == UART_UART0)
 	{
 		udr = &UDR0;
 		ubbrh = &UBRR0H;
@@ -30,7 +30,7 @@ clUart::clUart(eUART_PORT port, uint8_t * const buf, uint8_t size):
 		ucsrc = &UCSR0C;
 		ucsrb = &UCSR0B;
 	}
-	else if (port == UART1)
+	else if (port == UART_UART1)
 	{
 		udr = &UDR1;
 		ubbrh = &UBRR1H;

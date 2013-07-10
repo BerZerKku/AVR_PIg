@@ -17,9 +17,8 @@ enum ePRTS_ACTION
 enum ePRTS_STATUS
 {
 	PRTS_STATUS_NO = 0,		// состояние по-умолочанию (в том числе ошибочное)
-	PRTS_STATUS_READ,		// считана команда, но еще не проверена КС
-	PRTS_STATUS_READ_OK,	// считана команда и проверена КС
-	PRTS_STATUS_WRITE,		// в буфере есть команда, надо передать
+	PRTS_STATUS_READ,		// считана команда (но еще не проверена КС)
+	PRTS_STATUS_WRITE		// в буфере есть команда, надо передать
 };
 
 class clProtocolS
@@ -37,23 +36,32 @@ public:
 	/// Проверка флага наличия принятой посылки
 	bool checkReadData();
 
+	/// Отправка сообщения, возвращает длинну передаваемой посылки
+	uint8_t trCom();
+
 	/// Сброс флага принятой посылки
 //	void clrRdy() { this->rdy = false; this->cnt = 0; }
 
 	/// Запуск работы данного протокола
-	void setEnable() { this->enable = true; this->stat = PRTS_STATUS_NO;}
+	void setEnable() { enable = true; stat = PRTS_STATUS_NO;}
 
 	/// Остановка работы данного протокола
-	void setDisable() { this->enable = false; }
+	void setDisable() { enable = false; }
 
 	/// Проверка текущего состояния протокола
-	bool isEnable() const { return this->enable; }
+	bool isEnable() const { return enable; }
 
-	/// Отправка сообщения, возвращает длинну передаваемой посылки
-	uint8_t trCom() { this->stat = PRTS_STATUS_NO; return this->cnt; }
+	/// Возращает размер буфера данных
+	uint8_t getBufSize() const { return size; }
 
 	/// Текущая команда в буфере
-	uint8_t getCurrentCom() const { return this->buf[2]; }
+	uint8_t getCurrentCom() const { return buf[2]; }
+
+	/// Текущее кол-во байт в посылке
+	uint8_t getCurrentLen() const { return maxLen; }
+
+	/// Текущее кол-во принятых байт данных (по протоколу)
+	uint8_t getCurrentCnt() const { return cnt; }
 
 	/// Текущий статус работы протокола
 	ePRTS_STATUS getCurrentStatus() const { return this->stat; }
@@ -84,22 +92,24 @@ public:
 			cnt++;
 			break;
 		case 3:
-			if (byte < (this->size - 5))
+			if (byte < (size - 5))
 			{
 				cnt++;
-				this->maxLen = byte + 5;
+				maxLen = byte + 5;
 			}
 			else
 				cnt = 0;
 			break;
 		default:
 			cnt++;
-			if (cnt >= this->maxLen)
-				this->stat = PRTS_STATUS_READ;
+			if (cnt >= maxLen)
+			{
+				stat = PRTS_STATUS_READ;
+			}
 			break;
 		}
-
 		this->cnt = cnt;
+
 		return cnt;
 	}
 
@@ -124,7 +134,7 @@ private:
 	// Подготовка к отправке команды с 1 байтом данных (заполнение буфера)
 	uint8_t addCom	(uint8_t com, uint8_t byte);
 	// Подготовка к отправке команды с данными (заполнение буфера)
-	uint8_t addCom	(uint8_t com, uint8_t size, const uint8_t * buf);
+	uint8_t addCom	(uint8_t com, uint8_t size, uint8_t buf[]);
 
 	// Проверка принятой контрольной суммы
 	bool checkCRC();

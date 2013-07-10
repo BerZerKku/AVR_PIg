@@ -11,8 +11,11 @@
 
 clProtocolS::clProtocolS(uint8_t *buf, uint8_t size) : buf(buf), size(size)
 {
+#if size < 5
+#warning "Размер массива должен быть как минимум 5 байт !!!"
+#endif
+
 	this->enable = false;
-//	this->rdy = false;
 	this->cnt = 0;
 	this->maxLen = 0;
 	this->stat = PRTS_STATUS_NO;
@@ -27,17 +30,29 @@ bool
 clProtocolS::checkReadData()
 {
 	bool stat = false;
+
+	// Т.к. обработка посылки уже началась, сбросим счетчик принятых байт
+	cnt = 0;
+
 	if (checkCRC())
-	{
-		this->stat = PRTS_STATUS_READ_OK;
 		stat = true;
-	}
 	else
 		this->stat = PRTS_STATUS_NO;
 
 	return stat;
 }
 
+/** Отправка сообщения лежащего в буфере
+ *  @param Нет
+ *  @return Кол-во байт данных приготовленных для передачи
+ */
+uint8_t
+clProtocolS::trCom()
+{
+	this->stat = PRTS_STATUS_NO;
+
+	return maxLen;
+}
 
 /**	Копирование имеющейся команды в свой буфер.
  * 	Копирование произойдет только если будут найдены синхробайты и размер
@@ -49,6 +64,7 @@ bool
 clProtocolS::copyCommandFrom(uint8_t * const bufSource)
 {
 	bool stat = true;
+	uint8_t cnt = 0;
 
 	if (bufSource[0] != 0x55)
 		stat = false;
@@ -56,16 +72,16 @@ clProtocolS::copyCommandFrom(uint8_t * const bufSource)
 		stat = false;
 	else
 	{
-		this->cnt = bufSource[3] + 5;
+		cnt = bufSource[3] + 5;
 
-		if (this->cnt > this->size)
+		if (cnt > size)
 			stat = false;
 		else
 		{
-			for(uint_fast8_t i = 0; i < this->cnt; i++)
+			for(uint_fast8_t i = 0; i < cnt; i++)
 			{
-				if (i < this->size)
-					this->buf[i] = bufSource[i];
+				if (i < size)
+					buf[i] = bufSource[i];
 			}
 		}
 	}
@@ -73,11 +89,13 @@ clProtocolS::copyCommandFrom(uint8_t * const bufSource)
 	// в случае какой-либо ошибки, сообщенеие игнорируется
 	if (!stat)
 	{
-		this->cnt = 0;
 		this->stat = PRTS_STATUS_NO;
 	}
 	else
+	{
 		this->stat = PRTS_STATUS_WRITE;
+		maxLen = cnt;
+	}
 
 	return stat;
 }
@@ -174,22 +192,23 @@ clProtocolS::getData()
  * 	@return Кол-во отправляемых байт данных
  */
 uint8_t
-clProtocolS::addCom(uint8_t com, uint8_t size, const uint8_t *buf)
+clProtocolS::addCom(uint8_t com, uint8_t size, uint8_t buf[])
 {
 	uint8_t cnt = 0;
 
-	if (size <= (this->size - 4))
+	if (size < (this->size - 5))
 	{
-		this->buf[cnt++] = 0x55;
-		this->buf[cnt++] = 0xAA;
-		this->buf[cnt++] = com;
-		this->buf[cnt++] = size;
+		buf[cnt++] = 0x55;
+		buf[cnt++] = 0xAA;
+		buf[cnt++] = com;
+		buf[cnt++] = size;
 		// Скопируем данные в буфер передатчика
 		for(uint8_t i = 0; i < size; i++, cnt++)
-			this->buf[cnt] = buf[i];
-		this->buf[cnt++] = getCRC();
+			buf[cnt] = buf[i];
+		buf[cnt++] = getCRC();
 
-		this->stat = PRTS_STATUS_WRITE;
+		maxLen = cnt;
+		stat = PRTS_STATUS_WRITE;
 	}
 
 	return cnt;
@@ -205,17 +224,15 @@ clProtocolS::addCom(uint8_t com, uint8_t byte)
 {
 	uint8_t cnt = 0;
 
-	if (this->size >= 5)
-	{
-		this->buf[cnt++] = 0x55;
-		this->buf[cnt++] = 0xAA;
-		this->buf[cnt++] = com;
-		this->buf[cnt++] = 0x01;
-		this->buf[cnt++] = byte;
-		this->buf[cnt++] = com + 0x01 + byte;
+	buf[cnt++] = 0x55;
+	buf[cnt++] = 0xAA;
+	buf[cnt++] = com;
+	buf[cnt++] = 0x01;
+	buf[cnt++] = byte;
+	buf[cnt++] = com + 0x01 + byte;
 
-		this->stat = PRTS_STATUS_WRITE;
-	}
+	maxLen = cnt;
+	stat = PRTS_STATUS_WRITE;
 
 	return cnt;
 }
@@ -230,16 +247,14 @@ clProtocolS::addCom(uint8_t com)
 {
 	uint8_t cnt = 0;
 
-	if (this->size >= 4)
-	{
-		this->buf[cnt++] = 0x55;
-		this->buf[cnt++] = 0xAA;
-		this->buf[cnt++] = com;
-		this->buf[cnt++] = 00;
-		this->buf[cnt++] = com;
+	buf[cnt++] = 0x55;
+	buf[cnt++] = 0xAA;
+	buf[cnt++] = com;
+	buf[cnt++] = 00;
+	buf[cnt++] = com;
 
-		this->stat = PRTS_STATUS_WRITE;
-	}
+	maxLen = cnt;
+	stat = PRTS_STATUS_WRITE;
 
 	return cnt;
 }

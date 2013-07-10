@@ -13,8 +13,8 @@
 
 enum eUART_PORT
 {
-	UART0,
-	UART1
+	UART_UART0,
+	UART_UART1
 };
 
 class clUart

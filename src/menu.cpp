@@ -73,6 +73,18 @@ clMenu::main(void)
 	(this->*lvlMenu) ();
 	key = KEY_NO;
 
+#ifdef DEBUG
+	// вывод отладочной информации
+	snprintf(&vLCDbuf[20], 5, "1*%X", sDebug.byte1);
+	snprintf(&vLCDbuf[25], 5, "2*%X", sDebug.byte2);
+	snprintf(&vLCDbuf[30], 5, "3*%X", sDebug.byte3);
+	snprintf(&vLCDbuf[35], 5, "4*%X", sDebug.byte4);
+	snprintf(&vLCDbuf[40], 5, "5*%X", sDebug.byte5);
+	snprintf(&vLCDbuf[45], 5, "6*%X", sDebug.byte6);
+	snprintf(&vLCDbuf[50], 5, "7*%X", sDebug.byte7);
+	snprintf(&vLCDbuf[55], 5, "8*%X", sDebug.byte8);
+#endif
+
 	// преобразование строки символов в данные для вывода на экран
 	vLCDputchar(vLCDbuf, lineParam);
 
