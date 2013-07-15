@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?fileVersion 4.0.0?>
-
-<cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="de.innot.avreclipse.configuration.app.debug.1074875049">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="de.innot.avreclipse.configuration.app.debug.1074875049" moduleId="org.eclipse.cdt.core.settings" name="Debug">
@@ -32,7 +30,7 @@
 								</option>
 								<inputType id="de.innot.avreclipse.tool.assembler.input.894843985" superClass="de.innot.avreclipse.tool.assembler.input"/>
 							</tool>
-							<tool id="de.innot.avreclipse.tool.compiler.winavr.app.debug.1289414660" name="AVR Compiler" superClass="de.innot.avreclipse.tool.compiler.winavr.app.debug">
+							<tool command="avr-gcc" id="de.innot.avreclipse.tool.compiler.winavr.app.debug.1289414660" name="AVR Compiler" superClass="de.innot.avreclipse.tool.compiler.winavr.app.debug">
 								<option id="de.innot.avreclipse.compiler.option.debug.level.721492779" name="Generate Debugging Info" superClass="de.innot.avreclipse.compiler.option.debug.level"/>
 								<option id="de.innot.avreclipse.compiler.option.optimize.1679276795" name="Optimization Level" superClass="de.innot.avreclipse.compiler.option.optimize" value="de.innot.avreclipse.compiler.optimize.size" valueType="enumerated"/>
 								<option id="de.innot.avreclipse.compiler.option.def.437225892" name="Define Syms (-D)" superClass="de.innot.avreclipse.compiler.option.def" valueType="definedSymbols">
@@ -43,7 +41,7 @@
 								</option>
 								<inputType id="de.innot.avreclipse.compiler.winavr.input.1199313109" name="C Source Files" superClass="de.innot.avreclipse.compiler.winavr.input"/>
 							</tool>
-							<tool id="de.innot.avreclipse.tool.cppcompiler.app.debug.1541189039" name="AVR C++ Compiler" superClass="de.innot.avreclipse.tool.cppcompiler.app.debug">
+							<tool command="avr-g++" id="de.innot.avreclipse.tool.cppcompiler.app.debug.1541189039" name="AVR C++ Compiler" superClass="de.innot.avreclipse.tool.cppcompiler.app.debug">
 								<option id="de.innot.avreclipse.cppcompiler.option.debug.level.1200070983" name="Generate Debugging Info" superClass="de.innot.avreclipse.cppcompiler.option.debug.level"/>
 								<option id="de.innot.avreclipse.cppcompiler.option.optimize.422046706" name="Optimization Level" superClass="de.innot.avreclipse.cppcompiler.option.optimize" value="de.innot.avreclipse.cppcompiler.optimize.size" valueType="enumerated"/>
 								<option id="de.innot.avreclipse.cppcompiler.option.incpath.2072225976" name="Include Paths (-I)" superClass="de.innot.avreclipse.cppcompiler.option.incpath" valueType="includePath">
@@ -53,6 +51,8 @@
 									<listOptionValue builtIn="false" value="DEBUG"/>
 								</option>
 								<option id="de.innot.avreclipse.cppcompiler.option.std.1789506295" name="Language Standard" superClass="de.innot.avreclipse.cppcompiler.option.std" value="de.innot.avreclipse.cppcompiler.option.std.gnucpp98" valueType="enumerated"/>
+								<option id="de.innot.avreclipse.cppcompiler.option.otherflags.404369156" name="Other flags" superClass="de.innot.avreclipse.cppcompiler.option.otherflags" value="" valueType="string"/>
+								<option id="de.innot.avreclipse.cppcompiler.option.verbose.647611561" name="Verbose (-v)" superClass="de.innot.avreclipse.cppcompiler.option.verbose" value="false" valueType="boolean"/>
 								<inputType id="de.innot.avreclipse.cppcompiler.input.590926730" superClass="de.innot.avreclipse.cppcompiler.input"/>
 							</tool>
 							<tool id="de.innot.avreclipse.tool.linker.winavr.app.debug.518268193" name="AVR C Linker" superClass="de.innot.avreclipse.tool.linker.winavr.app.debug"/>
@@ -151,11 +151,11 @@
 		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.release.251607951;de.innot.avreclipse.configuration.app.release.251607951.;de.innot.avreclipse.tool.cppcompiler.app.release.1565165398;de.innot.avreclipse.cppcompiler.input.1517970603">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileCPP"/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.debug.1074875049;de.innot.avreclipse.configuration.app.debug.1074875049.;de.innot.avreclipse.tool.cppcompiler.app.debug.1541189039;de.innot.avreclipse.cppcompiler.input.590926730">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileCPP"/>
-		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.release.251607951;de.innot.avreclipse.configuration.app.release.251607951.;de.innot.avreclipse.tool.compiler.winavr.app.release.520659081;de.innot.avreclipse.compiler.winavr.input.835158705">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileC"/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.debug.1074875049;de.innot.avreclipse.configuration.app.debug.1074875049.;de.innot.avreclipse.tool.cppcompiler.app.debug.1541189039;de.innot.avreclipse.cppcompiler.input.590926730">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileCPP"/>
 		</scannerConfigBuildInfo>
 	</storageModule>
 </cproject>

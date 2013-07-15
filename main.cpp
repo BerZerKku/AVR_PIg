@@ -8,17 +8,15 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
-#include "debug.h"
-#include "setup.h"
-#include "ks0108.h"
-#include "menu.h"
-#include "keyboard.h"
-#include "uart.h"
-#include "protocolS.h"
-
-
-/// Определение размера массива в байтах
-#define SIZEOF_MAS(a) (sizeof(a) / sizeof(a[0]))
+#include "inc/debug.h"
+#include "inc/glbDefine.h"
+#include "inc/setup.h"
+#include "inc/ks0108.h"
+#include "inc/menu.h"
+#include "inc/keyboard.h"
+#include "inc/uart.h"
+#include "inc/protocolPcS.h"
+#include "inc/protocolBspS.h"
 
 /// Период обновления экрана * 100 мс
 #define LCD_REFRESH_PERIOD 2
@@ -30,7 +28,7 @@
 #define BUFF_SIZE_PC 64
 
 /// Максимальное кол-во неполученных сообщений от БСП для ошибки связи
-#define MAX_LOST_COM_FROM_BSP 5
+#define MAX_LOST_COM_FROM_BSP 10
 
 
 // Обработка принятых сообщений по последовательным портам
@@ -48,17 +46,17 @@ uint8_t uBufUartPc[BUFF_SIZE_PC];
 /// Буфер для свящи с БСП по последовательному порту
 uint8_t uBufUartBsp[BUFF_SIZE_BSP];
 
+/// Класс меню
+clMenu menu;
 /// Класс последовательного порта работающего с ПК
 clUart 		uartPC	(UART_UART1, uBufUartPc, BUFF_SIZE_PC);
 /// Класы последовательного порта работающего с БСП
 clUart 		uartBSP	(UART_UART0, uBufUartBsp, BUFF_SIZE_BSP);
 /// Класс стандартного протокола работающего с ПК
-clProtocolS	protPCs	(uBufUartPc, BUFF_SIZE_PC);
+clProtocolPcS	protPCs	(uBufUartPc, BUFF_SIZE_PC, menu.getParamStruct());
 /// Класс стандартного протокола работающего с БСП
-clProtocolS protBSPs(uBufUartBsp, BUFF_SIZE_BSP);
-/// Класс меню
-//clMenu		menu	(&protPCs);
-clMenu menu;
+clProtocolBspS protBSPs(uBufUartBsp, BUFF_SIZE_BSP, menu.getParamStruct());
+
 
 /**	Работа с принятыми данными по UART
  * 	@param Нет
@@ -75,17 +73,10 @@ static bool uartRead()
 	// Проверка наличия сообщения с БСП и ее обработка
 	if (protBSPs.getCurrentStatus() == PRTS_STATUS_READ)
 	{
-		// сброс счетчика принятых байт данных по UART
-		uartBSP.clrCnt();
-
 		// проверка контрольной суммы полученного сообщения и
 		// обработка данных если она соответствует полученной
 		if (protBSPs.checkReadData())
 		{
-#ifdef DEBUG
-			sDebug.byte1++;
-#endif
-
 			// обработка принятого сообщения
 			protBSPs.getData();
 
@@ -116,26 +107,21 @@ static bool uartRead()
 	// проверка наличия команды с ПК и ее обработка
 	if (protPCs.getCurrentStatus() == PRTS_STATUS_READ)
 	{
-		// сброс счетчика принятых байт данных по UART
-		uartPC.clrCnt();
-
-
 		// проверка контрольной суммы полученного сообщения и
 		// обработка данных если она соответствует полученной
 		if (protPCs.checkReadData())
 		{
-#ifdef DEBUG
-			sDebug.byte2++;
-#endif
-
 			// обработка принятого сообщения
-			protPCs.getData();
+			// если сообщение небыло обработано, перешлем его в БСП
+			// (т.е. если это не запрос/изменение пароля)
+			if (!protPCs.getData())
+			{
+				// сохранение запрашиваемой ПК команды
+				lastPcCom = protPCs.getCurrentCom();
 
-			// сохранение запрашиваемой ПК команды
-			lastPcCom = protPCs.getCurrentCom();
-
-			// пересылка сообщения в БСП
-			protBSPs.copyCommandFrom(protPCs.buf);
+				// пересылка сообщения в БСП
+				protBSPs.copyCommandFrom(protPCs.buf);
+			}
 		}
 	}
 
@@ -158,12 +144,10 @@ static bool uartWrite()
 	// если нет, то возьмем команду с МЕНЮ
 	if (protBSPs.getCurrentStatus() == PRTS_STATUS_WRITE)
 	{
+//		protBSPs.trCom();
 		uartBSP.trData(protBSPs.trCom());
 	}
-	else
-	{
-//		uartBSP.trData(protBSPs.trCom());
-	}
+
 
 	return true;
 }
@@ -198,9 +182,7 @@ main (void)
 	{
 		if (b100ms)
 		{
-			// задачи выполняемые раз в 100мс
-
-			// обарботка принятых сообщений с БСП/ПК
+			// обработка принятых сообщений с БСП/ПК
 			// передача в МЕНЮ текущего сосотояния связи с БСП
 			menu.setConnectionBsp(uartRead());
 
@@ -286,16 +268,11 @@ ISR(USART1_RX_vect)
 {
 	uint8_t tmp = UDR1;
 
-	uartPC.isrRX(tmp);
-
 	// обработчик протокола "Стандартный"
 	if (protPCs.isEnable())
 	{
 		if (protPCs.getCurrentStatus() != PRTS_STATUS_READ)
-		{
-			if (!protPCs.checkByte(tmp))
-				uartPC.clrCnt();
-		}
+			protPCs.checkByte(tmp);
 	}
 }
 
@@ -325,16 +302,10 @@ ISR(USART0_RX_vect)
 {
 	uint8_t tmp = UDR0;
 
-	uartBSP.isrRX(tmp);
-
 	// обработчик протокола "Стандартный"
 	if (protBSPs.isEnable())
 	{
 		if (protBSPs.getCurrentStatus() != PRTS_STATUS_READ)
-		{
-			if (!protBSPs.checkByte(tmp))
-				uartBSP.clrCnt();
-		}
+			protBSPs.checkByte(tmp);
 	}
 }
-

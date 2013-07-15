@@ -6,8 +6,8 @@
  */
 
 #include <avr/io.h>
-#include "debug.h"
-#include "setup.h"
+#include "../inc/debug.h"
+#include "../inc/setup.h"
 
 /**	Инициализация периферии
  * 	Неиспользуемые порты по умолчанию настроены на вход с подтяжкой к +

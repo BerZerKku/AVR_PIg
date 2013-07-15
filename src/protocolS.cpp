@@ -4,14 +4,15 @@
  *  Created on: 28.06.2012
  *      Author: Shcheblykin
  */
-#include "protocolS.h"
+#include "../inc/protocolS.h"
 
-clProtocolS::clProtocolS(uint8_t *buf, uint8_t size) : buf(buf), size(size)
+clProtocolS::clProtocolS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
+										buf(buf), size(size), sParam(sParam)
 {
-	this->enable = false;
-	this->cnt = 0;
-	this->maxLen = 0;
-	this->stat = PRTS_STATUS_NO;
+	enable = false;
+	cnt = 0;
+	maxLen = 0;
+	stat = PRTS_STATUS_NO;
 }
 
 /**	Опрос флага наличия принятой посылки.
@@ -93,19 +94,6 @@ clProtocolS::copyCommandFrom(uint8_t * const bufSource)
 	return stat;
 }
 
-/**
- *
- */
-bool
-clProtocolS::getData()
-{
-	bool stat = false;
-
-	this->stat = PRTS_STATUS_NO;
-
-	return stat;
-}
-
 
 ///** Отправка запроса
 // * 	@param com Код команды
@@ -179,78 +167,110 @@ clProtocolS::getData()
 //	return tmp;
 //}
 
-/**	Подготовка к отправке команды с данными (заполнение буфера)
+/**	Подготовка к отправке команды (сама команда, кол-во данных и данные
+ * 	уже должны лежать в буфере)
  * 	@param *buf Указатель на начало данных
  * 	@param size Кол-во байт данных
  * 	@return Кол-во отправляемых байт данных
  */
 uint8_t
-clProtocolS::addCom(uint8_t com, uint8_t size, uint8_t buf[])
+clProtocolS::addCom()
 {
 	uint8_t cnt = 0;
 
-	if (size < (this->size - 5))
+	buf[0] = 0x55;
+	buf[1] = 0xAA;
+	// команда будет отправлена если лежит не нулевая команда и
+	// под заявленное кол-во данных хватает размера буфера
+	if (buf[2] != 0)
 	{
-		buf[cnt++] = 0x55;
-		buf[cnt++] = 0xAA;
-		buf[cnt++] = com;
-		buf[cnt++] = size;
-		// Скопируем данные в буфер передатчика
-		for(uint8_t i = 0; i < size; i++, cnt++)
-			buf[cnt] = buf[i];
-		buf[cnt++] = getCRC();
-
-		maxLen = cnt;
-		stat = PRTS_STATUS_WRITE;
+		uint8_t len = buf[3] + 5;
+		if (len <= (size - 5))
+		{
+			buf[len - 1] = getCRC();
+			cnt = len;
+			maxLen = len;
+			stat = PRTS_STATUS_WRITE;
+		}
 	}
+
 
 	return cnt;
 }
+
+
+/**	Подготовка к отправке команды с данными (заполнение буфера)
+ * 	@param *buf Указатель на начало данных
+ * 	@param size Кол-во байт данных
+ * 	@return Кол-во отправляемых байт данных
+ */
+//uint8_t
+//clProtocolS::addCom(uint8_t com, uint8_t size, uint8_t buf[])
+//{
+//	uint8_t cnt = 0;
+//
+//	if (size < (this->size - 5))
+//	{
+//		buf[cnt++] = 0x55;
+//		buf[cnt++] = 0xAA;
+//		buf[cnt++] = com;
+//		buf[cnt++] = size;
+//		// Скопируем данные в буфер передатчика
+//		for(uint8_t i = 0; i < size; i++, cnt++)
+//			buf[cnt] = buf[i];
+//		buf[cnt++] = getCRC();
+//
+//		maxLen = cnt;
+//		stat = PRTS_STATUS_WRITE;
+//	}
+//
+//	return cnt;
+//}
 
 /**	Подготовка к отправке команды с 1 байтом данных (заполнение буфера)
  * 	@param *buf Указатель на начало данных
  * 	@param size Кол-во байт данных
  * 	@return Кол-во отправляемых байт данных
  */
-uint8_t
-clProtocolS::addCom(uint8_t com, uint8_t byte)
-{
-	uint8_t cnt = 0;
-
-	buf[cnt++] = 0x55;
-	buf[cnt++] = 0xAA;
-	buf[cnt++] = com;
-	buf[cnt++] = 0x01;
-	buf[cnt++] = byte;
-	buf[cnt++] = com + 0x01 + byte;
-
-	maxLen = cnt;
-	stat = PRTS_STATUS_WRITE;
-
-	return cnt;
-}
+//uint8_t
+//clProtocolS::addCom(uint8_t com, uint8_t byte)
+//{
+//	uint8_t cnt = 0;
+//
+//	buf[cnt++] = 0x55;
+//	buf[cnt++] = 0xAA;
+//	buf[cnt++] = com;
+//	buf[cnt++] = 0x01;
+//	buf[cnt++] = byte;
+//	buf[cnt++] = com + 0x01 + byte;
+//
+//	maxLen = cnt;
+//	stat = PRTS_STATUS_WRITE;
+//
+//	return cnt;
+//}
 
 /**	Подготовка к отправке команды без данных (заполнение буфера)
  * 	@param *buf Указатель на начало данных
  * 	@param size Кол-во байт данных
  * 	@return Кол-во отправляемых байт данных
  */
-uint8_t
-clProtocolS::addCom(uint8_t com)
-{
-	uint8_t cnt = 0;
-
-	buf[cnt++] = 0x55;
-	buf[cnt++] = 0xAA;
-	buf[cnt++] = com;
-	buf[cnt++] = 00;
-	buf[cnt++] = com;
-
-	maxLen = cnt;
-	stat = PRTS_STATUS_WRITE;
-
-	return cnt;
-}
+//uint8_t
+//clProtocolS::addCom(uint8_t com)
+//{
+//	uint8_t cnt = 0;
+//
+//	buf[cnt++] = 0x55;
+//	buf[cnt++] = 0xAA;
+//	buf[cnt++] = com;
+//	buf[cnt++] = 00;
+//	buf[cnt++] = com;
+//
+//	maxLen = cnt;
+//	stat = PRTS_STATUS_WRITE;
+//
+//	return cnt;
+//}
 
 
 /**	Проверка принятой контрольной суммы

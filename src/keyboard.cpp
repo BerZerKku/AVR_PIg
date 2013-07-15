@@ -6,8 +6,8 @@
  */
 
 #include <avr/io.h>
-#include "keyboard.h"
-#include "debug.h"
+#include "../inc/keyboard.h"
+#include "../inc/debug.h"
 
 /// код нажатой кнопки
 static eKEY keyPressed;

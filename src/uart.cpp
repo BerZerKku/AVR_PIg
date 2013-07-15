@@ -8,8 +8,8 @@
 #include <avr/interrupt.h>
 #include <stdlib.h>
 
-#include "uart.h"
-#include "debug.h"
+#include "../inc/uart.h"
+#include "../inc/debug.h"
 
 /** Конструктор
  * 	Порты ввода-вывода должны быть настроены заранее

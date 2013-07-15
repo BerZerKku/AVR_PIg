@@ -6,10 +6,10 @@
  */
 #include <stdio.h>
 
-#include "menu.h"
-#include "debug.h"
-#include "ks0108.h"
-#include "flash.h"
+#include "../inc/menu.h"
+#include "../inc/debug.h"
+#include "../inc/ks0108.h"
+#include "../inc/flash.h"
 
 /// буфер текста выводимого на ЖКИ
 static char vLCDbuf[SIZE_BUF_STRING];
@@ -27,9 +27,7 @@ clMenu::clMenu()
 
 	key = KEY_NO;
 
-	typeDevice = AVANT_R400;
-
-	com = 0;
+	sParam.typeDevice = AVANT_NO;
 
 	connectionBsp = false;
 
@@ -128,8 +126,6 @@ clMenu::lvlStart()
 {
 	if (lvlCreate)
 	{
-		PORT_DBG |= PIN_TP2;
-
 		lvlCreate = false;
 
 		cursorEnable = false;
@@ -149,7 +145,7 @@ clMenu::lvlStart()
 	sParam.prd_sost = 1;
 #endif
 
-	if (typeDevice == AVANT_R400)
+	if (sParam.typeDevice == AVANT_R400)
 	{
 		// вывод параметров
 		snprintf_P(&vLCDbuf[00], 11, fcTime, sParam.hour, sParam.minute, sParam.second);
@@ -163,7 +159,7 @@ clMenu::lvlStart()
 		snprintf_P(&vLCDbuf[60], 21, fcDef, fcRegime[sParam.def_regime], //
 											fcDefSost[sParam.def_sost]);
 	}
-	else if (typeDevice == AVANT_RZSK)
+	else if (sParam.typeDevice == AVANT_RZSK)
 	{
 		// вывод параметров
 		snprintf_P(&vLCDbuf[00], 11, fcTime, sParam.hour, sParam.minute, sParam.second);
@@ -181,7 +177,7 @@ clMenu::lvlStart()
 		snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[sParam.prd_regime], //
 											 fcPrdSost[sParam.prd_sost]);
 	}
-	else if (typeDevice == AVANT_K400)
+	else if (sParam.typeDevice == AVANT_K400)
 	{
 		// вывод параметров
 		snprintf_P(&vLCDbuf[00], 11, fcTime, sParam.hour, sParam.minute, sParam.second);
@@ -195,7 +191,7 @@ clMenu::lvlStart()
 		snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[sParam.prd_regime], //
 											 fcDefSost[sParam.prd_sost]);
 	}
-	else if (typeDevice == AVANT_K400_OPTIC)
+	else if (sParam.typeDevice == AVANT_K400_OPTIC)
 	{
 		snprintf_P(&vLCDbuf[00], 11, fcTime, sParam.hour, sParam.minute, sParam.second);
 		snprintf_P(&vLCDbuf[12], 11, fcDate, sParam.day, sParam.month, sParam.year);
@@ -284,15 +280,15 @@ clMenu::lvlStart()
 			break;
 
 		case KEY_FUNC_RES_IND:
-			com = 1;
+//			com = 1;
 			break;
 
 		case KEY_FUNC_ENTER:
-			com = 2;
+//			com = 2;
 			break;
 
 		case KEY_FUNC_RESET:
-			com = 3;
+//			com = 3;
 			break;
 
 		default:
@@ -463,13 +459,13 @@ clMenu::lvlJournal()
 		vLCDclear();
 		vLCDdrawBoard(lineParam);
 
-		if (typeDevice == AVANT_R400)
+		if (sParam.typeDevice == AVANT_R400)
 		{
 			numPunkt = 0;
 			punkt[numPunkt++] = punkt1;
 			punkt[numPunkt++] = punkt2;
 		}
-		else if (typeDevice == AVANT_RZSK)
+		else if (sParam.typeDevice == AVANT_RZSK)
 		{
 			numPunkt = 0;
 			punkt[numPunkt++] = punkt1;
@@ -477,14 +473,14 @@ clMenu::lvlJournal()
 			punkt[numPunkt++] = punkt3;
 			punkt[numPunkt++] = punkt4;
 		}
-		else if (typeDevice == AVANT_K400)
+		else if (sParam.typeDevice == AVANT_K400)
 		{
 			numPunkt = 0;
 			punkt[numPunkt++] = punkt1;
 			punkt[numPunkt++] = punkt3;
 			punkt[numPunkt++] = punkt4;
 		}
-		else if (typeDevice == AVANT_K400_OPTIC)
+		else if (sParam.typeDevice == AVANT_K400_OPTIC)
 		{
 			numPunkt = 0;
 			punkt[numPunkt++] = punkt1;
@@ -863,7 +859,7 @@ clMenu::lvlControl()
 		vLCDdrawBoard(lineParam);
 
 
-		if ((typeDevice == AVANT_RZSK) || (typeDevice == AVANT_R400))
+		if ((sParam.typeDevice == AVANT_RZSK) || (sParam.typeDevice == AVANT_R400))
 		{
 			numPunkt = 0;
 			punkt[numPunkt++] = punkt1;
@@ -872,13 +868,13 @@ clMenu::lvlControl()
 			punkt[numPunkt++] = punkt4;
 			punkt[numPunkt++] = punkt5;
 		}
-		else if (typeDevice == AVANT_K400)
+		else if (sParam.typeDevice == AVANT_K400)
 		{
 			numPunkt = 0;
 			punkt[numPunkt++] = punkt3;
 			punkt[numPunkt++] = punkt4;
 		}
-		else if (typeDevice == AVANT_K400_OPTIC)
+		else if (sParam.typeDevice == AVANT_K400_OPTIC)
 		{
 			numPunkt = 0;
 			punkt[numPunkt++] = punkt3;
@@ -1029,13 +1025,13 @@ clMenu::lvlSetupParam()
 		vLCDclear();
 		vLCDdrawBoard(lineParam);
 
-		if (typeDevice == AVANT_R400)
+		if (sParam.typeDevice == AVANT_R400)
 		{
 			numPunkt = 0;
 			punkt[numPunkt++] = punkt1;
 			punkt[numPunkt++] = punkt4;
 		}
-		else if (typeDevice == AVANT_RZSK)
+		else if (sParam.typeDevice == AVANT_RZSK)
 		{
 			numPunkt = 0;
 			punkt[numPunkt++] = punkt1;
@@ -1043,14 +1039,14 @@ clMenu::lvlSetupParam()
 			punkt[numPunkt++] = punkt3;
 			punkt[numPunkt++] = punkt4;
 		}
-		else if (typeDevice == AVANT_K400)
+		else if (sParam.typeDevice == AVANT_K400)
 		{
 			numPunkt = 0;
 			punkt[numPunkt++] = punkt2;
 			punkt[numPunkt++] = punkt3;
 			punkt[numPunkt++] = punkt4;
 		}
-		else if (typeDevice == AVANT_K400_OPTIC)
+		else if (sParam.typeDevice == AVANT_K400_OPTIC)
 		{
 			numPunkt = 0;
 			punkt[numPunkt++] = punkt2;
@@ -1444,7 +1440,7 @@ clMenu::lvlSetupParamGlb()
 		lvlCreate = false;
 
 		cursorLine = 1;
-		if (typeDevice == AVANT_K400_OPTIC)
+		if (sParam.typeDevice == AVANT_K400_OPTIC)
 			cursorLine = 2;
 		cursorEnable = true;
 
@@ -1481,12 +1477,12 @@ clMenu::lvlSetupParamGlb()
 			if (cursorLine > 1)
 				cursorLine--;
 
-			if (typeDevice == AVANT_K400)
+			if (sParam.typeDevice == AVANT_K400)
 			{
 				if (cursorLine == 6)
 					cursorLine = 5;
 			}
-			else if (typeDevice == AVANT_K400_OPTIC)
+			else if (sParam.typeDevice == AVANT_K400_OPTIC)
 			{
 				if (cursorLine <= 2)
 					cursorLine = 2;
@@ -1495,7 +1491,7 @@ clMenu::lvlSetupParamGlb()
 					cursorLine--;
 				}
 			}
-			else if (typeDevice == AVANT_R400)
+			else if (sParam.typeDevice == AVANT_R400)
 			{
 				if (cursorLine == 2)
 					cursorLine = 1;
@@ -1508,19 +1504,19 @@ clMenu::lvlSetupParamGlb()
 			if (cursorLine < 7)
 				cursorLine++;
 
-			if (typeDevice == AVANT_K400)
+			if (sParam.typeDevice == AVANT_K400)
 			{
 				if (cursorLine == 6)
 					cursorLine = 7;
 			}
-			else if (typeDevice == AVANT_K400_OPTIC)
+			else if (sParam.typeDevice == AVANT_K400_OPTIC)
 			{
 				if ((cursorLine == 3) || (cursorLine == 6))
 				{
 					cursorLine++;
 				}
 			}
-			else if (typeDevice == AVANT_R400)
+			else if (sParam.typeDevice == AVANT_R400)
 			{
 				if (cursorLine == 2)
 					cursorLine = 3;
@@ -1611,10 +1607,10 @@ clMenu::lvlSetupDT()
 uint8_t
 clMenu::txCommand()
 {
-	uint_fast8_t t = com;
-	com = 0;
+//	uint_fast8_t t = com;
+//	com = 0;
 
-	return t;
+	return 0;
 }
 
 uint8_t
