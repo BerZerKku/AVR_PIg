@@ -9,6 +9,8 @@
 
 const char fcNull[] PROGMEM = "";
 
+const char fcNoConnectBsp[] PROGMEM = " Нет связи с БСП!!! ";
+
 const char fcUout[] PROGMEM = "U=%u.%uВ";
 const char fcIout[] PROGMEM	= "I=%uмА";
 const char fcRout[] PROGMEM = "R=%uОм";

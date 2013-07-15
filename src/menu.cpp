@@ -14,7 +14,8 @@
 /// буфер текста выводимого на ЖКИ
 static char vLCDbuf[SIZE_BUF_STRING];
 
-clMenu::clMenu(clProtocolS *protocol) : pProtocol(protocol)
+//clMenu::clMenu(clProtocolS *protocol) : pProtocol(protocol)
+clMenu::clMenu()
 {
 	lvlMenu = &clMenu::lvlStart;
 	lineParam = 3;
@@ -29,6 +30,8 @@ clMenu::clMenu(clProtocolS *protocol) : pProtocol(protocol)
 	typeDevice = AVANT_R400;
 
 	com = 0;
+
+	connectionBsp = false;
 
 	// включение постоянной подсветки
 	vLCDsetLED(LED_ON);
@@ -73,16 +76,29 @@ clMenu::main(void)
 	(this->*lvlMenu) ();
 	key = KEY_NO;
 
+
+	// вывод сообщения в случае отсутствия связи с БСП
+	if (!isConnectionBsp() && ((reInit % 10) < 5))
+		snprintf_P(&vLCDbuf[0], 21, fcNoConnectBsp);
+
 #ifdef DEBUG
 	// вывод отладочной информации
-	snprintf(&vLCDbuf[20], 5, "1*%X", sDebug.byte1);
-	snprintf(&vLCDbuf[25], 5, "2*%X", sDebug.byte2);
-	snprintf(&vLCDbuf[30], 5, "3*%X", sDebug.byte3);
-	snprintf(&vLCDbuf[35], 5, "4*%X", sDebug.byte4);
-	snprintf(&vLCDbuf[40], 5, "5*%X", sDebug.byte5);
-	snprintf(&vLCDbuf[45], 5, "6*%X", sDebug.byte6);
-	snprintf(&vLCDbuf[50], 5, "7*%X", sDebug.byte7);
-	snprintf(&vLCDbuf[55], 5, "8*%X", sDebug.byte8);
+	if (this->lvlMenu == &clMenu::lvlStart)
+	{
+		snprintf(&vLCDbuf[20], 5, "1*%02X", sDebug.byte1);
+		snprintf(&vLCDbuf[25], 5, "2*%02X", sDebug.byte2);
+		snprintf(&vLCDbuf[30], 5, "3*%02X", sDebug.byte3);
+		snprintf(&vLCDbuf[35], 5, "4*%02X", sDebug.byte4);
+		snprintf(&vLCDbuf[40], 5, "5*%02X", sDebug.byte5);
+		snprintf(&vLCDbuf[45], 5, "6*%02X", sDebug.byte6);
+		snprintf(&vLCDbuf[50], 5, "7*%02X", sDebug.byte7);
+		snprintf(&vLCDbuf[55], 5, "8*%02X", sDebug.byte8);
+	}
+	else
+	{
+		snprintf(&vLCDbuf[10], 5, "1*%02X", sDebug.byte1);
+		snprintf(&vLCDbuf[15], 5, "2*%02X", sDebug.byte2);
+	}
 #endif
 
 	// преобразование строки символов в данные для вывода на экран

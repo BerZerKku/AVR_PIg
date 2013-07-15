@@ -8,6 +8,9 @@
 #ifndef PROTOCOLS_H_
 #define PROTOCOLS_H_
 
+#include <stdint.h>
+#include "debug.h"
+
 enum ePRTS_ACTION
 {
 	PRTS_READ_COM,

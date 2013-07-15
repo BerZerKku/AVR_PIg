@@ -9,7 +9,7 @@
 #define MENU_H_
 
 #include "keyboard.h"
-#include "protocolS.h"
+//#include "protocolS.h"
 
 /// время до переинициализации дисплея (* время цикла ЖКИ)
 #define TIME_TO_REINIT_LCD 50
@@ -82,41 +82,52 @@ enum eMNU_TYPE_LINE
 class clMenu
 {
 public:
-	clMenu(clProtocolS *protocol);
+//	clMenu(clProtocolS *protocol);
+	clMenu();
 
-	// тело
+	/// Тело
 	void main();
 
-	// возвращает кол-во линий отведенных для параметров
+	/// Возвращает кол-во линий отведенных для параметров
 	uint8_t getLineParam() const
 	{
 		return lineParam;
 	}
 
-	// установка типа аппарата
+	/// Установка типа аппарата
 	void setTypeDevice(eMNU_TYPE_DEVICE device)
 	{
 		typeDevice = device;
 	}
 
-	// возвращает текущий тип аппарата
+	/// Возвращает текущий тип аппарата
 	eMNU_TYPE_DEVICE getTypeDevice() const
 	{
 		return typeDevice;
 	}
 
-	// возвращает имеющуюся команду на исполнение
+	/// Возвращает имеющуюся команду на исполнение
 	uint8_t txCommand();
 
-	// структура параметров аппарата
+	/// Структура параметров аппарата
 	stMNUparam sParam;
 
-	// протокол работы с БСП
-	const clProtocolS *pProtocol;
+	/// Протокол работы с БСП
+//	const clProtocolS *pProtocol;
+
+	/// Возвращает текущее состояние связи с БСП
+	bool isConnectionBsp() const { return connectionBsp; }
+
+	/// Установка флага наличия связи с БСП
+	void setConnectionBsp(bool f) { connectionBsp = f; }
+
 
 private:
 	// код кнопки
 	eKEY key;
+
+	// флаг текущего сосотояния связи с БСП, True - есть
+	bool connectionBsp;
 
 	// кол-во отображаемых параметров
 	uint8_t lineParam;
@@ -141,6 +152,7 @@ private:
 
 	// очистка текстового буфера
 	void clearTextBuf();
+
 	// Уровни меню
 	void lvlStart();
 	void lvlFirst();

@@ -4,17 +4,10 @@
  *  Created on: 28.06.2012
  *      Author: Shcheblykin
  */
-
-#include <stdint.h>
 #include "protocolS.h"
-#include "debug.h"
 
 clProtocolS::clProtocolS(uint8_t *buf, uint8_t size) : buf(buf), size(size)
 {
-#if size < 5
-#warning "–азмер массива должен быть как минимум 5 байт !!!"
-#endif
-
 	this->enable = false;
 	this->cnt = 0;
 	this->maxLen = 0;
