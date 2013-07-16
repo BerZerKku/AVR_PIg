@@ -24,9 +24,10 @@ bool clProtocolPcS::getData()
 
 	if (com == GB_COM_GET_PASSWORD)
 	{
+		uint16_t tmp = sParam->password.get();
 		buf[3] = 2;
-		buf[4] = sParam->password >> 8;
-		buf[5] = sParam->password;
+		buf[4] = tmp >> 8;
+		buf[5] = tmp;
 		addCom();
 		stat = true;
 	}
@@ -35,7 +36,7 @@ bool clProtocolPcS::getData()
 		if (buf[3] == 2)
 		{
 			uint16_t tmp = ((uint16_t) buf[4] << 8) + buf[5];
-			sParam->setPassword(tmp);
+			sParam->password.set(tmp);
 		}
 		addCom(); // эхо
 		stat = true;

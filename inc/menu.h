@@ -65,6 +65,10 @@ private:
 	// очистка текстового буфера
 	void clearTextBuf();
 
+	// вывод на экран измеряемых параметров
+	void printMeasParam(eGB_MEAS_PARAM par1 = GB_MEAS_PARAM_NO,
+						eGB_MEAS_PARAM par2 = GB_MEAS_PARAM_NO);
+
 	// Уровни меню
 	void lvlStart();
 	void lvlFirst();

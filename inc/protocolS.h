@@ -34,7 +34,7 @@ public:
 //	uint8_t addCom	(uint8_t com, ePRTS_ACTION act);
 //	bool getData	(stMNUparam *param);
 
-	// указатель на буфер
+	// буфер принятых/передаваемых данных
 	uint8_t * const buf;
 
 	/// Проверка флага наличия принятой посылки

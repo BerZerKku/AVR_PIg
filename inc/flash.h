@@ -17,8 +17,8 @@ const char fcRout[] PROGMEM = "R=%uОм";
 const char fcUz[] 	PROGMEM	= "Uз=%.2dдБ";
 const char fcUcf[] 	PROGMEM	= "Uк=%.2dдБ";
 const char fcUn[] 	PROGMEM	= "Uш=%.2dдБ";
-const char fcDate[] PROGMEM = "%02X.%02X.%02X";
-const char fcTime[] PROGMEM = "%02X:%02X:%02X";
+const char fcDate[] PROGMEM = "%02d.%02d.%02d";
+const char fcTime[] PROGMEM = "%02d:%02d:%02d";
 
 const char fcDef[] PROGMEM = "ЗАЩ:%S%S";
 const char fcPrm[] PROGMEM = "ПРМ:%S%S";
@@ -90,6 +90,7 @@ const char fcPrdSost[] [9] PROGMEM =
 // Неисправности общие
 const char fcGlbError[] [17] PROGMEM =
 {
+	"Неиспр. 0х0000  ",	// 0х0000
 	"Неиспр.чт. FLASH",	// 0x0001
 	"Неиспр.зап.FLASH",	// 0x0002
 	"Неиспр.чт. PLIS ",	// 0x0004
@@ -111,6 +112,7 @@ const char fcGlbError[] [17] PROGMEM =
 // Предупреждения общие
 const char fcGlbWarning[] [17] PROGMEM =
 {
+	"Предупр. 0х0000 ",	// 0х0000
 	"Установите часы ", // 0x0001
 	"Отказ резерв.лин", // 0х0002
 	"Удал.пост неиспр", // 0х0004
@@ -121,6 +123,7 @@ const char fcGlbWarning[] [17] PROGMEM =
 // Неисправности защиты
 const char fcDefError[] [17] PROGMEM =
 {
+	"Неиспр. 0х0000  ",	// 0х0000
 	"Нет блока БСЗ   ",	// 0x0001
 	"Неиспр.верс.БСЗ ",	// 0x0002
 	"Неиспр.перекл.  ",	// 0x0004
@@ -139,9 +142,20 @@ const char fcDefError[] [17] PROGMEM =
 	"Неиспр. 0х8000  "	// 0х8000
 };
 
+// Предупреждения защиты
+const char fcDefWarning[] [17] PROGMEM =
+{
+	"Предупр. 0х0000 ",	// 0х0000
+	"Предупр. 0х0001 ", // 0x0001
+	"Предупр. 0х0002 ", // 0х0002
+	"Предупр. 0х0004 ", // 0х0004
+	"Предупр. 0х0008 "  // 0х0008
+};
+
 // Неисправности приемника
 const char fcPrmError[] [17] PROGMEM =
 {
+	"Неиспр. 0х0000  ",	// 0х0000
 	"Нет блока БСК   ",	// 0x0001
 	"Неиспр.верс.БСК ",	// 0x0002
 	"Неиспр.нет КЧ   ",	// 0x0004
@@ -163,6 +177,7 @@ const char fcPrmError[] [17] PROGMEM =
 // Предупреждения приемника
 const char fcPrmWarningOptic[] [17] PROGMEM =
 {
+	"Предупр. 0х0000 ",	// 0х0000
 	"Нет КЧ          ", // 0x0001
 	"Предупр. 0х0002 ", // 0х0002
 	"Предупр. 0х0004 ", // 0х0004
@@ -172,6 +187,7 @@ const char fcPrmWarningOptic[] [17] PROGMEM =
 // Неисправности передатчика
 const char fcPrdError[] [17] PROGMEM =
 {
+	"Неиспр. 0х0000  ",	// 0х0000
 	"Нет блока БСК   ",	// 0x0001
 	"Неиспр.верс.БСК ",	// 0x0002
 	"Неиспр. 0х0004  ",	// 0x0004
@@ -193,6 +209,7 @@ const char fcPrdError[] [17] PROGMEM =
 // Предупреждения передатчика
 const char fcPrdWarning[] [17] PROGMEM =
 {
+	"Предупр. 0х0000 ",	// 0х0000
 	"Предупр. 0х0001 ", // 0x0001
 	"Предупр. 0х0002 ", // 0х0002
 	"Предупр. 0х0004 ", // 0х0004
