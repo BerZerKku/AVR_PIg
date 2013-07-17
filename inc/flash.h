@@ -11,14 +11,14 @@ const char fcNull[] PROGMEM = "";
 
 const char fcNoConnectBsp[] PROGMEM = " Íåò ñâÿçè ñ ÁÑÏ!!! ";
 
-const char fcUout[] PROGMEM = "U=%u.%uÂ";
-const char fcIout[] PROGMEM	= "I=%uìÀ";
-const char fcRout[] PROGMEM = "R=%uÎì";
-const char fcUz[] 	PROGMEM	= "Uç=%.2däÁ";
-const char fcUcf[] 	PROGMEM	= "Uê=%.2däÁ";
-const char fcUn[] 	PROGMEM	= "Uø=%.2däÁ";
-const char fcDate[] PROGMEM = "%02d.%02d.%02d";
-const char fcTime[] PROGMEM = "%02d:%02d:%02d";
+const char fcUout[] PROGMEM = "U=%02u.%01uÂ";
+const char fcIout[] PROGMEM	= "I=%03uìÀ";
+const char fcRout[] PROGMEM = "R=%03uÎì";
+const char fcUz[] 	PROGMEM	= "Uç=%02däÁ";
+const char fcUcf[] 	PROGMEM	= "Uê=%02däÁ";
+const char fcUn[] 	PROGMEM	= "Uø=%02däÁ";
+const char fcDate[] PROGMEM = "%02u.%02u.%02u";
+const char fcTime[] PROGMEM = "%02u:%02u:%02u";
 
 const char fcDef[] PROGMEM = "ÇÀÙ:%S%S";
 const char fcPrm[] PROGMEM = "ÏÐÌ:%S%S";

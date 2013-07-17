@@ -8,6 +8,12 @@
 #ifndef GLBDEF_H_
 #define GLBDEF_H_
 
+#include <stdint.h>
+#include <avr/pgmspace.h>
+
+/// преобразование двух CHAR в INT
+#define TO_INT16(high, low) (((uint16_t) high << 8) + low)
+
 /// Тип аппарата
 enum eGB_TYPE_DEVICE
 {
@@ -34,6 +40,7 @@ enum eGB_COM
 	GB_COM_GET_SOST		= 0x30,
 	GB_COM_GET_FAULT 	= 0x31,
 	GB_COM_GET_TIME 	= 0x32,
+	GB_COM_GET_MEAS		= 0x34,
 	GB_COM_SET_TIME 	= 0xB2,
 
 	// только с ПК
@@ -57,20 +64,6 @@ enum eGB_COM_MASK
 	GB_COM_MASK_GROUP_WRITE_REGIME = 0x40,
 	GB_COM_MASK_GROUP_WRITE_PARAM = 0x80,
 	GB_COM_MASK_GROUP_READ_JOURNAL = 0xC0
-};
-
-/// Измеряемые параметры
-enum eGB_MEAS_PARAM
-{
-	GB_MEAS_PARAM_NO,
-	GB_MEAS_PARAM_DATE,
-	GB_MEAS_PARAM_TIME,
-	GB_MEAS_PARAM_UZ,
-	GB_MEAS_PARAM_UC,
-	GB_MEAS_PARAM_UN,
-	GB_MEAS_PARAM_UOUT,
-	GB_MEAS_PARAM_IOUT,
-	GB_MEAS_PARAM_ROUT
 };
 
 /// Класс для даты и времени
@@ -226,6 +219,8 @@ class TDeviceStatus
 public:
 	TDeviceStatus()
 	{
+		enable_ = false;
+
 		fault_ = 0;
 		faults_ = 0;
 		numFaults_ = 0;
@@ -275,6 +270,10 @@ public:
 	uint8_t getDopByte() 	const { return dopByte_; }
 	bool setDopByte(uint8_t byte) { dopByte_ = byte; return true; }
 
+	// работа с флагом наличия устройства
+	void setEnable(bool enable)	  { enable_ = enable; }
+	bool isEnable()			const { return enable_; }
+
 private:
 	// текущая приоритетная неисправность, неисправности и кол-во неисправностей
 	uint8_t fault_;
@@ -289,6 +288,9 @@ private:
 	uint8_t regime_;
 	uint8_t state_;
 	uint8_t dopByte_;
+
+	// True - означает наличие данного устройства в текущем исполнении АВАНТа
+	bool enable_;
 
 	// возвращает кол-во установленных в 1 бит
 	uint8_t getNumSetBits(uint16_t val)
@@ -350,13 +352,109 @@ private:
 
 class TMeasuredParameters
 {
+public:
+	TMeasuredParameters()
+	{
+		voltDef_ = 0;
+		voltCf_ = 0;
+		voltNoise_ = 0;
+		voltOut_ = 0;
+		curOut_ = 0;
+		resistOut_ = 0;
+	}
+
+	// запас по защите
+	int8_t getVoltageDef() const { return voltDef_; }
+	bool setVoltageDef(int8_t voltDef)
+	{
+		bool state = false;
+		if ( (voltDef > - 100) && (voltDef < 100) )
+		{
+			voltDef_ = voltDef;
+			state = true;
+		}
+		return state;
+
+	}
+
+	// запас по КЧ
+	int8_t getVoltageCf() const { return voltCf_; }
+	bool setVoltageCf(int8_t voltCf)
+	{
+		bool state = false;
+		if ( (voltCf > -100) && (voltCf < 100) )
+		{
+			voltCf_ = voltCf;
+			state = true;
+		}
+		return state;
+
+	}
+
+	// напряжение выхода
+	uint8_t getVoltageOutInt() const { return (voltOut_ / 10); }
+	uint8_t getVoltageOutFract() const { return (voltOut_ % 10); }
+	bool setVoltageOut(uint8_t voltOutInt, uint8_t voltOutFract)
+	{
+		bool state = false;
+		if ( (voltOutInt < 100) && (voltOutFract < 10) )
+		{
+			voltOut_ = (((uint16_t) voltOutInt) * 10) + voltOutFract;
+			state = true;
+		}
+		return state;
+	}
+
+	// ток выхода
+	uint16_t getCurrentOut() const { return curOut_; }
+	bool setCurrentOut(uint16_t curOut)
+	{
+		bool state = false;
+		if (curOut < 999)
+		{
+			curOut_ = curOut;
+			state = true;
+		}
+		return state;
+	}
+
+	// сопротивление выхода
+	uint16_t getResistOut() const { return resistOut_; }
+	bool setResistOut(uint16_t resistOut)
+	{
+		bool state = false;
+		if (resistOut < 999)
+		{
+			resistOut_ = resistOut;
+			state = true;
+		}
+		return state;
+	}
+
+	// уровень шума
+	int8_t getVoltageNoise() const { return voltNoise_; }
+	bool setVoltageNoise(int8_t voltNoise)
+	{
+		bool state = false;
+		if ( (voltNoise > -100) && (voltNoise < 100) )
+		{
+			voltNoise_ = voltNoise;
+			state = true;
+		}
+		return state;
+	}
 private:
+	// запас по защите (-99 .. 99)дБ
 	int8_t voltDef_;
-	int8_t voltCF_;
+	// запас по КЧ (-99 .. 99)дБ
+	int8_t voltCf_;
+	// уровень шумов (-99 .. 99)дБ
 	int8_t voltNoise_;
-	uint8_t voltOutInt_;
-	uint8_t voltOutFract_;
+	// выходное напряжение умноженное на 10 (0 .. 999)В
+	uint16_t voltOut_;
+	// выходной ток (0 .. 999)мА
 	uint16_t curOut_;
+	// выходное сопротивление (0 .. 999)Ом
 	uint16_t resistOut_;
 };
 
@@ -374,7 +472,7 @@ struct stGBparam
 	TDataTime dataTime;
 
 	// измеряемые параметры
-	TMeasuredParameters measurement;
+	TMeasuredParameters measParam;
 
 	// текущее состояние устройств
 	TDeviceDef def;

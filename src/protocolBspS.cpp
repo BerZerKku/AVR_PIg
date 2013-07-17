@@ -74,17 +74,36 @@ bool clProtocolBspS::getData()
 			}
 			else if (com == GB_COM_GET_FAULT)
 			{
-				sParam->def.status.setFault(((uint16_t)buf[4]<<8) + buf[5]);
-				sParam->def.status.setWarning(((uint16_t)buf[6]<<8) + buf[7]);
+				sParam->def.status.setFault(TO_INT16(buf[4], buf[5]));
+				sParam->def.status.setWarning(TO_INT16(buf[6], buf[7]));
 
-				sParam->prm.status.setFault(((uint16_t)buf[8]<<8) + buf[9]);
-				sParam->prm.status.setWarning(((uint16_t)buf[10]<<8) + buf[11]);
+				sParam->prm.status.setFault(TO_INT16(buf[8], buf[9]));
+				sParam->prm.status.setWarning(TO_INT16(buf[10], buf[11]));
 
-				sParam->prd.status.setFault(((uint16_t)buf[12]<<8) + buf[13]);
-				sParam->prd.status.setWarning(((uint16_t)buf[14]<<8) + buf[15]);
+				sParam->prd.status.setFault(TO_INT16(buf[12], buf[13]));
+				sParam->prd.status.setWarning(TO_INT16(buf[14], buf[15]));
 
-				sParam->glb.status.setFault(((uint16_t)buf[16]<<8) + buf[17]);
-				sParam->glb.status.setWarning(((uint16_t)buf[18]<<8) + buf[19]);
+				sParam->glb.status.setFault(TO_INT16(buf[16], buf[17]));
+				sParam->glb.status.setWarning(TO_INT16(buf[18], buf[19]));
+			}
+			else if (com == GB_COM_GET_MEAS)
+			{
+				// обработаем посылку, если стоит флаг опроса всех параметров
+				if (buf[4] == 0)
+				{
+					sParam->measParam.setResistOut(TO_INT16(buf[5], buf[6]));
+					sParam->measParam.setCurrentOut(TO_INT16(buf[7], buf[8]));
+					// в buf[10] передатся дробная часть напряжения * 100
+					// т.е. если там 90, то это 0.9В.
+					sParam->measParam.setVoltageOut(buf[9], (buf[10] / 10));
+					sParam->measParam.setVoltageDef(buf[11]);
+					// 12 байт отведен под Uз второй линии
+					sParam->measParam.setVoltageCf(buf[13]);
+					// 14 байт отведен под Uk второй линии
+					sParam->measParam.setVoltageNoise(buf[15]);
+					// 15 байт отведен под кэффициент переполнения входа АЦП
+					// 16, 17 байты отведены под вероятность пропуска команд
+				}
 			}
 		}
 	}

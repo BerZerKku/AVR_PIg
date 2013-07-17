@@ -53,9 +53,9 @@ clUart 		uartPC	(UART_UART1, uBufUartPc, BUFF_SIZE_PC);
 /// Класы последовательного порта работающего с БСП
 clUart 		uartBSP	(UART_UART0, uBufUartBsp, BUFF_SIZE_BSP);
 /// Класс стандартного протокола работающего с ПК
-clProtocolPcS	protPCs	(uBufUartPc, BUFF_SIZE_PC, menu.getParamStruct());
+clProtocolPcS	protPCs	(uBufUartPc, BUFF_SIZE_PC, &menu.sParam);
 /// Класс стандартного протокола работающего с БСП
-clProtocolBspS protBSPs(uBufUartBsp, BUFF_SIZE_BSP, menu.getParamStruct());
+clProtocolBspS protBSPs(uBufUartBsp, BUFF_SIZE_BSP, &menu.sParam);
 
 
 /**	Работа с принятыми данными по UART
@@ -176,7 +176,7 @@ main (void)
 	protBSPs.setEnable();
 
 	// зададим тип аппарата
-	menu.setTypeDevice(AVANT_K400_OPTIC);
+	menu.setTypeDevice(AVANT_K400);
 
 	while(1)
 	{
