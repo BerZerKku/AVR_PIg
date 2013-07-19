@@ -22,6 +22,8 @@ clMenu::clMenu()
 
 	lvlCreate_ = true;
 
+	blink_ = false;
+
 	cursorEnable_= false;
 	cursorLine_ = 0;
 
@@ -37,6 +39,68 @@ clMenu::clMenu()
 	for(uint_fast8_t i = 2; i < 6; i++)
 		measParam[i] = MENU_MEAS_PARAM_NO;
 
+	// заполним текстовые надписи неисправностей и предупреждений
+	// для всех устройств
+	for(uint_fast8_t i = 0; i < 16; i++)
+	{
+		sParam.glb.status.faultText[i] = fcUnknownFault;
+		sParam.def.status.faultText[i] = fcUnknownFault;
+		sParam.prm.status.faultText[i] = fcUnknownFault;
+		sParam.prd.status.faultText[i] = fcUnknownFault;
+	}
+
+	for(uint_fast8_t i = 0; i < 8; i++)
+	{
+		sParam.def.status.warningText[i] = fcUnknownWarning;
+		sParam.prm.status.warningText[i] = fcUnknownWarning;
+		sParam.prd.status.warningText[i] = fcUnknownWarning;
+	}
+
+	// заполним массивы состояний работы для всех устройств
+	sParam.def.status.stateText[0] =  fcDefSost00;
+	sParam.def.status.stateText[1] =  fcDefSost01;
+	sParam.def.status.stateText[2] =  fcDefSost02;
+	sParam.def.status.stateText[3] =  fcDefSost03;
+	sParam.def.status.stateText[4] =  fcDefSost04;
+	sParam.def.status.stateText[5] =  fcDefSost05;
+	sParam.def.status.stateText[6] =  fcDefSost06;
+	sParam.def.status.stateText[7] =  fcDefSost07;
+	sParam.def.status.stateText[8] =  fcDefSost08;
+	sParam.def.status.stateText[9] =  fcDefSost09;
+	sParam.def.status.stateText[10] = fcDefSost10;
+	sParam.def.status.stateText[MAX_NUM_DEVICE_STATE - 1] = fcUnknownSost;
+
+	sParam.prm.status.stateText[0] =  fcPrmSost00;
+	sParam.prm.status.stateText[1] =  fcPrmSost01;
+	sParam.prm.status.stateText[2] =  fcPrmSost02;
+	sParam.prm.status.stateText[3] =  fcPrmSost03;
+	sParam.prm.status.stateText[4] =  fcPrmSost04;
+	sParam.prm.status.stateText[5] =  fcPrmSost05;
+	sParam.prm.status.stateText[6] =  fcPrmSost06;
+	sParam.prm.status.stateText[7] =  fcPrmSost07;
+	sParam.prm.status.stateText[8] =  fcPrmSost08;
+	sParam.prm.status.stateText[9] =  fcPrmSost09;
+	sParam.prm.status.stateText[10] = fcPrmSost10;
+	sParam.prm.status.stateText[MAX_NUM_DEVICE_STATE - 1] = fcUnknownSost;
+
+	sParam.prd.status.stateText[0] =  fcPrdSost00;
+	sParam.prd.status.stateText[1] =  fcPrdSost01;
+	sParam.prd.status.stateText[2] =  fcPrdSost02;
+	sParam.prd.status.stateText[3] =  fcPrdSost03;
+	sParam.prd.status.stateText[4] =  fcPrdSost04;
+	sParam.prd.status.stateText[5] =  fcPrdSost05;
+	sParam.prd.status.stateText[6] =  fcPrdSost06;
+	sParam.prd.status.stateText[7] =  fcPrdSost07;
+	sParam.prd.status.stateText[8] =  fcPrdSost08;
+	sParam.prd.status.stateText[9] =  fcPrdSost09;
+	sParam.prd.status.stateText[10] = fcPrdSost10;
+	sParam.prd.status.stateText[MAX_NUM_DEVICE_STATE - 1] = fcUnknownSost;
+
+	// назначим имена устройствам
+	sParam.def.status.name = fcDeviceName00;
+	sParam.prm.status.name = fcDeviceName01;
+	sParam.prd.status.name = fcDeviceName02;
+
 	// включение постоянной подсветки
 	vLCDsetLED(LED_ON);
 }
@@ -51,6 +115,9 @@ clMenu::main(void)
 {
 	// Счетчик времени до переинициализации ЖКИ
 	static uint8_t reInit = false;
+
+	blink_ =  ((reInit % 8) < 4) ? false : true;
+
 
 	// Переинициализация диссплея
 	if (reInit > 0)
@@ -75,17 +142,13 @@ clMenu::main(void)
 		vLCDsetLED(LED_SWITCH);
 	}
 
-	// вывод сообщения в случае отсутствия связи с БСП
-	if (!isConnectionBsp() && ((reInit % 10) < 5))
-		snprintf_P(&vLCDbuf[0], 21, fcNoConnectBsp);
-
 	// очистка текстового буфера и переход на текущий уровень меню
 	clearTextBuf();
 	(this->*lvlMenu) ();
 	key_ = KEY_NO;
 
 
-#ifdef DEBUG
+#ifdef VIEW_DEBUG_PARAM
 	// вывод отладочной информации
 	if (this->lvlMenu == &clMenu::lvlStart)
 	{
@@ -104,6 +167,10 @@ clMenu::main(void)
 		snprintf(&vLCDbuf[15], 5, "2*%02X", sDebug.byte2);
 	}
 #endif
+
+	// вывод сообщения в случае отсутствия связи с БСП
+	if (!isConnectionBsp() && (blink_))
+		snprintf_P(&vLCDbuf[0], 20, fcNoConnectBsp);
 
 	// преобразование строки символов в данные для вывода на экран
 	vLCDputchar(vLCDbuf, lineParam_);
@@ -132,9 +199,94 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 		measParam[4] = MENU_MEAS_PARAM_UZ;
 		measParam[5] = MENU_MEAS_PARAM_UC;
 
+		// заполнение массива общих неисправностей и предупреждений
+		sParam.glb.status.faultText[0] =  fcGlbFault0001;
+		sParam.glb.status.faultText[1] =  fcGlbFault0002;
+		sParam.glb.status.faultText[2] =  fcGlbFault0004;
+		sParam.glb.status.faultText[3] =  fcGlbFault0008;
+		sParam.glb.status.faultText[4] =  fcGlbFault0010;
+		sParam.glb.status.faultText[5] =  fcGlbFault0020rzsk;
+		sParam.glb.status.faultText[6] =  fcGlbFault0040;
+		sParam.glb.status.faultText[7] =  fcGlbFault0080;
+		sParam.glb.status.faultText[8] =  fcGlbFault0100;
+		sParam.glb.status.faultText[9] =  fcGlbFault0200;
+		sParam.glb.status.faultText[10] = fcGlbFault0400rzsk;
+		sParam.glb.status.faultText[11] = fcGlbFault0800;
+		sParam.glb.status.faultText[12] = fcGlbFault1000;
+		sParam.glb.status.faultText[13] = fcGlbFault2000;
+		sParam.glb.status.faultText[14] = fcGlbFault4000;
+		sParam.glb.status.faultText[15] = fcUnknownFault;
+
+		sParam.glb.status.warningText[0] = fcGlbWarning01;
+		sParam.glb.status.warningText[1] = fcGlbWarning02;
+		sParam.glb.status.warningText[2] = fcUnknownWarning;
+		sParam.glb.status.warningText[3] = fcUnknownWarning;
+		sParam.glb.status.warningText[4] = fcGlbWarning10;
+		sParam.glb.status.warningText[5] = fcGlbWarning20;
+		sParam.glb.status.warningText[6] = fcGlbWarning40;
+		sParam.glb.status.warningText[7] = fcUnknownWarning;
+
+		// отключение защиты
 		sParam.def.status.setEnable(false);
+
+		// включение приемника
+		// и заполнение массивов неисправностей и предупреждений
 		sParam.prm.status.setEnable(true);
+		sParam.prm.status.faultText[0] =  fcPrmFault0001rzsk;
+		sParam.prm.status.faultText[1] =  fcPrmFault0002rzsk;
+		sParam.prm.status.faultText[2] =  fcPrmFault0004rzsk;
+		sParam.prm.status.faultText[3] =  fcPrmFault0008rzsk;
+		sParam.prm.status.faultText[4] =  fcUnknownFault;
+		sParam.prm.status.faultText[5] =  fcUnknownFault;
+		sParam.prm.status.faultText[6] =  fcUnknownFault;
+		sParam.prm.status.faultText[7] =  fcUnknownFault;
+		sParam.prm.status.faultText[8] =  fcPrmFault0100rzsk;
+		sParam.prm.status.faultText[9] =  fcPrmFault0200rzsk;
+		sParam.prm.status.faultText[10] = fcPrmFault0400rzsk;
+		sParam.prm.status.faultText[11] = fcPrmFault0800rzsk;
+		sParam.prm.status.faultText[12] = fcPrmFault1000rzsk;
+		sParam.prm.status.faultText[13] = fcUnknownFault;
+		sParam.prm.status.faultText[14] = fcUnknownFault;
+		sParam.prm.status.faultText[15] = fcPrmFault8000rzsk;
+
+		sParam.prm.status.warningText[0] = fcPrmWarning01rzsk;
+		sParam.prm.status.warningText[1] = fcUnknownWarning;
+		sParam.prm.status.warningText[2] = fcUnknownWarning;
+		sParam.prm.status.warningText[3] = fcUnknownWarning;
+		sParam.prm.status.warningText[4] = fcUnknownWarning;
+		sParam.prm.status.warningText[5] = fcUnknownWarning;
+		sParam.prm.status.warningText[6] = fcUnknownWarning;
+		sParam.prm.status.warningText[7] = fcUnknownWarning;
+
+		// включение передатчика
+		// и заполнение массивов неисправностей и предупреждений
 		sParam.prd.status.setEnable(true);
+		sParam.prd.status.faultText[0] =  fcPrdFault0001rzsk;
+		sParam.prd.status.faultText[1] =  fcPrdFault0002rzsk;
+		sParam.prd.status.faultText[2] =  fcUnknownFault;
+		sParam.prd.status.faultText[3] =  fcUnknownFault;
+		sParam.prd.status.faultText[4] =  fcUnknownFault;
+		sParam.prd.status.faultText[5] =  fcUnknownFault;
+		sParam.prd.status.faultText[6] =  fcUnknownFault;
+		sParam.prd.status.faultText[7] =  fcUnknownFault;
+		sParam.prd.status.faultText[8] =  fcPrdFault0100rzsk;
+		sParam.prd.status.faultText[9] =  fcPrdFault0200rzsk;
+		sParam.prd.status.faultText[10] = fcPrdFault0400rzsk;
+		sParam.prd.status.faultText[11] = fcPrdFault0800rzsk;
+		sParam.prd.status.faultText[12] = fcUnknownFault;
+		sParam.prd.status.faultText[13] = fcUnknownFault;
+		sParam.prd.status.faultText[14] = fcUnknownFault;
+		sParam.prd.status.faultText[15] = fcUnknownFault;
+
+		sParam.prd.status.warningText[0] = fcUnknownWarning;
+		sParam.prd.status.warningText[1] = fcUnknownWarning;
+		sParam.prd.status.warningText[2] = fcUnknownWarning;
+		sParam.prd.status.warningText[3] = fcUnknownWarning;
+		sParam.prd.status.warningText[4] = fcUnknownWarning;
+		sParam.prd.status.warningText[5] = fcUnknownWarning;
+		sParam.prd.status.warningText[6] = fcUnknownWarning;
+		sParam.prd.status.warningText[7] = fcUnknownWarning;
+
 	}
 
 	return true;
@@ -208,6 +360,181 @@ clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par)
 				break;
 		}
 	}
+}
+
+/**	Вывод на экран текущего состояния устройства.
+ * 	Если есть общие неисправности - выводится поочередно расшифровка самой
+ * 	приоритетной и код (даже если одна).
+ * 	Далее проверяется наличие неисправности устройства и если есть, выводится
+ * 	по тому же алгоритму.
+ * 	Если есть общее предупреждение - выводится почередно состояние и расшифровка
+ * 	данного предупреждения. Если предупреждений несколько, выводится только код.
+ * 	Далее проверяется наличие предупреждения для устройства и если есть,
+ * 	выодится по тому же алгоритму.
+ * 	Если небыло никаких неисправностей/предупреждений, то выводится текущее
+ * 	состояние и режим работы устройства.
+ * 	@param poz Начальная позиция в буфере данных ЖКИ
+ * 	@param device Данные для текущего устройства
+ *	@return Нет
+ */
+void
+clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device)
+{
+	PGM_P *text;
+	uint_fast8_t x = 0;
+	uint_fast16_t y = 0;
+
+	snprintf_P(&vLCDbuf[poz], 4, device->name);
+	poz += 3;
+	snprintf(&vLCDbuf[poz], 2, ":");
+	poz += 1;
+
+	if (sParam.glb.status.getNumFaults() != 0)
+	{
+		if (blink_)
+		{
+			text = sParam.glb.status.faultText;
+			x = sParam.glb.status.getFault();
+			snprintf_P(&vLCDbuf[poz], 17, text[x]);
+		}
+		else
+		{
+			y = sParam.glb.status.getFaults();
+			snprintf_P(&vLCDbuf[poz], 17, fcFaults, 'g', y);
+		}
+	}
+	else if (device->getNumFaults() != 0)
+	{
+		if (blink_)
+		{
+			text = device->faultText;
+			x = device->getFault();
+			snprintf_P(&vLCDbuf[poz], 17, text[x]);
+		}
+		else
+		{
+			y = device->getFaults();
+			snprintf_P(&vLCDbuf[poz], 17, fcFaults, 'l', y);
+		}
+	}
+	else if ( (sParam.glb.status.getNumWarnings() != 0) && (blink_) )
+	{
+		if (sParam.glb.status.getNumWarnings() == 1)
+		{
+			text = sParam.glb.status.warningText;
+			x = sParam.glb.status.getWarning();
+			snprintf_P(&vLCDbuf[poz], 17, text[x]);
+		}
+		else
+		{
+			y = sParam.glb.status.getWarnings();
+			snprintf_P(&vLCDbuf[poz], 17, fcWarnings, 'g', y);
+		}
+	}
+	else if ( (device->getNumWarnings()!= 0) && (blink_) )
+	{
+		if (device->getNumWarnings() == 1)
+		{
+			text = device->warningText;
+			x = device->getWarning();
+			snprintf_P(&vLCDbuf[poz], 17, text[x]);
+		}
+		else
+		{
+			y = device->getWarnings();
+			snprintf_P(&vLCDbuf[poz], 17, fcWarnings, 'g', y);
+		}
+	}
+	else
+	{
+		text = device->stateText;
+		poz += snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
+		snprintf_P(&vLCDbuf[poz], 9, text[device->getState()]);
+	}
+/*
+	if (sParam.glb.status.getNumFaults() != 0)
+	{
+		// вывод общей неисправности для всех имеющихся устройств
+
+		uint_fast8_t tmp =  sParam.glb.status.getFault();
+		uint_fast16_t faults = sParam.glb.status.getFaults();
+
+		if (sParam.def.status.isEnable())
+		{
+			if (blink_)
+				snprintf_P(&vLCDbuf[60], 21, fcDef, fcGlbError[tmp], fcNull);
+			else
+			{
+				snprintf_P(&vLCDbuf[60], 21, fcDef, fcNull, fcNull);
+				snprintf_P(&vLCDbuf[64], 17, fcGlbFaults, faults, fcNull);
+			}
+		}
+
+		if (sParam.prm.status.isEnable())
+		{
+			if (blink_)
+				snprintf_P(&vLCDbuf[80], 21, fcPrm, fcGlbError[tmp], fcNull);
+			else
+			{
+				snprintf_P(&vLCDbuf[80], 21, fcPrm, fcNull, fcNull);
+				snprintf_P(&vLCDbuf[84], 17, fcGlbFaults, faults, fcNull);
+			}
+		}
+
+		if (sParam.prd.status.isEnable())
+		{
+			if (blink_)
+				snprintf_P(&vLCDbuf[100], 21, fcPrd, fcGlbError[tmp], fcNull);
+			else
+			{
+				snprintf_P(&vLCDbuf[100], 21, fcPrd, fcNull, fcNull);
+				snprintf_P(&vLCDbuf[104], 17, fcGlbFaults, faults, fcNull);
+			}
+		}
+	}
+	else if ( (sParam.glb.status.getNumWarnings() != 0) && (blink_) )
+	{
+		// вывод общего предупреждения для всех устройств
+
+		if (sParam.glb.status.getNumWarnings() == 1)
+		{
+			uint_fast8_t warning =  sParam.glb.status.getWarning();
+
+			if (sParam.def.status.isEnable())
+				snprintf_P(&vLCDbuf[60],21,fcDef,fcGlbWarning[warning],fcNull);
+
+			if (sParam.prm.status.isEnable())
+				snprintf_P(&vLCDbuf[80],21,fcPrm,fcGlbWarning[warning],fcNull);
+
+			if (sParam.prd.status.isEnable())
+				snprintf_P(&vLCDbuf[100],21,fcPrd,fcGlbWarning[warning],fcNull);
+		}
+		else
+		{
+			uint_fast16_t warnings =  sParam.glb.status.getWarnings();
+
+			if (sParam.def.status.isEnable())
+			{
+				snprintf_P(&vLCDbuf[60], 21, fcDef, fcNull, fcNull);
+				snprintf_P(&vLCDbuf[64], 17, fcGlbWarnings, warnings, fcNull);
+
+			}
+
+			if (sParam.prm.status.isEnable())
+			{
+				snprintf_P(&vLCDbuf[80], 21, fcPrm, fcNull, fcNull);
+				snprintf_P(&vLCDbuf[84], 17, fcGlbWarnings, warnings, fcNull);
+
+			}
+
+			if (sParam.prd.status.isEnable())
+			{
+				snprintf_P(&vLCDbuf[100], 21, fcPrd, fcNull, fcNull);
+				snprintf_P(&vLCDbuf[104], 17, fcGlbWarnings, warnings, fcNull);
+
+			}
+		}
+	}*/
 
 }
 
@@ -232,112 +559,117 @@ clMenu::lvlStart()
 	for(uint_fast8_t i = 0; i < 6; i++)
 		printMeasParam(i, measParam[i]);
 
-	if (sParam.typeDevice == AVANT_R400)
-	{
-		// вывод режима\состояния устройств
-		snprintf_P(&vLCDbuf[60], 21, fcDef,
-				fcRegime[sParam.def.status.getRegime()],
-				fcDefSost[sParam.def.status.getState()]);
-	}
-	else if (sParam.typeDevice == AVANT_RZSK)
-	{
-		// вывод режима\состояния устройств
-		snprintf_P(&vLCDbuf[60], 21, fcDef,
-				fcRegime[sParam.def.status.getRegime()],
-				fcDefSost[sParam.def.status.getState()]);
-		snprintf_P(&vLCDbuf[80], 21, fcPrm,
-				fcRegime[sParam.prm.status.getRegime()], //
-				fcPrmSost[sParam.prm.status.getState()]);
-		snprintf_P(&vLCDbuf[100], 21, fcPrd,
-				fcRegime[sParam.prd.status.getRegime()], //
-				fcPrdSost[sParam.prd.status.getState()]);
-	}
-	else if (sParam.typeDevice == AVANT_K400)
-	{
-		// вывод режима\состояния устройств
-		snprintf_P(&vLCDbuf[80], 21, fcPrm,
-				fcRegime[sParam.prm.status.getRegime()], //
-				fcPrmSost[sParam.prm.status.getState()]);
-		snprintf_P(&vLCDbuf[100], 21, fcPrd,
-				fcRegime[sParam.prd.status.getRegime()], //
-				fcPrdSost[sParam.prd.status.getState()]);
-	}
-	else if (sParam.typeDevice == AVANT_K400_OPTIC)
-	{
-		if (sParam.glb.status.getNumFaults() != 0)
-		{
-			uint_fast8_t tmp = 0;
-
-			tmp = sParam.glb.status.getFault();
-			snprintf_P(&vLCDbuf[80], 21, fcPrm, fcGlbError[tmp], fcNull);
-			snprintf_P(&vLCDbuf[100], 21, fcPrd, fcGlbError[tmp], fcNull);
-
-		}
-		else if (sParam.glb.status.getNumWarnings() != 0)
-		{
-			uint_fast8_t tmp = 0;
-
-			tmp = sParam.glb.status.getWarning();
-			snprintf_P(&vLCDbuf[80], 21, fcPrm, fcGlbWarning[tmp], fcNull);
-			snprintf_P(&vLCDbuf[100], 21, fcPrd, fcGlbWarning[tmp], fcNull);
-		}
-		else
-		{
-			// вывод режима\состояния устройств
-			if (sParam.prm.status.getNumFaults() == 0)
-			{
-				if (sParam.prm.status.getNumWarnings() == 0)
-				{
-					snprintf_P(&vLCDbuf[80], 21, fcPrm,
-							fcRegime[sParam.prm.status.getRegime()],
-							fcPrmSost[sParam.prm.status.getState()]);
-				}
-				else
-				{
-					uint_fast8_t tmp = 0;
-
-					tmp = sParam.prm.status.getWarning();
-					snprintf_P(&vLCDbuf[80], 21, fcPrm,
-							fcPrmWarningOptic[tmp], fcNull);
-				}
-			}
-			else
-			{
-				uint_fast8_t tmp = 0;
-
-				tmp = sParam.prm.status.getFault();
-				snprintf_P(&vLCDbuf[80], 21, fcPrm, fcPrmError[tmp], fcNull);
-
-			}
-
-			if (sParam.prd.status.getNumFaults() == 0)
-			{
-				if (sParam.prd.status.getNumWarnings() == 0)
-				{
-					snprintf_P(&vLCDbuf[100], 21, fcPrd,
-							fcRegime[sParam.prd.status.getRegime()],
-							fcPrdSost[sParam.prd.status.getState()]);
-				}
-				else
-				{
-					uint_fast8_t tmp = 0;
-
-					tmp = sParam.prd.status.getWarning();
-					snprintf_P(&vLCDbuf[100], 21, fcPrd,
-							fcPrdWarning[tmp], fcNull);
-				}
-			}
-			else
-			{
-				uint_fast8_t tmp = 0;
-
-				tmp = sParam.prd.status.getFault();
-				snprintf_P(&vLCDbuf[100], 21, fcPrd, fcPrdError[tmp], fcNull);
-
-			}
-		}
-	}
-
+//	if (sParam.typeDevice == AVANT_R400)
+//	{
+//		// вывод режима\состояния устройств
+//		snprintf_P(&vLCDbuf[60], 21, fcDef,
+//				fcRegime[sParam.def.status.getRegime()],
+//				fcDefSost[sParam.def.status.getState()]);
+//	}
+//	else if (sParam.typeDevice == AVANT_RZSK)
+//	{
+//		// вывод режима\состояния устройств
+//		snprintf_P(&vLCDbuf[60], 21, fcDef,
+//				fcRegime[sParam.def.status.getRegime()],
+//				fcDefSost[sParam.def.status.getState()]);
+//		snprintf_P(&vLCDbuf[80], 21, fcPrm,
+//				fcRegime[sParam.prm.status.getRegime()], //
+//				fcPrmSost[sParam.prm.status.getState()]);
+//		snprintf_P(&vLCDbuf[100], 21, fcPrd,
+//				fcRegime[sParam.prd.status.getRegime()], //
+//				fcPrdSost[sParam.prd.status.getState()]);
+//	}
+//	else if (sParam.typeDevice == AVANT_K400)
+//	{
+//		// вывод режима\состояния устройств
+//		snprintf_P(&vLCDbuf[80], 21, fcPrm,
+//				fcRegime[sParam.prm.status.getRegime()], //
+//				fcPrmSost[sParam.prm.status.getState()]);
+//		snprintf_P(&vLCDbuf[100], 21, fcPrd,
+//				fcRegime[sParam.prd.status.getRegime()], //
+//				fcPrdSost[sParam.prd.status.getState()]);
+//	}
+//	else if (sParam.typeDevice == AVANT_K400_OPTIC)
+//	{
+//		if (sParam.glb.status.getNumFaults() != 0)
+//		{
+//			uint_fast8_t tmp = 0;
+//
+//			tmp = sParam.glb.status.getFault();
+//			snprintf_P(&vLCDbuf[80], 21, fcPrm, fcGlbError[tmp], fcNull);
+//			snprintf_P(&vLCDbuf[100], 21, fcPrd, fcGlbError[tmp], fcNull);
+//
+//		}
+//		else if (sParam.glb.status.getNumWarnings() != 0)
+//		{
+//			uint_fast8_t tmp = 0;
+//
+//			tmp = sParam.glb.status.getWarning();
+//			snprintf_P(&vLCDbuf[80], 21, fcPrm, fcGlbWarning[tmp], fcNull);
+//			snprintf_P(&vLCDbuf[100], 21, fcPrd, fcGlbWarning[tmp], fcNull);
+//		}
+//		else
+//		{
+//			// вывод режима\состояния устройств
+//			if (sParam.prm.status.getNumFaults() == 0)
+//			{
+//				if (sParam.prm.status.getNumWarnings() == 0)
+//				{
+//					snprintf_P(&vLCDbuf[80], 21, fcPrm,
+//							fcRegime[sParam.prm.status.getRegime()],
+//							fcPrmSost[sParam.prm.status.getState()]);
+//				}
+//				else
+//				{
+//					uint_fast8_t tmp = 0;
+//
+//					tmp = sParam.prm.status.getWarning();
+//					snprintf_P(&vLCDbuf[80], 21, fcPrm,
+//							fcPrmWarningOptic[tmp], fcNull);
+//				}
+//			}
+//			else
+//			{
+//				uint_fast8_t tmp = 0;
+//
+//				tmp = sParam.prm.status.getFault();
+//				snprintf_P(&vLCDbuf[80], 21, fcPrm, fcPrmError[tmp], fcNull);
+//
+//			}
+//
+//			if (sParam.prd.status.getNumFaults() == 0)
+//			{
+//				if (sParam.prd.status.getNumWarnings() == 0)
+//				{
+//					snprintf_P(&vLCDbuf[100], 21, fcPrd,
+//							fcRegime[sParam.prd.status.getRegime()],
+//							fcPrdSost[sParam.prd.status.getState()]);
+//				}
+//				else
+//				{
+//					uint_fast8_t tmp = 0;
+//
+//					tmp = sParam.prd.status.getWarning();
+//					snprintf_P(&vLCDbuf[100], 21, fcPrd,
+//							fcPrdWarning[tmp], fcNull);
+//				}
+//			}
+//			else
+//			{
+//				uint_fast8_t tmp = 0;
+//
+//				tmp = sParam.prd.status.getFault();
+//				snprintf_P(&vLCDbuf[100], 21, fcPrd, fcPrdError[tmp], fcNull);
+//
+//			}
+//		}
+//	}
+	if (sParam.def.status.isEnable())
+		printDevicesStatus(60, &sParam.def.status);
+	if (sParam.prm.status.isEnable())
+		printDevicesStatus(80, &sParam.prm.status);
+	if (sParam.prd.status.isEnable())
+		printDevicesStatus(100, &sParam.prd.status);
 
 	switch(key_)
 	{

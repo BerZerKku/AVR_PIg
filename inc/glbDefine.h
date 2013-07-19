@@ -14,6 +14,9 @@
 /// преобразование двух CHAR в INT
 #define TO_INT16(high, low) (((uint16_t) high << 8) + low)
 
+// максимально возможное кол-во состояний устройств
+#define MAX_NUM_DEVICE_STATE 11
+
 /// Тип аппарата
 enum eGB_TYPE_DEVICE
 {
@@ -243,7 +246,7 @@ public:
 		return true;
 	}
 	uint8_t getFault() 		const { return fault_; }
-	uint8_t getFaults() 	const { return faults_; }
+	uint16_t getFaults() 	const { return faults_; }
 	uint8_t getNumFaults()	const { return numFaults_; }
 
 
@@ -256,7 +259,7 @@ public:
 		return true;
 	}
 	uint8_t getWarning() 	const { return fault_; }
-	uint8_t getWarnings() 	const { return faults_; }
+	uint16_t getWarnings() 	const { return faults_; }
 	uint8_t getNumWarnings()const { return numWarnings_; }
 
 	// режим работы
@@ -264,7 +267,16 @@ public:
 	uint8_t getRegime() 	const { return regime_; }
 
 	//состояние
-	bool setState(uint8_t state)  { state_ = state; return true; }
+	bool setState(uint8_t state)
+	{
+		bool status = false;
+		if (state < MAX_NUM_DEVICE_STATE)
+		{
+			state_ = state;
+			status = true;
+		}
+		return status;
+	}
 	uint8_t getState()		const { return state_; }
 
 	uint8_t getDopByte() 	const { return dopByte_; }
@@ -273,6 +285,12 @@ public:
 	// работа с флагом наличия устройства
 	void setEnable(bool enable)	  { enable_ = enable; }
 	bool isEnable()			const { return enable_; }
+
+	// массивы расшифровок аварий и предупреждений
+	PGM_P faultText[16];
+	PGM_P warningText[8];
+	PGM_P stateText[MAX_NUM_DEVICE_STATE];
+	PGM_P name;
 
 private:
 	// текущая приоритетная неисправность, неисправности и кол-во неисправностей
@@ -284,6 +302,7 @@ private:
 	uint8_t warning_;
 	uint16_t warnings_;
 	uint8_t numWarnings_;
+
 
 	uint8_t regime_;
 	uint8_t state_;
@@ -304,15 +323,15 @@ private:
 		return cnt;
 	}
 
-	// возвращает номер младшего установленного бита, 0 - значит что нет таких
+	// возвращает номер младшего установленного бита
 	uint8_t getFirstSetBit(uint16_t val)
 	{
 		uint8_t cnt = 0;
 		for(; val > 0; val >>= 1)
 		{
-			cnt++;
 			if (val & 0x0001)
 				break;
+			cnt++;
 		}
 		return cnt;
 	}

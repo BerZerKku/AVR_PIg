@@ -55,6 +55,9 @@ private:
 	// код кнопки
 	eKEY key_;
 
+	// флаг мигания надписи
+	bool blink_;
+
 	// флаг текущего сосотояния связи с БСП, True - есть
 	bool connectionBsp_;
 
@@ -81,6 +84,9 @@ private:
 
 	// вывод на экран измеряемого параметра
 	void printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par);
+
+	// вывод на экран текущего состояния устройств
+	void printDevicesStatus(uint8_t poz, TDeviceStatus *device);
 
 	// Уровни меню
 	void lvlStart();
