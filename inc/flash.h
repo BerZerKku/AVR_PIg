@@ -9,44 +9,44 @@
 
 static const char fcNull[] PROGMEM = "";
 
-static const char fcNoConnectBsp[] PROGMEM = " Нет связи с БСП!!! ";
-
-static const char fcUout[] PROGMEM = "U=%02u.%01uВ";
-static const char fcIout[] PROGMEM	= "I=%03uмА";
-static const char fcRout[] PROGMEM = "R=%03uОм";
-static const char fcUz[] 	PROGMEM	= "Uз=%02dдБ";
+// измеряемые параметры
+static const char fcUout[] 	PROGMEM = "U=%02u.%01uВ";
+static const char fcIout[] 	PROGMEM	= "I=%03uмА";
+static const char fcRout[] 	PROGMEM = "R=%03uОм";
+static const char fcUz[]	PROGMEM	= "Uз=%02dдБ";
 static const char fcUcf[] 	PROGMEM	= "Uк=%02dдБ";
 static const char fcUn[] 	PROGMEM	= "Uш=%02dдБ";
-static const char fcDate[] PROGMEM = "%02u.%02u.%02u";
-static const char fcTime[] PROGMEM = "%02u:%02u:%02u";
+static const char fcDate[] 	PROGMEM = "%02u.%02u.%02u";
+static const char fcTime[] 	PROGMEM = "%02u:%02u:%02u";
 
-static const char fcDef[] PROGMEM = "ЗАЩ:%S%S";
-static const char fcPrm[] PROGMEM = "ПРМ:%S%S";
-static const char fcPrd[] PROGMEM = "ПРД:%S%S";
+static const char fcDef[] 	PROGMEM = "ЗАЩ:%S%S";
+static const char fcPrm[] 	PROGMEM = "ПРМ:%S%S";
+static const char fcPrd[] 	PROGMEM = "ПРД:%S%S";
 
-static const char fcDDD[] PROGMEM = "Проверка";
-
+// имена устройств аппарата
 static const char fcDeviceName00[] PROGMEM = "ЗАЩ";
 static const char fcDeviceName01[] PROGMEM = "ПРМ";
 static const char fcDeviceName02[] PROGMEM = "ПРД";
 
 // режимы устройств
-#define MAX_REGIME 6
-static const char fcRegime[] [9] PROGMEM =
+// кол-во режимов (без учета "Ошибка") должно совпадать с MAX_NUM_REGIME
+static const char fcRegime[] [8] PROGMEM =
 {
-	"Выведен ",
-	"Готов   ",
-	"Введен  ",
-	"Речь    ",
-	"Тест 1  ",
-	"Тест 2  ",
-	"Ошибка  "
+	"Выведен",
+	"Готов",
+	"Введен",
+	"Речь",
+	"Тест 1",
+	"Тест 2",
+	"Ошибка"
 };
 
+// состояния устройств
+// кол-во состояний для всех устройств должно совпадать с MAX_NUM_DEVICE_STATE
+// неизвестное состояние
 static const char fcUnknownSost[] PROGMEM = "Ошибка";
-
 // состояния Защиты
-static const char fcDefSost00[] PROGMEM =	"Исходн. ";
+static const char fcDefSost00[] PROGMEM =	"Исходн.";
 static const char fcDefSost01[] PROGMEM =	"Контроль";
 static const char fcDefSost02[] PROGMEM =	"Пуск";
 static const char fcDefSost03[] PROGMEM =	"Работа";
@@ -57,7 +57,6 @@ static const char fcDefSost07[] PROGMEM =	"Нал.пуск";
 static const char fcDefSost08[] PROGMEM = 	"?0x08?";
 static const char fcDefSost09[] PROGMEM =	"Нет РЗ";
 static const char fcDefSost10[] PROGMEM =	"Речь";
-
 // состояния Приемника
 static const char fcPrmSost00[] PROGMEM = 	"Исходн.";
 static const char fcPrmSost01[] PROGMEM = 	"ПРМ КЧ";
@@ -70,7 +69,6 @@ static const char fcPrmSost07[] PROGMEM = 	"БЛК КМ";
 static const char fcPrmSost08[] PROGMEM = 	"?0x08?";
 static const char fcPrmSost09[] PROGMEM = 	"?0x09?";
 static const char fcPrmSost10[] PROGMEM = 	"Речь";
-
 // состояния Передатчика
 static const char fcPrdSost00[] PROGMEM = 	"Исходн.";
 static const char fcPrdSost01[] PROGMEM =	"ПРД КЧ";
@@ -91,7 +89,7 @@ static const char fcUnknownWarning[] PROGMEM = 		"Предупреждение";
 // строка вывода кода неисправности/предупреждения
 // %c - g для глобальной, l - для локальной
 static const char fcFaults[] PROGMEM 	= 			"Неиспр. %c-%04X";
-static const char fcWarnings[] PROGMEM  =	 		"Предупр. %с-%04X";
+static const char fcWarnings[] PROGMEM  =	 		"Предупр. %c-%04X";
 
 // общие неисправности
 static const char fcGlbFault0001[] PROGMEM = 		"Неиспр.чт. FLASH";

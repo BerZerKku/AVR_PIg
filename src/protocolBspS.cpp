@@ -51,59 +51,95 @@ bool clProtocolBspS::getData()
 		{
 			if (com == GB_COM_GET_TIME)
 			{
-				sParam->dataTime.setYearFromBCD(buf[4]);
-				sParam->dataTime.setMonthFromBCD(buf[5]);
-				sParam->dataTime.setDayFromBCD(buf[6]);
-				sParam->dataTime.setHourFromBCD(buf[7]);
-				sParam->dataTime.setMinuteFromBCD(buf[8]);
-				sParam->dataTime.setSecondFromBCD(buf[9]);
+				sParam->dataTime.setYearFromBCD(buf[B1]);
+				sParam->dataTime.setMonthFromBCD(buf[B2]);
+				sParam->dataTime.setDayFromBCD(buf[B3]);
+				sParam->dataTime.setHourFromBCD(buf[B4]);
+				sParam->dataTime.setMinuteFromBCD(buf[B5]);
+				sParam->dataTime.setSecondFromBCD(buf[B6]);
 			}
 			else if (com == GB_COM_GET_SOST)
 			{
-				sParam->def.status.setRegime(buf[4]);
-				sParam->def.status.setState(buf[5]);
-				sParam->def.status.setDopByte(buf[6]);
+				sParam->def.status.setRegime(buf[B1]);
+				sParam->def.status.setState(buf[B2]);
+				sParam->def.status.setDopByte(buf[B3]);
 
-				sParam->prm.status.setRegime(buf[7]);
-				sParam->prm.status.setState(buf[8]);
-				sParam->prm.status.setDopByte(buf[9]);
+				sParam->prm.status.setRegime(buf[B4]);
+				sParam->prm.status.setState(buf[B5]);
+				sParam->prm.status.setDopByte(buf[B6]);
 
-				sParam->prd.status.setRegime(buf[10]);
-				sParam->prd.status.setState(buf[11]);
-				sParam->prd.status.setDopByte(buf[12]);
+				sParam->prd.status.setRegime(buf[B7]);
+				sParam->prd.status.setState(buf[B8]);
+				sParam->prd.status.setDopByte(buf[B9]);
 			}
 			else if (com == GB_COM_GET_FAULT)
 			{
-				sParam->def.status.setFault(TO_INT16(buf[4], buf[5]));
-				sParam->def.status.setWarning(TO_INT16(buf[6], buf[7]));
+				sParam->def.status.setFault(TO_INT16(buf[B1], buf[B2]));
+				sParam->def.status.setWarning(TO_INT16(buf[B3], buf[B4]));
 
-				sParam->prm.status.setFault(TO_INT16(buf[8], buf[9]));
-				sParam->prm.status.setWarning(TO_INT16(buf[10], buf[11]));
+				sParam->prm.status.setFault(TO_INT16(buf[B5], buf[B6]));
+				sParam->prm.status.setWarning(TO_INT16(buf[B7], buf[B8]));
 
-				sParam->prd.status.setFault(TO_INT16(buf[12], buf[13]));
-				sParam->prd.status.setWarning(TO_INT16(buf[14], buf[15]));
+				sParam->prd.status.setFault(TO_INT16(buf[B9], buf[B10]));
+				sParam->prd.status.setWarning(TO_INT16(buf[B11], buf[B12]));
 
-				sParam->glb.status.setFault(TO_INT16(buf[16], buf[17]));
-				sParam->glb.status.setWarning(TO_INT16(buf[18], buf[19]));
+				sParam->glb.status.setFault(TO_INT16(buf[B13], buf[B14]));
+				sParam->glb.status.setWarning(TO_INT16(buf[B15], buf[B16]));
 			}
 			else if (com == GB_COM_GET_MEAS)
 			{
 				// обработаем посылку, если стоит флаг опроса всех параметров
-				if (buf[4] == 0)
+				if (buf[B1] == 0)
 				{
-					sParam->measParam.setResistOut(TO_INT16(buf[5], buf[6]));
-					sParam->measParam.setCurrentOut(TO_INT16(buf[7], buf[8]));
-					// в buf[10] передатся дробная часть напряжения * 100
+					sParam->measParam.setResistOut(TO_INT16(buf[B2], buf[B3]));
+					sParam->measParam.setCurrentOut(TO_INT16(buf[B4], buf[B5]));
+					// в buf[B7] передатся дробная часть напряжения * 100
 					// т.е. если там 90, то это 0.9В.
-					sParam->measParam.setVoltageOut(buf[9], (buf[10] / 10));
-					sParam->measParam.setVoltageDef(buf[11]);
-					// 12 байт отведен под Uз второй линии
-					sParam->measParam.setVoltageCf(buf[13]);
-					// 14 байт отведен под Uk второй линии
-					sParam->measParam.setVoltageNoise(buf[15]);
-					// 15 байт отведен под кэффициент переполнения входа АЦП
-					// 16, 17 байты отведены под вероятность пропуска команд
+					sParam->measParam.setVoltageOut(buf[B6], (buf[B7] / 10));
+					sParam->measParam.setVoltageDef(buf[B8]);
+					// B9 отведен под Uз второй линии
+					sParam->measParam.setVoltageCf(buf[B10]);
+					// B11 байт отведен под Uk второй линии
+					sParam->measParam.setVoltageNoise(buf[B12]);
+					// B13 байт отведен под кэффициент переполнения входа АЦП
+					// B14, B15 байты отведены под вероятность пропуска команд
 				}
+			}
+			else if (com == GB_COM_GET_VERS)
+			{
+				bool re = false;
+				// данные о типе аппарата
+				re |= sParam->def.status.setEnable(buf[B1] == 1);
+				re |= sParam->prm.setNumCom(buf[B2] * 4);
+				// buf[B3] - прм2
+				re |= sParam->prd.setNumCom(buf[B4] * 4);
+				re |= sParam->glb.setNumDevices((eGB_NUM_DEVICES)buf[B5]);
+				re |= sParam->glb.setTypeLine((eGB_TYPE_LINE) buf[B6]);
+				sParam->glb.setVersBsp(TO_INT16(buf[B7], buf[B8]));
+				sParam->glb.setVersDsp(TO_INT16(buf[B9], buf[B10]));
+				re |= sParam->glb.setCompatibility((eGB_COMPATIBILITY)buf[B11]);
+
+				// установим флаг необходимости настройки типа аппарата
+				if (re)
+					sParam->device = false;
+
+				// определение типа аппарата
+				if (buf[B1] == 1)
+				{
+					// защита есть
+
+				}
+				else
+				{
+
+				}
+
+				sDebug.byte1 = sParam->prm.getNumCom();
+				sDebug.byte2 = sParam->prd.getNumCom();
+
+				sDebug.byte5 = sParam->glb.getNumDevices();
+				sDebug.byte6 = sParam->glb.getTypeLine();
+				sDebug.byte7 = sParam->glb.getCompatibility();
 			}
 		}
 	}

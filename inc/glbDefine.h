@@ -14,8 +14,12 @@
 /// преобразование двух CHAR в INT
 #define TO_INT16(high, low) (((uint16_t) high << 8) + low)
 
-// максимально возможное кол-во состояний устройств
+/// максимально возможное кол-во состояний устройств
 #define MAX_NUM_DEVICE_STATE 11
+
+/// максимально возможное кол-во режимов устройств
+#define MAX_NUM_REGIME 6
+
 
 /// Тип аппарата
 enum eGB_TYPE_DEVICE
@@ -29,13 +33,32 @@ enum eGB_TYPE_DEVICE
 	AVANT_K400_OPTIC
 };
 
-/// Тип линии
-/// А вот надо ли оно при наличии "тип аппарата"?!
+
+/// Тип канала связи
 enum eGB_TYPE_LINE
 {
-	UM,
-	OPTIC
+	GB_TYPE_LINE_UM = 1,
+	GB_TYPE_LINE_OPTIC = 2,
+	GB_TYPE_LINE_E1 = 3
 };
+
+
+/// Кол-во аппаратов в линии
+enum eGB_NUM_DEVICES
+{
+	GB_NUM_DEVICES_2 = 1,
+	GB_NUM_DEVICES_3 = 2
+};
+
+/// Совместимость
+enum eGB_COMPATIBILITY
+{
+	GB_COMPATIBILITY_AVANT = 0,
+	GB_COMPATIBILITY_PVZ90 = 1,
+	GB_COMPATIBILITY_AVZK = 2,
+	GB_COMPATIBILITY_PVZUE = 3
+};
+
 
 /// Команды
 enum eGB_COM
@@ -44,12 +67,14 @@ enum eGB_COM
 	GB_COM_GET_FAULT 	= 0x31,
 	GB_COM_GET_TIME 	= 0x32,
 	GB_COM_GET_MEAS		= 0x34,
+	GB_COM_GET_VERS		= 0x3F,
 	GB_COM_SET_TIME 	= 0xB2,
 
 	// только с ПК
 	GB_COM_SET_PASSWORD = 0x73,
 	GB_COM_GET_PASSWORD = 0x74
 };
+
 
 /// Маски команд
 enum eGB_COM_MASK
@@ -68,6 +93,7 @@ enum eGB_COM_MASK
 	GB_COM_MASK_GROUP_WRITE_PARAM = 0x80,
 	GB_COM_MASK_GROUP_READ_JOURNAL = 0xC0
 };
+
 
 /// Класс для даты и времени
 class TDataTime
@@ -196,6 +222,7 @@ private:
 	uint8_t bcdToBin(uint8_t val) { return (val >> 4) * 10 + (val & 0x0F); }
 };
 
+
 /// Класс для пароля
 class TPassword
 {
@@ -215,6 +242,7 @@ public:
 private:
 	uint16_t password_;
 };
+
 
 /// Класс для текущего состояния аппарата
 class TDeviceStatus
@@ -258,12 +286,25 @@ public:
 		numWarnings_= getNumSetBits(warnings);
 		return true;
 	}
-	uint8_t getWarning() 	const { return fault_; }
-	uint16_t getWarnings() 	const { return faults_; }
+	uint8_t getWarning() 	const { return warning_; }
+	uint16_t getWarnings() 	const { return warnings_; }
 	uint8_t getNumWarnings()const { return numWarnings_; }
 
 	// режим работы
-	bool setRegime(uint8_t regime){ regime_ = regime; return true; }
+	bool setRegime(uint8_t regime)
+	{
+		bool status = false;
+		if (regime < MAX_NUM_REGIME)
+		{
+			regime_ = regime;
+			status = true;
+		}
+		else
+			regime = MAX_NUM_REGIME;
+
+
+		return true;
+	}
 	uint8_t getRegime() 	const { return regime_; }
 
 	//состояние
@@ -275,6 +316,9 @@ public:
 			state_ = state;
 			status = true;
 		}
+		else
+			state = MAX_NUM_DEVICE_STATE;
+
 		return status;
 	}
 	uint8_t getState()		const { return state_; }
@@ -283,8 +327,18 @@ public:
 	bool setDopByte(uint8_t byte) { dopByte_ = byte; return true; }
 
 	// работа с флагом наличия устройства
-	void setEnable(bool enable)	  { enable_ = enable; }
-	bool isEnable()			const { return enable_; }
+	// возвращает true если новое значение отличается от текущего
+	bool setEnable(bool enable)
+	{
+		bool status = false;
+		if (enable_ != enable)
+		{
+			enable_ = enable;
+			status = true;
+		}
+		return status;
+	}
+	bool isEnable()	const { return enable_; }
 
 	// массивы расшифровок аварий и предупреждений
 	PGM_P faultText[16];
@@ -337,14 +391,94 @@ private:
 	}
 };
 
+
+/// класс для общих параметров и настроек
 class TDeviceGlb
 {
 public:
+	TDeviceGlb()
+	{
+		numDevices_ = GB_NUM_DEVICES_2;
+		typeLine_ = GB_TYPE_LINE_UM;
+		compatibility_ = GB_COMPATIBILITY_AVANT;
+		versBsp_ = 0;
+		versDsp_ = 0;
+	}
+
 	TDeviceStatus status;
 
+	// при установке возвращает true если новое значение отличается от текущего
+	eGB_NUM_DEVICES getNumDevices() const { return numDevices_; }
+	bool setNumDevices(eGB_NUM_DEVICES numDevices)
+	{
+		bool status = false;
+		if ( (numDevices == GB_NUM_DEVICES_2) ||
+				(numDevices == GB_NUM_DEVICES_3) )
+		{
+			numDevices_ = numDevices;
+			status = true;
+		}
+		return status;
+	}
+
+	// при установке возвращает true если новое значени отличается от текущего
+	eGB_TYPE_LINE getTypeLine() const { return typeLine_; }
+	bool setTypeLine(eGB_TYPE_LINE typeLine)
+	{
+		bool status = false;
+
+		if ( (typeLine == GB_TYPE_LINE_UM) || (typeLine == GB_TYPE_LINE_E1) ||
+				(typeLine == GB_TYPE_LINE_OPTIC) )
+		{
+			typeLine_ = typeLine;
+			status = true;
+		}
+		return status;
+	}
+
+	// версия прошивки AtMega BSP
+	uint16_t getVersBsp() const { return versBsp_; }
+	void setVersBsp(uint16_t versBsp) { versBsp_ = versBsp; }
+
+	//  версия прошивки DSP
+	uint16_t getVersDsp() const { return versDsp_; }
+	void setVersDsp(uint16_t versDsp) {  versDsp_ = versDsp; }
+
+	// при установке возаращает true если новое значение отличается от текущего
+	eGB_COMPATIBILITY getCompatibility() const { return compatibility_; }
+	bool setCompatibility(eGB_COMPATIBILITY compatibility)
+	{
+		bool status = false;
+		if ( (compatibility == GB_COMPATIBILITY_AVANT) ||
+				(compatibility == GB_COMPATIBILITY_AVZK) ||
+				(compatibility == GB_COMPATIBILITY_PVZ90) ||
+				(compatibility == GB_COMPATIBILITY_PVZUE) )
+		{
+			compatibility_ = compatibility;
+			status = true;
+		}
+		return status;
+	}
+
 private:
+	// кол-во аппаратов в линии 2 или 3
+	eGB_NUM_DEVICES numDevices_;
+
+	// тип линии
+	eGB_TYPE_LINE typeLine_;
+
+	// версия прошивки БСП
+	uint16_t versBsp_;
+
+	// версия прошивки DSP
+	uint16_t versDsp_;
+
+	// совместимость
+	eGB_COMPATIBILITY compatibility_;
 };
 
+
+/// класс для параметров и настроек защиты
 class TDeviceDef
 {
 public:
@@ -353,22 +487,62 @@ public:
 private:
 };
 
+
+/// класс для параметров и настроек приемника
 class TDevicePrm
 {
 public:
 	TDeviceStatus status;
 
+	// установка кол-ва команд в ПРМ, если оно равно 0 или больше 32
+	// возвращает true если новое значение отличается от предыдущего, а также
+	// устанавливает флаг enable
+	bool setNumCom(uint8_t numCom)
+	{
+		bool status = false;
+		if ( (numCom <= 32) && (numCom_ != numCom) )
+		{
+			numCom_ = numCom;
+			this->status.setEnable(numCom != 0);
+			status = true;
+		}
+		return status;
+	}
+	uint8_t getNumCom() const { return numCom_; }
+
 private:
+	// кол-во команд
+	uint8_t numCom_;
 };
 
+
+/// класс для параметров и настроек передатчика
 class TDevicePrd
 {
 public:
 	TDeviceStatus status;
 
+	// установка кол-ва команд в ПРМ, если оно равно 0 или больше 32
+	// возвращает true если новое значение отличается от предыдущего, а также
+	// устанавливает флаг enable
+	bool setNumCom(uint8_t numCom)
+	{
+		bool status = false;
+		if ( (numCom <= 32) && (numCom_ != numCom) )
+		{
+			numCom_ = numCom;
+			this->status.setEnable(numCom != 0);
+			status = true;
+		}
+		return status;
+	}
+	uint8_t getNumCom() const { return numCom_; }
 private:
+	uint8_t numCom_;
 };
 
+
+/// класс для измеряемых параметров
 class TMeasuredParameters
 {
 public:
@@ -477,12 +651,14 @@ private:
 	uint16_t resistOut_;
 };
 
+
 /// Структура параметров БСП
 struct stGBparam
 {
-	// аппарат
+
+	// false - означает что надо настроить меню под текущий тип аппарата
+	bool device;
 	eGB_TYPE_DEVICE typeDevice;
-	eGB_TYPE_LINE typeLine;
 
 	// пароль
 	TPassword password;

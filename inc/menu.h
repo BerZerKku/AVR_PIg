@@ -37,7 +37,9 @@ public:
 	void main();
 
 	/// Установка типа аппарата
-	bool setTypeDevice(eGB_TYPE_DEVICE device);
+	/// По умолчанию будет сделан выбор исходя из имеющейся информации в
+	/// настройках отдельных устройств
+	bool setTypeDevice(eGB_TYPE_DEVICE device = AVANT_NO);
 
 	/// Возвращает имеющуюся команду на исполнение
 	uint8_t txCommand();
@@ -61,16 +63,16 @@ private:
 	// флаг текущего сосотояния связи с БСП, True - есть
 	bool connectionBsp_;
 
-	// состояние курсора
+	// true - необходимо вывести на экран курсор
 	bool cursorEnable_;
 
-	// положение курсора
+	// текущее положение курсора (номер строки)
 	uint8_t cursorLine_;
 
 	// кол-во отображаемых параметров
 	uint8_t lineParam_;
 
-	// создание уровня меню
+	// если true - необходимо создать уровень меню
 	bool lvlCreate_;
 
 	// измеряемые параметры
@@ -89,6 +91,7 @@ private:
 	void printDevicesStatus(uint8_t poz, TDeviceStatus *device);
 
 	// Уровни меню
+	void lvlError();
 	void lvlStart();
 	void lvlFirst();
 	void lvlJournal();

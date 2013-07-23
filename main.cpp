@@ -176,7 +176,7 @@ main (void)
 	protBSPs.setEnable();
 
 	// зададим тип аппарата
-	menu.setTypeDevice(AVANT_K400);
+	menu.setTypeDevice(AVANT_R400);
 
 	while(1)
 	{
