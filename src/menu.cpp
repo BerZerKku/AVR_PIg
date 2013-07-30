@@ -157,10 +157,7 @@ clMenu::main(void)
 	clearTextBuf();
 
 	// выведем сообщение, если текущий тип аппарата не определен
-	if (sParam.typeDevice != AVANT_NO)
-		(this->*lvlMenu) ();
-	else
-		lvlError();
+	(this->*lvlMenu) ();
 	key_ = KEY_NO;
 
 
@@ -254,7 +251,7 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 
 	if (!status)
 	{
-		if (device == AVANT_RZSK)
+		if (device == AVANT_K400)
 		{
 			sParam.typeDevice = device;
 
@@ -262,7 +259,7 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			measParam[1] = MENU_MEAS_PARAM_DATE;
 			measParam[2] = MENU_MEAS_PARAM_UOUT;
 			measParam[3] = MENU_MEAS_PARAM_IOUT;
-			measParam[4] = MENU_MEAS_PARAM_UZ;
+			measParam[4] = MENU_MEAS_PARAM_UN;
 			measParam[5] = MENU_MEAS_PARAM_UC;
 
 			// заполнение массива общих неисправностей и предупреждений
@@ -391,22 +388,23 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 
 			status = true;
 		}
-		else
-		{
-			// если полученные данные не подходят ни под один имеющийся тип
-			// на экране отображается ошибка
-			sParam.typeDevice = AVANT_NO;
-			// в случае неизвестного типа устройства, отключим все
-			measParam[0] = MENU_MEAS_PARAM_TIME;
-			measParam[1] = MENU_MEAS_PARAM_DATE;
-			for(uint_fast8_t i = 2; i < 6; i++)
-				measParam[i] = MENU_MEAS_PARAM_NO;
-			sParam.def.status.setEnable(false);
-			sParam.prm.status.setEnable(false);
-			sParam.prd.status.setEnable(false);
+	}
 
-			lineParam_ = 1;
-		}
+	if ( (!status) || (device == AVANT_NO) )
+	{
+		// если полученные данные не подходят ни под один имеющийся тип
+		// на экране отображается ошибка
+		sParam.typeDevice = AVANT_NO;
+		// в случае неизвестного типа устройства, отключим все
+		measParam[0] = MENU_MEAS_PARAM_TIME;
+		measParam[1] = MENU_MEAS_PARAM_DATE;
+		for(uint_fast8_t i = 2; i < 6; i++)
+			measParam[i] = MENU_MEAS_PARAM_NO;
+		sParam.def.status.setEnable(false);
+		sParam.prm.status.setEnable(false);
+		sParam.prd.status.setEnable(false);
+
+		lvlMenu = &clMenu::lvlError;
 	}
 
 	// сброс флага необходимости проверки типа аппарата
@@ -592,7 +590,8 @@ clMenu::lvlError()
 		cursorEnable_ = false;
 		vLCDclear();
 		// только одна строка отводится под вывод параметров
-		vLCDdrawBoard(1);
+		lineParam_ = 1;
+		vLCDdrawBoard(lineParam_);
 	}
 
 	// вывод на экран измеряемых параметров
@@ -601,6 +600,12 @@ clMenu::lvlError()
 
 	snprintf_P(&vLCDbuf[40], 21, fcNoTypeDevice0);
 	snprintf_P(&vLCDbuf[60], 21, fcNoTypeDevice1);
+
+	if (sParam.typeDevice != AVANT_NO)
+	{
+		lvlMenu = &clMenu::lvlStart;
+		lvlCreate_ = true;
+	}
 }
 
 /** Уровень начальный
@@ -755,12 +760,9 @@ void
 clMenu::lvlInfo()
 {
 	static char title[] PROGMEM = "Меню\\Информация";
-	static char punkt[] [21] PROGMEM =
-	{
-			"БСП MCU : v1.11",
-			"БСП DSP : v1.78",
-			"ПИ  MCU : v1.49"
-	};
+	static char bspMcu[] PROGMEM = "БСП MCU : %02X.%02x";
+	static char bspDsp[] PROGMEM = "БСП DSP : %02X.%02x";
+	static char piMcu[]  PROGMEM = "ПИ  MCU : %02X.%02x";
 
 
 	if (lvlCreate_)
@@ -774,10 +776,11 @@ clMenu::lvlInfo()
 
 	snprintf_P(&vLCDbuf[0], 21, title );
 
-	for(uint_fast8_t i = 0; i < (sizeof(punkt) / sizeof(punkt[0])); i++)
-	{
-		snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt[i]);
-	}
+	uint16_t vers = sParam.glb.getVersBsp();
+	snprintf_P(&vLCDbuf[20], 21, bspMcu, (uint8_t)(vers >> 8), (uint8_t) vers);
+	vers = sParam.glb.getVersDsp();
+	snprintf_P(&vLCDbuf[40], 21, bspDsp, (uint8_t)(vers >> 8), (uint8_t) vers);
+	snprintf_P(&vLCDbuf[60], 21, piMcu,  (uint8_t)(VERS >> 8), (uint8_t) VERS);
 
 	switch(key_)
 	{
@@ -807,10 +810,10 @@ clMenu::lvlJournal()
 	static PGM_P punkt[4];
 	static uint8_t numPunkt = 0;
 
-	static char punkt1[] PROGMEM = "%d. Событий";
-	static char punkt2[] PROGMEM = "%d. Защты";
-	static char punkt3[] PROGMEM = "%d. Приемника";
-	static char punkt4[] PROGMEM = "%d. Передатчика";
+	static char punkt1[] PROGMEM = "%d. События";
+	static char punkt2[] PROGMEM = "%d. Защта";
+	static char punkt3[] PROGMEM = "%d. Приемник";
+	static char punkt4[] PROGMEM = "%d. Передатчик";
 
 	if (lvlCreate_)
 	{

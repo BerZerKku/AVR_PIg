@@ -19,10 +19,6 @@ static const char fcUn[] 	PROGMEM	= "Uш=%02dдБ";
 static const char fcDate[] 	PROGMEM = "%02u.%02u.%02u";
 static const char fcTime[] 	PROGMEM = "%02u:%02u:%02u";
 
-static const char fcDef[] 	PROGMEM = "ЗАЩ:%S%S";
-static const char fcPrm[] 	PROGMEM = "ПРМ:%S%S";
-static const char fcPrd[] 	PROGMEM = "ПРД:%S%S";
-
 // имена устройств аппарата
 static const char fcDeviceName00[] PROGMEM = "ЗАЩ";
 static const char fcDeviceName01[] PROGMEM = "ПРМ";

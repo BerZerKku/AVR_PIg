@@ -11,6 +11,9 @@
 #include <stdint.h>
 #include <avr/pgmspace.h>
 
+/// версия текущей прошивки
+#define VERS 0x0100
+
 /// преобразование двух CHAR в INT
 #define TO_INT16(high, low) (((uint16_t) high << 8) + low)
 
