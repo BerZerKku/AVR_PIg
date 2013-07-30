@@ -14,6 +14,9 @@
 /// буфер текста выводимого на ЖКИ
 static char vLCDbuf[SIZE_BUF_STRING];
 
+/// кол-во строк данных отображаемых на экране
+#define NUM_TEXT_LINES 6
+
 //clMenu::clMenu(clProtocolS *protocol) : pProtocol(protocol)
 clMenu::clMenu()
 {
@@ -153,7 +156,6 @@ clMenu::main(void)
 	}
 
 	// очистка текстового буфера
-
 	clearTextBuf();
 
 	// выведем сообщение, если текущий тип аппарата не определен
@@ -187,7 +189,6 @@ clMenu::main(void)
 
 	// преобразование строки символов в данные для вывода на экран
 	vLCDputchar(vLCDbuf, lineParam_);
-
 	// запуск обновления инф-ии на ЖКИ
 	vLCDrefresh();
 }
@@ -413,6 +414,19 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 	return status;
 }
 
+/**	Возвращает имеющуюся команду на исполнение
+ * 	@param Нет
+ * 	@return команды ?!
+ */
+uint8_t
+clMenu::txCommand()
+{
+//	uint_fast8_t t = com;
+//	com = 0;
+
+	return 0;
+}
+
 /** Очистка текстового буфера
  * 	@param Нет
  * 	@return Нет
@@ -591,6 +605,7 @@ clMenu::lvlError()
 		vLCDclear();
 		// только одна строка отводится под вывод параметров
 		lineParam_ = 1;
+		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 	}
 
@@ -621,6 +636,7 @@ clMenu::lvlStart()
 
 		cursorEnable_ = false;
 		lineParam_ = 3;
+		numPunkts_ = 0;
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 	}
@@ -638,11 +654,6 @@ clMenu::lvlStart()
 
 	switch(key_)
 	{
-		case KEY_UP:
-			break;
-		case KEY_DOWN:
-			break;
-
 		case KEY_ENTER:
 			lvlMenu = &clMenu::lvlFirst;
 			lvlCreate_ = true;
@@ -673,15 +684,11 @@ void
 clMenu::lvlFirst()
 {
 	static char title[] PROGMEM = "Меню";
-	static char punkt[] [21] PROGMEM =
-	{
-		"1. Журнал",
-		"2. Управление",
-		"3. Настройка",
-		"4. Тест",
-		"5. Информация"
-	};
-
+	static char punkt1[] PROGMEM = "%d. Журнал";
+	static char punkt2[] PROGMEM = "%d. Управление";
+	static char punkt3[] PROGMEM = "%d. Настройка";
+	static char punkt4[] PROGMEM = "%d. Тест";
+	static char punkt5[] PROGMEM = "%d. Информация";
 
 	if (lvlCreate_)
 	{
@@ -693,34 +700,31 @@ clMenu::lvlFirst()
 		lineParam_ = 1;
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
+
+		uint8_t num = 0;
+		punkt_[num++] = punkt1;
+		punkt_[num++] = punkt2;
+		punkt_[num++] = punkt3;
+		punkt_[num++] = punkt4;
+		punkt_[num++] = punkt5;
+		numPunkts_ = num;
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title );
-
-	for(uint8_t i = 0; i < (sizeof(punkt) / sizeof(punkt[0])); i++)
-	{
-		snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt[i]);
-	}
-
-	if (cursorEnable_)
-	{
-		vLCDbuf[2 + 20 * cursorLine_] = '*';
-	}
+	printPunkts();
 
 	switch(key_)
 	{
 		case KEY_UP:
-			if (cursorLine_ > 1)
-				cursorLine_--;
+			cursorLineUp();
 			break;
 		case KEY_DOWN:
-			if (cursorLine_ < (sizeof(punkt) / sizeof(punkt[0])))
-				cursorLine_++;
+			cursorLineDown();
 			break;
 
 		case KEY_RIGHT:
 			switch(cursorLine_)
-			{
+			{printPunkts();
 				case 1:
 					lvlMenu = &clMenu::lvlJournal;
 					lvlCreate_ = true;
@@ -807,8 +811,6 @@ void
 clMenu::lvlJournal()
 {
 	static char title[] PROGMEM = "Меню\\Журнал";
-	static PGM_P punkt[4];
-	static uint8_t numPunkt = 0;
 
 	static char punkt1[] PROGMEM = "%d. События";
 	static char punkt2[] PROGMEM = "%d. Защта";
@@ -817,6 +819,8 @@ clMenu::lvlJournal()
 
 	if (lvlCreate_)
 	{
+		uint8_t num = 0;
+
 		lvlCreate_ = false;
 
 		cursorLine_ = 1;
@@ -828,55 +832,41 @@ clMenu::lvlJournal()
 
 		if (sParam.typeDevice == AVANT_R400)
 		{
-			numPunkt = 0;
-			punkt[numPunkt++] = punkt1;
-			punkt[numPunkt++] = punkt2;
+			punkt_[num++] = punkt1;
+			punkt_[num++] = punkt2;
 		}
 		else if (sParam.typeDevice == AVANT_RZSK)
 		{
-			numPunkt = 0;
-			punkt[numPunkt++] = punkt1;
-			punkt[numPunkt++] = punkt2;
-			punkt[numPunkt++] = punkt3;
-			punkt[numPunkt++] = punkt4;
+			punkt_[num++] = punkt1;
+			punkt_[num++] = punkt2;
+			punkt_[num++] = punkt3;
+			punkt_[num++] = punkt4;
 		}
 		else if (sParam.typeDevice == AVANT_K400)
 		{
-			numPunkt = 0;
-			punkt[numPunkt++] = punkt1;
-			punkt[numPunkt++] = punkt3;
-			punkt[numPunkt++] = punkt4;
+			punkt_[num++] = punkt1;
+			punkt_[num++] = punkt3;
+			punkt_[num++] = punkt4;
 		}
 		else if (sParam.typeDevice == AVANT_K400_OPTIC)
 		{
-			numPunkt = 0;
-			punkt[numPunkt++] = punkt1;
-			punkt[numPunkt++] = punkt3;
-			punkt[numPunkt++] = punkt4;
+			punkt_[num++] = punkt1;
+			punkt_[num++] = punkt3;
+			punkt_[num++] = punkt4;
 		}
-
+		numPunkts_ = num;
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
-	for(uint_fast8_t i = 0; i < numPunkt; i++)
-	{
-		snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt[i], i + 1);
-	}
-
-	if (cursorEnable_)
-	{
-		vLCDbuf[2 + 20 * cursorLine_] = '*';
-	}
+	printPunkts();
 
 	switch(key_)
 	{
 		case KEY_UP:
-			if (cursorLine_ > 1)
-				cursorLine_--;
+			cursorLineUp();
 			break;
 		case KEY_DOWN:
-			if (cursorLine_ < numPunkt)
-				cursorLine_++;
+			cursorLineDown();
 			break;
 
 		case KEY_LEFT:
@@ -884,23 +874,23 @@ clMenu::lvlJournal()
 			lvlCreate_ = true;
 			break;
 		case KEY_RIGHT:
-			if (punkt[cursorLine_ - 1] == punkt1)
+			if (punkt_[cursorLine_ - 1] == punkt1)
 			{
 				lvlMenu = &clMenu::lvlJournalEvent;
 				lvlCreate_ = true;
 			}
-			else if (punkt[cursorLine_ - 1] == punkt2)
+			else if (punkt_[cursorLine_ - 1] == punkt2)
 			{
 
 				lvlMenu = &clMenu::lvlJournalDef;
 				lvlCreate_ = true;
 			}
-			else if (punkt[cursorLine_ - 1] == punkt3)
+			else if (punkt_[cursorLine_ - 1] == punkt3)
 			{
 				lvlMenu = &clMenu::lvlJournalPrm;
 				lvlCreate_ = true;
 			}
-			else if (punkt[cursorLine_ - 1] == punkt4)
+			else if (punkt_[cursorLine_ - 1] == punkt4)
 			{
 				lvlMenu = &clMenu::lvlJournalPrd;
 				lvlCreate_ = true;
@@ -948,6 +938,7 @@ clMenu::lvlJournalEvent()
 		cursorEnable_ = true;
 
 		lineParam_ = 1;
+
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 	}
@@ -1205,8 +1196,6 @@ void
 clMenu::lvlControl()
 {
 	static char title[] PROGMEM = "Меню\\Управление";
-	static PGM_P punkt[10];
-	static uint8_t numPunkt;
 
 	static char punkt1[] PROGMEM= "%d. Пуск наладочный";
 	static char punkt2[] PROGMEM= "%d. Пуск удаленного";
@@ -1225,52 +1214,38 @@ clMenu::lvlControl()
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-
+		uint8_t num = 0;
 		if ((sParam.typeDevice == AVANT_RZSK) ||
 				(sParam.typeDevice == AVANT_R400))
 		{
-			numPunkt = 0;
-			punkt[numPunkt++] = punkt1;
-			punkt[numPunkt++] = punkt2;
-			punkt[numPunkt++] = punkt3;
-			punkt[numPunkt++] = punkt4;
-			punkt[numPunkt++] = punkt5;
+			punkt_[num++] = punkt1;
+			punkt_[num++] = punkt2;
+			punkt_[num++] = punkt3;
+			punkt_[num++] = punkt4;
+			punkt_[num++] = punkt5;
 		}
 		else if (sParam.typeDevice == AVANT_K400)
 		{
-			numPunkt = 0;
-			punkt[numPunkt++] = punkt3;
-			punkt[numPunkt++] = punkt4;
+			punkt_[num++] = punkt3;
 		}
 		else if (sParam.typeDevice == AVANT_K400_OPTIC)
 		{
-			numPunkt = 0;
-			punkt[numPunkt++] = punkt3;
-			punkt[numPunkt++] = punkt4;
+			punkt_[num++] = punkt3;
+			punkt_[num++] = punkt4;
 		}
+		numPunkts_ = num;
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
-
-	for(uint_fast8_t i = 0; i < numPunkt; i++)
-	{
-		snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt[i], i + 1);
-	}
-
-	if (cursorEnable_)
-	{
-		vLCDbuf[2 + 20 * cursorLine_] = '*';
-	}
+	printPunkts();
 
 	switch(key_)
 	{
 		case KEY_UP:
-			if (cursorLine_ > 1)
-				cursorLine_--;
+			cursorLineUp();
 			break;
 		case KEY_DOWN:
-			if (cursorLine_ < numPunkt)
-				cursorLine_++;
+			cursorLineDown();
 			break;
 
 		case KEY_LEFT:
@@ -1297,13 +1272,10 @@ void
 clMenu::lvlSetup()
 {
 	static char title[] PROGMEM = "Меню\\Настройка";
-	static char punkt[] [21] PROGMEM =
-	{
-			"1. Режим",
-			"2. Время и дата",
-			"3. Параметры",
-			"4. Пароль"
-	};
+	static char punkt1[] PROGMEM = "%d. Режим";
+	static char punkt2[] PROGMEM = "%d. Время и дата";
+	static char punkt3[] PROGMEM = "%d. Параметры";
+	static char punkt4[] PROGMEM = "%d. Пароль";
 
 	if (lvlCreate_)
 	{
@@ -1315,29 +1287,25 @@ clMenu::lvlSetup()
 		lineParam_ = 1;
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
+
+		uint8_t num = 0;
+		punkt_[num++] = punkt1;
+		punkt_[num++] = punkt2;
+		punkt_[num++] = punkt3;
+		punkt_[num++] = punkt4;
+		numPunkts_ = num;
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
-
-	for(uint_fast8_t i = 0; i < (sizeof(punkt) / sizeof(punkt[0])); i++)
-	{
-		snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt[i]);
-	}
-
-	if (cursorEnable_)
-	{
-		vLCDbuf[2 + 20 * cursorLine_] = '*';
-	}
+	printPunkts();
 
 	switch(key_)
 	{
 		case KEY_UP:
-			if (cursorLine_ > 1)
-				cursorLine_--;
+			cursorLineUp();
 			break;
 		case KEY_DOWN:
-			if (cursorLine_ < (sizeof(punkt) / sizeof(punkt[0])))
-				cursorLine_++;
+			cursorLineDown();
 			break;
 
 		case KEY_LEFT:
@@ -1374,9 +1342,6 @@ void
 clMenu::lvlSetupParam()
 {
 	static char title[] PROGMEM = "Настройка\\Параметры";
-	static PGM_P punkt[4];
-	static uint8_t numPunkt = 0;
-
 	static char punkt1[] PROGMEM = "%d. Защиты";
 	static char punkt2[] PROGMEM = "%d. Приемника";
 	static char punkt3[] PROGMEM = "%d. Передатчика";
@@ -1393,58 +1358,44 @@ clMenu::lvlSetupParam()
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
+		uint8_t num = 0;
 		if (sParam.typeDevice == AVANT_R400)
 		{
-			numPunkt = 0;
-			punkt[numPunkt++] = punkt1;
-			punkt[numPunkt++] = punkt4;
+			punkt_[num++] = punkt1;
+			punkt_[num++] = punkt4;
 		}
 		else if (sParam.typeDevice == AVANT_RZSK)
 		{
-			numPunkt = 0;
-			punkt[numPunkt++] = punkt1;
-			punkt[numPunkt++] = punkt2;
-			punkt[numPunkt++] = punkt3;
-			punkt[numPunkt++] = punkt4;
+			punkt_[num++] = punkt1;
+			punkt_[num++] = punkt2;
+			punkt_[num++] = punkt3;
+			punkt_[num++] = punkt4;
 		}
 		else if (sParam.typeDevice == AVANT_K400)
 		{
-			numPunkt = 0;
-			punkt[numPunkt++] = punkt2;
-			punkt[numPunkt++] = punkt3;
-			punkt[numPunkt++] = punkt4;
+			punkt_[num++] = punkt2;
+			punkt_[num++] = punkt3;
+			punkt_[num++] = punkt4;
 		}
 		else if (sParam.typeDevice == AVANT_K400_OPTIC)
 		{
-			numPunkt = 0;
-			punkt[numPunkt++] = punkt2;
-			punkt[numPunkt++] = punkt3;
-			punkt[numPunkt++] = punkt4;
+			punkt_[num++] = punkt2;
+			punkt_[num++] = punkt3;
+			punkt_[num++] = punkt4;
 		}
-
+		numPunkts_ = num;
 	}
 
 	snprintf_P(&vLCDbuf[0], 20, title);
-
-	for(uint_fast8_t i = 0; i < numPunkt; i++)
-	{
-		snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt[i], i + 1);
-	}
-
-	if (cursorEnable_)
-	{
-		vLCDbuf[2 + 20 * cursorLine_] = '*';
-	}
+	printPunkts();
 
 	switch(key_)
 	{
 		case KEY_UP:
-			if (cursorLine_ > 1)
-				cursorLine_--;
+			cursorLineUp();
 			break;
 		case KEY_DOWN:
-			if (cursorLine_ < numPunkt)
-				cursorLine_++;
+			cursorLineDown();
 			break;
 
 		case KEY_LEFT:
@@ -1452,22 +1403,22 @@ clMenu::lvlSetupParam()
 			lvlCreate_ = true;
 			break;
 		case KEY_RIGHT:
-			if (punkt[cursorLine_ - 1] == punkt1)
+			if (punkt_[cursorLine_ - 1] == punkt1)
 			{
 				lvlMenu = &clMenu::lvlSetupParamDef;
 				lvlCreate_ = true;
 			}
-			else if (punkt[cursorLine_ - 1] == punkt2)
+			else if (punkt_[cursorLine_ - 1] == punkt2)
 			{
 				lvlMenu = &clMenu::lvlSetupParamPrm;
 				lvlCreate_ = true;
 			}
-			else if (punkt[cursorLine_ - 1] == punkt3)
+			else if (punkt_[cursorLine_ - 1] == punkt3)
 			{
 				lvlMenu = &clMenu::lvlSetupParamPrd;
 				lvlCreate_ = true;
 			}
-			else if (punkt[cursorLine_ - 1] == punkt4)
+			else if (punkt_[cursorLine_ - 1] == punkt4)
 			{
 				lvlMenu = &clMenu::lvlSetupParamGlb;
 				lvlCreate_ = true;
@@ -1914,11 +1865,9 @@ void
 clMenu::lvlSetupDT()
 {
 	static char title[] PROGMEM = "Настройка\\Время&дата";
-	static char punkt[] [21] PROGMEM =
-	{
-			"1. Дата",
-			"2. Время",
-	};
+	static char punkt1[] PROGMEM = "%d. Дата";
+	static char punkt2[] PROGMEM = "%d. Время";
+
 
 	if (lvlCreate_)
 	{
@@ -1930,29 +1879,24 @@ clMenu::lvlSetupDT()
 		lineParam_ = 1;
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
+
+		uint8_t num = 0;
+		punkt_[num++] = punkt1;
+		punkt_[num++] = punkt2;
+		numPunkts_ = num;
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
+	printPunkts();
 
-	for(uint_fast8_t i = 0; i < (sizeof(punkt) / sizeof(punkt[0])); i++)
-	{
-		snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt[i]);
-	}
-
-	if (cursorEnable_)
-	{
-		vLCDbuf[2 + 20 * cursorLine_] = '*';
-	}
 
 	switch(key_)
 	{
 		case KEY_UP:
-			if (cursorLine_ > 1)
-				cursorLine_--;
+			cursorLineUp();
 			break;
 		case KEY_DOWN:
-			if (cursorLine_ < (sizeof(punkt) / sizeof(punkt[0])))
-				cursorLine_++;
+			cursorLineDown();
 			break;
 
 		case KEY_LEFT:
@@ -1970,15 +1914,48 @@ clMenu::lvlSetupDT()
 	}
 }
 
-uint8_t
-clMenu::txCommand()
+/**	Вывод на экран текущих пунктов меню и курсора
+ *	@param Нет
+ *	@return Нет
+ */
+void
+clMenu::printPunkts()
 {
-//	uint_fast8_t t = com;
-//	com = 0;
+	// вывод на экран пунктов текущего меню
+	// вывод заканчивается на последней строчке экрана,
+	// либо последнем пункте
 
-	return 0;
+	// кол-во отображаемых строк на экране
+	uint8_t numLines = NUM_TEXT_LINES - lineParam_;
+	// если номер текущей строки больше, чем вмещается строк на экране
+	// то выводить на экран начинаем с (текущий пункт - кол.во строк)
+	// иначе с первой
+	uint8_t cntPunkts = (cursorLine_ > numLines) ? cursorLine_-numLines: 0;
+
+	for(uint_fast8_t line = lineParam_; line < NUM_TEXT_LINES; line++)
+	{
+		snprintf_P(&vLCDbuf[20 * line], 21, punkt_[cntPunkts], cntPunkts + 1);
+
+		if (++cntPunkts >= numPunkts_)
+			break;
+	}
+
+	// при необходиомости, вывод курсора на экран
+	if (cursorEnable_)
+	{
+		if (cursorLine_ > numLines)
+			vLCDbuf[20 * (NUM_TEXT_LINES - 1) + 2] = '*';
+		else
+		{
+			vLCDbuf[20 * (cursorLine_ + lineParam_ - 1) + 2] = '*';
+		}
+	}
 }
 
+/**	Возвращает кол-во ошибок в коде, т.е. кол-во установленных битов.
+ * 	@param Код ошибки
+ * 	@return Кол-во ошибок
+ */
 uint8_t
 clMenu::getNumError(uint16_t val)
 {

@@ -11,8 +11,13 @@
 #include "keyboard.h"
 #include "glbDefine.h"
 
+/// кол-во строк, отображаемых на экране
+
 /// время до переинициализации дисплея (* время цикла ЖКИ)
 #define TIME_TO_REINIT_LCD 50
+
+/// максимальное кол-во пунктов в меню
+#define MAX_NUM_PUNKTS 12
 
 /// Измеряемые параметры
 enum eMENU_MEAS_PARAM
@@ -78,8 +83,13 @@ private:
 	// измеряемые параметры
 	eMENU_MEAS_PARAM measParam[6];
 
-	// возвращает текущий номер неисправности/предупреждения
-	uint8_t getNumError(uint16_t val);
+	// кол-во пунктов в текущем меню
+	uint8_t numPunkts_;
+
+	// пункты в текущем меню
+	PGM_P punkt_[MAX_NUM_PUNKTS];
+
+
 
 	// очистка текстового буфера
 	void clearTextBuf();
@@ -108,6 +118,24 @@ private:
 	void lvlSetupParamGlb();
 	void lvlSetupDT();
 	void lvlInfo();
+
+	// перемещение курсора вверх
+	void cursorLineUp()
+	{
+		cursorLine_ = (cursorLine_ > 1) ? cursorLine_ - 1 : numPunkts_;
+	};
+
+	// пермещение курсора вниз
+	void cursorLineDown()
+	{
+		cursorLine_ = (cursorLine_ < numPunkts_) ? cursorLine_ + 1 : 1;
+	}
+
+	// вывод на экран текущих пунктов меню и курсора
+	void printPunkts();
+
+	// возвращает текущий номер неисправности/предупреждения
+	uint8_t getNumError(uint16_t val);
 
 	// текущий уровень меню
 	void (clMenu:: *lvlMenu) ();
