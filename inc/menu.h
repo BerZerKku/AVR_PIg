@@ -33,6 +33,9 @@ enum eMENU_MEAS_PARAM
 	MENU_MEAS_PARAM_ROUT
 };
 
+
+
+
 class clMenu
 {
 public:
@@ -47,7 +50,7 @@ public:
 	bool setTypeDevice(eGB_TYPE_DEVICE device = AVANT_NO);
 
 	/// Возвращает имеющуюся команду на исполнение
-	uint8_t txCommand();
+	eGB_COM getTxCommand();
 
 	/// Возвращает текущее состояние связи с БСП
 	bool isConnectionBsp() const { return connectionBsp_; }
@@ -90,7 +93,6 @@ private:
 	PGM_P punkt_[MAX_NUM_PUNKTS];
 
 
-
 	// очистка текстового буфера
 	void clearTextBuf();
 
@@ -99,6 +101,9 @@ private:
 
 	// вывод на экран текущего состояния устройств
 	void printDevicesStatus(uint8_t poz, TDeviceStatus *device);
+
+	// вывод в пунтке меню "Режим" текущего режима устройств
+	void printDevicesRegime(uint8_t poz, TDeviceStatus *device);
 
 	// Уровни меню
 	void lvlError();
@@ -111,6 +116,7 @@ private:
 	void lvlJournalPrd();
 	void lvlControl();
 	void lvlSetup();
+	void lvlRegime();
 	void lvlSetupParam();
 	void lvlSetupParamDef();
 	void lvlSetupParamPrm();

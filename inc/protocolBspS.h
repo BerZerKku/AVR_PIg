@@ -9,6 +9,7 @@
 #define PROTOCOLBSPS_H_
 
 #include "protocolS.h"
+#include "glbDefine.h"
 
 class clProtocolBspS : public clProtocolS
 {
@@ -17,6 +18,9 @@ public:
 
 	/// Обработка принятого сообщения. В случае неудачи возвращает False.
 	bool getData();
+
+	/// Отправка команды
+	uint8_t sendData(eGB_COM com);
 };
 
 

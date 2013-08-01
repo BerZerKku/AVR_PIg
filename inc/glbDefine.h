@@ -23,6 +23,8 @@
 /// максимально возможное кол-во режимов устройств
 #define MAX_NUM_REGIME 6
 
+/// максимальное кол-во команд в буфере (не считая 3-х основных)
+#define MAX_NUM_COM_BUF 5
 
 /// Тип аппарата
 enum eGB_TYPE_DEVICE
@@ -66,14 +68,18 @@ enum eGB_COMPATIBILITY
 /// Команды
 enum eGB_COM
 {
+	GB_COM_NO = 0,
+	GB_COM_GET_TYPE_AC 	= 0x0A,
 	GB_COM_GET_SOST		= 0x30,
 	GB_COM_GET_FAULT 	= 0x31,
 	GB_COM_GET_TIME 	= 0x32,
 	GB_COM_GET_MEAS		= 0x34,
+	GB_COM_GET_UD_DEVICE= 0x37,
 	GB_COM_GET_VERS		= 0x3F,
 	GB_COM_SET_TIME 	= 0xB2,
 
 	// только с ПК
+	GB_COM_SET_CONTROL	= 0x72,
 	GB_COM_SET_PASSWORD = 0x73,
 	GB_COM_GET_PASSWORD = 0x74
 };
@@ -97,6 +103,19 @@ enum eGB_COM_MASK
 	GB_COM_MASK_GROUP_READ_JOURNAL = 0xC0
 };
 
+/// Значения команд управления
+enum eGB_CONTROL
+{
+	GB_CONTROL_RESET_SELF 	= 1,
+	GB_CONTROL_RESET_UD_1	= 2,
+	GB_CONTROL_RESET_UD_2	= 3,
+	GB_CONTROL_PUSK_UD_1	= 4,
+	GB_CONTROL_PUSK_UD_2 	= 5,
+	GB_CONTROL_PUSK_UD_ALL	= 6,
+	GB_CONTROL_CALL			= 7,
+	GB_CONTROL_PUSK_ON		= 8,
+	GB_CONTROL_PUSK_OFF		= 9
+};
 
 /// Класс для даты и времени
 class TDataTime
@@ -122,7 +141,7 @@ public:
 	bool setMinute(uint8_t val)
 	{
 		bool stat = false;
-		if (val < 59)
+		if (val < 60)
 		{
 			minute_ = val;
 			stat = true;
@@ -394,6 +413,14 @@ private:
 	}
 };
 
+/// структура параметров
+struct stParam
+{
+	uint16_t min;
+	uint16_t max;
+	char range[20];
+	char name[21];
+};
 
 /// класс для общих параметров и настроек
 class TDeviceGlb
@@ -654,6 +681,77 @@ private:
 	uint16_t resistOut_;
 };
 
+// класс для передачи команд
+class TTxCom
+{
+public:
+	TTxCom()
+	{
+		clear();
+	}
+
+	// очистка буфера
+	void clear()
+	{
+		numCom_ = 0;
+		cnt_ = 0;
+		comFast_ = GB_COM_NO;
+		com_[0] = GB_COM_NO;
+	}
+
+	// добавление команды в буфер
+	bool addCom(eGB_COM com)
+	{
+		bool stat = false;
+		if (numCom_ < MAX_NUM_COM_BUF)
+		{
+			com_[numCom_++] = com;
+			stat = true;
+		}
+		return stat;
+	}
+
+	// последовательная выдача имеющихся в буфере команд
+	eGB_COM getCom()
+	{
+		if (cnt_ >= numCom_)
+			cnt_ = 0;
+		return com_[cnt_];
+	}
+
+	// срочная команда (например изменение параметра)
+	void addFastCom(eGB_COM com) { comFast_ = com; }
+	eGB_COM getFastCom()
+	{
+		eGB_COM com = GB_COM_NO;
+		if (comFast_ != GB_COM_NO)
+		{
+			com = comFast_;
+			comFast_ = GB_COM_NO;
+		}
+		return com;
+	}
+
+	// возвращает кол-во команд в буфере
+	uint8_t getNumCom() { return numCom_; }
+
+	// запись\считывание одного байта на передачу
+	void 	setByte(uint8_t byte) { byte_[0] = byte; }
+	uint8_t getByte() { return byte_[0]; }
+
+private:
+	// буфер команд
+	eGB_COM com_[MAX_NUM_COM_BUF];
+	// срочная команда (на изменение)
+	eGB_COM comFast_;
+	// кол-во команд в буфере
+	uint8_t numCom_;
+	// текущее положение указателя
+	uint8_t cnt_;
+
+	// данные на передачу
+	uint8_t byte_[6];
+};
 
 /// Структура параметров БСП
 struct stGBparam
@@ -677,6 +775,9 @@ struct stGBparam
 	TDevicePrm prm;
 	TDevicePrd prd;
 	TDeviceGlb glb;
+
+	// буфер команд
+	TTxCom txComBuf;
 };
 
 #endif /* GLBDEF_H_ */

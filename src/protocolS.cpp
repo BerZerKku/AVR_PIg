@@ -7,12 +7,12 @@
 #include "../inc/protocolS.h"
 
 clProtocolS::clProtocolS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
-										buf(buf), size(size), sParam(sParam)
+										buf(buf), size_(size), sParam_(sParam)
 {
-	enable = false;
-	cnt = 0;
-	maxLen = 0;
-	stat = PRTS_STATUS_NO;
+	enable_ = false;
+	cnt_ = 0;
+	maxLen_ = 0;
+	stat_ = PRTS_STATUS_NO;
 }
 
 /**	Опрос флага наличия принятой посылки.
@@ -26,12 +26,12 @@ clProtocolS::checkReadData()
 	bool stat = false;
 
 	// Т.к. обработка посылки уже началась, сбросим счетчик принятых байт
-	cnt = 0;
+	cnt_ = 0;
 
 	if (checkCRC())
 		stat = true;
 	else
-		this->stat = PRTS_STATUS_NO;
+		this->stat_ = PRTS_STATUS_NO;
 
 	return stat;
 }
@@ -43,9 +43,9 @@ clProtocolS::checkReadData()
 uint8_t
 clProtocolS::trCom()
 {
-	this->stat = PRTS_STATUS_NO;
+	this->stat_ = PRTS_STATUS_NO;
 
-	return maxLen;
+	return maxLen_;
 }
 
 /**	Копирование имеющейся команды в свой буфер.
@@ -68,13 +68,13 @@ clProtocolS::copyCommandFrom(uint8_t * const bufSource)
 	{
 		cnt = bufSource[3] + 5;
 
-		if (cnt > size)
+		if (cnt > size_)
 			stat = false;
 		else
 		{
 			for(uint_fast8_t i = 0; i < cnt; i++)
 			{
-				if (i < size)
+				if (i < size_)
 					buf[i] = bufSource[i];
 			}
 		}
@@ -83,12 +83,12 @@ clProtocolS::copyCommandFrom(uint8_t * const bufSource)
 	// в случае какой-либо ошибки, сообщенеие игнорируется
 	if (!stat)
 	{
-		this->stat = PRTS_STATUS_NO;
+		this->stat_ = PRTS_STATUS_NO;
 	}
 	else
 	{
-		this->stat = PRTS_STATUS_WRITE;
-		maxLen = cnt;
+		this->stat_ = PRTS_STATUS_WRITE;
+		maxLen_ = cnt;
 	}
 
 	return stat;
@@ -185,12 +185,12 @@ clProtocolS::addCom()
 	if (buf[2] != 0)
 	{
 		uint8_t len = buf[3] + 5;
-		if (len <= (size - 5))
+		if (len <= (size_ - 5))
 		{
 			buf[len - 1] = getCRC();
 			cnt = len;
-			maxLen = len;
-			stat = PRTS_STATUS_WRITE;
+			maxLen_ = len;
+			stat_ = PRTS_STATUS_WRITE;
 		}
 	}
 
@@ -232,45 +232,45 @@ clProtocolS::addCom()
  * 	@param size Кол-во байт данных
  * 	@return Кол-во отправляемых байт данных
  */
-//uint8_t
-//clProtocolS::addCom(uint8_t com, uint8_t byte)
-//{
-//	uint8_t cnt = 0;
-//
-//	buf[cnt++] = 0x55;
-//	buf[cnt++] = 0xAA;
-//	buf[cnt++] = com;
-//	buf[cnt++] = 0x01;
-//	buf[cnt++] = byte;
-//	buf[cnt++] = com + 0x01 + byte;
-//
-//	maxLen = cnt;
-//	stat = PRTS_STATUS_WRITE;
-//
-//	return cnt;
-//}
+uint8_t
+clProtocolS::addCom(uint8_t com, uint8_t byte)
+{
+	uint8_t cnt = 0;
+
+	buf[cnt++] = 0x55;
+	buf[cnt++] = 0xAA;
+	buf[cnt++] = com;
+	buf[cnt++] = 0x01;
+	buf[cnt++] = byte;
+	buf[cnt++] = com + 0x01 + byte;
+
+	maxLen_ = cnt;
+	stat_ = PRTS_STATUS_WRITE;
+
+	return cnt;
+}
 
 /**	Подготовка к отправке команды без данных (заполнение буфера)
  * 	@param *buf Указатель на начало данных
  * 	@param size Кол-во байт данных
  * 	@return Кол-во отправляемых байт данных
  */
-//uint8_t
-//clProtocolS::addCom(uint8_t com)
-//{
-//	uint8_t cnt = 0;
-//
-//	buf[cnt++] = 0x55;
-//	buf[cnt++] = 0xAA;
-//	buf[cnt++] = com;
-//	buf[cnt++] = 00;
-//	buf[cnt++] = com;
-//
-//	maxLen = cnt;
-//	stat = PRTS_STATUS_WRITE;
-//
-//	return cnt;
-//}
+uint8_t
+clProtocolS::addCom(uint8_t com)
+{
+	uint8_t cnt = 0;
+
+	buf[cnt++] = 0x55;
+	buf[cnt++] = 0xAA;
+	buf[cnt++] = com;
+	buf[cnt++] = 00;
+	buf[cnt++] = com;
+
+	maxLen_ = cnt;
+	stat_ = PRTS_STATUS_WRITE;
+
+	return cnt;
+}
 
 
 /**	Проверка принятой контрольной суммы
@@ -282,7 +282,7 @@ clProtocolS::checkCRC()
 {
 	bool stat = false;
 	uint8_t crc = 0;
-	uint8_t len = this->maxLen - 1;
+	uint8_t len = this->maxLen_ - 1;
 
 	for(uint8_t i = 2; i < len; i++)
 		crc += this->buf[i];
@@ -306,7 +306,7 @@ clProtocolS::getCRC()
 	uint8_t len = buf[3] + 5;
 	uint8_t i = 2;
 
-	if (len > size)
+	if (len > size_)
 		return 0;
 
 	for(; i < (len - 1); i++)

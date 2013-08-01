@@ -10,7 +10,7 @@
 static const char fcNull[] PROGMEM = "";
 
 // измеряемые параметры
-static const char fcUout[] 	PROGMEM = "U=%02u.%01uВ";
+static const char fcUout[]  PROGMEM = "U=%02u.%01uВ";
 static const char fcIout[] 	PROGMEM	= "I=%03uмА";
 static const char fcRout[] 	PROGMEM = "R=%03uОм";
 static const char fcUz[]	PROGMEM	= "Uз=%02dдБ";

@@ -147,6 +147,12 @@ static bool uartWrite()
 //		protBSPs.trCom();
 		uartBSP.trData(protBSPs.trCom());
 	}
+	else
+	{
+		eGB_COM com = menu.getTxCommand();
+		uint8_t num = protBSPs.sendData(com);
+		uartBSP.trData(num);
+	}
 
 
 	return true;
@@ -184,7 +190,8 @@ main (void)
 		{
 			// обработка принятых сообщений с БСП/ПК
 			// передача в МЕНЮ текущего сосотояния связи с БСП
-			menu.setConnectionBsp(uartRead());
+			bool connect = uartRead();
+			menu.setConnectionBsp(connect);
 
 			// задачи выполняемые раз в 1с
 			if (++cnt_1s >= 10)

@@ -65,34 +65,34 @@ public:
 	uint8_t trCom();
 
 	/// Запуск работы данного протокола
-	void setEnable() { enable = true; stat = PRTS_STATUS_NO; }
+	void setEnable() { enable_ = true; stat_ = PRTS_STATUS_NO; }
 
 	/// Остановка работы данного протокола
-	void setDisable() { enable = false; }
+	void setDisable() { enable_ = false; }
 
 	/// Проверка текущего состояния протокола
-	bool isEnable() const { return enable; }
+	bool isEnable() const { return enable_; }
 
 	/// Возращает размер буфера данных
-	uint8_t getBufSize() const { return size; }
+	uint8_t getBufSize() const { return size_; }
 
 	/// Текущая команда в буфере
 	uint8_t getCurrentCom() const { return buf[2]; }
 
 	/// Текущее кол-во байт в посылке
-	uint8_t getCurrentLen() const { return maxLen; }
+	uint8_t getCurrentLen() const { return maxLen_; }
 
 	/// Текущее кол-во принятых байт данных (по протоколу)
-	uint8_t getCurrentCnt() const { return cnt; }
+	uint8_t getCurrentCnt() const { return cnt_; }
 
 	/// Текущий статус работы протокола
-	ePRTS_STATUS getCurrentStatus() const { return this->stat; }
+	ePRTS_STATUS getCurrentStatus() const { return this->stat_; }
 
 	/// Копирование посылки из другого буфера
 	bool copyCommandFrom(uint8_t * const bufSource);
 
 	/// Обработка принятого сообщения. В случае неудачи возвращает False.
-	virtual bool getData() { stat = PRTS_STATUS_NO; return false; }
+	virtual bool getData() { stat_ = PRTS_STATUS_NO; return false; }
 
 	///
 //	bool sendData(uint8_t com, uint8_t *data);
@@ -103,7 +103,7 @@ public:
 	/// !!! Помещается в прерывание по приему
 	bool checkByte(uint8_t byte)
 	{
-		uint8_t cnt = this->cnt;
+		uint8_t cnt = this->cnt_;
 
 		buf[cnt] = byte;
 
@@ -120,53 +120,53 @@ public:
 			cnt++;
 			break;
 		case 3:
-			if (byte < (size - 5))
+			if (byte < (size_ - 5))
 			{
 				cnt++;
-				maxLen = byte + 5;
+				maxLen_ = byte + 5;
 			}
 			else
 				cnt = 0;
 			break;
 		default:
 			cnt++;
-			if (cnt >= maxLen)
+			if (cnt >= maxLen_)
 			{
-				stat = PRTS_STATUS_READ;
+				stat_ = PRTS_STATUS_READ;
 			}
 			break;
 		}
-		this->cnt = cnt;
+		this->cnt_ = cnt;
 
 		return cnt;
 	}
 
 protected:
 	// Текущее состояние протокола. true - запущен
-	bool enable;
+	bool enable_;
 
 	// структура параметров
-	stGBparam *sParam;
+	stGBparam *sParam_;
 
 	// текущий статус работы протокола
-	ePRTS_STATUS stat;
+	ePRTS_STATUS stat_;
 
 	// Счетчик принятого байта по протоколу
-	uint8_t cnt;
+	uint8_t cnt_;
 
 	// Заявленное кол-во байт данных в посылке
-	uint8_t maxLen;
+	uint8_t maxLen_;
 
 	// размер буфера
-	const uint8_t size;
+	const uint8_t size_;
 
 	// Подготовка к отправке команды (сама команда, кол-во данных и данные
 	// уже должны лежать в буфере)
 	uint8_t addCom();
 	// Подготовка к отправке команды без данных (заполнение буфера)
-//	uint8_t addCom	(uint8_t com);
+	uint8_t addCom	(uint8_t com);
 	// Подготовка к отправке команды с 1 байтом данных (заполнение буфера)
-//	uint8_t addCom	(uint8_t com, uint8_t byte);
+	uint8_t addCom	(uint8_t com, uint8_t byte);
 	// Подготовка к отправке команды с данными (заполнение буфера)
 //	uint8_t addCom	(uint8_t com, uint8_t size, uint8_t buf[]);
 

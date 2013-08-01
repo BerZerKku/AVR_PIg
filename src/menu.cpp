@@ -31,6 +31,7 @@ clMenu::clMenu()
 	// курсор неактивен
 	cursorEnable_= false;
 	cursorLine_ = 0;
+	numPunkts_ = 0;
 
 	// нажатой кнопки еще нет
 	key_ = KEY_NO;
@@ -222,6 +223,8 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			else
 			{
 				// !!! тут еще должно быть определение аппарата для МОСКВЫ
+				// !!! на наднный момент можно опреджелить по версии
+				// !!! ПО для МК БСП - 0x0F
 				if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
 					device = AVANT_R400;
 			}
@@ -414,17 +417,34 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 	return status;
 }
 
-/**	Возвращает имеющуюся команду на исполнение
+/**	Возвращает имеющуюся команду на исполнение.
+ * 	Сначала проверяется срочная команда, если ее нет идет перебор текущих.
  * 	@param Нет
  * 	@return команды ?!
  */
-uint8_t
-clMenu::txCommand()
+eGB_COM
+clMenu::getTxCommand()
 {
-//	uint_fast8_t t = com;
-//	com = 0;
+	static uint8_t cnt = 0;
+	eGB_COM com = sParam.txComBuf.getFastCom();
 
-	return 0;
+	if (com == GB_COM_NO)
+	{
+		if (cnt > (2 + sParam.txComBuf.getNumCom()))
+			cnt = 0;
+
+		if (cnt == 0)
+			com = GB_COM_GET_TIME;
+		else if (cnt == 1)
+			com = GB_COM_GET_SOST;
+		else if (cnt == 2)
+			com = GB_COM_GET_FAULT;
+		else
+			com = sParam.txComBuf.getCom();
+		cnt++;
+	}
+
+	return com;
 }
 
 /** Очистка текстового буфера
@@ -588,6 +608,21 @@ clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device)
 	}
 }
 
+/**	Dывод в пунтке меню "Режим" текущего режима устройств
+* 	@param poz Начальная позиция в буфере данных ЖКИ
+ * 	@param device Данные для текущего устройства
+ *	@return Нет
+ */
+void
+clMenu::printDevicesRegime(uint8_t poz, TDeviceStatus *device)
+{
+	snprintf_P(&vLCDbuf[poz], 4, device->name);
+	poz += 3;
+	snprintf(&vLCDbuf[poz], 2, ":");
+	poz += 1;
+	poz += snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]) + 1;
+}
+
 /** Уровень "Ошибочный тип аппарата"
  * 	@param Нет
  * 	@return Нет
@@ -607,6 +642,8 @@ clMenu::lvlError()
 		lineParam_ = 1;
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
+		sParam.txComBuf.clear();
+		sParam.txComBuf.addCom(GB_COM_GET_VERS);
 	}
 
 	// вывод на экран измеряемых параметров
@@ -639,18 +676,39 @@ clMenu::lvlStart()
 		numPunkts_ = 0;
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
+
+		// доплнительные команды
+		// в ВЧ варианте есть измеряемые параметры
+		sParam.txComBuf.clear();
+		if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
+			sParam.txComBuf.addCom(GB_COM_GET_MEAS);
+		// в Р400 нужна информация по совместимости и типу АК
+		if (sParam.typeDevice == AVANT_R400)
+		{
+			sParam.txComBuf.addCom(GB_COM_GET_TYPE_AC);
+		}
 	}
 
 	// вывод на экран измеряемых параметров
 	for(uint_fast8_t i = 0; i < 6; i++)
 		printMeasParam(i, measParam[i]);
 
+	uint8_t poz = lineParam_ * 20;
 	if (sParam.def.status.isEnable())
-		printDevicesStatus(60, &sParam.def.status);
+	{
+		printDevicesStatus(poz, &sParam.def.status);
+		poz += 20;
+	}
 	if (sParam.prm.status.isEnable())
-		printDevicesStatus(80, &sParam.prm.status);
+	{
+		printDevicesStatus(poz, &sParam.prm.status);
+		poz += 20;
+	}
 	if (sParam.prd.status.isEnable())
-		printDevicesStatus(100, &sParam.prd.status);
+	{
+		printDevicesStatus(poz, &sParam.prd.status);
+		poz += 20;
+	}
 
 	switch(key_)
 	{
@@ -708,6 +766,9 @@ clMenu::lvlFirst()
 		punkt_[num++] = punkt4;
 		punkt_[num++] = punkt5;
 		numPunkts_ = num;
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title );
@@ -763,7 +824,7 @@ clMenu::lvlFirst()
 void
 clMenu::lvlInfo()
 {
-	static char title[] PROGMEM = "Меню\\Информация";
+	static char title[]  PROGMEM = "Меню\\Информация";
 	static char bspMcu[] PROGMEM = "БСП MCU : %02X.%02x";
 	static char bspDsp[] PROGMEM = "БСП DSP : %02X.%02x";
 	static char piMcu[]  PROGMEM = "ПИ  MCU : %02X.%02x";
@@ -772,10 +833,13 @@ clMenu::lvlInfo()
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-
 		lineParam_ = 1;
+
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title );
@@ -810,8 +874,7 @@ clMenu::lvlInfo()
 void
 clMenu::lvlJournal()
 {
-	static char title[] PROGMEM = "Меню\\Журнал";
-
+	static char title[]  PROGMEM = "Меню\\Журнал";
 	static char punkt1[] PROGMEM = "%d. События";
 	static char punkt2[] PROGMEM = "%d. Защта";
 	static char punkt3[] PROGMEM = "%d. Приемник";
@@ -822,11 +885,10 @@ clMenu::lvlJournal()
 		uint8_t num = 0;
 
 		lvlCreate_ = false;
-
 		cursorLine_ = 1;
 		cursorEnable_ = true;
-
 		lineParam_ = 1;
+
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
@@ -855,6 +917,9 @@ clMenu::lvlJournal()
 			punkt_[num++] = punkt4;
 		}
 		numPunkts_ = num;
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -933,14 +998,15 @@ clMenu::lvlJournalEvent()
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-
 		cursorLine_ = 1;
 		cursorEnable_ = true;
-
 		lineParam_ = 1;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -998,13 +1064,15 @@ clMenu::lvlJournalDef()
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-
 		cursorLine_ = 1;
 		cursorEnable_ = true;
-
 		lineParam_ = 1;
+
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -1070,13 +1138,15 @@ clMenu::lvlJournalPrm()
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-
 		cursorLine_ = 1;
 		cursorEnable_ = true;
-
 		lineParam_ = 1;
+
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -1144,13 +1214,15 @@ clMenu::lvlJournalPrd()
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-
 		cursorLine_ = 1;
 		cursorEnable_ = true;
-
 		lineParam_ = 1;
+
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -1195,45 +1267,76 @@ clMenu::lvlJournalPrd()
 void
 clMenu::lvlControl()
 {
-	static char title[] PROGMEM = "Меню\\Управление";
-
-	static char punkt1[] PROGMEM= "%d. Пуск наладочный";
-	static char punkt2[] PROGMEM= "%d. Пуск удаленного";
-	static char punkt3[] PROGMEM= "%d. Сброс своего";
-	static char punkt4[] PROGMEM= "%d. Сброс удаленного";
-	static char punkt5[] PROGMEM= "%d. Вызов";
+	static char title[]  PROGMEM = "Меню\\Управление";
+	// %d - может быть двухзначным, учесть для макс. кол-ва символов !
+	//							   	"01234567890123456789"
+	static char punkt02[] PROGMEM = "%d. Пуск удаленного";
+	static char punkt03[] PROGMEM = "%d. Сброс своего";
+	static char punkt04[] PROGMEM = "%d. Сброс удаленного";
+	static char punkt05[] PROGMEM = "%d. Вызов";
+	static char punkt06[] PROGMEM = "%d. Пуск налад. вкл.";
+	static char punkt07[] PROGMEM = "%d. Пуск налад. выкл";
+	static char punkt08[] PROGMEM =	"%d. АК пуск";
+	static char punkt09[] PROGMEM = "%d. Пуск удален. МАН";
+	static char punkt10[] PROGMEM =	"%d. АК контр.провер.";
+	static char punkt11[] PROGMEM = "%d. Сброс АК";
+	static char punkt12[] PROGMEM =	"%d. Пуск АК свой";
+	static char punkt13[] PROGMEM =	"%d. Пуск АК удаленн.";
+	static char punkt14[] PROGMEM = "%d. Пуск ПРД";
+	static char punkt15[] PROGMEM = "%d. АК автоматическ.";
+	static char punkt16[] PROGMEM = "%d. АК ускоренный";
+	static char punkt17[] PROGMEM = "%d. АК выключен";
+	static char punkt18[] PROGMEM = "%d. АК испытания";
+	static char punkt19[] PROGMEM = "%d. АК нормальный";
+	static char punkt20[] PROGMEM = "%d. АК беглый";
+	static char punkt21[] PROGMEM = "%d. АК односторонний";
 
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-
 		cursorLine_ = 1;
 		cursorEnable_ = true;
-
 		lineParam_ = 1;
+
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
 		uint8_t num = 0;
-		if ((sParam.typeDevice == AVANT_RZSK) ||
-				(sParam.typeDevice == AVANT_R400))
+		if (sParam.typeDevice == AVANT_R400)
 		{
-			punkt_[num++] = punkt1;
-			punkt_[num++] = punkt2;
-			punkt_[num++] = punkt3;
-			punkt_[num++] = punkt4;
-			punkt_[num++] = punkt5;
+			punkt_[num++] = punkt03;
+			punkt_[num++] = punkt04;
+			punkt_[num++] = punkt02;
+			punkt_[num++] = punkt05;
+			// !!! Р400
+			// !!! Добавить автоконтроли и учесть совместимость
+			// !!! Учесть стостояние наладочного пуска (вкл/выкл)
+
+		}
+		else if (sParam.typeDevice == AVANT_RZSK)
+		{
+			punkt_[num++] = punkt03;
+			// !!! РЗСК
+			// !!! Учесть стостояние наладочного пуска (вкл/выкл)
 		}
 		else if (sParam.typeDevice == AVANT_K400)
 		{
-			punkt_[num++] = punkt3;
+			punkt_[num++] = punkt03;
 		}
 		else if (sParam.typeDevice == AVANT_K400_OPTIC)
 		{
-			punkt_[num++] = punkt3;
-			punkt_[num++] = punkt4;
+			punkt_[num++] = punkt03;
 		}
 		numPunkts_ = num;
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
+		sParam.txComBuf.addCom(GB_COM_GET_TYPE_AC);
+		sParam.txComBuf.addCom(GB_COM_GET_UD_DEVICE);
+
+		// !!! Р400.
+		// !!! Добавить переформирование меню в случае изменения типа АК
+		// !!! или типа удаленного аппарата
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -1256,7 +1359,41 @@ clMenu::lvlControl()
 			break;
 
 		case KEY_ENTER:
-			break;
+		{
+			PGM_P p = punkt_[cursorLine_ - 1];
+
+			if (p == punkt02)
+			{
+				sParam.txComBuf.setByte(GB_CONTROL_PUSK_UD_1);
+				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			}
+			else if (p == punkt03)
+			{
+				sParam.txComBuf.setByte(GB_CONTROL_RESET_SELF);
+				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			}
+			else if (p == punkt04)
+			{
+				sParam.txComBuf.setByte(GB_CONTROL_RESET_UD_1);
+				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			}
+			else if (p == punkt05)
+			{
+				sParam.txComBuf.setByte(GB_CONTROL_CALL);
+				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			}
+			else if (p == punkt06)
+			{
+				sParam.txComBuf.setByte(GB_CONTROL_PUSK_ON);
+				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			}
+			else if (p == punkt07)
+			{
+				sParam.txComBuf.setByte(GB_CONTROL_PUSK_OFF);
+				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			}
+		}
+		break;
 
 		default:
 			break;
@@ -1271,7 +1408,7 @@ clMenu::lvlControl()
 void
 clMenu::lvlSetup()
 {
-	static char title[] PROGMEM = "Меню\\Настройка";
+	static char title[]  PROGMEM = "Меню\\Настройка";
 	static char punkt1[] PROGMEM = "%d. Режим";
 	static char punkt2[] PROGMEM = "%d. Время и дата";
 	static char punkt3[] PROGMEM = "%d. Параметры";
@@ -1280,11 +1417,10 @@ clMenu::lvlSetup()
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-
 		cursorLine_ = 1;
 		cursorEnable_ = true;
-
 		lineParam_ = 1;
+
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
@@ -1294,6 +1430,9 @@ clMenu::lvlSetup()
 		punkt_[num++] = punkt3;
 		punkt_[num++] = punkt4;
 		numPunkts_ = num;
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -1313,20 +1452,75 @@ clMenu::lvlSetup()
 			lvlCreate_ = true;
 			break;
 		case KEY_RIGHT:
-			switch(cursorLine_)
+		{
+			PGM_P p = punkt_[cursorLine_ - 1];
+			if (p == punkt1)
 			{
-				case 2:
-					lvlMenu = &clMenu::lvlSetupDT;
-					lvlCreate_ = true;
-					break;
-				case 3:
-					lvlMenu = &clMenu::lvlSetupParam;
-					lvlCreate_ = true;
-					break;
+				lvlMenu = &clMenu::lvlRegime;
+				lvlCreate_ = true;
 			}
-			break;
+			else if (p == punkt2)
+			{
+				lvlMenu = &clMenu::lvlSetupDT;
+				lvlCreate_ = true;
+			}
+			else if (p == punkt3)
+			{
+				lvlMenu = &clMenu::lvlSetupParam;
+				lvlCreate_ = true;
+			}
+		}
+		break;
 
-		case KEY_ENTER:
+		default:
+			break;
+	}
+}
+
+void
+clMenu::lvlRegime()
+{
+	static char title[] PROGMEM = "Настройка\\Режим";
+	if (lvlCreate_)
+	{
+		lvlCreate_ = false;
+		cursorLine_ = 1;
+		cursorEnable_ = true;
+		lineParam_ = 1;
+
+		vLCDclear();
+		vLCDdrawBoard(lineParam_);
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
+	}
+
+	snprintf_P(&vLCDbuf[0], 21, title);
+
+	uint8_t poz = lineParam_ * 20;
+	if (sParam.def.status.isEnable())
+	{
+		printDevicesRegime(poz, &sParam.def.status);
+		poz += 20;
+	}
+	if (sParam.prm.status.isEnable())
+	{
+		printDevicesRegime(poz, &sParam.prm.status);
+		poz += 20;
+	}
+	if (sParam.prd.status.isEnable())
+	{
+		printDevicesRegime(poz, &sParam.prd.status);
+		poz += 20;
+	}
+
+
+
+	switch(key_)
+	{
+		case KEY_LEFT:
+			lvlMenu = &clMenu::lvlSetup;
+			lvlCreate_ = true;
 			break;
 
 		default:
@@ -1341,7 +1535,7 @@ clMenu::lvlSetup()
 void
 clMenu::lvlSetupParam()
 {
-	static char title[] PROGMEM = "Настройка\\Параметры";
+	static char title[]  PROGMEM = "Настройка\\Параметры";
 	static char punkt1[] PROGMEM = "%d. Защиты";
 	static char punkt2[] PROGMEM = "%d. Приемника";
 	static char punkt3[] PROGMEM = "%d. Передатчика";
@@ -1350,11 +1544,10 @@ clMenu::lvlSetupParam()
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-
 		cursorLine_ = 1;
 		cursorEnable_ = true;
-
 		lineParam_ = 1;
+
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
@@ -1384,6 +1577,9 @@ clMenu::lvlSetupParam()
 			punkt_[num++] = punkt4;
 		}
 		numPunkts_ = num;
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
 	}
 
 	snprintf_P(&vLCDbuf[0], 20, title);
@@ -1496,13 +1692,15 @@ clMenu::lvlSetupParamDef()
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-
 		cursorLine_ = 1;
 		cursorEnable_ = true;
-
 		lineParam_ = 1;
+
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -1560,6 +1758,9 @@ clMenu::lvlSetupParamPrm()
 {
 	static char title[] PROGMEM = "Параметры\\Приемник";
 
+	static stParam p1 PROGMEM = {0, 10,   "%d..%dмс", "Время включения ком."};
+	static stParam p2 PROGMEM = {0, 1000, "%d..%dмс", "Задержка на выкл.ком"};
+
 	static char punkt1[] [21] PROGMEM =
 	{
 			"Номер: 1  Всего: 2",
@@ -1578,23 +1779,35 @@ clMenu::lvlSetupParamPrm()
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-
 		cursorLine_ = 1;
 		cursorEnable_ = true;
-
 		lineParam_ = 1;
+
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	for(uint_fast8_t i = 0; i < 4; i++)
+//	for(uint_fast8_t i = 0; i < 4; i++)
+//	{
+//		if (cursorLine_ == 1)
+//			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt1[i]);
+//		else if (cursorLine_ == 2)
+//			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt2[i]);
+//	}
+	if (cursorLine_ == 1)
 	{
-		if (cursorLine_ == 1)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt1[i]);
-		else if (cursorLine_ == 2)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt2[i]);
+		snprintf_P(&vLCDbuf[20], 21, p1.name);
+		snprintf_P(&vLCDbuf[40], 21, p1.range, p1.min, p1.max);
+	}
+	else if (cursorLine_ == 2)
+	{
+		snprintf_P(&vLCDbuf[20], 21, p2.name);
+		snprintf_P(&vLCDbuf[40], 21, p2.range, p2.min, p2.max);
 	}
 
 	switch(key_)
@@ -1650,13 +1863,15 @@ clMenu::lvlSetupParamPrd()
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-
 		cursorLine_ = 1;
 		cursorEnable_ = true;
-
 		lineParam_ = 1;
+
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -1668,6 +1883,7 @@ clMenu::lvlSetupParamPrd()
 		else if (cursorLine_ == 2)
 			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt2[i]);
 	}
+
 
 	switch(key_)
 	{
@@ -1757,15 +1973,17 @@ clMenu::lvlSetupParamGlb()
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-
 		cursorLine_ = 1;
 		if (sParam.typeDevice == AVANT_K400_OPTIC)
 			cursorLine_ = 2;
 		cursorEnable_ = true;
-
 		lineParam_ = 1;
+
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -1864,7 +2082,7 @@ clMenu::lvlSetupParamGlb()
 void
 clMenu::lvlSetupDT()
 {
-	static char title[] PROGMEM = "Настройка\\Время&дата";
+	static char title[]  PROGMEM = "Настройка\\Время&дата";
 	static char punkt1[] PROGMEM = "%d. Дата";
 	static char punkt2[] PROGMEM = "%d. Время";
 
@@ -1872,11 +2090,10 @@ clMenu::lvlSetupDT()
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-
 		cursorLine_ = 1;
 		cursorEnable_ = true;
-
 		lineParam_ = 1;
+
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
@@ -1884,6 +2101,9 @@ clMenu::lvlSetupDT()
 		punkt_[num++] = punkt1;
 		punkt_[num++] = punkt2;
 		numPunkts_ = num;
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
