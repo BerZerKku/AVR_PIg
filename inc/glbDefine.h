@@ -14,6 +14,9 @@
 /// версия текущей прошивки
 #define VERS 0x0100
 
+/// максимально кол-во команд на приеме
+#define MAX_NUM_COM_PRM 32
+
 /// преобразование двух CHAR в INT
 #define TO_INT16(high, low) (((uint16_t) high << 8) + low)
 
@@ -25,6 +28,17 @@
 
 /// максимальное кол-во команд в буфере (не считая 3-х основных)
 #define MAX_NUM_COM_BUF 5
+
+/// Минимальные, максимальные значения параметров приемника и их дискретность
+/// время включения
+#define TIME_ON_MIN		0
+#define TIME_ON_MAX		10
+#define TIME_ON_DISC	1
+/// задержка на выключение
+#define TIME_OFF_MIN	0
+#define TIME_OFF_MAX	1000
+#define TIME_OFF_DISC	50
+
 
 /// Тип аппарата
 enum eGB_TYPE_DEVICE
@@ -76,12 +90,13 @@ enum eGB_COM
 	GB_COM_GET_MEAS		= 0x34,
 	GB_COM_GET_UD_DEVICE= 0x37,
 	GB_COM_GET_VERS		= 0x3F,
-	GB_COM_SET_TIME 	= 0xB2,
 
-	// только с ПК
 	GB_COM_SET_CONTROL	= 0x72,
+	// только с ПК
 	GB_COM_SET_PASSWORD = 0x73,
-	GB_COM_GET_PASSWORD = 0x74
+	// только с ПК
+	GB_COM_GET_PASSWORD = 0x74,
+	GB_COM_SET_TIME 	= 0xB2
 };
 
 
@@ -413,15 +428,6 @@ private:
 	}
 };
 
-/// структура параметров
-struct stParam
-{
-	uint16_t min;
-	uint16_t max;
-	char range[20];
-	char name[21];
-};
-
 /// класс для общих параметров и настроек
 class TDeviceGlb
 {
@@ -540,9 +546,70 @@ public:
 	}
 	uint8_t getNumCom() const { return numCom_; }
 
+	// время включения команды
+	bool setTimeOn(uint8_t val)
+	{
+		bool stat = false;
+		if ( (val >= TIME_ON_MIN) && (val <= TIME_ON_MAX) )
+		{
+			timeOn_ = (val / TIME_ON_DISC) * TIME_ON_DISC;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getTimeOn() { return timeOn_; }
+
+	// блокированные команды каждый бит отвечает за отдельную команду
+	// num - номер восьмерки (0 - с 1 по 8 команды, 1 - с 9 по 16 и т.д.)
+	// val - значение
+	bool setBlockCom(uint8_t num, uint8_t val)
+	{
+		bool stat = false;
+		num = (num + 1) * 8;
+		if (num <= numCom_)
+		{
+			for(uint_fast8_t i = 0x80; i > 0; i >>= 1)
+			{
+				blockCom_[num--] = (bool) (i & val);
+			}
+			stat = true;
+		}
+		return stat;
+	}
+	// возвращает True, если команда заблокирована
+	bool getBlockCom(uint8_t num) { return  blockCom_[num]; }
+
+	// задержка на выключение
+	// buf - адрес первого элемента массива
+	// значение передается в 10 раз меньше реального !!
+	bool setTimeOff(uint8_t *buf)
+	{
+		bool stat = true;
+		uint16_t val;
+		for(uint_fast8_t i = 0; i < numCom_; i++)
+		{
+			val = ((*buf * 10) / TIME_OFF_DISC) * TIME_OFF_DISC;
+			if ( (val >= TIME_OFF_MIN) && (val <= TIME_OFF_MAX) )
+				timeOff_[i] = val;
+			else
+				stat = false;
+			buf++;
+		}
+		return stat;
+	}
+	uint16_t getTimeOff(uint8_t num) { return timeOff_[num]; }
+
+
 private:
-	// кол-во команд
+	// кол-во команд приемника
 	uint8_t numCom_;
+
+	// время включения команды
+	uint8_t timeOn_;
+	// блокированные команды
+	bool blockCom_[MAX_NUM_COM_PRM];
+	// задержка на выключение
+	uint16_t timeOff_[MAX_NUM_COM_PRM];
 };
 
 
@@ -570,7 +637,6 @@ public:
 private:
 	uint8_t numCom_;
 };
-
 
 /// класс для измеряемых параметров
 class TMeasuredParameters

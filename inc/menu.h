@@ -92,7 +92,6 @@ private:
 	// пункты в текущем меню
 	PGM_P punkt_[MAX_NUM_PUNKTS];
 
-
 	// очистка текстового буфера
 	void clearTextBuf();
 

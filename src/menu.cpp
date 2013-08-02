@@ -783,9 +783,9 @@ clMenu::lvlFirst()
 			cursorLineDown();
 			break;
 
-		case KEY_RIGHT:
+		case KEY_ENTER:
 			switch(cursorLine_)
-			{printPunkts();
+			{
 				case 1:
 					lvlMenu = &clMenu::lvlJournal;
 					lvlCreate_ = true;
@@ -805,9 +805,7 @@ clMenu::lvlFirst()
 			}
 			break;
 
-
-		case KEY_LEFT:
-		case KEY_ENTER:
+		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
 			break;
@@ -828,7 +826,6 @@ clMenu::lvlInfo()
 	static char bspMcu[] PROGMEM = "БСП MCU : %02X.%02x";
 	static char bspDsp[] PROGMEM = "БСП DSP : %02X.%02x";
 	static char piMcu[]  PROGMEM = "ПИ  MCU : %02X.%02x";
-
 
 	if (lvlCreate_)
 	{
@@ -852,14 +849,9 @@ clMenu::lvlInfo()
 
 	switch(key_)
 	{
-		case KEY_LEFT:
+		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlFirst;
 			lvlCreate_ = true;
-			break;
-		case KEY_RIGHT:
-			break;
-
-		case KEY_ENTER:
 			break;
 
 		default:
@@ -934,11 +926,11 @@ clMenu::lvlJournal()
 			cursorLineDown();
 			break;
 
-		case KEY_LEFT:
+		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlFirst;
 			lvlCreate_ = true;
 			break;
-		case KEY_RIGHT:
+		case KEY_ENTER:
 			if (punkt_[cursorLine_ - 1] == punkt1)
 			{
 				lvlMenu = &clMenu::lvlJournalEvent;
@@ -960,8 +952,6 @@ clMenu::lvlJournal()
 				lvlMenu = &clMenu::lvlJournalPrd;
 				lvlCreate_ = true;
 			}
-			break;
-		case KEY_ENTER:
 			break;
 
 		default:
@@ -1029,14 +1019,9 @@ clMenu::lvlJournalEvent()
 				cursorLine_++;
 			break;
 
-		case KEY_LEFT:
+		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlJournal;
 			lvlCreate_ = true;
-			break;
-		case KEY_RIGHT:
-			break;
-
-		case KEY_ENTER:
 			break;
 
 		default:
@@ -1093,14 +1078,9 @@ clMenu::lvlJournalDef()
 				cursorLine_++;
 			break;
 
-		case KEY_LEFT:
+		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlJournal;
 			lvlCreate_ = true;
-			break;
-		case KEY_RIGHT:
-			break;
-
-		case KEY_ENTER:
 			break;
 
 		default:
@@ -1169,14 +1149,9 @@ clMenu::lvlJournalPrm()
 				cursorLine_++;
 			break;
 
-		case KEY_LEFT:
+		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlJournal;
 			lvlCreate_ = true;
-			break;
-		case KEY_RIGHT:
-			break;
-
-		case KEY_ENTER:
 			break;
 
 		default:
@@ -1245,14 +1220,9 @@ clMenu::lvlJournalPrd()
 				cursorLine_++;
 			break;
 
-		case KEY_LEFT:
+		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlJournal;
 			lvlCreate_ = true;
-			break;
-		case KEY_RIGHT:
-			break;
-
-		case KEY_ENTER:
 			break;
 
 		default:
@@ -1351,11 +1321,9 @@ clMenu::lvlControl()
 			cursorLineDown();
 			break;
 
-		case KEY_LEFT:
+		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlFirst;
 			lvlCreate_ = true;
-			break;
-		case KEY_RIGHT:
 			break;
 
 		case KEY_ENTER:
@@ -1447,11 +1415,11 @@ clMenu::lvlSetup()
 			cursorLineDown();
 			break;
 
-		case KEY_LEFT:
+		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlFirst;
 			lvlCreate_ = true;
 			break;
-		case KEY_RIGHT:
+		case KEY_ENTER:
 		{
 			PGM_P p = punkt_[cursorLine_ - 1];
 			if (p == punkt1)
@@ -1518,7 +1486,7 @@ clMenu::lvlRegime()
 
 	switch(key_)
 	{
-		case KEY_LEFT:
+		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlSetup;
 			lvlCreate_ = true;
 			break;
@@ -1594,11 +1562,11 @@ clMenu::lvlSetupParam()
 			cursorLineDown();
 			break;
 
-		case KEY_LEFT:
+		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlSetup;
 			lvlCreate_ = true;
 			break;
-		case KEY_RIGHT:
+		case KEY_ENTER:
 			if (punkt_[cursorLine_ - 1] == punkt1)
 			{
 				lvlMenu = &clMenu::lvlSetupParamDef;
@@ -1619,9 +1587,6 @@ clMenu::lvlSetupParam()
 				lvlMenu = &clMenu::lvlSetupParamGlb;
 				lvlCreate_ = true;
 			}
-			break;
-
-		case KEY_ENTER:
 			break;
 
 		default:
@@ -1734,14 +1699,9 @@ clMenu::lvlSetupParamDef()
 				cursorLine_++;
 			break;
 
-		case KEY_LEFT:
+		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlSetupParam;
 			lvlCreate_ = true;
-			break;
-		case KEY_RIGHT:
-			break;
-
-		case KEY_ENTER:
 			break;
 
 		default:
@@ -1758,23 +1718,9 @@ clMenu::lvlSetupParamPrm()
 {
 	static char title[] PROGMEM = "Параметры\\Приемник";
 
-	static stParam p1 PROGMEM = {0, 10,   "%d..%dмс", "Время включения ком."};
-	static stParam p2 PROGMEM = {0, 1000, "%d..%dмс", "Задержка на выкл.ком"};
-
-	static char punkt1[] [21] PROGMEM =
-	{
-			"Номер: 1  Всего: 2",
-			"Время включения ком.",
-			"Значение: 5мс",
-			"Диапазон: 0..10мс"
-	};
-	static char punkt2[] [21] PROGMEM =
-	{
-			"Номер: 2  Всего: 2",
-			"Задержка на выкл.ком",
-			"Значение: 100мс",
-			"Диапазон: 0..1000мс"
-	};
+	static char punkt1[] PROGMEM = "Время включения ком.";
+	static char punkt2[] PROGMEM = "Блокированные ком.";
+	static char punkt3[] PROGMEM = "Задержка на выкл.ком";
 
 	if (lvlCreate_)
 	{
@@ -1788,9 +1734,43 @@ clMenu::lvlSetupParamPrm()
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
+		uint8_t num = 0;
+		if (sParam.typeDevice == AVANT_K400)
+		{
+			punkt_[num++] = punkt1;
+			punkt_[num++] = punkt2;
+			punkt_[num++] = punkt3;
+		}
+		numPunkts_ = num;
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
+	uint8_t poz = lineParam_ * 20;
+	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, numPunkts_);
+	poz += 20;
+	PGM_P p = punkt_[cursorLine_ - 1];
+	snprintf_P(&vLCDbuf[poz], 21, p);
+	poz += 20;
+	//  вывод надписи "Диапазон:" и переход к выводу самого диапаз.
+	snprintf_P(&vLCDbuf[poz], 11, fcRange);
+	poz += 10;
+	if (p == punkt1)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeMc, TIME_ON_MIN, TIME_ON_MAX);
+	}
+	else if (p == punkt2)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
+		poz += 10;	// т.к. до этого выводился диапазон с середины строки
+		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, 1);
+	}
+	else if (p == punkt3)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeMc, TIME_OFF_MIN, TIME_OFF_MAX);
+		poz += 10;	// т.к. до этого выводился диапазон с середины строки
+		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, 1);
+	}
+
 
 //	for(uint_fast8_t i = 0; i < 4; i++)
 //	{
@@ -1799,36 +1779,29 @@ clMenu::lvlSetupParamPrm()
 //		else if (cursorLine_ == 2)
 //			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt2[i]);
 //	}
-	if (cursorLine_ == 1)
-	{
-		snprintf_P(&vLCDbuf[20], 21, p1.name);
-		snprintf_P(&vLCDbuf[40], 21, p1.range, p1.min, p1.max);
-	}
-	else if (cursorLine_ == 2)
-	{
-		snprintf_P(&vLCDbuf[20], 21, p2.name);
-		snprintf_P(&vLCDbuf[40], 21, p2.range, p2.min, p2.max);
-	}
+//	if (cursorLine_ == 1)
+//	{
+//		snprintf_P(&vLCDbuf[20], 21, p1.name);
+//		snprintf_P(&vLCDbuf[40], 21, p1.range, p1.min, p1.max);
+//	}
+//	else if (cursorLine_ == 2)
+//	{
+//		snprintf_P(&vLCDbuf[20], 21, p2.name);
+//		snprintf_P(&vLCDbuf[40], 21, p2.range, p2.min, p2.max);
+//	}
 
 	switch(key_)
 	{
 		case KEY_UP:
-			if (cursorLine_ > 1)
-				cursorLine_--;
+			cursorLineUp();
 			break;
 		case KEY_DOWN:
-			if (cursorLine_ < 2)
-				cursorLine_++;
+			cursorLineDown();
 			break;
 
-		case KEY_LEFT:
+		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlSetupParam;
 			lvlCreate_ = true;
-			break;
-		case KEY_RIGHT:
-			break;
-
-		case KEY_ENTER:
 			break;
 
 		default:
@@ -1896,14 +1869,9 @@ clMenu::lvlSetupParamPrd()
 				cursorLine_++;
 			break;
 
-		case KEY_LEFT:
+		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlSetupParam;
 			lvlCreate_ = true;
-			break;
-		case KEY_RIGHT:
-			break;
-
-		case KEY_ENTER:
 			break;
 
 		default:
@@ -2060,14 +2028,9 @@ clMenu::lvlSetupParamGlb()
 			}
 			break;
 
-		case KEY_LEFT:
+		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlSetupParam;
 			lvlCreate_ = true;
-			break;
-		case KEY_RIGHT:
-			break;
-
-		case KEY_ENTER:
 			break;
 
 		default:
@@ -2119,14 +2082,9 @@ clMenu::lvlSetupDT()
 			cursorLineDown();
 			break;
 
-		case KEY_LEFT:
+		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlSetup;
 			lvlCreate_ = true;
-			break;
-		case KEY_RIGHT:
-			break;
-
-		case KEY_ENTER:
 			break;
 
 		default:
