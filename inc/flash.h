@@ -165,10 +165,13 @@ static const char fcPrdFault0400rzsk[] PROGMEM =	"Неиспр.вкл. Тест";
 static const char fcPrdFault0800rzsk[] PROGMEM = 	"Неиспр.вход. КСК";
 
 //
-static const char fcRange[] PROGMEM = "Диапазон: ";
-static const char fcNumCom[] PROGMEM = "Номер команды: %d";
-static const char fcRangeMc[] PROGMEM = "%d..%dмс";
-static const char fcRangeOnOff[] PROGMEM = "вкл./выкл.";
-static const char fcNumPunkt[] PROGMEM = "Номер: %d  Всего: %d";
+static const char fcValue[] 	PROGMEM = "Значение: ";
+static const char fcRange[] 	PROGMEM = "Диапазон: ";
+static const char fcNumCom[] 	PROGMEM = "Номер команды: %d";
+static const char fcRangeMc[] 	PROGMEM = "%d..%dмс";
+static const char fcRangeOnOff[] PROGMEM= "вкл./выкл.";
+static const char fcNumPunkt[] 	PROGMEM = "Номер: %d  Всего: %d";
+static const char fcOn[]		PROGMEM = "вкл.";
+static const char fcOff[]		PROGMEM = "выкл.";
 
 

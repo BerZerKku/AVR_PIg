@@ -39,7 +39,7 @@ bool clProtocolBspS::getData()
 		mask = com & GB_COM_MASK_DEVICE;
 		if (mask == GB_COM_MASK_DEVICE_DEF)
 		{
-			if (com == GB_COM_GET_TYPE_AC)
+			if (com == GB_COM_DEF_GET_TYPE_AC)
 			{
 				// !!! Р400
 				// Добавить обработку принятого типа АК и времени до АК
@@ -49,11 +49,54 @@ bool clProtocolBspS::getData()
 		}
 		else if (mask == GB_COM_MASK_DEVICE_PRM)
 		{
-
+			if (com == GB_COM_PRM_GET_TIME_ON)
+			{
+				stat = sParam_->prm.setTimeOn(buf[B1]);
+			}
+			else if (com == GB_COM_PRM_GET_BLOCK_COM)
+			{
+				sParam_->prm.setBlockCom(0, buf[B1]);
+				sParam_->prm.setBlockCom(1, buf[B2]);
+				sParam_->prm.setBlockCom(2, buf[B3]);
+				sParam_->prm.setBlockCom(3, buf[B4]);
+				stat = true;
+			}
+			else if (com == GB_COM_PRM_GET_TIME_OFF)
+			{
+				stat = sParam_->prm.setTimeOff(&buf[B1]);
+			}
 		}
 		else if (mask == GB_COM_MASK_DEVICE_PRD)
 		{
-
+			if (com == GB_COM_PRD_GET_TIME_ON)
+			{
+				stat = sParam_->prd.setTimeOn(buf[B1]);
+			}
+			else if (com == GB_COM_PRD_GET_DURATION)
+			{
+				stat = sParam_->prd.setDuration(buf[B1]);
+			}
+			else if (com == GB_COM_PRD_GET_TEST_COM)
+			{
+				// !!! пока только в составе МЕГА команды
+				stat = sParam_->prd.setTestCom(buf[B1]);
+			}
+			else if (com == GB_COM_PRD_GET_BLOCK_COM)
+			{
+				sParam_->prd.setBlockCom(0, buf[B1]);
+				sParam_->prd.setBlockCom(1, buf[B2]);
+				sParam_->prd.setBlockCom(2, buf[B3]);
+				sParam_->prd.setBlockCom(3, buf[B4]);
+				stat = true;
+			}
+			else if (com == GB_COM_PRD_GET_LONG_COM)
+			{
+				sParam_->prd.setLongCom(0, buf[B1]);
+				sParam_->prd.setLongCom(1, buf[B2]);
+				sParam_->prd.setLongCom(2, buf[B3]);
+				sParam_->prd.setLongCom(3, buf[B4]);
+				stat = true;
+			}
 		}
 		else
 		{
@@ -69,6 +112,7 @@ bool clProtocolBspS::getData()
 			}
 			else if (com == GB_COM_GET_SOST)
 			{
+
 				sParam_->def.status.setRegime(buf[B1]);
 				sParam_->def.status.setState(buf[B2]);
 				sParam_->def.status.setDopByte(buf[B3]);
@@ -84,6 +128,7 @@ bool clProtocolBspS::getData()
 			}
 			else if (com == GB_COM_GET_FAULT)
 			{
+				stat = true;
 				sParam_->def.status.setFault(TO_INT16(buf[B1], buf[B2]));
 				sParam_->def.status.setWarning(TO_INT16(buf[B3], buf[B4]));
 
@@ -91,11 +136,10 @@ bool clProtocolBspS::getData()
 				sParam_->prm.status.setWarning(TO_INT16(buf[B7], buf[B8]));
 
 				sParam_->prd.status.setFault(TO_INT16(buf[B9], buf[B10]));
-				sParam_->prd.status.setWarning(TO_INT16(buf[B11], buf[B12]));
+				sParam_->prd.status.setWarning(TO_INT16(buf[B11],buf[B12]));
 
 				sParam_->glb.status.setFault(TO_INT16(buf[B13], buf[B14]));
-				sParam_->glb.status.setWarning(TO_INT16(buf[B15], buf[B16]));
-				stat = true;
+				sParam_->glb.status.setWarning(TO_INT16(buf[B15],buf[B16]));
 			}
 			else if (com == GB_COM_GET_MEAS)
 			{
@@ -103,7 +147,7 @@ bool clProtocolBspS::getData()
 				if (buf[B1] == 0)
 				{
 					sParam_->measParam.setResistOut(TO_INT16(buf[B2], buf[B3]));
-					sParam_->measParam.setCurrentOut(TO_INT16(buf[B4], buf[B5]));
+					sParam_->measParam.setCurrentOut(TO_INT16(buf[B4],buf[B5]));
 					// в buf[B7] передатся дробная часть напряжения * 100
 					// т.е. если там 90, то это 0.9В.
 					sParam_->measParam.setVoltageOut(buf[B6], (buf[B7] / 10));
@@ -129,7 +173,7 @@ bool clProtocolBspS::getData()
 				re |= sParam_->glb.setTypeLine((eGB_TYPE_LINE) buf[B6]);
 				sParam_->glb.setVersBsp(TO_INT16(buf[B7], buf[B8]));
 				sParam_->glb.setVersDsp(TO_INT16(buf[B9], buf[B10]));
-				re |= sParam_->glb.setCompatibility((eGB_COMPATIBILITY)buf[B11]);
+				re |=sParam_->glb.setCompatibility((eGB_COMPATIBILITY)buf[B11]);
 
 				// установим флаг необходимости настройки типа аппарата
 				if (re)
@@ -180,18 +224,48 @@ clProtocolBspS::sendData(eGB_COM com)
 		mask = com & GB_COM_MASK_DEVICE;
 		if (mask == GB_COM_MASK_DEVICE_DEF)
 		{
-			if (com == GB_COM_GET_TYPE_AC)
+			if (com == GB_COM_DEF_GET_TYPE_AC)
 			{
 				num = addCom(com);
 			}
 		}
 		else if (mask == GB_COM_MASK_DEVICE_PRM)
 		{
-
+			if (com == GB_COM_PRM_GET_TIME_ON)
+			{
+				num = addCom(com);
+			}
+			else if (com == GB_COM_PRM_GET_BLOCK_COM)
+			{
+				num = addCom(com);
+			}
+			else if (com == GB_COM_PRM_GET_TIME_OFF)
+			{
+				num = addCom(com);
+			}
 		}
 		else if (mask == GB_COM_MASK_DEVICE_PRD)
 		{
-
+			if (com == GB_COM_PRD_GET_TIME_ON)
+			{
+				num = addCom(com);
+			}
+			else if (com == GB_COM_PRD_GET_DURATION)
+			{
+				num = addCom(com);
+			}
+			else if (com == GB_COM_PRD_GET_TEST_COM)
+			{
+				num = addCom(com);	// !!! пока только в составе МЕГА команды
+			}
+			else if (com == GB_COM_PRD_GET_BLOCK_COM)
+			{
+				num = addCom(com);
+			}
+			else if (com == GB_COM_PRD_GET_LONG_COM)
+			{
+				num = addCom(com);
+			}
 		}
 		else
 		{

@@ -28,6 +28,8 @@ clMenu::clMenu()
 
 	blink_ = false;
 
+	curCom_ = 0;
+
 	// курсор неактивен
 	cursorEnable_= false;
 	cursorLine_ = 0;
@@ -419,8 +421,9 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 
 /**	Возвращает имеющуюся команду на исполнение.
  * 	Сначала проверяется срочная команда, если ее нет идет перебор текущих.
+ * 	Каждый цикл опрашиваются состояния, неисправности и одна из текущих команд.
  * 	@param Нет
- * 	@return команды ?!
+ * 	@return Команда
  */
 eGB_COM
 clMenu::getTxCommand()
@@ -430,18 +433,16 @@ clMenu::getTxCommand()
 
 	if (com == GB_COM_NO)
 	{
-		if (cnt > (2 + sParam.txComBuf.getNumCom()))
-			cnt = 0;
-
-		if (cnt == 0)
-			com = GB_COM_GET_TIME;
-		else if (cnt == 1)
+		cnt++;
+		if (cnt == 1)
 			com = GB_COM_GET_SOST;
 		else if (cnt == 2)
 			com = GB_COM_GET_FAULT;
 		else
+		{
 			com = sParam.txComBuf.getCom();
-		cnt++;
+			cnt = 0;
+		}
 	}
 
 	return com;
@@ -680,12 +681,13 @@ clMenu::lvlStart()
 		// доплнительные команды
 		// в ВЧ варианте есть измеряемые параметры
 		sParam.txComBuf.clear();
+		sParam.txComBuf.addCom(GB_COM_GET_TIME);
 		if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
 			sParam.txComBuf.addCom(GB_COM_GET_MEAS);
 		// в Р400 нужна информация по совместимости и типу АК
 		if (sParam.typeDevice == AVANT_R400)
 		{
-			sParam.txComBuf.addCom(GB_COM_GET_TYPE_AC);
+			sParam.txComBuf.addCom(GB_COM_DEF_GET_TYPE_AC);
 		}
 	}
 
@@ -1301,7 +1303,7 @@ clMenu::lvlControl()
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
-		sParam.txComBuf.addCom(GB_COM_GET_TYPE_AC);
+		sParam.txComBuf.addCom(GB_COM_DEF_GET_TYPE_AC);
 		sParam.txComBuf.addCom(GB_COM_GET_UD_DEVICE);
 
 		// !!! Р400.
@@ -1719,7 +1721,7 @@ clMenu::lvlSetupParamPrm()
 	static char title[] PROGMEM = "Параметры\\Приемник";
 
 	static char punkt1[] PROGMEM = "Время включения ком.";
-	static char punkt2[] PROGMEM = "Блокированные ком.";
+	static char punkt2[] PROGMEM = "Блокиров. команды";
 	static char punkt3[] PROGMEM = "Задержка на выкл.ком";
 
 	if (lvlCreate_)
@@ -1728,12 +1730,12 @@ clMenu::lvlSetupParamPrm()
 		cursorLine_ = 1;
 		cursorEnable_ = true;
 		lineParam_ = 1;
+		curCom_ = 1;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// доплнительные команды
-		sParam.txComBuf.clear();
+		// заполнение списка параметров
 		uint8_t num = 0;
 		if (sParam.typeDevice == AVANT_K400)
 		{
@@ -1742,61 +1744,83 @@ clMenu::lvlSetupParamPrm()
 			punkt_[num++] = punkt3;
 		}
 		numPunkts_ = num;
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
+		sParam.txComBuf.addCom(GB_COM_PRM_GET_BLOCK_COM);
+		sParam.txComBuf.addCom(GB_COM_PRM_GET_TIME_ON);
+		sParam.txComBuf.addCom(GB_COM_PRM_GET_TIME_OFF);
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
+
 	uint8_t poz = lineParam_ * 20;
 	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, numPunkts_);
 	poz += 20;
+
 	PGM_P p = punkt_[cursorLine_ - 1];
 	snprintf_P(&vLCDbuf[poz], 21, p);
 	poz += 20;
-	//  вывод надписи "Диапазон:" и переход к выводу самого диапаз.
+
+	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
 	snprintf_P(&vLCDbuf[poz], 11, fcRange);
 	poz += 10;
 	if (p == punkt1)
 	{
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeMc, TIME_ON_MIN, TIME_ON_MAX);
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeMc,
+				PRM_TIME_ON_MIN, PRM_TIME_ON_MAX);
+		poz += 10;
 	}
 	else if (p == punkt2)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
-		poz += 10;	// т.к. до этого выводился диапазон с середины строки
-		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, 1);
+		poz += 10;
+		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_);
+		poz += 20;
 	}
 	else if (p == punkt3)
 	{
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeMc, TIME_OFF_MIN, TIME_OFF_MAX);
-		poz += 10;	// т.к. до этого выводился диапазон с середины строки
-		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, 1);
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeMc,
+				PRM_TIME_OFF_MIN, PRM_TIME_OFF_MAX);
+		poz += 10;
+		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_);
+		poz += 20;
 	}
 
-
-//	for(uint_fast8_t i = 0; i < 4; i++)
-//	{
-//		if (cursorLine_ == 1)
-//			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt1[i]);
-//		else if (cursorLine_ == 2)
-//			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt2[i]);
-//	}
-//	if (cursorLine_ == 1)
-//	{
-//		snprintf_P(&vLCDbuf[20], 21, p1.name);
-//		snprintf_P(&vLCDbuf[40], 21, p1.range, p1.min, p1.max);
-//	}
-//	else if (cursorLine_ == 2)
-//	{
-//		snprintf_P(&vLCDbuf[20], 21, p2.name);
-//		snprintf_P(&vLCDbuf[40], 21, p2.range, p2.min, p2.max);
-//	}
+	// вывод надписи "Значение:" и переход к выводу самого значения
+	snprintf_P(&vLCDbuf[poz], 11, fcValue);
+	poz += 10;
+	if (p == punkt1)
+	{
+		snprintf(&vLCDbuf[poz], 11, "%d", sParam.prm.getTimeOn());
+	}
+	else if (p == punkt2)
+	{
+		if (sParam.prm.getBlockCom(curCom_ - 1))
+			snprintf_P(&vLCDbuf[poz], 11, fcOn);
+		else
+			snprintf_P(&vLCDbuf[poz], 11, fcOff);
+	}
+	else if (p == punkt3)
+	{
+		snprintf(&vLCDbuf[poz], 11, "%d", sParam.prm.getTimeOff(curCom_ - 1));
+	}
 
 	switch(key_)
 	{
 		case KEY_UP:
 			cursorLineUp();
+			curCom_ = 1;
 			break;
 		case KEY_DOWN:
 			cursorLineDown();
+			curCom_ = 1;
+			break;
+		case KEY_LEFT:
+			curCom_ = curCom_ <= 1 ? sParam.prm.getNumCom() : curCom_- 1;
+			break;
+		case KEY_RIGHT:
+			curCom_ = curCom_ >= sParam.prm.getNumCom() ? 1 : curCom_ + 1;
 			break;
 
 		case KEY_CANCEL:
@@ -1816,22 +1840,12 @@ clMenu::lvlSetupParamPrm()
 void
 clMenu::lvlSetupParamPrd()
 {
-	static char title[] PROGMEM = "Параметры\\Передатчик";
-
-	static char punkt1[] [21] PROGMEM =
-	{
-			"Номер: 1  Всего: 2",
-			"Время включения ком.",
-			"Значение: 5мс",
-			"Диапазон: 0..10мс"
-	};
-	static char punkt2[] [21] PROGMEM =
-	{
-			"Номер: 2  Всего: 2",
-			"Длительность команд",
-			"Значение: 50мс",
-			"Диапазон: 20..100мс"
-	};
+	static char title[]  PROGMEM = "Параметры\\Передатчик";
+	static char punkt1[] PROGMEM = "Время включения";
+	static char punkt2[] PROGMEM = "Длительность команды";
+	static char punkt3[] PROGMEM = "Тестовая команда";
+	static char punkt4[] PROGMEM = "Длительные команды";
+	static char punkt5[] PROGMEM = "Блокиров. команды";
 
 	if (lvlCreate_)
 	{
@@ -1839,34 +1853,125 @@ clMenu::lvlSetupParamPrd()
 		cursorLine_ = 1;
 		cursorEnable_ = true;
 		lineParam_ = 1;
+		curCom_ = 1;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
+		// заполнение списка параметров
+		uint8_t num = 0;
+		if (sParam.typeDevice == AVANT_K400)
+		{
+			punkt_[num++] = punkt1;
+			punkt_[num++] = punkt2;
+			punkt_[num++] = punkt3;
+			punkt_[num++] = punkt4;
+			punkt_[num++] = punkt5;
+		}
+		numPunkts_ = num;
+
 		// доплнительные команды
 		sParam.txComBuf.clear();
+		sParam.txComBuf.addCom(GB_COM_PRD_GET_TIME_ON);
+		sParam.txComBuf.addCom(GB_COM_PRD_GET_DURATION);
+		sParam.txComBuf.addCom(GB_COM_PRD_GET_TEST_COM);
+		sParam.txComBuf.addCom(GB_COM_PRD_GET_LONG_COM);
+		sParam.txComBuf.addCom(GB_COM_PRD_GET_BLOCK_COM);
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	for(uint_fast8_t i = 0; i < 4; i++)
+	uint8_t poz = lineParam_ * 20;
+	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, numPunkts_);
+	poz += 20;
+
+	PGM_P p = punkt_[cursorLine_ - 1];
+	snprintf_P(&vLCDbuf[poz], 21, p);
+	poz += 20;
+
+	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
+	snprintf_P(&vLCDbuf[poz], 11, fcRange);
+	poz += 10;
+	if (p == punkt1)
 	{
-		if (cursorLine_ == 1)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt1[i]);
-		else if (cursorLine_ == 2)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt2[i]);
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeMc,
+				PRD_TIME_ON_MIN, PRD_TIME_ON_MAX);
+		poz += 10;
+	}
+	else if (p == punkt2)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeMc,
+				PRD_DURATION_MIN, PRD_DURATION_MAX);
+		poz += 10;
+	}
+	else if (p == punkt3)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
+		poz += 10;
+	}
+	else if (p == punkt4)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
+		poz += 10;
+		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_);
+		poz += 20;
+	}
+	else if (p == punkt5)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
+		poz += 10;
+		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_);
+		poz += 20;
 	}
 
+	// вывод надписи "Значение:" и переход к выводу самого значения
+	snprintf_P(&vLCDbuf[poz], 11, fcValue);
+	poz += 10;
+	if (p == punkt1)
+	{
+		snprintf(&vLCDbuf[poz], 11, "%d", sParam.prd.getTimeOn());
+	}
+	else if (p == punkt2)
+	{
+		snprintf(&vLCDbuf[poz], 11, "%d", sParam.prd.getDuration());
+	}
+	else if (p == punkt3)
+	{
+		if (sParam.prd.getTestCom())
+			snprintf_P(&vLCDbuf[poz], 11, fcOn);
+		else
+			snprintf_P(&vLCDbuf[poz], 11, fcOff);
+	}
+	else if (p == punkt4)
+	{
+		if (sParam.prd.getLongCom(curCom_ - 1))
+			snprintf_P(&vLCDbuf[poz], 11, fcOn);
+		else
+			snprintf_P(&vLCDbuf[poz], 11, fcOff);
+	}
+	else if (p == punkt5)
+	{
+		if (sParam.prd.getBlockCom(curCom_ - 1))
+			snprintf_P(&vLCDbuf[poz], 11, fcOn);
+		else
+			snprintf_P(&vLCDbuf[poz], 11, fcOff);
+	}
 
 	switch(key_)
 	{
 		case KEY_UP:
-			if (cursorLine_ > 1)
-				cursorLine_--;
+			cursorLineUp();
+			curCom_ = 1;
 			break;
 		case KEY_DOWN:
-			if (cursorLine_ < 2)
-				cursorLine_++;
+			cursorLineDown();
+			curCom_ = 1;
+			break;
+		case KEY_LEFT:
+			curCom_ = curCom_ <= 1 ? sParam.prd.getNumCom() : curCom_- 1;
+			break;
+		case KEY_RIGHT:
+			curCom_ = curCom_ >= sParam.prd.getNumCom() ? 1 : curCom_ + 1;
 			break;
 
 		case KEY_CANCEL:

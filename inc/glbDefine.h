@@ -10,12 +10,16 @@
 
 #include <stdint.h>
 #include <avr/pgmspace.h>
+#include "debug.h"
 
 /// версия текущей прошивки
 #define VERS 0x0100
 
-/// максимально кол-во команд на приеме
+/// максимально кол-во команд на прием
 #define MAX_NUM_COM_PRM 32
+
+/// максимальное кол-во команд на передачу
+#define MAX_NUM_COM_PRD 32
 
 /// преобразование двух CHAR в INT
 #define TO_INT16(high, low) (((uint16_t) high << 8) + low)
@@ -27,18 +31,43 @@
 #define MAX_NUM_REGIME 6
 
 /// максимальное кол-во команд в буфере (не считая 3-х основных)
-#define MAX_NUM_COM_BUF 5
+#define MAX_NUM_COM_BUF 10
 
 /// Минимальные, максимальные значения параметров приемника и их дискретность
+/// ПРМ
 /// время включения
-#define TIME_ON_MIN		0
-#define TIME_ON_MAX		10
-#define TIME_ON_DISC	1
+#define PRM_TIME_ON_MIN		0
+#define PRM_TIME_ON_MAX		10
+#define PRM_TIME_ON_DISC	1
+#define PRM_TIME_ON_FRACT	1
+#define PRM_TIME_ON_MIN_F	(PRM_TIME_ON_MIN / PRM_TIME_ON_FRACT)
+#define PRM_TIME_ON_MAX_F	(PRM_TIME_ON_MAX / PRM_TIME_ON_FRACT)
+#define PRM_TIME_ON_DISC_F 	(PRM_TIME_ON_DISC / PRM_TIME_ON_FRACT)
 /// задержка на выключение
-#define TIME_OFF_MIN	0
-#define TIME_OFF_MAX	1000
-#define TIME_OFF_DISC	50
-
+#define PRM_TIME_OFF_MIN	0
+#define PRM_TIME_OFF_MAX	1000
+#define PRM_TIME_OFF_DISC	50
+#define PRM_TIME_OFF_FRACT	10
+#define PRM_TIME_OFF_MIN_F	(PRM_TIME_OFF_MIN / PRM_TIME_OFF_FRACT)
+#define PRM_TIME_OFF_MAX_F	(PRM_TIME_OFF_MAX / PRM_TIME_OFF_FRACT)
+#define PRM_TIME_OFF_DISC_F	(PRM_TIME_OFF_DISC/ PRM_TIME_OFF_FRACT)
+/// ПРД
+/// время включения
+#define PRD_TIME_ON_MIN		0
+#define PRD_TIME_ON_MAX		10
+#define PRD_TIME_ON_DISC	1
+#define PRD_TIME_ON_FRACT	1
+#define PRD_TIME_ON_MIN_F	(PRD_TIME_ON_MIN / PRM_TIME_ON_FRACT)
+#define PRD_TIME_ON_MAX_F	(PRD_TIME_ON_MAX / PRM_TIME_ON_FRACT)
+#define PRD_TIME_ON_DISC_F	(PRD_TIME_ON_DISC / PRM_TIME_ON_FRACT)
+/// длительность команды
+#define PRD_DURATION_MIN	20
+#define PRD_DURATION_MAX	100
+#define PRD_DURATION_DISC	1
+#define PRD_DURATION_FRACT	1
+#define PRD_DURATION_MIN_F	(PRD_DURATION_MIN / PRD_DURATION_FRACT)
+#define PRD_DURATION_MAX_F	(PRD_DURATION_MAX / PRD_DURATION_FRACT)
+#define PRD_DURATION_DISC_F	(PRD_DURATION_DISC / PRD_DURATION_FRACT)
 
 /// Тип аппарата
 enum eGB_TYPE_DEVICE
@@ -83,20 +112,25 @@ enum eGB_COMPATIBILITY
 enum eGB_COM
 {
 	GB_COM_NO = 0,
-	GB_COM_GET_TYPE_AC 	= 0x0A,
-	GB_COM_GET_SOST		= 0x30,
-	GB_COM_GET_FAULT 	= 0x31,
-	GB_COM_GET_TIME 	= 0x32,
-	GB_COM_GET_MEAS		= 0x34,
-	GB_COM_GET_UD_DEVICE= 0x37,
-	GB_COM_GET_VERS		= 0x3F,
-
-	GB_COM_SET_CONTROL	= 0x72,
-	// только с ПК
-	GB_COM_SET_PASSWORD = 0x73,
-	// только с ПК
-	GB_COM_GET_PASSWORD = 0x74,
-	GB_COM_SET_TIME 	= 0xB2
+	GB_COM_DEF_GET_TYPE_AC 	= 0x0A,
+	GB_COM_PRM_GET_TIME_ON	= 0x11,
+	GB_COM_PRM_GET_TIME_OFF = 0x13,
+	GB_COM_PRM_GET_BLOCK_COM= 0x14,
+	GB_COM_PRD_GET_TIME_ON	= 0x21,
+	GB_COM_PRD_GET_DURATION = 0x22,
+	GB_COM_PRD_GET_TEST_COM = 0,	// !!! пока только в составе МЕГА команды
+	GB_COM_PRD_GET_BLOCK_COM= 0x24,
+	GB_COM_PRD_GET_LONG_COM = 0x25,
+	GB_COM_GET_SOST			= 0x30,
+	GB_COM_GET_FAULT 		= 0x31,
+	GB_COM_GET_TIME 		= 0x32,
+	GB_COM_GET_MEAS			= 0x34,
+	GB_COM_GET_UD_DEVICE	= 0x37,
+	GB_COM_GET_VERS			= 0x3F,
+	GB_COM_SET_CONTROL		= 0x72,
+	GB_COM_SET_PASSWORD 	= 0x73,	// только с ПК
+	GB_COM_GET_PASSWORD 	= 0x74,	// только с ПК
+	GB_COM_SET_TIME 		= 0xB2
 };
 
 
@@ -536,7 +570,7 @@ public:
 	bool setNumCom(uint8_t numCom)
 	{
 		bool status = false;
-		if ( (numCom <= 32) && (numCom_ != numCom) )
+		if ( (numCom <= MAX_NUM_COM_PRM) && (numCom_ != numCom) )
 		{
 			numCom_ = numCom;
 			this->status.setEnable(numCom != 0);
@@ -550,27 +584,31 @@ public:
 	bool setTimeOn(uint8_t val)
 	{
 		bool stat = false;
-		if ( (val >= TIME_ON_MIN) && (val <= TIME_ON_MAX) )
+		val = (val / PRM_TIME_ON_DISC_F) * PRM_TIME_ON_DISC_F;
+		if ( (val >= PRM_TIME_ON_MIN_F) && (val <= PRM_TIME_ON_MAX_F) )
 		{
-			timeOn_ = (val / TIME_ON_DISC) * TIME_ON_DISC;
+			timeOn_ = val;
 			stat = true;
 		}
 		return stat;
 	}
-	uint8_t getTimeOn() { return timeOn_; }
+	uint8_t getTimeOn() { return (timeOn_ * PRM_TIME_ON_FRACT); }
 
-	// блокированные команды каждый бит отвечает за отдельную команду
+	// блокированные команды, каждый бит отвечает за отдельную команду
 	// num - номер восьмерки (0 - с 1 по 8 команды, 1 - с 9 по 16 и т.д.)
 	// val - значение
 	bool setBlockCom(uint8_t num, uint8_t val)
 	{
 		bool stat = false;
-		num = (num + 1) * 8;
-		if (num <= numCom_)
+
+		num *= 8;	// номер первой команды
+
+		if (num < numCom_ )
 		{
-			for(uint_fast8_t i = 0x80; i > 0; i >>= 1)
+
+			for(uint_fast8_t i = 0x01; (i > 0) && (num < numCom_); i <<= 1)
 			{
-				blockCom_[num--] = (bool) (i & val);
+				blockCom_[num++] = (bool) (i & val);
 			}
 			stat = true;
 		}
@@ -588,8 +626,8 @@ public:
 		uint16_t val;
 		for(uint_fast8_t i = 0; i < numCom_; i++)
 		{
-			val = ((*buf * 10) / TIME_OFF_DISC) * TIME_OFF_DISC;
-			if ( (val >= TIME_OFF_MIN) && (val <= TIME_OFF_MAX) )
+			val = ((*buf)  / PRM_TIME_OFF_DISC_F) * PRM_TIME_OFF_DISC_F;
+			if ( (val >= PRM_TIME_OFF_MIN_F) && (val <= PRM_TIME_OFF_MAX_F) )
 				timeOff_[i] = val;
 			else
 				stat = false;
@@ -597,8 +635,7 @@ public:
 		}
 		return stat;
 	}
-	uint16_t getTimeOff(uint8_t num) { return timeOff_[num]; }
-
+	uint16_t getTimeOff(uint8_t num) {return timeOff_[num]*PRM_TIME_OFF_FRACT;}
 
 private:
 	// кол-во команд приемника
@@ -606,10 +643,10 @@ private:
 
 	// время включения команды
 	uint8_t timeOn_;
-	// блокированные команды
+	// блокированные команды, true - блокированная
 	bool blockCom_[MAX_NUM_COM_PRM];
 	// задержка на выключение
-	uint16_t timeOff_[MAX_NUM_COM_PRM];
+	uint8_t timeOff_[MAX_NUM_COM_PRM];
 };
 
 
@@ -634,8 +671,114 @@ public:
 		return status;
 	}
 	uint8_t getNumCom() const { return numCom_; }
+
+	// время включения команды
+	bool setTimeOn(uint8_t val)
+	{
+		bool stat = false;
+		val = (val / PRD_TIME_ON_DISC_F) * PRD_TIME_ON_DISC_F;
+		if ( (val >= PRD_TIME_ON_MIN_F) && (val <= PRD_TIME_ON_MAX_F) )
+		{
+			timeOn_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getTimeOn() { return timeOn_ * PRD_TIME_ON_FRACT; }
+
+	// блокированные команды каждый бит отвечает за отдельную команду
+	// num - номер восьмерки (0 - с 1 по 8 команды, 1 - с 9 по 16 и т.д.)
+	// val - значение
+	bool setBlockCom(uint8_t num, uint8_t val)
+	{
+		bool stat = false;
+
+		num *= 8;	// номер первой команды
+
+		if (num < numCom_ )
+		{
+
+			for(uint_fast8_t i = 0x01; (i > 0) && (num < numCom_); i <<= 1)
+			{
+				blockCom_[num++] = (bool) (i & val);
+			}
+			stat = true;
+		}
+		return stat;
+	}
+	// возвращает True, если команда заблокирована
+	bool getBlockCom(uint8_t num) { return  blockCom_[num]; }
+
+	// длительные команды, каждый бит отвечает за отдельную команду
+	// num - номер восьмерки (0 - с 1 по 8 команды, 1 - с 9 по 16 и т.д.)
+	// val - значение
+	bool setLongCom(uint8_t num, uint8_t val)
+	{
+		bool stat = false;
+
+		num *= 8;	// номер первой команды
+
+		if (num < numCom_ )
+		{
+
+			for(uint_fast8_t i = 0x01; (i > 0) && (num < numCom_); i <<= 1)
+			{
+				longCom_[num++] = (bool) (i & val);
+			}
+			stat = true;
+		}
+		return stat;
+	}
+	// возвращает True, если команда заблокирована
+	bool getLongCom(uint8_t num) { return  longCom_[num]; }
+
+	// тестовая команда
+	// True - включена, False - выключена
+	bool setTestCom(uint8_t val)
+	{
+		bool stat = false;
+		if (val <= 1)
+		{
+			testCom_ = (bool) val;
+			stat = true;
+		}
+		return stat;
+	}
+	bool getTestCom() { return testCom_; }
+
+	// время включения команды
+	bool setDuration(uint8_t val)
+	{
+		bool stat = false;
+		val = (val / PRD_DURATION_DISC_F) * PRD_DURATION_DISC_F;
+		if ( (val >= PRD_DURATION_MIN_F) && (val <= PRD_DURATION_MAX_F) )
+		{
+			duration_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getDuration() { return duration_ * PRD_TIME_ON_FRACT; }
+
 private:
+	// текущее кол-во команд
 	uint8_t numCom_;
+
+	// время включения команды
+	uint8_t timeOn_;
+
+	// блокированные команды, true - блокированная
+	bool blockCom_[MAX_NUM_COM_PRD];
+
+	// длительные команды, true - длительная
+	bool longCom_[MAX_NUM_COM_PRD];
+
+	// тестовая команда. true - вкл.
+	bool testCom_;
+
+	// длительность команды
+	uint8_t duration_;
+
 };
 
 /// класс для измеряемых параметров
@@ -782,7 +925,8 @@ public:
 	{
 		if (cnt_ >= numCom_)
 			cnt_ = 0;
-		return com_[cnt_];
+
+		return com_[cnt_++];
 	}
 
 	// срочная команда (например изменение параметра)
