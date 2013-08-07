@@ -17,7 +17,7 @@
 #define TIME_TO_REINIT_LCD 50
 
 /// максимальное кол-во пунктов в меню
-#define MAX_NUM_PUNKTS 12
+#define MAX_NUM_PUNKTS 15
 
 /// Измеряемые параметры
 enum eMENU_MEAS_PARAM

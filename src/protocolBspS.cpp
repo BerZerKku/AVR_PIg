@@ -39,7 +39,41 @@ bool clProtocolBspS::getData()
 		mask = com & GB_COM_MASK_DEVICE;
 		if (mask == GB_COM_MASK_DEVICE_DEF)
 		{
-			if (com == GB_COM_DEF_GET_TYPE_AC)
+			// ЗАЩИТА
+
+			if (com == GB_COM_DEF_GET_DEF_TYPE)
+			{
+				stat = sParam_->def.setDefType(buf[B1]);
+			}
+			else if (com == GB_COM_DEF_GET_LINE_TYPE)
+			{
+				stat = sParam_->def.setLineType(buf[B1]);
+			}
+			else if (com == GB_COM_DEF_GET_T_NO_MAN)
+			{
+				stat = sParam_->def.setTimeNoMan(buf[B1]);
+			}
+			else if (com == GB_COM_DEF_GET_DELAY)
+			{
+				stat = sParam_->def.setDelay(buf[B1]);
+			}
+			else if (com == GB_COM_DEF_GET_OVERLAP)
+			{
+				stat = sParam_->def.setOverlap(buf[B1]);
+			}
+			else if (com == GB_COM_DEF_GET_RZ_DEC)
+			{
+				stat = sParam_->def.setRzDec(buf[B1]);
+			}
+			else if (com == GB_COM_DEF_GET_PRM_TYPE)
+			{
+				stat = sParam_->def.setPrmType(buf[B1]);
+			}
+			else if (com == GB_COM_DEF_GET_RZ_THRESH)
+			{
+				stat = sParam_->def.setRzThreshold(buf[B1]);
+			}
+			else if (com == GB_COM_DEF_GET_TYPE_AC)
 			{
 				// !!! Р400
 				// Добавить обработку принятого типа АК и времени до АК
@@ -49,6 +83,8 @@ bool clProtocolBspS::getData()
 		}
 		else if (mask == GB_COM_MASK_DEVICE_PRM)
 		{
+			// ПРИЕМНИК
+
 			if (com == GB_COM_PRM_GET_TIME_ON)
 			{
 				stat = sParam_->prm.setTimeOn(buf[B1]);
@@ -68,6 +104,8 @@ bool clProtocolBspS::getData()
 		}
 		else if (mask == GB_COM_MASK_DEVICE_PRD)
 		{
+			// ПЕРЕДАТЧИК
+
 			if (com == GB_COM_PRD_GET_TIME_ON)
 			{
 				stat = sParam_->prd.setTimeOn(buf[B1]);
@@ -100,6 +138,8 @@ bool clProtocolBspS::getData()
 		}
 		else
 		{
+			// ОБЩИЕ
+
 			if (com == GB_COM_GET_TIME)
 			{
 				sParam_->dataTime.setYearFromBCD(buf[B1]);
@@ -128,7 +168,6 @@ bool clProtocolBspS::getData()
 			}
 			else if (com == GB_COM_GET_FAULT)
 			{
-				stat = true;
 				sParam_->def.status.setFault(TO_INT16(buf[B1], buf[B2]));
 				sParam_->def.status.setWarning(TO_INT16(buf[B3], buf[B4]));
 
@@ -140,6 +179,7 @@ bool clProtocolBspS::getData()
 
 				sParam_->glb.status.setFault(TO_INT16(buf[B13], buf[B14]));
 				sParam_->glb.status.setWarning(TO_INT16(buf[B15],buf[B16]));
+				stat = true;
 			}
 			else if (com == GB_COM_GET_MEAS)
 			{
@@ -181,10 +221,42 @@ bool clProtocolBspS::getData()
 
 				stat = true;
 			}
-			else if (com == GB_COM_GET_UD_DEVICE)
+			else if (com == GB_COM_GET_TIME_SINCHR)
 			{
-				// !!! Р400
+				stat = sParam_->glb.setTimeSinchr(buf[B1]);
+
+			}
+			else if (com == GB_COM_GET_DEVICE_NUM)
+			{
+				stat = sParam_->glb.setDeviceNum(buf[B1]);
+			}
+			else if (com == GB_COM_GET_OUT_CHECK)
+			{
+				stat = sParam_->glb.setOutCheck(buf[B1]);
+			}
+			else if (com == GB_COM_GET_CF_THRESHOLD)
+			{
+				sParam_->glb.setCfThreshold(buf[B1]);
+				sParam_->glb.setInDecrease(buf[B2]);
+				// B3 - снижение входного сигнала для второго канала
+				stat = true;
+			}
+			else if (com == GB_COM_GET_TIME_RERUN)
+			{
+				stat = sParam_->glb.setTimeRerun(buf[B1]);
+			}
+			else if (com == GB_COM_GET_COM_PRM_KEEP)
+			{
+				stat = sParam_->glb.setComPrmKeep(buf[B1]);
+			}
+			else if (com == GB_COM_GET_COM_PRD_KEEP)
+			{
+				// !!! В Р400 это тип удаленного аппарата (совместимость)
 				// !!! Добавить обработку Типа удаленного аппарата
+				if (sParam_->typeDevice == AVANT_K400)
+				{
+					stat = sParam_->glb.setComPrdKeep(buf[B1]);
+				}
 			}
 		}
 	}
@@ -224,13 +296,49 @@ clProtocolBspS::sendData(eGB_COM com)
 		mask = com & GB_COM_MASK_DEVICE;
 		if (mask == GB_COM_MASK_DEVICE_DEF)
 		{
-			if (com == GB_COM_DEF_GET_TYPE_AC)
+			// ЗАЩИТА
+
+			if (com == GB_COM_DEF_GET_DEF_TYPE)
 			{
-				num = addCom(com);
+				num = addCom(com);	/// !!! Проверить
+			}
+			else if (com == GB_COM_DEF_GET_LINE_TYPE)
+			{
+				num = addCom(com);	/// !!! Проверить
+			}
+			else if (com == GB_COM_DEF_GET_T_NO_MAN)
+			{
+				num = addCom(com);	/// !!! Проверить
+			}
+			else if (com == GB_COM_DEF_GET_DELAY)
+			{
+				num = addCom(com);	/// !!! Проверить
+			}
+			else if (com == GB_COM_DEF_GET_OVERLAP)
+			{
+				num = addCom(com);	/// !!! Проверить
+			}
+			else if (com == GB_COM_DEF_GET_RZ_DEC)
+			{
+				num = addCom(com);	/// !!! Проверить
+			}
+			else if (com == GB_COM_DEF_GET_PRM_TYPE)
+			{
+				num = addCom(com);	/// !!! Проверить
+			}
+			else if (com == GB_COM_DEF_GET_RZ_THRESH)
+			{
+				num = addCom(com);	/// !!! Проверить
+			}
+			else if (com == GB_COM_DEF_GET_TYPE_AC)
+			{
+				num = addCom(com);	/// !!! Проверить
 			}
 		}
 		else if (mask == GB_COM_MASK_DEVICE_PRM)
 		{
+			// ПРИЕМНИК
+
 			if (com == GB_COM_PRM_GET_TIME_ON)
 			{
 				num = addCom(com);
@@ -246,6 +354,8 @@ clProtocolBspS::sendData(eGB_COM com)
 		}
 		else if (mask == GB_COM_MASK_DEVICE_PRD)
 		{
+			// ПЕРЕДАТЧИК
+
 			if (com == GB_COM_PRD_GET_TIME_ON)
 			{
 				num = addCom(com);
@@ -269,6 +379,7 @@ clProtocolBspS::sendData(eGB_COM com)
 		}
 		else
 		{
+			// ОБЩИЕ
 
 			if (com == GB_COM_GET_TIME)
 			{
@@ -286,11 +397,39 @@ clProtocolBspS::sendData(eGB_COM com)
 			{
 				num = addCom(com, 0);
 			}
-			else if (com == GB_COM_GET_VERS)
+			else if (com == GB_COM_GET_TIME_SINCHR)
 			{
 				num = addCom(com);
 			}
-			else if (com == GB_COM_GET_UD_DEVICE)
+			else if (com == GB_COM_GET_DEVICE_NUM)
+			{
+				num = addCom(com);
+			}
+			else if (com == GB_COM_GET_OUT_CHECK)
+			{
+				num = addCom(com);
+			}
+			else if (com == GB_COM_GET_CF_THRESHOLD)
+			{
+				num = addCom(com);
+			}
+			else if (com == GB_COM_GET_TIME_RERUN)
+			{
+				num = addCom(com);
+			}
+			else if (com == GB_COM_GET_COM_PRM_KEEP)
+			{
+				num = addCom(com);
+			}
+			else if (com == GB_COM_GET_COM_PRD_KEEP)
+			{
+				num = addCom(com);
+			}
+			else if (com == GB_COM_GET_COM_PRD_KEEP)
+			{
+				num = addCom(com);
+			}
+			else if (com == GB_COM_GET_VERS)
 			{
 				num = addCom(com);
 			}

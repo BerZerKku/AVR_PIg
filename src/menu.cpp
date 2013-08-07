@@ -358,6 +358,134 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 
 			status = true;
 		}
+		else if (device == AVANT_RZSK)
+		{
+			sParam.typeDevice = device;
+
+			measParam[0] = MENU_MEAS_PARAM_TIME;
+			measParam[1] = MENU_MEAS_PARAM_DATE;
+			measParam[2] = MENU_MEAS_PARAM_UOUT;
+			measParam[3] = MENU_MEAS_PARAM_IOUT;
+			measParam[4] = MENU_MEAS_PARAM_UZ;
+			measParam[5] = MENU_MEAS_PARAM_UC;
+
+			// включение защиты
+			// и заполнение массивов неисправностей и предупреждений
+			sParam.def.status.setEnable(true);
+			sParam.def.status.faultText[0] =  fcDefFault0001;
+			sParam.def.status.faultText[1] =  fcDefFault0002;
+			sParam.def.status.faultText[2] =  fcDefFault0004;
+			sParam.def.status.faultText[3] =  fcDefFault0008;
+			sParam.def.status.faultText[4] =  fcUnknownFault;
+			sParam.def.status.faultText[5] =  fcUnknownFault;
+			sParam.def.status.faultText[6] =  fcUnknownFault;
+			sParam.def.status.faultText[7] =  fcUnknownFault;
+			sParam.def.status.faultText[8] =  fcDefFault0100;
+			sParam.def.status.faultText[9] =  fcDefFault0200;
+			sParam.def.status.faultText[10] = fcUnknownFault;
+			sParam.def.status.faultText[11] = fcDefFault0800;
+			sParam.def.status.faultText[12] = fcUnknownFault;
+			sParam.def.status.faultText[13] = fcDefFault2000;
+			sParam.def.status.faultText[14] = fcDefFault4000;
+			sParam.def.status.faultText[15] = fcUnknownFault;
+
+			sParam.def.status.warningText[0] = fcDefWarning01rzsk;
+			sParam.def.status.warningText[1] = fcDefWarning02;
+			sParam.def.status.warningText[2] = fcUnknownWarning;
+			sParam.def.status.warningText[3] = fcUnknownWarning;
+			sParam.def.status.warningText[4] = fcUnknownWarning;
+			sParam.def.status.warningText[5] = fcUnknownWarning;
+			sParam.def.status.warningText[6] = fcUnknownWarning;
+			sParam.def.status.warningText[7] = fcUnknownWarning;
+
+			// заполнение массива общих неисправностей и предупреждений
+			sParam.glb.status.faultText[0] =  fcGlbFault0001;
+			sParam.glb.status.faultText[1] =  fcGlbFault0002;
+			sParam.glb.status.faultText[2] =  fcGlbFault0004;
+			sParam.glb.status.faultText[3] =  fcGlbFault0008;
+			sParam.glb.status.faultText[4] =  fcGlbFault0010;
+			sParam.glb.status.faultText[5] =  fcUnknownFault;
+			sParam.glb.status.faultText[6] =  fcUnknownFault;
+			sParam.glb.status.faultText[7] =  fcUnknownFault;
+			sParam.glb.status.faultText[8] =  fcGlbFault0100;
+			sParam.glb.status.faultText[9] =  fcGlbFault0200;
+			sParam.glb.status.faultText[10] = fcGlbFault0400rzsk;
+			sParam.glb.status.faultText[11] = fcGlbFault0800;
+			sParam.glb.status.faultText[12] = fcGlbFault1000;
+			sParam.glb.status.faultText[13] = fcUnknownFault;
+			sParam.glb.status.faultText[14] = fcUnknownFault;
+			sParam.glb.status.faultText[15] = fcUnknownFault;
+
+			sParam.glb.status.warningText[0] = fcGlbWarning01;
+			sParam.glb.status.warningText[1] = fcUnknownWarning;
+			sParam.glb.status.warningText[2] = fcUnknownWarning;
+			sParam.glb.status.warningText[3] = fcUnknownWarning;
+			sParam.glb.status.warningText[4] = fcUnknownWarning;
+			sParam.glb.status.warningText[5] = fcUnknownWarning;
+			sParam.glb.status.warningText[6] = fcUnknownWarning;
+			sParam.glb.status.warningText[7] = fcUnknownWarning;
+
+			// включение приемника
+			// и заполнение массивов неисправностей и предупреждений
+			sParam.prm.status.setEnable(true);
+			sParam.prm.status.faultText[0] =  fcPrmFault0001rzsk;
+			sParam.prm.status.faultText[1] =  fcPrmFault0002rzsk;
+			sParam.prm.status.faultText[2] =  fcPrmFault0004rzsk;
+			sParam.prm.status.faultText[3] =  fcPrmFault0008rzsk;
+			sParam.prm.status.faultText[4] =  fcUnknownFault;
+			sParam.prm.status.faultText[5] =  fcUnknownFault;
+			sParam.prm.status.faultText[6] =  fcUnknownFault;
+			sParam.prm.status.faultText[7] =  fcUnknownFault;
+			sParam.prm.status.faultText[8] =  fcPrmFault0100rzsk;
+			sParam.prm.status.faultText[9] =  fcPrmFault0200rzsk;
+			sParam.prm.status.faultText[10] = fcPrmFault0400rzsk;
+			sParam.prm.status.faultText[11] = fcPrmFault0800rzsk;
+			sParam.prm.status.faultText[12] = fcPrmFault1000rzsk;
+			sParam.prm.status.faultText[13] = fcUnknownFault;
+			sParam.prm.status.faultText[14] = fcUnknownFault;
+			sParam.prm.status.faultText[15] = fcPrmFault8000rzsk;
+
+			sParam.prm.status.warningText[0] = fcPrmWarning01rzsk;
+			sParam.prm.status.warningText[1] = fcUnknownWarning;
+			sParam.prm.status.warningText[2] = fcUnknownWarning;
+			sParam.prm.status.warningText[3] = fcUnknownWarning;
+			sParam.prm.status.warningText[4] = fcUnknownWarning;
+			sParam.prm.status.warningText[5] = fcUnknownWarning;
+			sParam.prm.status.warningText[6] = fcUnknownWarning;
+			sParam.prm.status.warningText[7] = fcUnknownWarning;
+
+			// включение передатчика
+			// и заполнение массивов неисправностей и предупреждений
+			sParam.prd.status.setEnable(true);
+			sParam.prd.status.faultText[0] =  fcPrdFault0001rzsk;
+			sParam.prd.status.faultText[1] =  fcPrdFault0002rzsk;
+			sParam.prd.status.faultText[2] =  fcUnknownFault;
+			sParam.prd.status.faultText[3] =  fcUnknownFault;
+			sParam.prd.status.faultText[4] =  fcUnknownFault;
+			sParam.prd.status.faultText[5] =  fcUnknownFault;
+			sParam.prd.status.faultText[6] =  fcUnknownFault;
+			sParam.prd.status.faultText[7] =  fcUnknownFault;
+			sParam.prd.status.faultText[8] =  fcPrdFault0100rzsk;
+			sParam.prd.status.faultText[9] =  fcPrdFault0200rzsk;
+			sParam.prd.status.faultText[10] = fcPrdFault0400rzsk;
+			sParam.prd.status.faultText[11] = fcPrdFault0800rzsk;
+			sParam.prd.status.faultText[12] = fcUnknownFault;
+			sParam.prd.status.faultText[13] = fcUnknownFault;
+			sParam.prd.status.faultText[14] = fcUnknownFault;
+			sParam.prd.status.faultText[15] = fcUnknownFault;
+
+			sParam.prd.status.warningText[0] = fcUnknownWarning;
+			sParam.prd.status.warningText[1] = fcUnknownWarning;
+			sParam.prd.status.warningText[2] = fcUnknownWarning;
+			sParam.prd.status.warningText[3] = fcUnknownWarning;
+			sParam.prd.status.warningText[4] = fcUnknownWarning;
+			sParam.prd.status.warningText[5] = fcUnknownWarning;
+			sParam.prd.status.warningText[6] = fcUnknownWarning;
+			sParam.prd.status.warningText[7] = fcUnknownWarning;
+
+			status = true;
+
+		}
 		else if (device == AVANT_R400)
 		{
 			sParam.typeDevice = device;
@@ -391,6 +519,15 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			sParam.def.status.faultText[13] = fcDefFault2000;
 			sParam.def.status.faultText[14] = fcDefFault4000;
 			sParam.def.status.faultText[15] = fcDefFault8000;
+
+			sParam.def.status.warningText[0] = fcDefWarning01;
+			sParam.def.status.warningText[1] = fcDefWarning02;
+			sParam.def.status.warningText[2] = fcDefWarning04;
+			sParam.def.status.warningText[3] = fcDefWarning08;
+			sParam.def.status.warningText[4] = fcUnknownWarning;
+			sParam.def.status.warningText[5] = fcUnknownWarning;
+			sParam.def.status.warningText[6] = fcUnknownWarning;
+			sParam.def.status.warningText[7] = fcUnknownWarning;
 
 			status = true;
 		}
@@ -1304,7 +1441,7 @@ clMenu::lvlControl()
 		// доплнительные команды
 		sParam.txComBuf.clear();
 		sParam.txComBuf.addCom(GB_COM_DEF_GET_TYPE_AC);
-		sParam.txComBuf.addCom(GB_COM_GET_UD_DEVICE);
+		sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);
 
 		// !!! Р400.
 		// !!! Добавить переформирование меню в случае изменения типа АК
@@ -1604,57 +1741,15 @@ clMenu::lvlSetupParam()
 void
 clMenu::lvlSetupParamDef()
 {
-	static char title[] PROGMEM = "Параметры\\Защиты";
-
-	static char punkt1[] [21] PROGMEM =
-	{
-			"Номер: 1  Всего: 7",
-			"Тип защиты",
-			"Значение: ДФЗ-ПрПД",
-			"Диапазон: список"
-	};
-	static char punkt2[] [21] PROGMEM =
-	{
-			"Номер: 2  Всего: 7",
-			"Тип линии",
-			"Значение: 2 концевая",
-			"Диапазон: список"
-	};
-	static char punkt3[] [21] PROGMEM =
-	{
-			"Номер: 3  Всего: 7",
-			"Доп. время без ман.",
-			"Значение: 0ч",
-			"Диапазон: 0..99ч"
-	};
-	static char punkt4[] [21] PROGMEM =
-	{
-			"Номер: 4  Всего: 7",
-			"Порог предупр по РЗ",
-			"Значение: 6дБ",
-			"Диапазон: 0..20дБ"
-	};
-	static char punkt5[] [21] PROGMEM =
-	{
-			"Номер: 5  Всего: 7",
-			"Перекрытие импульсов",
-			"Значение: 0град",
-			"Диапазон: 0..54град"
-	};
-	static char punkt6[] [21] PROGMEM =
-	{
-			"Номер: 6  Всего: 7",
-			"Компенсация задержки",
-			"Значение: 0град",
-			"Диапазон: 0..18град"
-	};
-	static char punkt7[] [21] PROGMEM =
-	{
-			"Номер: 7  Всего: 7",
-			"Загруб.чувств. по РЗ",
-			"Значение: 0дБ",
-			"Диапазон: 0..32дБ"
-	};
+	static char title[]  PROGMEM = "Параметры\\Защиты";
+	static char punkt1[] PROGMEM = "Тип защиты";
+	static char punkt2[] PROGMEM = "Тип линии";
+	static char punkt3[] PROGMEM = "Доп. время без ман.";
+	static char punkt4[] PROGMEM = "Перекрытие импульсов";
+	static char punkt5[] PROGMEM = "Компенсация задержки";
+	static char punkt6[] PROGMEM = "Порог предупр по РЗ";
+	static char punkt7[] PROGMEM = "Загруб.чувств. по РЗ";
+	static char punkt8[] PROGMEM = "Тип приемника";
 
 	if (lvlCreate_)
 	{
@@ -1662,9 +1757,38 @@ clMenu::lvlSetupParamDef()
 		cursorLine_ = 1;
 		cursorEnable_ = true;
 		lineParam_ = 1;
+		curCom_ = 1;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
+
+		uint8_t num = 0;
+		if (sParam.typeDevice == AVANT_RZSK)
+		{
+			punkt_[num++] = punkt1;
+			punkt_[num++] = punkt2;
+			punkt_[num++] = punkt3;
+			punkt_[num++] = punkt4;
+			punkt_[num++] = punkt5;
+			punkt_[num++] = punkt6;
+			punkt_[num++] = punkt7;
+			punkt_[num++] = punkt8;
+		}
+		numPunkts_ = num;
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
+		if (sParam.typeDevice == AVANT_RZSK)
+		{
+			sParam.txComBuf.addCom(GB_COM_DEF_GET_DEF_TYPE);
+			sParam.txComBuf.addCom(GB_COM_DEF_GET_LINE_TYPE);
+			sParam.txComBuf.addCom(GB_COM_DEF_GET_T_NO_MAN);
+			sParam.txComBuf.addCom(GB_COM_DEF_GET_OVERLAP);
+			sParam.txComBuf.addCom(GB_COM_DEF_GET_DELAY);
+			sParam.txComBuf.addCom(GB_COM_DEF_GET_RZ_THRESH);
+			sParam.txComBuf.addCom(GB_COM_DEF_GET_RZ_DEC);
+			sParam.txComBuf.addCom(GB_COM_DEF_GET_PRM_TYPE);
+		}
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
@@ -1672,33 +1796,106 @@ clMenu::lvlSetupParamDef()
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	for(uint_fast8_t i = 0; i < 4; i++)
+	uint8_t poz = lineParam_ * 20;
+	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, numPunkts_);
+	poz += 20;
+
+	PGM_P p = punkt_[cursorLine_ - 1];
+	snprintf_P(&vLCDbuf[poz], 21, p);
+	poz += 20;
+
+	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
+	snprintf_P(&vLCDbuf[poz], 11, fcRange);
+	poz += 10;
+	if (p == punkt1)
 	{
-		if (cursorLine_ == 1)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt1[i]);
-		else if (cursorLine_ == 2)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt2[i]);
-		else if (cursorLine_ == 3)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt3[i]);
-		else if (cursorLine_ == 4)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt4[i]);
-		else if (cursorLine_ == 5)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt5[i]);
-		else if (cursorLine_ == 6)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt6[i]);
-		else if (cursorLine_ == 7)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt7[i]);
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
+		poz += 10;
+	}
+	else if (p == punkt2)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
+		poz += 10;
+	}
+	else if (p == punkt3)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
+				DEF_T_NO_MAN_MIN, DEF_T_NO_MAN_MAX, "час");
+		poz += 10;
+	}
+	else if (p == punkt4)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
+				DEF_OVERLAP_MIN, DEF_OVERLAP_MAX, "град");
+		poz += 10;
+	}
+	else if (p == punkt5)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
+				DEF_DELAY_MIN, DEF_DELAY_MAX, "град");
+		poz += 10;
+	}
+	else if (p == punkt6)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
+				DEF_RZ_THRESH_MIN, DEF_RZ_THRESH_MAX, "дБ");
+		poz += 10;
+	}
+	else if (p == punkt7)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
+				DEF_RZ_DEC_MIN, DEF_RZ_DEC_MAX, "дБ");
+		poz += 10;
+	}
+	else if (p == punkt8)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
+		poz += 10;
+	}
+
+	// вывод надписи "Значение:" и переход к выводу самого значения
+	snprintf_P(&vLCDbuf[poz], 11, fcValue);
+	poz += 10;
+	if (p == punkt1)
+	{
+		snprintf(&vLCDbuf[poz], 11, "%s", fcDefType[sParam.def.getDefType()]);
+	}
+	else if (p == punkt2)
+	{
+		snprintf(&vLCDbuf[poz], 11, "%s", fcTypeLine[sParam.def.getLineType()]);
+	}
+	else if (p == punkt3)
+	{
+		snprintf(&vLCDbuf[poz], 11, "%dчас", sParam.def.getTimeNoMan());
+	}
+	else if (p == punkt4)
+	{
+		snprintf(&vLCDbuf[poz], 11, "%dград", sParam.def.getOverlap());
+	}
+	else if (p == punkt5)
+	{
+		snprintf(&vLCDbuf[poz], 11, "%dград", sParam.def.getDelay());
+	}
+	else if (p == punkt6)
+	{
+		snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.def.getRzThreshold());
+	}
+	else if (p == punkt7)
+	{
+		snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.def.getRzDec());
+	}
+	else if (p == punkt8)
+	{
+		snprintf(&vLCDbuf[poz], 11, "%s", fcPrmType[sParam.def.getPrmType()]);
 	}
 
 	switch(key_)
 	{
 		case KEY_UP:
-			if (cursorLine_ > 1)
-				cursorLine_--;
+			cursorLineUp();
 			break;
 		case KEY_DOWN:
-			if (cursorLine_ < 7)
-				cursorLine_++;
+			cursorLineDown();
 			break;
 
 		case KEY_CANCEL:
@@ -1743,13 +1940,28 @@ clMenu::lvlSetupParamPrm()
 			punkt_[num++] = punkt2;
 			punkt_[num++] = punkt3;
 		}
+		else if (sParam.typeDevice == AVANT_RZSK)
+		{
+			punkt_[num++] = punkt1;
+			punkt_[num++] = punkt2;
+			punkt_[num++] = punkt3;
+		}
 		numPunkts_ = num;
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
-		sParam.txComBuf.addCom(GB_COM_PRM_GET_BLOCK_COM);
-		sParam.txComBuf.addCom(GB_COM_PRM_GET_TIME_ON);
-		sParam.txComBuf.addCom(GB_COM_PRM_GET_TIME_OFF);
+		if (sParam.typeDevice == AVANT_K400)
+		{
+			sParam.txComBuf.addCom(GB_COM_PRM_GET_BLOCK_COM);
+			sParam.txComBuf.addCom(GB_COM_PRM_GET_TIME_ON);
+			sParam.txComBuf.addCom(GB_COM_PRM_GET_TIME_OFF);
+		}
+		else if (sParam.typeDevice == AVANT_RZSK)
+		{
+			sParam.txComBuf.addCom(GB_COM_PRM_GET_BLOCK_COM);
+			sParam.txComBuf.addCom(GB_COM_PRM_GET_TIME_ON);
+			sParam.txComBuf.addCom(GB_COM_PRM_GET_TIME_OFF);
+		}
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -1767,8 +1979,8 @@ clMenu::lvlSetupParamPrm()
 	poz += 10;
 	if (p == punkt1)
 	{
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeMc,
-				PRM_TIME_ON_MIN, PRM_TIME_ON_MAX);
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
+				PRM_TIME_ON_MIN, PRM_TIME_ON_MAX, "мс");
 		poz += 10;
 	}
 	else if (p == punkt2)
@@ -1780,8 +1992,8 @@ clMenu::lvlSetupParamPrm()
 	}
 	else if (p == punkt3)
 	{
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeMc,
-				PRM_TIME_OFF_MIN, PRM_TIME_OFF_MAX);
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
+				PRM_TIME_OFF_MIN, PRM_TIME_OFF_MAX, "мс");
 		poz += 10;
 		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_);
 		poz += 20;
@@ -1792,7 +2004,7 @@ clMenu::lvlSetupParamPrm()
 	poz += 10;
 	if (p == punkt1)
 	{
-		snprintf(&vLCDbuf[poz], 11, "%d", sParam.prm.getTimeOn());
+		snprintf(&vLCDbuf[poz], 11, "%dмс", sParam.prm.getTimeOn());
 	}
 	else if (p == punkt2)
 	{
@@ -1803,7 +2015,7 @@ clMenu::lvlSetupParamPrm()
 	}
 	else if (p == punkt3)
 	{
-		snprintf(&vLCDbuf[poz], 11, "%d", sParam.prm.getTimeOff(curCom_ - 1));
+		snprintf(&vLCDbuf[poz], 11, "%dмс", sParam.prm.getTimeOff(curCom_ - 1));
 	}
 
 	switch(key_)
@@ -1868,15 +2080,32 @@ clMenu::lvlSetupParamPrd()
 			punkt_[num++] = punkt4;
 			punkt_[num++] = punkt5;
 		}
+		else if (sParam.typeDevice == AVANT_RZSK)
+		{
+			punkt_[num++] = punkt1;
+			punkt_[num++] = punkt2;
+			punkt_[num++] = punkt4;
+			punkt_[num++] = punkt5;
+		}
 		numPunkts_ = num;
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
-		sParam.txComBuf.addCom(GB_COM_PRD_GET_TIME_ON);
-		sParam.txComBuf.addCom(GB_COM_PRD_GET_DURATION);
-		sParam.txComBuf.addCom(GB_COM_PRD_GET_TEST_COM);
-		sParam.txComBuf.addCom(GB_COM_PRD_GET_LONG_COM);
-		sParam.txComBuf.addCom(GB_COM_PRD_GET_BLOCK_COM);
+		if (sParam.typeDevice == AVANT_K400)
+		{
+			sParam.txComBuf.addCom(GB_COM_PRD_GET_TIME_ON);
+			sParam.txComBuf.addCom(GB_COM_PRD_GET_DURATION);
+			sParam.txComBuf.addCom(GB_COM_PRD_GET_TEST_COM);
+			sParam.txComBuf.addCom(GB_COM_PRD_GET_LONG_COM);
+			sParam.txComBuf.addCom(GB_COM_PRD_GET_BLOCK_COM);
+		}
+		else if (sParam.typeDevice == AVANT_RZSK)
+		{
+			sParam.txComBuf.addCom(GB_COM_PRD_GET_TIME_ON);
+			sParam.txComBuf.addCom(GB_COM_PRD_GET_DURATION);
+			sParam.txComBuf.addCom(GB_COM_PRD_GET_LONG_COM);
+			sParam.txComBuf.addCom(GB_COM_PRD_GET_BLOCK_COM);
+		}
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -1894,14 +2123,14 @@ clMenu::lvlSetupParamPrd()
 	poz += 10;
 	if (p == punkt1)
 	{
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeMc,
-				PRD_TIME_ON_MIN, PRD_TIME_ON_MAX);
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
+				PRD_TIME_ON_MIN, PRD_TIME_ON_MAX, "мс");
 		poz += 10;
 	}
 	else if (p == punkt2)
 	{
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeMc,
-				PRD_DURATION_MIN, PRD_DURATION_MAX);
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
+				PRD_DURATION_MIN, PRD_DURATION_MAX, "мс");
 		poz += 10;
 	}
 	else if (p == punkt3)
@@ -1929,11 +2158,11 @@ clMenu::lvlSetupParamPrd()
 	poz += 10;
 	if (p == punkt1)
 	{
-		snprintf(&vLCDbuf[poz], 11, "%d", sParam.prd.getTimeOn());
+		snprintf(&vLCDbuf[poz], 11, "%dмс", sParam.prd.getTimeOn());
 	}
 	else if (p == punkt2)
 	{
-		snprintf(&vLCDbuf[poz], 11, "%d", sParam.prd.getDuration());
+		snprintf(&vLCDbuf[poz], 11, "%dмс", sParam.prd.getDuration());
 	}
 	else if (p == punkt3)
 	{
@@ -1991,146 +2220,186 @@ clMenu::lvlSetupParamPrd()
 void
 clMenu::lvlSetupParamGlb()
 {
-	static char title[] PROGMEM = "Параметры\\Общие";
-
-	static char punkt1[] [21] PROGMEM =
-	{
-			"Номер: 1  Всего: 7",
-			"Контроль вых.сигнала",
-			"Значение: вкл.",
-			"Диапазон: список"
-	};
-	static char punkt2[] [21] PROGMEM =
-	{
-			"Номер: 2  Всего: 7",
-			"Время перезапуска",
-			"Значение: 5сек",
-			"Диапазон: 0..5сек"
-	};
-	static char punkt3[] [21] PROGMEM =
-	{
-			"Номер: 3  Всего: 7",
-			"Порог предупр. по КЧ",
-			"Значение: 10дБ",
-			"Диапазон: 0..15дБ"
-	};
-	static char punkt4[] [21] PROGMEM =
-	{
-			"Номер: 4  Всего: 7",
-			"Удерж. реле ком. ПРД",
-			"Значение: выкл.",
-			"Диапазон: список"
-	};
-	static char punkt5[] [21] PROGMEM =
-	{
-			"Номер: 5  Всего: 7",
-			"Удерж. реле ком. ПРМ",
-			"Значение: выкл.",
-			"Диапазон: список"
-	};
-	static char punkt6[] [21] PROGMEM =
-	{
-			"Номер: 6  Всего: 7",
-			"Загруб.чувств. по РЗ",
-			"Значение: 0дБ",
-			"Диапазон: 0..32дБ"
-	};
-	static char punkt7[] [21] PROGMEM =
-	{
-			"Номер: 7  Всего: 7",
-			"Протокол связи",
-			"Значение: стандарт",
-			"Диапазон: список"
-	};
+	static char title[]  PROGMEM = "Параметры\\Общие";
+	static char punkt1[] PROGMEM = "Синхронизация часов";
+	static char punkt2[] PROGMEM = "Номер аппарата";
+	static char punkt3[] PROGMEM = "Контроль вых.сигнала";
+	static char punkt4[] PROGMEM = "Порог предупр. по КЧ";
+	static char punkt5[] PROGMEM = "Время перезапуска";
+	static char punkt6[] PROGMEM = "Удерж. реле ком. ПРД";
+	static char punkt7[] PROGMEM = "Удерж. реле ком. ПРМ";
+	static char punkt8[] PROGMEM = "Уменьшение усиления";
 
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
 		cursorLine_ = 1;
-		if (sParam.typeDevice == AVANT_K400_OPTIC)
-			cursorLine_ = 2;
 		cursorEnable_ = true;
 		lineParam_ = 1;
+		curCom_ = 1;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
+		// заполнение списка параметров
+		uint8_t num = 0;
+		if (sParam.typeDevice == AVANT_K400)
+		{
+			punkt_[num++] = punkt1;
+			punkt_[num++] = punkt2;
+			punkt_[num++] = punkt3;
+			punkt_[num++] = punkt4;
+			punkt_[num++] = punkt5;
+			punkt_[num++] = punkt6;
+			punkt_[num++] = punkt7;
+			punkt_[num++] = punkt8;
+		}
+		else if (sParam.typeDevice == AVANT_RZSK)
+		{
+			punkt_[num++] = punkt3;
+			punkt_[num++] = punkt4;
+			punkt_[num++] = punkt5;
+			punkt_[num++] = punkt6;
+			punkt_[num++] = punkt7;
+			punkt_[num++] = punkt8;
+		}
+		numPunkts_ = num;
+
 		// доплнительные команды
 		sParam.txComBuf.clear();
+		if (sParam.typeDevice == AVANT_K400)
+		{
+			sParam.txComBuf.addCom(GB_COM_GET_TIME_SINCHR);
+			sParam.txComBuf.addCom(GB_COM_GET_DEVICE_NUM);
+			sParam.txComBuf.addCom(GB_COM_GET_OUT_CHECK);
+			sParam.txComBuf.addCom(GB_COM_GET_CF_THRESHOLD);
+			sParam.txComBuf.addCom(GB_COM_GET_TIME_RERUN);
+			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);
+			sParam.txComBuf.addCom(GB_COM_GET_COM_PRM_KEEP);
+		}
+		else if (sParam.typeDevice == AVANT_RZSK)
+		{
+			sParam.txComBuf.addCom(GB_COM_GET_OUT_CHECK);
+			sParam.txComBuf.addCom(GB_COM_GET_CF_THRESHOLD);
+			sParam.txComBuf.addCom(GB_COM_GET_TIME_RERUN);
+			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);
+			sParam.txComBuf.addCom(GB_COM_GET_COM_PRM_KEEP);
+		}
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	for(uint_fast8_t i = 0; i < 4; i++)
+	uint8_t poz = lineParam_ * 20;
+	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, numPunkts_);
+	poz += 20;
+
+	PGM_P p = punkt_[cursorLine_ - 1];
+	snprintf_P(&vLCDbuf[poz], 21, p);
+	poz += 20;
+
+	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
+	snprintf_P(&vLCDbuf[poz], 11, fcRange);
+	poz += 10;
+	if (p == punkt1)
 	{
-		if (cursorLine_ == 1)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt1[i]);
-		else if (cursorLine_ == 2)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt2[i]);
-		else if (cursorLine_ == 3)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt3[i]);
-		else if (cursorLine_ == 4)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt4[i]);
-		else if (cursorLine_ == 5)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt5[i]);
-		else if (cursorLine_ == 6)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt6[i]);
-		else if (cursorLine_ == 7)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt7[i]);
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
+		poz += 10;
+	}
+	else if (p == punkt2)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
+				GLB_DEV_NUM_MIN, GLB_DEV_NUM_MAX, "");
+		poz += 10;
+	}
+	else if (p == punkt3)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
+		poz += 10;
+	}
+	else if (p == punkt4)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
+				GLB_CF_THRESH_MIN, GLB_CF_THRESH_MAX, "дБ");
+		poz += 10;
+	}
+	else if (p == punkt5)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
+				GLB_T_RERUN_MIN, GLB_T_RERUN_MAX,  "c");
+		poz += 10;
+	}
+	else if (p == punkt6)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
+		poz += 10;
+	}
+	else if (p == punkt7)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
+		poz += 10;
+	}
+	else if (p == punkt8)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
+				GLB_IN_DEC_MIN, GLB_IN_DEC_MAX, "дБ");
+		poz += 10;
+	}
+
+	// вывод надписи "Значение:" и переход к выводу самого значения
+	snprintf_P(&vLCDbuf[poz], 11, fcValue);
+	poz += 10;
+	if (p == punkt1)
+	{
+		if (sParam.glb.getTimeSinchr())
+			snprintf_P(&vLCDbuf[poz], 11, fcOn);
+		else
+			snprintf_P(&vLCDbuf[poz], 11, fcOff);
+	}
+	else if (p == punkt2)
+	{
+		snprintf(&vLCDbuf[poz], 11, "%d", sParam.glb.getDeviceNum());
+	}
+	else if (p == punkt3)
+	{
+		if (sParam.glb.getOutCheck())
+			snprintf_P(&vLCDbuf[poz], 11, fcOn);
+		else
+			snprintf_P(&vLCDbuf[poz], 11, fcOff);
+	}
+	else if (p == punkt4)
+	{
+		snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.glb.getCfThreshold());
+	}
+	else if (p == punkt5)
+	{
+		snprintf(&vLCDbuf[poz], 11, "%dс", sParam.glb.getTimeRerun());
+	}
+	else if (p == punkt6)
+	{
+		if (sParam.glb.getComPrdKeep())
+			snprintf_P(&vLCDbuf[poz], 11, fcOn);
+		else
+			snprintf_P(&vLCDbuf[poz], 11, fcOff);
+	}
+	else if (p == punkt7)
+	{
+		if (sParam.glb.getComPrmKeep())
+			snprintf_P(&vLCDbuf[poz], 11, fcOn);
+		else
+			snprintf_P(&vLCDbuf[poz], 11, fcOff);
+	}
+	else if (p == punkt8)
+	{
+		snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.glb.getInDecrease());
 	}
 
 	switch(key_)
 	{
 		case KEY_UP:
-			if (cursorLine_ > 1)
-				cursorLine_--;
-
-			if (sParam.typeDevice == AVANT_K400)
-			{
-				if (cursorLine_ == 6)
-					cursorLine_ = 5;
-			}
-			else if (sParam.typeDevice == AVANT_K400_OPTIC)
-			{
-				if (cursorLine_ <= 2)
-					cursorLine_ = 2;
-				else if ((cursorLine_ == 3) || (cursorLine_ == 6))
-				{
-					cursorLine_--;
-				}
-			}
-			else if (sParam.typeDevice == AVANT_R400)
-			{
-				if (cursorLine_ == 2)
-					cursorLine_ = 1;
-				else if ((cursorLine_ == 4) || (cursorLine_ == 5))
-					cursorLine_ = 3;
-			}
-
+			cursorLineUp();
 			break;
 		case KEY_DOWN:
-			if (cursorLine_ < 7)
-				cursorLine_++;
-
-			if (sParam.typeDevice == AVANT_K400)
-			{
-				if (cursorLine_ == 6)
-					cursorLine_ = 7;
-			}
-			else if (sParam.typeDevice == AVANT_K400_OPTIC)
-			{
-				if ((cursorLine_ == 3) || (cursorLine_ == 6))
-				{
-					cursorLine_++;
-				}
-			}
-			else if (sParam.typeDevice == AVANT_R400)
-			{
-				if (cursorLine_ == 2)
-					cursorLine_ = 3;
-				else if ((cursorLine_ == 4) || (cursorLine_ == 5))
-					cursorLine_ = 6;
-			}
+			cursorLineDown();
 			break;
 
 		case KEY_CANCEL:

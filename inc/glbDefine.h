@@ -31,9 +31,59 @@
 #define MAX_NUM_REGIME 6
 
 /// максимальное кол-во команд в буфере (не считая 3-х основных)
-#define MAX_NUM_COM_BUF 10
+#define MAX_NUM_COM_BUF 15
 
 /// Минимальные, максимальные значения параметров приемника и их дискретность
+/// ЗАЩИТА
+/// тип защиты
+#define DEF_TYPE_MIN		0
+#define DEF_TYPE_MAX		7
+/// тип линии
+#define DEF_LINE_TYPE_MIN 	1
+#define DEF_LINE_TYPE_MAX 	2
+/// допустимое время без манипуляции
+#define DEF_T_NO_MAN_MIN	0
+#define DEF_T_NO_MAN_MAX	99
+#define DEF_T_NO_MAN_DISC	1
+#define DEF_T_NO_MAN_FRACT	1
+#define DEF_T_NO_MAN_MIN_F	(DEF_T_NO_MAN_MIN / DEF_T_NO_MAN_FRACT)
+#define DEF_T_NO_MAN_MAX_F	(DEF_T_NO_MAN_MAX / DEF_T_NO_MAN_FRACT)
+#define DEF_T_NO_MAN_DISC_F	(DEF_T_NO_MAN_DISC / DEF_T_NO_MAN_FRACT)
+/// перекрытие импульсов
+#define DEF_OVERLAP_MIN		0
+#define DEF_OVERLAP_MAX		54
+#define DEF_OVERLAP_DISC	2
+#define DEF_OVERLAP_FRACT	1
+#define DEF_OVERLAP_MIN_F	(DEF_OVERLAP_MIN / DEF_OVERLAP_FRACT)
+#define DEF_OVERLAP_MAX_F	(DEF_OVERLAP_MAX / DEF_OVERLAP_FRACT)
+#define DEF_OVERLAP_DISC_F	(DEF_OVERLAP_DISC / DEF_OVERLAP_FRACT)
+/// компенсация задержки в линии
+#define DEF_DELAY_MIN		0
+#define DEF_DELAY_MAX		18
+#define DEF_DELAY_DISC		2
+#define DEF_DELAY_FRACT		1
+#define DEF_DELAY_MIN_F		(DEF_DELAY_MIN / DEF_DELAY_FRACT)
+#define DEF_DELAY_MAX_F		(DEF_DELAY_MAX / DEF_DELAY_FRACT)
+#define DEF_DELAY_DISC_F	(DEF_DELAY_DISC / DEF_DELAY_FRACT)
+/// порог предупреждения по РЗ
+#define DEF_RZ_THRESH_MIN	0
+#define DEF_RZ_THRESH_MAX	16
+#define DEF_RZ_THRESH_DISC	1
+#define DEF_RZ_THRESH_FRACT	1
+#define DEF_RZ_THRESH_MIN_F	(DEF_RZ_THRESH_MIN / DEF_RZ_THRESH_FRACT)
+#define DEF_RZ_THRESH_MAX_F	(DEF_RZ_THRESH_MAX / DEF_RZ_THRESH_FRACT)
+#define DEF_RZ_THRESH_DISC_F (DEF_RZ_THRESH_DISC / DEF_RZ_THRESH_FRACT)
+/// загрубление чувствительности по РЗ
+#define DEF_RZ_DEC_MIN		0
+#define DEF_RZ_DEC_MAX		32
+#define DEF_RZ_DEC_DISC		1
+#define DEF_RZ_DEC_FRACT	1
+#define DEF_RZ_DEC_MIN_F	(DEF_RZ_DEC_MIN / DEF_RZ_DEC_FRACT)
+#define DEF_RZ_DEC_MAX_F	(DEF_RZ_DEC_MAX / DEF_RZ_DEC_FRACT)
+#define DEF_RZ_DEC_DISC_F	(DEF_RZ_DEC_DISC / DEF_RZ_DEC_FRACT)
+/// тип приемника
+#define DEF_PRM_TYPE_MIN	0
+#define DEF_PRM_TYPE_MAX	2
 /// ПРМ
 /// время включения
 #define PRM_TIME_ON_MIN		0
@@ -68,6 +118,39 @@
 #define PRD_DURATION_MIN_F	(PRD_DURATION_MIN / PRD_DURATION_FRACT)
 #define PRD_DURATION_MAX_F	(PRD_DURATION_MAX / PRD_DURATION_FRACT)
 #define PRD_DURATION_DISC_F	(PRD_DURATION_DISC / PRD_DURATION_FRACT)
+/// ОБЩИЕ
+/// номер аппарата
+#define GLB_DEV_NUM_MIN		1
+#define GLB_DEV_NUM_MAX 	3
+#define GLB_DEV_NUM_DISC 	1
+#define GLB_DEV_NUM_FRACT	1
+#define GLB_DEV_NUM_MIN_F	(GLB_DEV_NUM_MIN / GLB_DEV_NUM_FRACT)
+#define GLB_DEV_NUM_MAX_F 	(GLB_DEV_NUM_MAX / GLB_DEV_NUM_FRACT)
+#define GLB_DEV_NUM_DISC_F	(GLB_DEV_NUM_DISC / GLB_DEV_NUM_FRACT)
+/// порог предупреждения по КЧ
+#define GLB_CF_THRESH_MIN	0
+#define GLB_CF_THRESH_MAX	22
+#define GLB_CF_THRESH_DISC	1
+#define GLB_CF_THRESH_FRACT	1
+#define GLB_CF_THRESH_MIN_F	(GLB_CF_THRESH_MIN / GLB_CF_THRESH_FRACT)
+#define GLB_CF_THRESH_MAX_F	(GLB_CF_THRESH_MAX / GLB_CF_THRESH_FRACT)
+#define GLB_CF_THRESH_DISC_F (GLB_CF_THRESH_DISC / GLB_CF_THRESH_FRACT)
+/// время перезапуска
+#define GLB_T_RERUN_MIN		0
+#define GLB_T_RERUN_MAX		5
+#define GLB_T_RERUN_DISC	1
+#define GLB_T_RERUN_FRACT	1
+#define GLB_T_RERUN_MIN_F	(GLB_T_RERUN_MIN / GLB_T_RERUN_FRACT)
+#define GLB_T_RERUN_MAX_F	(GLB_T_RERUN_MAX / GLB_T_RERUN_FRACT)
+#define GLB_T_RERUN_DISC_F	(GLB_T_RERUN_DISC / GLB_T_RERUN_FRACT)
+/// уменьшение усиления канала
+#define GLB_IN_DEC_MIN		0
+#define GLB_IN_DEC_MAX		22
+#define GLB_IN_DEC_DISC 	1
+#define GLB_IN_DEC_FRACT	1
+#define GLB_IN_DEC_MIN_F	(GLB_IN_DEC_MIN / GLB_IN_DEC_FRACT)
+#define GLB_IN_DEC_MAX_F	(GLB_IN_DEC_MAX / GLB_IN_DEC_FRACT)
+#define GLB_IN_DEC_DISC_F	(GLB_IN_DEC_DISC / GLB_IN_DEC_FRACT)
 
 /// Тип аппарата
 enum eGB_TYPE_DEVICE
@@ -112,7 +195,15 @@ enum eGB_COMPATIBILITY
 enum eGB_COM
 {
 	GB_COM_NO = 0,
-	GB_COM_DEF_GET_TYPE_AC 	= 0x0A,
+	GB_COM_DEF_GET_DEF_TYPE	= 0x01,
+	GB_COM_DEF_GET_LINE_TYPE= 0x02,
+	GB_COM_DEF_GET_T_NO_MAN	= 0x03,
+	GB_COM_DEF_GET_DELAY	= 0x04,
+	GB_COM_DEF_GET_OVERLAP	= 0x05,
+	GB_COM_DEF_GET_RZ_DEC	= 0x06,
+	GB_COM_DEF_GET_PRM_TYPE = 0x07,
+	GB_COM_DEF_GET_RZ_THRESH= 0x09,	// ! в Р400 это частота ПРМ
+	GB_COM_DEF_GET_TYPE_AC 	= 0x0A,	// !!! не сделана
 	GB_COM_PRM_GET_TIME_ON	= 0x11,
 	GB_COM_PRM_GET_TIME_OFF = 0x13,
 	GB_COM_PRM_GET_BLOCK_COM= 0x14,
@@ -125,12 +216,18 @@ enum eGB_COM
 	GB_COM_GET_FAULT 		= 0x31,
 	GB_COM_GET_TIME 		= 0x32,
 	GB_COM_GET_MEAS			= 0x34,
-	GB_COM_GET_UD_DEVICE	= 0x37,
+	GB_COM_GET_TIME_SINCHR	= 0x35,
+	GB_COM_GET_COM_PRM_KEEP = 0x36,
+	GB_COM_GET_COM_PRD_KEEP	= 0x37,	// ! в Р400 это тип удаленного аппарата
+	GB_COM_GET_TIME_RERUN	= 0x39,	// ! в Р400 это параметры ПВЗУ-Е
+	GB_COM_GET_DEVICE_NUM	= 0x3B,
+	GB_COM_GET_CF_THRESHOLD	= 0x3C,	// ! порог предупр. по КЧ и загрубления
+	GB_COM_GET_OUT_CHECK	= 0x3D,
 	GB_COM_GET_VERS			= 0x3F,
 	GB_COM_SET_CONTROL		= 0x72,
-	GB_COM_SET_PASSWORD 	= 0x73,	// только с ПК
-	GB_COM_GET_PASSWORD 	= 0x74,	// только с ПК
-	GB_COM_SET_TIME 		= 0xB2
+	GB_COM_SET_PASSWORD 	= 0x73,	// ! только с ПК
+	GB_COM_GET_PASSWORD 	= 0x74,	// ! только с ПК
+	GB_COM_SET_TIME 		= 0xB2	// !!! не сделана
 };
 
 
@@ -473,6 +570,15 @@ public:
 		compatibility_ = GB_COMPATIBILITY_AVANT;
 		versBsp_ = 0;
 		versDsp_ = 0;
+
+		timeSinchr_ = false;
+		deviceNum_ = 1;
+		outCheck_ = false;
+		cfThreshold_ = 0;
+		timeRerun_ = 0;
+		comPrdKeep_ = false;
+		comPrmKeep_ = false;
+		inDecrease_ = 0;
 	}
 
 	TDeviceStatus status;
@@ -530,6 +636,115 @@ public:
 		return status;
 	}
 
+	// синхронизация часов
+	// True - включена, False - выключена
+	bool setTimeSinchr(uint8_t val)
+	{
+		bool stat = false;
+		if (val <= 1)
+		{
+			timeSinchr_ = (bool) val;
+			stat = true;
+		}
+		return stat;
+	}
+	bool getTimeSinchr() { return timeSinchr_; }
+
+	// номер аппарата
+	bool setDeviceNum(uint8_t val)
+	{
+		bool stat = false;
+		val = (val / GLB_DEV_NUM_DISC_F) * GLB_DEV_NUM_DISC_F;
+		if ( (val >= GLB_DEV_NUM_MIN_F) && (val <= GLB_DEV_NUM_MAX_F) )
+		{
+			deviceNum_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getDeviceNum() { return (deviceNum_ * GLB_DEV_NUM_FRACT); }
+
+	// контроль выходного сигнала
+	bool setOutCheck(uint8_t val)
+	{
+		bool stat = false;
+		if (val <= 1)
+		{
+			outCheck_ = (bool) val;
+			stat = true;
+		}
+		return stat;
+	}
+	bool getOutCheck() { return outCheck_; }
+
+	// порог предупреждения по КЧ
+	bool setCfThreshold(uint8_t val)
+	{
+		bool stat = false;
+		val = (val / GLB_CF_THRESH_DISC_F) * GLB_CF_THRESH_DISC_F;
+		if ( (val >= GLB_CF_THRESH_MIN_F) && (val <= GLB_CF_THRESH_MAX_F) )
+		{
+			cfThreshold_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getCfThreshold() { return (cfThreshold_ * GLB_CF_THRESH_FRACT); }
+
+	// время перезапуска
+	bool setTimeRerun(uint8_t val)
+	{
+		bool stat = false;
+		val = (val / GLB_T_RERUN_DISC_F) * GLB_T_RERUN_DISC_F;
+		if ( (val >= GLB_T_RERUN_MIN_F) && (val <= GLB_T_RERUN_MAX_F) )
+		{
+			timeRerun_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getTimeRerun() { return (timeRerun_ * GLB_T_RERUN_FRACT); }
+
+	// Удержание реле команд ПРД
+	bool setComPrdKeep(uint8_t val)
+	{
+		bool stat = false;
+		if (val <= 1)
+		{
+			comPrdKeep_ = (bool) val;
+			stat = true;
+		}
+		return stat;
+	}
+	bool getComPrdKeep() { return comPrdKeep_; }
+
+	// Удержание реле команд ПРМ
+	bool setComPrmKeep(uint8_t val)
+	{
+		bool stat = false;
+		if (val <= 1)
+		{
+			comPrmKeep_ = (bool) val;
+			stat = true;
+		}
+		return stat;
+	}
+	bool getComPrmKeep() { return comPrmKeep_; }
+
+	// уменьшение усиления входного сигнала
+	bool setInDecrease(uint8_t val)
+	{
+		bool stat = false;
+		val = (val / GLB_IN_DEC_DISC_F) * GLB_IN_DEC_DISC_F;
+		if ( (val >= GLB_IN_DEC_MIN_F) && (val <= GLB_IN_DEC_MAX_F) )
+		{
+			inDecrease_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getInDecrease() { return (inDecrease_ * GLB_IN_DEC_FRACT); }
+
 private:
 	// кол-во аппаратов в линии 2 или 3
 	eGB_NUM_DEVICES numDevices_;
@@ -545,6 +760,30 @@ private:
 
 	// совместимость
 	eGB_COMPATIBILITY compatibility_;
+
+	// синхронизация часов
+	bool timeSinchr_;
+
+	// номер аппарата
+	uint8_t deviceNum_;
+
+	// контроль выходного сигнала
+	bool outCheck_;
+
+	// порог предупреждения по КЧ
+	uint8_t cfThreshold_;
+
+	// время перезапуска
+	uint8_t timeRerun_;
+
+	// удержание реле команд Передатчика
+	bool comPrdKeep_;
+
+	// удержание реле команд Передатчика
+	bool comPrmKeep_;
+
+	// уменьшение усиления входного сигнала
+	uint8_t inDecrease_;
 };
 
 
@@ -554,7 +793,139 @@ class TDeviceDef
 public:
 	TDeviceStatus status;
 
+	// тип защиты
+	bool setDefType(uint8_t val)
+	{
+		bool stat = false;
+		if ( (val >= DEF_TYPE_MIN) && (val <= DEF_TYPE_MAX) )
+		{
+			defType_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getDefType() { return defType_ ; }
+
+	// тип линии
+	bool setLineType(uint8_t val)
+	{
+		bool stat = false;
+		if ( (val >= DEF_LINE_TYPE_MIN) && (val <= DEF_LINE_TYPE_MAX) )
+		{
+			lineType_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getLineType() { return lineType_; }
+
+	// допустимое время без манипуляции
+	bool setTimeNoMan(uint8_t val)
+	{
+		bool stat = false;
+		val = (val / DEF_T_NO_MAN_DISC_F) * DEF_T_NO_MAN_DISC_F;
+		if ( (val >= DEF_T_NO_MAN_MIN) && (val <= DEF_T_NO_MAN_MAX) )
+		{
+			timeNoMan_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getTimeNoMan() { return (timeNoMan_ * DEF_T_NO_MAN_FRACT); }
+
+	// перекрытие импульсов
+	bool setOverlap(uint8_t val)
+	{
+		bool stat = false;
+		val = (val / DEF_OVERLAP_DISC_F) * DEF_OVERLAP_DISC_F;
+		if ( (val >= DEF_OVERLAP_MIN) && (val <= DEF_OVERLAP_MAX) )
+		{
+			overlap_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getOverlap() { return (overlap_ * DEF_OVERLAP_FRACT); }
+
+	// компенсация задержки на линии
+	bool setDelay(uint8_t val)
+	{
+		bool stat = false;
+		val = (val / DEF_DELAY_DISC_F) * DEF_DELAY_DISC_F;
+		if ( (val >= DEF_DELAY_MIN) && (val <= DEF_DELAY_MAX) )
+		{
+			delay_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getDelay() { return (delay_ * DEF_DELAY_FRACT); }
+
+	// порог предуреждения по РЗ
+	bool setRzThreshold(uint8_t val)
+	{
+		bool stat = false;
+		val = (val / DEF_RZ_THRESH_DISC_F) * DEF_RZ_THRESH_DISC_F;
+		if ( (val >= DEF_RZ_THRESH_MIN) && (val <= DEF_RZ_THRESH_MAX) )
+		{
+			rzThreshold_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getRzThreshold() { return (rzThreshold_ * DEF_RZ_THRESH_FRACT); }
+
+	// загрубление чувствительности по РЗ
+	bool setRzDec(uint8_t val)
+	{
+		bool stat = false;
+		val = (val / DEF_RZ_DEC_DISC_F) * DEF_RZ_DEC_DISC_F;
+		if ( (val >= DEF_RZ_DEC_MIN) && (val <= DEF_RZ_DEC_MAX) )
+		{
+			rzDec_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getRzDec() { return (rzDec_ * DEF_RZ_DEC_FRACT); }
+
+	// тип приемника
+	bool setPrmType(uint8_t val)
+	{
+		bool stat = false;
+		if ( (val >= DEF_PRM_TYPE_MIN) && (val <= DEF_PRM_TYPE_MAX) )
+		{
+			prmType_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getPrmType() { return prmType_; }
+
 private:
+	// тип защиты
+	uint8_t defType_;
+
+	// тип линии (кол-во аппаратов)
+	uint8_t lineType_;
+
+	// допустимое время без манипуляции
+	uint8_t timeNoMan_;
+
+	// перекрытие импульсов
+	uint8_t overlap_;
+
+	// компенсация задержки в линии
+	uint8_t delay_;
+
+	// порог предупреждения по РЗ
+	uint8_t rzThreshold_;
+
+	// загрубление чувствительности по РЗ
+	uint8_t rzDec_;
+
+	// тип приемника
+	uint8_t prmType_;
 };
 
 

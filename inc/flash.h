@@ -6,6 +6,7 @@
  */
 
 #include <avr/pgmspace.h>
+#include <glbDefine.h>
 
 static const char fcNull[] PROGMEM = "";
 
@@ -35,6 +36,33 @@ static const char fcRegime[] [8] PROGMEM =
 	"Тест 1",
 	"Тест 2",
 	"Ошибка"
+};
+
+// тип защиты
+static const char fcDefType[DEF_TYPE_MAX + 1] [11] PROGMEM =
+{
+	"ДФЗ-ПрПд",
+	"ДФЗ-МК1",
+	"ДФЗ-МК2",
+	"ДФЗ-L60",
+	"НЗ-ПрПд",
+	"НЗ-МК",
+	"ППЗ-ПрПд",
+	"ППЗ-МК",
+};
+
+static const char fcTypeLine[DEF_LINE_TYPE_MAX + 1] [11] PROGMEM =
+{
+		"ошибка",
+		"2 концевая",
+		"3 концевая"
+};
+
+static const char fcPrmType[DEF_PRM_TYPE_MAX + 1] [11] PROGMEM =
+{
+		"Акт+Пасс",
+		"Активный",
+		"Пассивный"
 };
 
 // состояния устройств
@@ -168,8 +196,9 @@ static const char fcPrdFault0800rzsk[] PROGMEM = 	"Неиспр.вход. КСК";
 static const char fcValue[] 	PROGMEM = "Значение: ";
 static const char fcRange[] 	PROGMEM = "Диапазон: ";
 static const char fcNumCom[] 	PROGMEM = "Номер команды: %d";
-static const char fcRangeMc[] 	PROGMEM = "%d..%dмс";
-static const char fcRangeOnOff[] PROGMEM= "вкл./выкл.";
+static const char fcRangeDec[] 	PROGMEM = "%d..%d%s";
+static const char fcRangeList[] PROGMEM = "список";
+static const char fcRangeOnOff[]PROGMEM = "вкл./выкл.";
 static const char fcNumPunkt[] 	PROGMEM = "Номер: %d  Всего: %d";
 static const char fcOn[]		PROGMEM = "вкл.";
 static const char fcOff[]		PROGMEM = "выкл.";
