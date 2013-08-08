@@ -6,8 +6,8 @@
  */
 #include "../inc/protocolBspS.h"
 
-clProtocolBspS::clProtocolBspS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
-												clProtocolS(buf, size, sParam)
+clProtocolBspS::clProtocolBspS(uint8_t *buf, uint8_t size, stGBparam *sParam)
+												: clProtocolS(buf, size, sParam)
 {
 
 }
@@ -23,7 +23,7 @@ bool clProtocolBspS::getData()
 	uint8_t mask = 0;
 	eGB_COM com = (eGB_COM) buf[2];
 
-	// сообщение обработано, сброс флага
+	// сообщение обработано, выставим флаг на чтение
 	this->stat_ = PRTS_STATUS_NO;
 
 	// если это ответ на команду изменени€ параметра или режима
@@ -273,6 +273,8 @@ clProtocolBspS::sendData(eGB_COM com)
 {
 	uint8_t num = 0;
 	uint8_t mask = 0;
+
+	stat_ = PRTS_STATUS_WRITE;
 
 	mask = com & GB_COM_MASK_GROUP;
 	if (mask == GB_COM_MASK_GROUP_WRITE_PARAM)

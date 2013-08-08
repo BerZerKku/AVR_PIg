@@ -6,8 +6,8 @@
  */
 #include "../inc/protocolPcS.h"
 
-clProtocolPcS::clProtocolPcS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
-												clProtocolS(buf, size, sParam)
+clProtocolPcS::clProtocolPcS(uint8_t *buf, uint8_t size, stGBparam *sParam)
+										: clProtocolS(buf, size, sParam)
 {
 
 }
@@ -19,7 +19,7 @@ bool clProtocolPcS::getData()
 	bool stat = false;
 	eGB_COM com = (eGB_COM) buf[2];
 
-	// сообщение обработано, сброс флага
+	// сообщение обработано, выставим флаг на чтение
 	this->stat_ = PRTS_STATUS_NO;
 
 	if (com == GB_COM_GET_PASSWORD)

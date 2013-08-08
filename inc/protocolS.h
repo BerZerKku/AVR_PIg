@@ -21,8 +21,10 @@ enum ePRTS_ACTION
 enum ePRTS_STATUS
 {
 	PRTS_STATUS_NO = 0,		// состо€ние по-умолочанию (в том числе ошибочное)
-	PRTS_STATUS_READ,		// считана команда (но еще не проверена  —)
-	PRTS_STATUS_WRITE		// в буфере есть команда, надо передать
+	PRTS_STATUS_READ,		// идет считывание сообщени€
+	PRTS_STATUS_READ_OK,	// соообщение считано полностью, но  — не проверена
+	PRTS_STATUS_WRITE_PC,	// надо передать сообщене на(с) ѕ 
+	PRTS_STATUS_WRITE		// передаетс€ сообщение
 };
 
 // номера байт данных в протоколе
@@ -65,7 +67,7 @@ public:
 	uint8_t trCom();
 
 	/// «апуск работы данного протокола
-	void setEnable() { enable_ = true; stat_ = PRTS_STATUS_NO; }
+	void setEnable(ePRTS_STATUS stat) { enable_ = true; stat_ = stat; }
 
 	/// ќстановка работы данного протокола
 	void setDisable() { enable_ = false; }
@@ -86,7 +88,10 @@ public:
 	uint8_t getCurrentCnt() const { return cnt_; }
 
 	/// “екущий статус работы протокола
-	ePRTS_STATUS getCurrentStatus() const { return this->stat_; }
+	ePRTS_STATUS getCurrentStatus() const { return stat_; }
+
+	/// —мена текущего статуса работы протокола
+	void setCurrentStatus(ePRTS_STATUS stat) { stat_ = stat; }
 
 	///  опирование посылки из другого буфера
 	bool copyCommandFrom(uint8_t * const bufSource);
@@ -132,7 +137,7 @@ public:
 			cnt++;
 			if (cnt >= maxLen_)
 			{
-				stat_ = PRTS_STATUS_READ;
+				stat_ = PRTS_STATUS_READ_OK;
 			}
 			break;
 		}

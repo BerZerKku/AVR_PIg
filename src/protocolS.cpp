@@ -6,13 +6,12 @@
  */
 #include "../inc/protocolS.h"
 
-clProtocolS::clProtocolS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
-										buf(buf), size_(size), sParam_(sParam)
+clProtocolS::clProtocolS(uint8_t *buf, uint8_t size, stGBparam *sParam)
+									: buf(buf), size_(size), sParam_(sParam)
 {
 	enable_ = false;
 	cnt_ = 0;
 	maxLen_ = 0;
-	stat_ = PRTS_STATUS_NO;
 }
 
 /**	Опрос флага наличия принятой посылки.
@@ -43,7 +42,7 @@ clProtocolS::checkReadData()
 uint8_t
 clProtocolS::trCom()
 {
-	this->stat_ = PRTS_STATUS_NO;
+	this->stat_ = PRTS_STATUS_WRITE;
 
 	return maxLen_;
 }
@@ -87,85 +86,12 @@ clProtocolS::copyCommandFrom(uint8_t * const bufSource)
 	}
 	else
 	{
-		this->stat_ = PRTS_STATUS_WRITE;
+		this->stat_ = PRTS_STATUS_WRITE_PC;
 		maxLen_ = cnt;
 	}
 
 	return stat;
 }
-
-
-///** Отправка запроса
-// * 	@param com Код команды
-// * 	@param val Байт данных, если необходимо
-// * 	@return кол-во передаваемых байт данных
-// */
-//uint8_t
-//clProtocolS::addCom(uint8_t com, ePRTS_ACTION act)
-//{
-//	uint8_t cnt = 0;
-//
-//	if (act == PRTS_READ_COM)
-//	{
-//		trCom(0x34, 00);
-//	}
-//	else
-//		trCom(com);
-//
-//	return cnt;
-//}
-//
-///** Обработка принятой посылки, извлечение данных
-// * 	@param Нет
-// * 	@return false - если такой команды нет
-// */
-//bool
-//clProtocolS::getData(stMNUparam *param)
-//{
-//	bool tmp = false;
-//	switch(buf[2])
-//	{
-//		case 0x30:
-//			param->def_regime = buf[4];
-//			param->def_sost = buf[5];
-//			param->def_dop = buf[6];
-//
-//			param->prm_regime = buf[7];
-//			param->prm_sost = buf[8];
-//			param->prm_dop = buf[9];
-//
-//			param->prd_regime = buf[10];
-//			param->prd_sost = buf[11];
-//			param->prd_dop = buf[12];
-//			tmp = true;
-//			break;
-//		case 0x31:
-//			param->def_avar = (((uint16_t) buf[4]) << 8) + buf[5];
-//			param->def_warn = buf[6];
-//
-//			param->prm_avar = (((uint16_t) buf[8]) << 8) + buf[9];
-//			param->prm_warn = buf[11];
-//
-//			param->prd_avar = (((uint16_t) buf[12]) << 8) + buf[13];
-//			param->prd_warn = buf[15];
-//
-//			param->glb_avar = (((uint16_t) buf[16]) << 8) + buf[17];
-//			param->glb_warn = buf[19];
-//			tmp = true;
-//			break;
-//		case 0x32:
-//			param->day = buf[4];
-//			param->month = buf[5];
-//			param->year = buf[6];
-//			param->hour = buf[7];
-//			param->minute = buf[8];
-//			param->second = buf[9];
-//			tmp = true;
-//			break;
-//	}
-//
-//	return tmp;
-//}
 
 /**	Подготовка к отправке команды (сама команда, кол-во данных и данные
  * 	уже должны лежать в буфере)

@@ -22,10 +22,10 @@
 #define LCD_REFRESH_PERIOD 2
 
 /// Размер буфера для общения с БСП
-#define BUFF_SIZE_BSP 64
+#define BUFF_SIZE_BSP 128
 
 /// Размер буфера для общения с ПК
-#define BUFF_SIZE_PC 64
+#define BUFF_SIZE_PC 128
 
 /// Максимальное кол-во неполученных сообщений от БСП для ошибки связи
 #define MAX_LOST_COM_FROM_BSP 10
@@ -53,9 +53,9 @@ clUart 		uartPC	(UART_UART1, uBufUartPc, BUFF_SIZE_PC);
 /// Класы последовательного порта работающего с БСП
 clUart 		uartBSP	(UART_UART0, uBufUartBsp, BUFF_SIZE_BSP);
 /// Класс стандартного протокола работающего с ПК
-clProtocolPcS	protPCs	(uBufUartPc, BUFF_SIZE_PC, &menu.sParam);
+clProtocolPcS	protPCs(uBufUartPc, BUFF_SIZE_PC, &menu.sParam);
 /// Класс стандартного протокола работающего с БСП
-clProtocolBspS protBSPs(uBufUartBsp, BUFF_SIZE_BSP, &menu.sParam);
+clProtocolBspS	protBSPs(uBufUartBsp, BUFF_SIZE_BSP, &menu.sParam);
 
 
 /**	Работа с принятыми данными по UART
@@ -71,7 +71,7 @@ static bool uartRead()
 	static uint8_t cntLostCom = 0;
 
 	// Проверка наличия сообщения с БСП и ее обработка
-	if (protBSPs.getCurrentStatus() == PRTS_STATUS_READ)
+	if (protBSPs.getCurrentStatus() == PRTS_STATUS_READ_OK)
 	{
 		// проверка контрольной суммы полученного сообщения и
 		// обработка данных если она соответствует полученной
@@ -105,17 +105,20 @@ static bool uartRead()
 	}
 
 	// проверка наличия команды с ПК и ее обработка
-	if (protPCs.getCurrentStatus() == PRTS_STATUS_READ)
+	if (protPCs.getCurrentStatus() == PRTS_STATUS_READ_OK)
 	{
+		sDebug.byte1++;
 		// проверка контрольной суммы полученного сообщения и
 		// обработка данных если она соответствует полученной
 		if (protPCs.checkReadData())
 		{
+			sDebug.byte2++;
 			// обработка принятого сообщения
 			// если сообщение небыло обработано, перешлем его в БСП
 			// (т.е. если это не запрос/изменение пароля)
 			if (!protPCs.getData())
 			{
+				sDebug.byte3++;
 				// сохранение запрашиваемой ПК команды
 				lastPcCom = protPCs.getCurrentCom();
 
@@ -135,20 +138,30 @@ static bool uartRead()
 static bool uartWrite()
 {
 	// проверка необходимости передачи команды на ПК и ее отправка
-	if (protPCs.getCurrentStatus() == PRTS_STATUS_WRITE)
+	ePRTS_STATUS stat = protPCs.getCurrentStatus();
+	if (stat == PRTS_STATUS_WRITE_PC)
 	{
+		// пересылка ответа БСП
+		sDebug.byte4++;
+		uartPC.trData(protPCs.trCom());
+	}
+	else if (stat == PRTS_STATUS_WRITE)
+	{
+		// отправка ответа ПИ
 		uartPC.trData(protPCs.trCom());
 	}
 
 	// проверим нет ли необходимости передачи команды с ПК
 	// если нет, то возьмем команду с МЕНЮ
-	if (protBSPs.getCurrentStatus() == PRTS_STATUS_WRITE)
+	stat = protBSPs.getCurrentStatus();
+	if (stat == PRTS_STATUS_WRITE_PC)
 	{
-//		protBSPs.trCom();
+		// пересылка запроса ПК
 		uartBSP.trData(protBSPs.trCom());
 	}
-	else
+	else if (stat == PRTS_STATUS_NO)
 	{
+		// отправка запроса БСП
 		eGB_COM com = menu.getTxCommand();
 		uint8_t num = protBSPs.sendData(com);
 		uartBSP.trData(num);
@@ -176,10 +189,10 @@ main (void)
 	vLCDclear();
 
 	uartPC.init(19200);
-	protPCs.setEnable();
+	protPCs.setEnable(PRTS_STATUS_READ);
 
 	uartBSP.init(4800);
-	protBSPs.setEnable();
+	protBSPs.setEnable(PRTS_STATUS_NO);
 
 	// зададим тип аппарата
 	menu.setTypeDevice(AVANT_NO);
@@ -265,6 +278,7 @@ ISR(USART1_UDRE_vect)
 ISR(USART1_TX_vect)
 {
 	uartPC.isrTX();
+	protPCs.setCurrentStatus(PRTS_STATUS_READ);
 }
 
 /** Прерывание по получению данных UART1
@@ -278,12 +292,17 @@ ISR(USART1_RX_vect)
 	// обработчик протокола "Стандартный"
 	if (protPCs.isEnable())
 	{
-		if (protPCs.getCurrentStatus() != PRTS_STATUS_READ)
+		sDebug.byte6++;
+		sDebug.byte8 = protPCs.getCurrentStatus();
+		if (protPCs.getCurrentStatus() == PRTS_STATUS_READ)
+		{
+			sDebug.byte7++;
 			protPCs.checkByte(tmp);
+		}
 	}
 }
 
-/**	Прерывание по опустошению передающего буфера UART1
+/**	Прерывание по опустошению передающего буфера UART0
  * 	@param Нет
  * 	@return Нет
  */
@@ -292,16 +311,17 @@ ISR(USART0_UDRE_vect)
 	uartBSP.isrUDR();
 }
 
-/** Прерывание по окончанию передачи данных UART1
+/** Прерывание по окончанию передачи данных UART0
  * 	@param Нет
  * 	@return Нет
  */
 ISR(USART0_TX_vect)
 {
 	uartBSP.isrTX();
+	protBSPs.setCurrentStatus(PRTS_STATUS_READ);
 }
 
-/** Прерывание по получению данных UART1
+/** Прерывание по получению данных UART0
  * 	@param Нет
  * 	@return Нет
  */
@@ -312,7 +332,7 @@ ISR(USART0_RX_vect)
 	// обработчик протокола "Стандартный"
 	if (protBSPs.isEnable())
 	{
-		if (protBSPs.getCurrentStatus() != PRTS_STATUS_READ)
+		if (protBSPs.getCurrentStatus() == PRTS_STATUS_READ)
 			protBSPs.checkByte(tmp);
 	}
 }

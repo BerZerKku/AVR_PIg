@@ -1789,9 +1789,6 @@ clMenu::lvlSetupParamDef()
 			sParam.txComBuf.addCom(GB_COM_DEF_GET_RZ_DEC);
 			sParam.txComBuf.addCom(GB_COM_DEF_GET_PRM_TYPE);
 		}
-
-		// доплнительные команды
-		sParam.txComBuf.clear();
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -1858,11 +1855,11 @@ clMenu::lvlSetupParamDef()
 	poz += 10;
 	if (p == punkt1)
 	{
-		snprintf(&vLCDbuf[poz], 11, "%s", fcDefType[sParam.def.getDefType()]);
+		snprintf_P(&vLCDbuf[poz], 11, fcDefType[sParam.def.getDefType()]);
 	}
 	else if (p == punkt2)
 	{
-		snprintf(&vLCDbuf[poz], 11, "%s", fcTypeLine[sParam.def.getLineType()]);
+		snprintf_P(&vLCDbuf[poz], 11, fcTypeLine[sParam.def.getLineType()]);
 	}
 	else if (p == punkt3)
 	{
@@ -1886,7 +1883,7 @@ clMenu::lvlSetupParamDef()
 	}
 	else if (p == punkt8)
 	{
-		snprintf(&vLCDbuf[poz], 11, "%s", fcPrmType[sParam.def.getPrmType()]);
+		snprintf_P(&vLCDbuf[poz], 11, fcPrmType[sParam.def.getPrmType()]);
 	}
 
 	switch(key_)
