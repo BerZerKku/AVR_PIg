@@ -80,6 +80,10 @@ bool clProtocolBspS::getData()
 				// 4 байт - тип ј 
 				// 5-8 - врем€ до ј 
 			}
+			else if (com == GB_COM_DEF_GET_JRN_CNT)
+			{
+				stat = sParam_->def.setNumJrnEntry(TO_INT16(buf[B2], buf[B1]));
+			}
 		}
 		else if (mask == GB_COM_MASK_DEVICE_PRM)
 		{
@@ -100,6 +104,10 @@ bool clProtocolBspS::getData()
 			else if (com == GB_COM_PRM_GET_TIME_OFF)
 			{
 				stat = sParam_->prm.setTimeOff(&buf[B1]);
+			}
+			else if (com == GB_COM_PRM_GET_JRN_CNT)
+			{
+				stat = sParam_->prm.setNumJrnEntry(TO_INT16(buf[B2], buf[B1]));
 			}
 		}
 		else if (mask == GB_COM_MASK_DEVICE_PRD)
@@ -134,6 +142,10 @@ bool clProtocolBspS::getData()
 				sParam_->prd.setLongCom(2, buf[B3]);
 				sParam_->prd.setLongCom(3, buf[B4]);
 				stat = true;
+			}
+			else if (com == GB_COM_DEF_GET_JRN_CNT)
+			{
+				stat = sParam_->prd.setNumJrnEntry(TO_INT16(buf[B2], buf[B1]));
 			}
 		}
 		else
@@ -258,6 +270,10 @@ bool clProtocolBspS::getData()
 					stat = sParam_->glb.setComPrdKeep(buf[B1]);
 				}
 			}
+			else if (com == GB_COM_GET_JRN_CNT)
+			{
+				stat = sParam_->glb.setNumJrnEntry(TO_INT16(buf[B2], buf[B1]));
+			}
 		}
 	}
 
@@ -278,11 +294,13 @@ clProtocolBspS::sendData(eGB_COM com)
 	if (mask == GB_COM_MASK_GROUP_WRITE_PARAM)
 	{
 		// команды изменени€ параметров
+
 		mask = com & GB_COM_MASK_DEVICE;
 	}
 	else if (mask == GB_COM_MASK_GROUP_WRITE_REGIME)
 	{
 		// команды изменени€ режима
+
 		mask = com & GB_COM_MASK_DEVICE;
 
 		if (com == GB_COM_SET_CONTROL)
@@ -290,9 +308,10 @@ clProtocolBspS::sendData(eGB_COM com)
 			num = addCom(com, sParam_->txComBuf.getByte());
 		}
 	}
-	else
+	else if (mask == GB_COM_MASK_GROUP_READ_PARAM)
 	{
 		// команды опроса
+
 		mask = com & GB_COM_MASK_DEVICE;
 		if (mask == GB_COM_MASK_DEVICE_DEF)
 		{
@@ -435,7 +454,40 @@ clProtocolBspS::sendData(eGB_COM com)
 			}
 		}
 	}
+	else if (mask == GB_COM_MASK_GROUP_READ_JOURNAL)
+	{
+		// команды работы с журналом
+		if (com == GB_COM_MASK_DEVICE_DEF)
+		{
+			if (com == GB_COM_DEF_GET_JRN_CNT)
+			{
+				num = addCom(com);
+			}
+		}
+		else if (com == GB_COM_MASK_DEVICE_PRM)
+		{
+			if (com == GB_COM_PRM_GET_JRN_CNT)
+			{
+				num = addCom(com);
+			}
+		}
+		else if (com == GB_COM_MASK_DEVICE_PRD)
+		{
+			if (com == GB_COM_PRD_GET_JRN_CNT)
+			{
+				num = addCom(com);
+			}
+		}
+		else
+		{
+			if (com == GB_COM_GET_JRN_CNT)
+			{
+				num = addCom(com);
+			}
+		}
+	}
 
+	// установка статуса, в зависимости от необходимости передачи сообщени€
 	stat_ = (num != 0) ? PRTS_STATUS_WRITE : PRTS_STATUS_NO;
 
 	return num;

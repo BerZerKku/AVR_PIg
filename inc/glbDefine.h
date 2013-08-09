@@ -227,7 +227,11 @@ enum eGB_COM
 	GB_COM_SET_CONTROL		= 0x72,
 	GB_COM_SET_PASSWORD 	= 0x73,	// ! только с ПК
 	GB_COM_GET_PASSWORD 	= 0x74,	// ! только с ПК
-	GB_COM_SET_TIME 		= 0xB2	// !!! не сделана
+	GB_COM_SET_TIME 		= 0xB2,	// !!! не сделана
+	GB_COM_DEF_GET_JRN_CNT	= 0xC1,
+	GB_COM_PRM_GET_JRN_CNT	= 0xD1,
+	GB_COM_PRD_GET_JRN_CNT	= 0xE1,
+	GB_COM_GET_JRN_CNT		= 0xF1
 };
 
 
@@ -745,6 +749,20 @@ public:
 	}
 	uint8_t getInDecrease() { return (inDecrease_ * GLB_IN_DEC_FRACT); }
 
+	// количество записей в журнале
+	bool setNumJrnEntry(uint16_t val)
+	{
+		bool stat = false;
+		val &= 0x3FFF;
+		if (val <= 1024 )
+		{
+			numJrnEntry_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint16_t getNumJrnEntry() { return numJrnEntry_; }
+
 private:
 	// кол-во аппаратов в линии 2 или 3
 	eGB_NUM_DEVICES numDevices_;
@@ -784,6 +802,9 @@ private:
 
 	// уменьшение усиления входного сигнала
 	uint8_t inDecrease_;
+
+	// кол-во записей в журнале
+	uint16_t numJrnEntry_;
 };
 
 
@@ -902,6 +923,19 @@ public:
 	}
 	uint8_t getPrmType() { return prmType_; }
 
+	// количество записей в журнале
+	bool setNumJrnEntry(uint16_t val)
+	{
+		bool stat = false;
+		if (val <= 1024 )
+		{
+			numJrnEntry_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint16_t getNumJrnEntry() { return numJrnEntry_; }
+
 private:
 	// тип защиты
 	uint8_t defType_;
@@ -926,6 +960,9 @@ private:
 
 	// тип приемника
 	uint8_t prmType_;
+
+	// кол-во записей в журнале
+	uint16_t numJrnEntry_;
 };
 
 
@@ -1008,16 +1045,34 @@ public:
 	}
 	uint16_t getTimeOff(uint8_t num) {return timeOff_[num]*PRM_TIME_OFF_FRACT;}
 
+	// количество записей в журнале
+	bool setNumJrnEntry(uint16_t val)
+	{
+		bool stat = false;
+		if (val <= 1024 )
+		{
+			numJrnEntry_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint16_t getNumJrnEntry() { return numJrnEntry_; }
+
 private:
 	// кол-во команд приемника
 	uint8_t numCom_;
 
 	// время включения команды
 	uint8_t timeOn_;
+
 	// блокированные команды, true - блокированная
 	bool blockCom_[MAX_NUM_COM_PRM];
+
 	// задержка на выключение
 	uint8_t timeOff_[MAX_NUM_COM_PRM];
+
+	// кол-во записей в журнале
+	uint16_t numJrnEntry_;
 };
 
 
@@ -1131,6 +1186,19 @@ public:
 	}
 	uint8_t getDuration() { return duration_ * PRD_TIME_ON_FRACT; }
 
+	// количество записей в журнале
+	bool setNumJrnEntry(uint16_t val)
+	{
+		bool stat = false;
+		if (val <= 1024 )
+		{
+			numJrnEntry_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint16_t getNumJrnEntry() { return numJrnEntry_; }
+
 private:
 	// текущее кол-во команд
 	uint8_t numCom_;
@@ -1149,6 +1217,9 @@ private:
 
 	// длительность команды
 	uint8_t duration_;
+
+	// кол-во записей в журнале
+	uint16_t numJrnEntry_;
 
 };
 

@@ -22,9 +22,10 @@ enum ePRTS_ACTION
 	PRTS_WRITE_COM
 };
 
+// состояния протокола
 enum ePRTS_STATUS
 {
-	PRTS_STATUS_NO = 0,		// состояние по-умолочанию (в том числе ошибочное)
+	PRTS_STATUS_NO = 0,		// состояние неопределенное (в т.ч. ошибочное)
 	PRTS_STATUS_READ,		// идет считывание сообщения
 	PRTS_STATUS_READ_OK,	// соообщение считано полностью, но КС не проверена
 	PRTS_STATUS_WRITE_PC,	// надо передать сообщене на(с) ПК

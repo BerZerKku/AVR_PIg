@@ -1013,8 +1013,6 @@ clMenu::lvlJournal()
 
 	if (lvlCreate_)
 	{
-		uint8_t num = 0;
-
 		lvlCreate_ = false;
 		cursorLine_ = 1;
 		cursorEnable_ = true;
@@ -1023,38 +1021,57 @@ clMenu::lvlJournal()
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		if (sParam.typeDevice == AVANT_R400)
+
+		eGB_TYPE_DEVICE type = sParam.typeDevice;
+		uint8_t num = 0;
+		sParam.txComBuf.clear();
+		// активация необходимых пунктов меню и соответствующих им команд
+		if (type == AVANT_R400)
 		{
+
 			punkt_[num++] = punkt1;
+			sParam.txComBuf.addCom(GB_COM_GET_JRN_CNT);
 			punkt_[num++] = punkt2;
+			sParam.txComBuf.addCom(GB_COM_DEF_GET_JRN_CNT);
 		}
-		else if (sParam.typeDevice == AVANT_RZSK)
+		else if (type == AVANT_RZSK)
 		{
 			punkt_[num++] = punkt1;
+			sParam.txComBuf.addCom(GB_COM_GET_JRN_CNT);
 			punkt_[num++] = punkt2;
+			sParam.txComBuf.addCom(GB_COM_DEF_GET_JRN_CNT);
 			punkt_[num++] = punkt3;
+			sParam.txComBuf.addCom(GB_COM_PRM_GET_JRN_CNT);
 			punkt_[num++] = punkt4;
+			sParam.txComBuf.addCom(GB_COM_PRD_GET_JRN_CNT);
 		}
-		else if (sParam.typeDevice == AVANT_K400)
+		else if (type == AVANT_K400)
 		{
 			punkt_[num++] = punkt1;
+			sParam.txComBuf.addCom(GB_COM_GET_JRN_CNT);
 			punkt_[num++] = punkt3;
+			sParam.txComBuf.addCom(GB_COM_PRM_GET_JRN_CNT);
 			punkt_[num++] = punkt4;
+			sParam.txComBuf.addCom(GB_COM_PRD_GET_JRN_CNT);
 		}
-		else if (sParam.typeDevice == AVANT_K400_OPTIC)
+		else if (type == AVANT_K400_OPTIC)
 		{
 			punkt_[num++] = punkt1;
+			sParam.txComBuf.addCom(GB_COM_GET_JRN_CNT);
 			punkt_[num++] = punkt3;
+			sParam.txComBuf.addCom(GB_COM_PRM_GET_JRN_CNT);
 			punkt_[num++] = punkt4;
+			sParam.txComBuf.addCom(GB_COM_PRD_GET_JRN_CNT);
 		}
 		numPunkts_ = num;
-
-		// доплнительные команды
-		sParam.txComBuf.clear();
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 	printPunkts();
+
+	uint16_t tmp = sParam.glb.getNumJrnEntry();
+	sDebug.byte1 = tmp >> 8;
+	sDebug.byte2 = tmp;
 
 	switch(key_)
 	{

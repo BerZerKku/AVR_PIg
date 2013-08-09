@@ -209,6 +209,8 @@ main (void)
 	{
 		if (b100ms)
 		{
+			b100ms = false;
+
 			cnt_wdt++;
 			// обработка принятых сообщений с БСП/ПК
 			// передача в МЕНЮ текущего сосотояния связи с БСП
@@ -228,7 +230,6 @@ main (void)
 			if (++cnt_lcd >= LCD_REFRESH_PERIOD)
 			{
 				cnt_lcd = 0;
-
 				menu.main();
 			}
 
@@ -240,8 +241,6 @@ main (void)
 			if (cnt_wdt == 4)
 				wdt_reset();
 			cnt_wdt = 0;
-
-			b100ms = false;
 		}
 	}
 }
@@ -285,13 +284,7 @@ ISR(TIMER1_COMPA_vect)
  */
 ISR(USART1_UDRE_vect)
 {
-#ifdef DEBUG
-	SET_TP2;
-#endif
 	uartPC.isrUDR();
-#ifdef DEBUG
-	CLR_TP2;
-#endif
 }
 
 /** Прерывание по окончанию передачи данных UART1
@@ -328,13 +321,7 @@ ISR(USART1_RX_vect)
  */
 ISR(USART0_UDRE_vect)
 {
-#ifdef DEBUG
-	SET_TP1;
-#endif
 	uartBSP.isrUDR();
-#ifdef DEBUG
-	CLR_TP1;
-#endif
 }
 
 /** Прерывание по окончанию передачи данных UART0
