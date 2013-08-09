@@ -12,6 +12,8 @@ clProtocolS::clProtocolS(uint8_t *buf, uint8_t size, stGBparam *sParam)
 	enable_ = false;
 	cnt_ = 0;
 	maxLen_ = 0;
+	old_ = PRTS_STATUS_NO;
+	cntCycle_ = 0;
 }
 
 /**	Опрос флага наличия принятой посылки.
@@ -101,25 +103,22 @@ clProtocolS::copyCommandFrom(uint8_t * const bufSource)
 void
 clProtocolS::checkStat()
 {
-	static ePRTS_STATUS old = PRTS_STATUS_NO;
-	static uint8_t cntCycle = 0;
-
-	if (stat_ != statDef_)
+	if (old_ == stat_)
 	{
-		if (old == stat_)
+		if (stat_ != statDef_)
 		{
-			cntCycle++;
-			if (cntCycle >= MAX_CYCLE_TO_REST_SOST)
+			cntCycle_++;
+			if (cntCycle_ >= MAX_CYCLE_TO_REST_SOST)
 			{
-				stat_ = old = statDef_;
-				cntCycle = 0;
+				stat_ = old_ = statDef_;
+				cntCycle_ = 0;
 			}
 		}
-		else
-		{
-			old = stat_;
-			cntCycle = 0;
-		}
+	}
+	else
+	{
+		old_ = stat_;
+		cntCycle_ = 0;
 	}
 }
 

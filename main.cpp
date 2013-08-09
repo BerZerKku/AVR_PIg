@@ -7,6 +7,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 #include <stdio.h>
 #include "inc/debug.h"
 #include "inc/glbDefine.h"
@@ -139,7 +140,7 @@ static bool uartRead()
 static bool uartWrite()
 {
 	// Перед передачей проверим статус протокола на залипание.
-	protBSPs.checkStat();
+	protPCs.checkStat();
 	// проверка необходимости передачи команды на ПК и ее отправка
 	ePRTS_STATUS stat = protPCs.getCurrentStatus();
 	if (stat == PRTS_STATUS_WRITE_PC)
@@ -183,8 +184,11 @@ int __attribute__ ((OS_main))
 main (void)
 {
 	// счетчик для обновления ЖКИ
-	uint_fast8_t cnt_lcd = 0;
-	uint_fast8_t cnt_1s = 0;
+	uint8_t cnt_lcd = 0;
+	uint8_t cnt_1s = 0;
+	uint8_t cnt_wdt = 0;
+
+	wdt_enable(WDTO_250MS);
 
 	vSETUP();
 	sei();
@@ -205,17 +209,20 @@ main (void)
 	{
 		if (b100ms)
 		{
+			cnt_wdt++;
 			// обработка принятых сообщений с БСП/ПК
 			// передача в МЕНЮ текущего сосотояния связи с БСП
 			bool connect = uartRead();
 			menu.setConnectionBsp(connect);
 
+			cnt_wdt++;
 			// задачи выполняемые раз в 1с
 			if (++cnt_1s >= 10)
 			{
 				cnt_1s = 0;
 			}
 
+			cnt_wdt++;
 			// обновление экрана
 			// выполняется с периодом LCD_REFRESH_PERIOD * 100мс
 			if (++cnt_lcd >= LCD_REFRESH_PERIOD)
@@ -225,8 +232,14 @@ main (void)
 				menu.main();
 			}
 
+			cnt_wdt++;
 			// отправка сообщений в БСП/ПК
 			uartWrite();
+
+			// сброс wdt, если все шаги цикла были пройдены
+			if (cnt_wdt == 4)
+				wdt_reset();
+			cnt_wdt = 0;
 
 			b100ms = false;
 		}
