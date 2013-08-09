@@ -20,7 +20,7 @@ bool clProtocolPcS::getData()
 	eGB_COM com = (eGB_COM) buf[2];
 
 	// сообщение обработано, выставим флаг на чтение
-	this->stat_ = PRTS_STATUS_NO;
+	this->stat_ = PRTS_STATUS_READ;
 
 	if (com == GB_COM_GET_PASSWORD)
 	{

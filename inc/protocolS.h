@@ -12,6 +12,10 @@
 #include "glbDefine.h"
 #include "debug.h"
 
+// кол-во циклов, после которого залипшее текущее состояние будет сброшено
+// в состояние по-умолчанию
+#define MAX_CYCLE_TO_REST_SOST 10
+
 enum ePRTS_ACTION
 {
 	PRTS_READ_COM,
@@ -67,7 +71,7 @@ public:
 	uint8_t trCom();
 
 	/// Запуск работы данного протокола
-	void setEnable(ePRTS_STATUS stat) { enable_ = true; stat_ = stat; }
+	void setEnable(ePRTS_STATUS stat) { enable_ = true; stat_= statDef_= stat; }
 
 	/// Остановка работы данного протокола
 	void setDisable() { enable_ = false; }
@@ -97,11 +101,10 @@ public:
 	bool copyCommandFrom(uint8_t * const bufSource);
 
 	/// Обработка принятого сообщения. В случае неудачи возвращает False.
-	virtual bool getData() { stat_ = PRTS_STATUS_NO; return false; }
+	virtual bool getData() { stat_ = statDef_; return false; }
 
-	///
-//	bool sendData(uint8_t com, uint8_t *data);
-
+	/// Проверка текущего состояния
+	void checkStat();
 
 	/// Проверка принятого байта на соответствие протоколу
 	/// возвращает false в случае ошибки
@@ -164,6 +167,9 @@ protected:
 
 	// размер буфера
 	const uint8_t size_;
+
+	// состояние работы протокола по-умолчанию
+	ePRTS_STATUS statDef_;
 
 	// Подготовка к отправке команды (сама команда, кол-во данных и данные
 	// уже должны лежать в буфере)

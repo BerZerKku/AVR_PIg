@@ -93,6 +93,36 @@ clProtocolS::copyCommandFrom(uint8_t * const bufSource)
 	return stat;
 }
 
+/**	Проверка текущего состояния и сброс его в значение по умолчанию
+ * 	при необходимости (когда слишком долго висит одно состояние)
+ * 	@param Нет
+ * 	@return Нет
+ */
+void
+clProtocolS::checkStat()
+{
+	static ePRTS_STATUS old = PRTS_STATUS_NO;
+	static uint8_t cntCycle = 0;
+
+	if (stat_ != statDef_)
+	{
+		if (old == stat_)
+		{
+			cntCycle++;
+			if (cntCycle >= MAX_CYCLE_TO_REST_SOST)
+			{
+				stat_ = old = statDef_;
+				cntCycle = 0;
+			}
+		}
+		else
+		{
+			old = stat_;
+			cntCycle = 0;
+		}
+	}
+}
+
 /**	Подготовка к отправке команды (сама команда, кол-во данных и данные
  * 	уже должны лежать в буфере)
  * 	@param *buf Указатель на начало данных
@@ -119,7 +149,6 @@ clProtocolS::addCom()
 			stat_ = PRTS_STATUS_WRITE;
 		}
 	}
-
 
 	return cnt;
 }

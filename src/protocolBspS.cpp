@@ -274,8 +274,6 @@ clProtocolBspS::sendData(eGB_COM com)
 	uint8_t num = 0;
 	uint8_t mask = 0;
 
-	stat_ = PRTS_STATUS_WRITE;
-
 	mask = com & GB_COM_MASK_GROUP;
 	if (mask == GB_COM_MASK_GROUP_WRITE_PARAM)
 	{
@@ -437,6 +435,8 @@ clProtocolBspS::sendData(eGB_COM com)
 			}
 		}
 	}
+
+	stat_ = (num != 0) ? PRTS_STATUS_WRITE : PRTS_STATUS_NO;
 
 	return num;
 }

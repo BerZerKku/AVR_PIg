@@ -70,6 +70,8 @@ static bool uartRead()
 	// кол-во неполученных сообщений с БСП
 	static uint8_t cntLostCom = 0;
 
+	// перед приемом проверим статус на залипание
+	protBSPs.checkStat();
 	// Проверка наличия сообщения с БСП и ее обработка
 	if (protBSPs.getCurrentStatus() == PRTS_STATUS_READ_OK)
 	{
@@ -104,21 +106,20 @@ static bool uartRead()
 			stat = false;
 	}
 
+	// перед приемом проверим статус на залипание
+	protPCs.checkStat();
 	// проверка наличия команды с ПК и ее обработка
 	if (protPCs.getCurrentStatus() == PRTS_STATUS_READ_OK)
 	{
-		sDebug.byte1++;
 		// проверка контрольной суммы полученного сообщения и
 		// обработка данных если она соответствует полученной
 		if (protPCs.checkReadData())
 		{
-			sDebug.byte2++;
 			// обработка принятого сообщения
 			// если сообщение небыло обработано, перешлем его в БСП
 			// (т.е. если это не запрос/изменение пароля)
 			if (!protPCs.getData())
 			{
-				sDebug.byte3++;
 				// сохранение запрашиваемой ПК команды
 				lastPcCom = protPCs.getCurrentCom();
 
@@ -137,12 +138,13 @@ static bool uartRead()
  */
 static bool uartWrite()
 {
+	// Перед передачей проверим статус протокола на залипание.
+	protBSPs.checkStat();
 	// проверка необходимости передачи команды на ПК и ее отправка
 	ePRTS_STATUS stat = protPCs.getCurrentStatus();
 	if (stat == PRTS_STATUS_WRITE_PC)
 	{
 		// пересылка ответа БСП
-		sDebug.byte4++;
 		uartPC.trData(protPCs.trCom());
 	}
 	else if (stat == PRTS_STATUS_WRITE)
@@ -151,6 +153,8 @@ static bool uartWrite()
 		uartPC.trData(protPCs.trCom());
 	}
 
+	// Перед передачей проверим статус протокола на залипание.
+	protBSPs.checkStat();
 	// проверим нет ли необходимости передачи команды с ПК
 	// если нет, то возьмем команду с МЕНЮ
 	stat = protBSPs.getCurrentStatus();
@@ -268,7 +272,13 @@ ISR(TIMER1_COMPA_vect)
  */
 ISR(USART1_UDRE_vect)
 {
+#ifdef DEBUG
+	SET_TP2;
+#endif
 	uartPC.isrUDR();
+#ifdef DEBUG
+	CLR_TP2;
+#endif
 }
 
 /** Прерывание по окончанию передачи данных UART1
@@ -292,11 +302,8 @@ ISR(USART1_RX_vect)
 	// обработчик протокола "Стандартный"
 	if (protPCs.isEnable())
 	{
-		sDebug.byte6++;
-		sDebug.byte8 = protPCs.getCurrentStatus();
 		if (protPCs.getCurrentStatus() == PRTS_STATUS_READ)
 		{
-			sDebug.byte7++;
 			protPCs.checkByte(tmp);
 		}
 	}
@@ -308,7 +315,13 @@ ISR(USART1_RX_vect)
  */
 ISR(USART0_UDRE_vect)
 {
+#ifdef DEBUG
+	SET_TP1;
+#endif
 	uartBSP.isrUDR();
+#ifdef DEBUG
+	CLR_TP1;
+#endif
 }
 
 /** Прерывание по окончанию передачи данных UART0
