@@ -224,9 +224,11 @@ enum eGB_COM
 	GB_COM_GET_CF_THRESHOLD	= 0x3C,	// ! порог предупр. по КЧ и загрубления
 	GB_COM_GET_OUT_CHECK	= 0x3D,
 	GB_COM_GET_VERS			= 0x3F,
+	GB_COM_PRM_ENTER		= 0x51,
 	GB_COM_SET_CONTROL		= 0x72,
 	GB_COM_SET_PASSWORD 	= 0x73,	// ! только с ПК
 	GB_COM_GET_PASSWORD 	= 0x74,	// ! только с ПК
+	GB_COM_PRM_RES_IND		= 0x9A,
 	GB_COM_SET_TIME 		= 0xB2,	// !!! не сделана
 	GB_COM_DEF_GET_JRN_CNT	= 0xC1,
 	GB_COM_PRM_GET_JRN_CNT	= 0xD1,

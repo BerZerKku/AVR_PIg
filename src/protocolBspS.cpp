@@ -296,6 +296,11 @@ clProtocolBspS::sendData(eGB_COM com)
 		// команды изменения параметров
 
 		mask = com & GB_COM_MASK_DEVICE;
+
+		if (com == GB_COM_PRM_RES_IND)
+		{
+			num = addCom(com);
+		}
 	}
 	else if (mask == GB_COM_MASK_GROUP_WRITE_REGIME)
 	{
@@ -306,6 +311,10 @@ clProtocolBspS::sendData(eGB_COM com)
 		if (com == GB_COM_SET_CONTROL)
 		{
 			num = addCom(com, sParam_->txComBuf.getByte());
+		}
+		else if (com == GB_COM_PRM_ENTER)
+		{
+			num = addCom(com);
 		}
 	}
 	else if (mask == GB_COM_MASK_GROUP_READ_PARAM)

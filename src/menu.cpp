@@ -857,15 +857,16 @@ clMenu::lvlStart()
 			break;
 
 		case KEY_FUNC_RES_IND:
-//			com = 1;
+			sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
 			break;
 
 		case KEY_FUNC_ENTER:
-//			com = 2;
+			sParam.txComBuf.addFastCom(GB_COM_PRM_ENTER);
 			break;
 
 		case KEY_FUNC_RESET:
-//			com = 3;
+			sParam.txComBuf.setByte(GB_CONTROL_RESET_SELF);
+			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			break;
 
 		default:
