@@ -39,31 +39,10 @@ clMenu::clMenu()
 	key_ = KEY_NO;
 
 	// тип устройства еще не известен
-	sParam.typeDevice = AVANT_NO;
+	setTypeDevice(AVANT_NO);
 
 	// связи с БСП еще нет
 	connectionBsp_ = false;
-
-	// измеряемые параметры
-	for(uint_fast8_t i = 0; i < 6; i++)
-		measParam[i] = MENU_MEAS_PARAM_NO;
-
-	// для начала заполним текстовые надписи неисправностей и предупреждений
-	// для всех устройств "неизвестными" состояниями
-	for(uint_fast8_t i = 0; i < 16; i++)
-	{
-		sParam.glb.status.faultText[i] = fcUnknownFault;
-		sParam.def.status.faultText[i] = fcUnknownFault;
-		sParam.prm.status.faultText[i] = fcUnknownFault;
-		sParam.prd.status.faultText[i] = fcUnknownFault;
-	}
-
-	for(uint_fast8_t i = 0; i < 8; i++)
-	{
-		sParam.def.status.warningText[i] = fcUnknownWarning;
-		sParam.prm.status.warningText[i] = fcUnknownWarning;
-		sParam.prd.status.warningText[i] = fcUnknownWarning;
-	}
 
 	// заполним массивы состояний работы для всех устройств
 	// массив должен быть заполнен полностью и последним всегда должно
@@ -111,6 +90,7 @@ clMenu::clMenu()
 	sParam.def.status.name = fcDeviceName00;
 	sParam.prm.status.name = fcDeviceName01;
 	sParam.prd.status.name = fcDeviceName02;
+
 
 	// включение постоянной подсветки
 	vLCDsetLED(LED_ON);
@@ -295,6 +275,8 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			sParam.glb.status.warningText[6] = fcGlbWarning40;
 			sParam.glb.status.warningText[7] = fcUnknownWarning;
 
+			sParam.glb.setMaxNumJrnEntry(GLB_JRN_EVENT_K400_MAX);
+
 			// отключение защиты
 			sParam.def.status.setEnable(false);
 
@@ -327,6 +309,8 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			sParam.prm.status.warningText[6] = fcUnknownWarning;
 			sParam.prm.status.warningText[7] = fcUnknownWarning;
 
+			sParam.prm.setMaxNumJrnEntry(GLB_JRN_PRM_K400_MAX);
+
 			// включение передатчика
 			// и заполнение массивов неисправностей и предупреждений
 			sParam.prd.status.setEnable(true);
@@ -355,6 +339,8 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			sParam.prd.status.warningText[5] = fcUnknownWarning;
 			sParam.prd.status.warningText[6] = fcUnknownWarning;
 			sParam.prd.status.warningText[7] = fcUnknownWarning;
+
+			sParam.prd.setMaxNumJrnEntry(GLB_JRN_PRD_K400_MAX);
 
 			status = true;
 		}
@@ -821,6 +807,7 @@ clMenu::lvlStart()
 		sParam.txComBuf.addCom(GB_COM_GET_TIME);
 		if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
 			sParam.txComBuf.addCom(GB_COM_GET_MEAS);
+
 		// в Р400 нужна информация по совместимости и типу АК
 		if (sParam.typeDevice == AVANT_R400)
 		{
@@ -849,6 +836,7 @@ clMenu::lvlStart()
 		poz += 20;
 	}
 
+	eGB_TYPE_DEVICE type = sParam.typeDevice;
 	switch(key_)
 	{
 		case KEY_ENTER:
@@ -857,15 +845,17 @@ clMenu::lvlStart()
 			break;
 
 		case KEY_FUNC_RES_IND:
-			sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
+			if ( (type == AVANT_K400) || (type == AVANT_RZSK) )
+				sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
 			break;
 
 		case KEY_FUNC_ENTER:
-			sParam.txComBuf.addFastCom(GB_COM_PRM_ENTER);
+			if ( (type == AVANT_K400) || (type == AVANT_RZSK) )
+				sParam.txComBuf.addFastCom(GB_COM_PRM_ENTER);
 			break;
 
 		case KEY_FUNC_RESET:
-			sParam.txComBuf.setByte(GB_CONTROL_RESET_SELF);
+			sParam.txComBuf.setInt8(GB_CONTROL_RESET_SELF);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			break;
 
@@ -1018,18 +1008,18 @@ clMenu::lvlJournal()
 		cursorLine_ = 1;
 		cursorEnable_ = true;
 		lineParam_ = 1;
+		delay_ = 0;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
 
-		eGB_TYPE_DEVICE type = sParam.typeDevice;
 		uint8_t num = 0;
+		eGB_TYPE_DEVICE type = sParam.typeDevice;
 		sParam.txComBuf.clear();
 		// активация необходимых пунктов меню и соответствующих им команд
 		if (type == AVANT_R400)
 		{
-
 			punkt_[num++] = punkt1;
 			sParam.txComBuf.addCom(GB_COM_GET_JRN_CNT);
 			punkt_[num++] = punkt2;
@@ -1046,16 +1036,7 @@ clMenu::lvlJournal()
 			punkt_[num++] = punkt4;
 			sParam.txComBuf.addCom(GB_COM_PRD_GET_JRN_CNT);
 		}
-		else if (type == AVANT_K400)
-		{
-			punkt_[num++] = punkt1;
-			sParam.txComBuf.addCom(GB_COM_GET_JRN_CNT);
-			punkt_[num++] = punkt3;
-			sParam.txComBuf.addCom(GB_COM_PRM_GET_JRN_CNT);
-			punkt_[num++] = punkt4;
-			sParam.txComBuf.addCom(GB_COM_PRD_GET_JRN_CNT);
-		}
-		else if (type == AVANT_K400_OPTIC)
+		else if ( (type == AVANT_K400) || (type == AVANT_K400_OPTIC) )
 		{
 			punkt_[num++] = punkt1;
 			sParam.txComBuf.addCom(GB_COM_GET_JRN_CNT);
@@ -1069,10 +1050,6 @@ clMenu::lvlJournal()
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 	printPunkts();
-
-	uint16_t tmp = sParam.glb.getNumJrnEntry();
-	sDebug.byte1 = tmp >> 8;
-	sDebug.byte2 = tmp;
 
 	switch(key_)
 	{
@@ -1095,7 +1072,6 @@ clMenu::lvlJournal()
 			}
 			else if (punkt_[cursorLine_ - 1] == punkt2)
 			{
-
 				lvlMenu = &clMenu::lvlJournalDef;
 				lvlCreate_ = true;
 			}
@@ -1124,56 +1100,64 @@ void
 clMenu::lvlJournalEvent()
 {
 	static char title[] PROGMEM = "Журнал\\События";
-	static char punkt0[] [21] PROGMEM =
-	{
-			"Номер: 1  Всего: 2",
-			"Дата:  04.07.12",
-			"Время: 09:45:12.357",
-			"Тип: Перезапуск",
-			"Значение: Выведен"
-	};
-
-	static char punkt1[] [21] PROGMEM =
-	{
-			"Номер: 2  Всего: 2",
-			"Дата:  04.07.12",
-			"Время: 09:47:14.512",
-			"Тип: Перезапуск",
-			"Значение: Введен"
-	};
 
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-		cursorLine_ = 1;
+		curEntry_ = 1;
 		cursorEnable_ = true;
 		lineParam_ = 1;
+		delay_ = 0;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
+		sParam.txComBuf.addCom(GB_COM_GET_JRN_CNT);
+		sParam.txComBuf.addCom(GB_COM_GET_JRN_ENTRY);
+		sParam.txComBuf.setInt16(curEntry_);
 	}
 
-	snprintf_P(&vLCDbuf[0], 21, title);
-	for(uint_fast8_t i = 0; i < 5; i++)
+
+	uint16_t max_entries = sParam.glb.getNumJrnEntry();
+	uint16_t cur_entry = curEntry_;
+
+	if ( (cur_entry > max_entries) || (cur_entry == 0) )
 	{
-		if (cursorLine_ == 1)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt0[i]);
-		else
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt1[i]);
+		cur_entry = 1;
+	}
+	sParam.txComBuf.setInt16(cur_entry - 1);	// !!! Узнать номер 1 записи
+
+	uint8_t poz = 0;
+	snprintf_P(&vLCDbuf[poz], 21, title);
+	poz += 20;
+	snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, max_entries);
+	poz += 20;
+
+	if (max_entries == 0)
+		snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
+	else
+	{
+		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
+				sParam.journalEntry.dataTime.getDay(),
+				sParam.journalEntry.dataTime.getMonth(),
+				sParam.journalEntry.dataTime.getYear());
+		poz += 20;
+		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
+						sParam.journalEntry.dataTime.getHour(),
+						sParam.journalEntry.dataTime.getMinute(),
+						sParam.journalEntry.dataTime.getSecond(),
+						sParam.journalEntry.dataTime.getMsSecond());
 	}
 
 	switch(key_)
 	{
 		case KEY_UP:
-			if (cursorLine_ > 1)
-				cursorLine_--;
+			cur_entry  = (cur_entry  > 1) ? cur_entry - 1 : max_entries;
 			break;
 		case KEY_DOWN:
-			if (cursorLine_ < 2)
-				cursorLine_++;
+			cur_entry  = (cur_entry  >= max_entries) ? 1 : cur_entry  + 1;
 			break;
 
 		case KEY_CANCEL:
@@ -1184,6 +1168,7 @@ clMenu::lvlJournalEvent()
 		default:
 			break;
 	}
+	curEntry_ = cur_entry;
 }
 
 /** Уровень меню. Журнал защиты.
@@ -1458,8 +1443,12 @@ clMenu::lvlControl()
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
-		sParam.txComBuf.addCom(GB_COM_DEF_GET_TYPE_AC);
-		sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);
+		eGB_TYPE_DEVICE type = sParam.typeDevice;
+		if (type == AVANT_R400)
+		{
+			sParam.txComBuf.addCom(GB_COM_DEF_GET_TYPE_AC);
+			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);
+		}
 
 		// !!! Р400.
 		// !!! Добавить переформирование меню в случае изменения типа АК
@@ -1489,32 +1478,32 @@ clMenu::lvlControl()
 
 			if (p == punkt02)
 			{
-				sParam.txComBuf.setByte(GB_CONTROL_PUSK_UD_1);
+				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			}
 			else if (p == punkt03)
 			{
-				sParam.txComBuf.setByte(GB_CONTROL_RESET_SELF);
+				sParam.txComBuf.setInt8(GB_CONTROL_RESET_SELF);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			}
 			else if (p == punkt04)
 			{
-				sParam.txComBuf.setByte(GB_CONTROL_RESET_UD_1);
+				sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD_1);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			}
 			else if (p == punkt05)
 			{
-				sParam.txComBuf.setByte(GB_CONTROL_CALL);
+				sParam.txComBuf.setInt8(GB_CONTROL_CALL);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			}
 			else if (p == punkt06)
 			{
-				sParam.txComBuf.setByte(GB_CONTROL_PUSK_ON);
+				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_ON);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			}
 			else if (p == punkt07)
 			{
-				sParam.txComBuf.setByte(GB_CONTROL_PUSK_OFF);
+				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_OFF);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			}
 		}
@@ -1780,33 +1769,30 @@ clMenu::lvlSetupParamDef()
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
+		// заполнение массивов параметров и команд
 		uint8_t num = 0;
-		if (sParam.typeDevice == AVANT_RZSK)
+		eGB_TYPE_DEVICE type = sParam.typeDevice;
+		sParam.txComBuf.clear();
+		if (type == AVANT_RZSK)
 		{
 			punkt_[num++] = punkt1;
-			punkt_[num++] = punkt2;
-			punkt_[num++] = punkt3;
-			punkt_[num++] = punkt4;
-			punkt_[num++] = punkt5;
-			punkt_[num++] = punkt6;
-			punkt_[num++] = punkt7;
-			punkt_[num++] = punkt8;
-		}
-		numPunkts_ = num;
-
-		// доплнительные команды
-		sParam.txComBuf.clear();
-		if (sParam.typeDevice == AVANT_RZSK)
-		{
 			sParam.txComBuf.addCom(GB_COM_DEF_GET_DEF_TYPE);
+			punkt_[num++] = punkt2;
 			sParam.txComBuf.addCom(GB_COM_DEF_GET_LINE_TYPE);
+			punkt_[num++] = punkt3;
 			sParam.txComBuf.addCom(GB_COM_DEF_GET_T_NO_MAN);
+			punkt_[num++] = punkt4;
 			sParam.txComBuf.addCom(GB_COM_DEF_GET_OVERLAP);
+			punkt_[num++] = punkt5;
 			sParam.txComBuf.addCom(GB_COM_DEF_GET_DELAY);
+			punkt_[num++] = punkt6;
 			sParam.txComBuf.addCom(GB_COM_DEF_GET_RZ_THRESH);
+			punkt_[num++] = punkt7;
 			sParam.txComBuf.addCom(GB_COM_DEF_GET_RZ_DEC);
+			punkt_[num++] = punkt8;
 			sParam.txComBuf.addCom(GB_COM_DEF_GET_PRM_TYPE);
 		}
+		numPunkts_ = num;
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -1947,36 +1933,29 @@ clMenu::lvlSetupParamPrm()
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// заполнение списка параметров
+		// заполнение массивов параметров и команд
 		uint8_t num = 0;
-		if (sParam.typeDevice == AVANT_K400)
-		{
-			punkt_[num++] = punkt1;
-			punkt_[num++] = punkt2;
-			punkt_[num++] = punkt3;
-		}
-		else if (sParam.typeDevice == AVANT_RZSK)
-		{
-			punkt_[num++] = punkt1;
-			punkt_[num++] = punkt2;
-			punkt_[num++] = punkt3;
-		}
-		numPunkts_ = num;
-
-		// доплнительные команды
+		eGB_TYPE_DEVICE type = sParam.typeDevice;
 		sParam.txComBuf.clear();
 		if (sParam.typeDevice == AVANT_K400)
 		{
+			punkt_[num++] = punkt1;
 			sParam.txComBuf.addCom(GB_COM_PRM_GET_BLOCK_COM);
+			punkt_[num++] = punkt2;
 			sParam.txComBuf.addCom(GB_COM_PRM_GET_TIME_ON);
+			punkt_[num++] = punkt3;
 			sParam.txComBuf.addCom(GB_COM_PRM_GET_TIME_OFF);
 		}
 		else if (sParam.typeDevice == AVANT_RZSK)
 		{
+			punkt_[num++] = punkt1;
 			sParam.txComBuf.addCom(GB_COM_PRM_GET_BLOCK_COM);
+			punkt_[num++] = punkt2;
 			sParam.txComBuf.addCom(GB_COM_PRM_GET_TIME_ON);
+			punkt_[num++] = punkt3;
 			sParam.txComBuf.addCom(GB_COM_PRM_GET_TIME_OFF);
 		}
+		numPunkts_ = num;
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -2085,42 +2064,35 @@ clMenu::lvlSetupParamPrd()
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// заполнение списка параметров
+		// заполнение массивов параметров и команд
 		uint8_t num = 0;
-		if (sParam.typeDevice == AVANT_K400)
-		{
-			punkt_[num++] = punkt1;
-			punkt_[num++] = punkt2;
-			punkt_[num++] = punkt3;
-			punkt_[num++] = punkt4;
-			punkt_[num++] = punkt5;
-		}
-		else if (sParam.typeDevice == AVANT_RZSK)
-		{
-			punkt_[num++] = punkt1;
-			punkt_[num++] = punkt2;
-			punkt_[num++] = punkt4;
-			punkt_[num++] = punkt5;
-		}
-		numPunkts_ = num;
-
-		// доплнительные команды
+		eGB_TYPE_DEVICE type = sParam.typeDevice;
 		sParam.txComBuf.clear();
 		if (sParam.typeDevice == AVANT_K400)
 		{
+			punkt_[num++] = punkt1;
 			sParam.txComBuf.addCom(GB_COM_PRD_GET_TIME_ON);
+			punkt_[num++] = punkt2;
 			sParam.txComBuf.addCom(GB_COM_PRD_GET_DURATION);
+			punkt_[num++] = punkt3;
 			sParam.txComBuf.addCom(GB_COM_PRD_GET_TEST_COM);
+			punkt_[num++] = punkt4;
 			sParam.txComBuf.addCom(GB_COM_PRD_GET_LONG_COM);
+			punkt_[num++] = punkt5;
 			sParam.txComBuf.addCom(GB_COM_PRD_GET_BLOCK_COM);
 		}
 		else if (sParam.typeDevice == AVANT_RZSK)
 		{
+			punkt_[num++] = punkt1;
 			sParam.txComBuf.addCom(GB_COM_PRD_GET_TIME_ON);
+			punkt_[num++] = punkt2;
 			sParam.txComBuf.addCom(GB_COM_PRD_GET_DURATION);
+			punkt_[num++] = punkt4;
 			sParam.txComBuf.addCom(GB_COM_PRD_GET_LONG_COM);
+			punkt_[num++] = punkt5;
 			sParam.txComBuf.addCom(GB_COM_PRD_GET_BLOCK_COM);
 		}
+		numPunkts_ = num;
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -2256,50 +2228,45 @@ clMenu::lvlSetupParamGlb()
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// заполнение списка параметров
+		// заполнение массивов параметров и команд
 		uint8_t num = 0;
-		if (sParam.typeDevice == AVANT_K400)
-		{
-			punkt_[num++] = punkt1;
-			punkt_[num++] = punkt2;
-			punkt_[num++] = punkt3;
-			punkt_[num++] = punkt4;
-			punkt_[num++] = punkt5;
-			punkt_[num++] = punkt6;
-			punkt_[num++] = punkt7;
-			punkt_[num++] = punkt8;
-		}
-		else if (sParam.typeDevice == AVANT_RZSK)
-		{
-			punkt_[num++] = punkt3;
-			punkt_[num++] = punkt4;
-			punkt_[num++] = punkt5;
-			punkt_[num++] = punkt6;
-			punkt_[num++] = punkt7;
-			punkt_[num++] = punkt8;
-		}
-		numPunkts_ = num;
-
-		// доплнительные команды
+		eGB_TYPE_DEVICE type = sParam.typeDevice;
 		sParam.txComBuf.clear();
 		if (sParam.typeDevice == AVANT_K400)
 		{
+			punkt_[num++] = punkt1;
 			sParam.txComBuf.addCom(GB_COM_GET_TIME_SINCHR);
+			punkt_[num++] = punkt2;
 			sParam.txComBuf.addCom(GB_COM_GET_DEVICE_NUM);
+			punkt_[num++] = punkt3;
 			sParam.txComBuf.addCom(GB_COM_GET_OUT_CHECK);
+			punkt_[num++] = punkt4;
 			sParam.txComBuf.addCom(GB_COM_GET_CF_THRESHOLD);
+			punkt_[num++] = punkt5;
 			sParam.txComBuf.addCom(GB_COM_GET_TIME_RERUN);
+			punkt_[num++] = punkt6;
 			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);
+			punkt_[num++] = punkt7;
 			sParam.txComBuf.addCom(GB_COM_GET_COM_PRM_KEEP);
+			punkt_[num++] = punkt8;
+			// sParam.txComBuf.addCom(GB_COM_GET_CF_THRESHOLD);
 		}
 		else if (sParam.typeDevice == AVANT_RZSK)
 		{
+			punkt_[num++] = punkt3;
 			sParam.txComBuf.addCom(GB_COM_GET_OUT_CHECK);
+			punkt_[num++] = punkt4;
 			sParam.txComBuf.addCom(GB_COM_GET_CF_THRESHOLD);
+			punkt_[num++] = punkt5;
 			sParam.txComBuf.addCom(GB_COM_GET_TIME_RERUN);
+			punkt_[num++] = punkt6;
 			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);
+			punkt_[num++] = punkt7;
 			sParam.txComBuf.addCom(GB_COM_GET_COM_PRM_KEEP);
+			punkt_[num++] = punkt8;
+			// sParam.txComBuf.addCom(GB_COM_GET_CF_THRESHOLD);
 		}
+		numPunkts_ = num;
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);

@@ -107,92 +107,94 @@ static const char fcPrdSost09[] PROGMEM =	"Систем.";
 static const char fcPrdSost10[] PROGMEM =	"Речь";
 
 // надписи для неиспользуемых в текущем аппарате кодов
-static const char fcUnknownFault[] PROGMEM = 		"Неисправность";
-static const char fcUnknownWarning[] PROGMEM = 		"Предупреждение";
+static const char fcUnknownFault[]		PROGMEM = "Неисправность";
+static const char fcUnknownWarning[] 	PROGMEM = "Предупреждение";
 
 // строка вывода кода неисправности/предупреждения
 // %c - g для глобальной, l - для локальной
-static const char fcFaults[] PROGMEM 	= 			"Неиспр. %c-%04X";
-static const char fcWarnings[] PROGMEM  =	 		"Предупр. %c-%04X";
+static const char fcFaults[] 			PROGMEM = "Неиспр. %c-%04X";
+static const char fcWarnings[] 			PROGMEM = "Предупр. %c-%04X";
 
 // общие неисправности
-static const char fcGlbFault0001[] PROGMEM = 		"Неиспр.чт. FLASH";
-static const char fcGlbFault0002[] PROGMEM = 		"Неиспр.зап.FLASH";
-static const char fcGlbFault0004[] PROGMEM = 		"Неиспр.чт. PLIS";
-static const char fcGlbFault0008[] PROGMEM = 		"Неиспр.зап.PLIS";
-static const char fcGlbFault0010[] PROGMEM = 		"Неиспр.зап.2RAM";
-static const char fcGlbFault0020[] PROGMEM = 		"АК-Нет ответа";
-static const char fcGlbFault0020rzsk[] PROGMEM =	"Нет сигнала ПРМ";
-static const char fcGlbFault0040[] PROGMEM = 		"АК-Снижен.запаса";
-static const char fcGlbFault0080[] PROGMEM =		"Помеха в линии";
-static const char fcGlbFault0100[] PROGMEM = 		"Неиспр.DSP 2RAM ";
-static const char fcGlbFault0200[] PROGMEM = 		"Неиспр.чт. 2RAM ";
-static const char fcGlbFault0400[] PROGMEM = 		"Ток покоя";
-static const char fcGlbFault0400rzsk[] PROGMEM = 	"Установите часы";
-static const char fcGlbFault0800[] PROGMEM = 		"Низкое напр.вых";
-static const char fcGlbFault1000[] PROGMEM = 		"Высокое напр.вых";
-static const char fcGlbFault2000[] PROGMEM = 		"Неиспр. МК УМ";
-static const char fcGlbFault4000[] PROGMEM = 		"ВЧ тракт восст.";
+static const char fcGlbFault0001[] 		PROGMEM = "Неиспр.чт. FLASH";
+static const char fcGlbFault0002[] 		PROGMEM = "Неиспр.зап.FLASH";
+static const char fcGlbFault0004[] 		PROGMEM = "Неиспр.чт. PLIS";
+static const char fcGlbFault0008[] 		PROGMEM = "Неиспр.зап.PLIS";
+static const char fcGlbFault0010[] 		PROGMEM = "Неиспр.зап.2RAM";
+static const char fcGlbFault0020[] 		PROGMEM = "АК-Нет ответа";
+static const char fcGlbFault0020rzsk[] 	PROGMEM = "Нет сигнала ПРМ";
+static const char fcGlbFault0040[] 		PROGMEM = "АК-Снижен.запаса";
+static const char fcGlbFault0080[] 		PROGMEM = "Помеха в линии";
+static const char fcGlbFault0100[] 		PROGMEM = "Неиспр.DSP 2RAM ";
+static const char fcGlbFault0200[] 		PROGMEM = "Неиспр.чт. 2RAM ";
+static const char fcGlbFault0400[] 		PROGMEM = "Ток покоя";
+static const char fcGlbFault0400rzsk[] 	PROGMEM = "Установите часы";
+static const char fcGlbFault0800[]		PROGMEM = "Низкое напр.вых";
+static const char fcGlbFault1000[] 		PROGMEM = "Высокое напр.вых";
+static const char fcGlbFault2000[] 		PROGMEM = "Неиспр. МК УМ";
+static const char fcGlbFault4000[] 		PROGMEM = "ВЧ тракт восст.";
 
 // общие предупреждения
-static const char fcGlbWarning01[] PROGMEM = 		"Установите часы";
-static const char fcGlbWarning02[] PROGMEM = 		"Отказ резерв.лин";
-static const char fcGlbWarning10[] PROGMEM = 		"Удал.ПОСТ неиспр";
-static const char fcGlbWarning20[] PROGMEM = 		"Удал.ПРД неиспр";
-static const char fcGlbWarning40[] PROGMEM = 		"Удал.ПРМ неиспр";
+static const char fcGlbWarning01[] 		PROGMEM = "Установите часы";
+static const char fcGlbWarning02[] 		PROGMEM = "Отказ резерв.лин";
+static const char fcGlbWarning10[] 		PROGMEM = "Удал.ПОСТ неиспр";
+static const char fcGlbWarning20[] 		PROGMEM = "Удал.ПРД неиспр";
+static const char fcGlbWarning40[] 		PROGMEM = "Удал.ПРМ неиспр";
 
 // неисправности защиты
-static const char fcDefFault0001[] PROGMEM =		"Нет блока БСЗ";
-static const char fcDefFault0002[] PROGMEM = 		"Неиспр.верс.БСЗ";
-static const char fcDefFault0004[] PROGMEM = 		"Неиспр.перекл.";
-static const char fcDefFault0008[] PROGMEM = 		"Неиспр.зап. БСЗ";
-static const char fcDefFault0010[] PROGMEM = 		"АК-Нет ответа";
-static const char fcDefFault0010rzsk[] PROGMEM =	"Нет сигнала ПРМ";
-static const char fcDefFault0020[] PROGMEM =		"Низкий ур. РЗ";
-static const char fcDefFault0040[] PROGMEM =		"Неиспр.удал. ДФЗ";
-static const char fcDefFault0080[] PROGMEM =		"Неиспр.удал. ВЫХ";
-static const char fcDefFault0100[] PROGMEM =		"Неиспр.вход.ПУСК";
-static const char fcDefFault0200[] PROGMEM =		"Неиспр.вход.СТОП";
-static const char fcDefFault0400[] PROGMEM =		"Уд.ПОСТ без отв.";
-static const char fcDefFault0800[] PROGMEM = 		"Неиспр.цепь. ВЫХ";
-static const char fcDefFault1000[] PROGMEM = 		"Уд.ПОСТ обн.пом.";
-static const char fcDefFault2000[] PROGMEM =		"Неиспр.зап. ВЫХ";
-static const char fcDefFault4000[] PROGMEM =		"Длительн. помеха";
-static const char fcDefFault8000[] PROGMEM =		"Неиспр. ДФЗ";
+static const char fcDefFault0001[] 		PROGMEM = "Нет блока БСЗ";
+static const char fcDefFault0002[] 		PROGMEM = "Неиспр.верс.БСЗ";
+static const char fcDefFault0004[] 		PROGMEM = "Неиспр.перекл.";
+static const char fcDefFault0008[] 		PROGMEM = "Неиспр.зап. БСЗ";
+static const char fcDefFault0010[] 		PROGMEM = "АК-Нет ответа";
+static const char fcDefFault0010rzsk[] 	PROGMEM = "Нет сигнала ПРМ";
+static const char fcDefFault0020[] 		PROGMEM = "Низкий ур. РЗ";
+static const char fcDefFault0040[] 		PROGMEM = "Неиспр.удал. ДФЗ";
+static const char fcDefFault0080[] 		PROGMEM = "Неиспр.удал. ВЫХ";
+static const char fcDefFault0100[] 		PROGMEM = "Неиспр.вход.ПУСК";
+static const char fcDefFault0200[] 		PROGMEM = "Неиспр.вход.СТОП";
+static const char fcDefFault0400[] 		PROGMEM = "Уд.ПОСТ без отв.";
+static const char fcDefFault0800[] 		PROGMEM = "Неиспр.цепь. ВЫХ";
+static const char fcDefFault1000[] 		PROGMEM = "Уд.ПОСТ обн.пом.";
+static const char fcDefFault2000[] 		PROGMEM = "Неиспр.зап. ВЫХ";
+static const char fcDefFault4000[] 		PROGMEM = "Длительн. помеха";
+static const char fcDefFault8000[] 		PROGMEM = "Неиспр. ДФЗ";
 
 // предупреждения защиты
-static const char fcDefWarning01[] PROGMEM = 		"АК-Снижен.запаса";
-static const char fcDefWarning01rzsk[] PROGMEM = 	"Низкий уров. РЗ";
-static const char fcDefWarning01rzsko[] PROGMEM =	"Нет КЧ";
-static const char fcDefWarning02[] PROGMEM = 		"Нет сигнала МАН";
-static const char fcDefWarning04[] PROGMEM = 		"Порог по помехе";
-static const char fcDefWarning08[] PROGMEM = 		"Автоконтроль";
+static const char fcDefWarning01[] 		PROGMEM = "АК-Снижен.запаса";
+static const char fcDefWarning01rzsk[] 	PROGMEM = "Низкий уров. РЗ";
+static const char fcDefWarning01rzsko[] PROGMEM = "Нет КЧ";
+static const char fcDefWarning02[] 		PROGMEM = "Нет сигнала МАН";
+static const char fcDefWarning04[] 		PROGMEM = "Порог по помехе";
+static const char fcDefWarning08[] 		PROGMEM = "Автоконтроль";
 
 // неисправности приемника
-static const char fcPrmFault0001rzsk[] PROGMEM =	"Нет блока БСК";
-static const char fcPrmFault0002rzsk[] PROGMEM =	"Неиспр.верс. БСК";
-static const char fcPrmFault0004rzsk[] PROGMEM =	"Нет КЧ";
-static const char fcPrmFault0008rzsk[] PROGMEM =	"Прев.дл-сти.ком.";
-static const char fcPrmFault0100rzsk[] PROGMEM =	"Неиспр.зап. БСК";
-static const char fcPrmFault0200rzsk[] PROGMEM =	"Неиспр.выкл. КСК";
-static const char fcPrmFault0400rzsk[] PROGMEM =	"Неиспр.вкл. КСК";
-static const char fcPrmFault0800rzsk[] PROGMEM =	"Неиспр.контр.КСК";
-static const char fcPrmFault1000rzsk[] PROGMEM =	"Предупр.нет КЧ";
-static const char fcPrmFault8000rzsk[] PROGMEM =	"Прием блок. Ком";
+static const char fcPrmFault0001rzsk[] 	PROGMEM = "Нет блока БСК";
+static const char fcPrmFault0002rzsk[] 	PROGMEM = "Неиспр.верс. БСК";
+static const char fcPrmFault0004rzsk[] 	PROGMEM = "Нет КЧ";
+static const char fcPrmFault0008rzsk[] 	PROGMEM = "Прев.дл-сти.ком.";
+static const char fcPrmFault0100rzsk[] 	PROGMEM = "Неиспр.зап. БСК";
+static const char fcPrmFault0200rzsk[] 	PROGMEM = "Неиспр.выкл. КСК";
+static const char fcPrmFault0400rzsk[] 	PROGMEM = "Неиспр.вкл. КСК";
+static const char fcPrmFault0800rzsk[] 	PROGMEM = "Неиспр.контр.КСК";
+static const char fcPrmFault1000rzsk[] 	PROGMEM = "Предупр.нет КЧ";
+static const char fcPrmFault8000rzsk[] 	PROGMEM = "Прием блок. Ком";
 
 // предупреждения приемника
-static const char fcPrmWarning01rzsk[] PROGMEM = 	"Сниж. уровня ПРМ";
-static const char fcPrmWarning01rzsko[] PROGMEM = 	"Нет КЧ";
+static const char fcPrmWarning01rzsk[] 	PROGMEM = "Сниж. уровня ПРМ";
+static const char fcPrmWarning01rzsko[] PROGMEM = "Нет КЧ";
 
 // неисправности передатчика
-static const char fcPrdFault0001rzsk[] PROGMEM = 	"Нет блока БСК";
-static const char fcPrdFault0002rzsk[] PROGMEM = 	"Неиспр.верс. БСК";
-static const char fcPrdFault0100rzsk[] PROGMEM = 	"Неиспр.чт.команд";
-static const char fcPrdFault0200rzsk[] PROGMEM = 	"Неиспр.выкл.Тест";
-static const char fcPrdFault0400rzsk[] PROGMEM =	"Неиспр.вкл. Тест";
-static const char fcPrdFault0800rzsk[] PROGMEM = 	"Неиспр.вход. КСК";
+static const char fcPrdFault0001rzsk[] 	PROGMEM = "Нет блока БСК";
+static const char fcPrdFault0002rzsk[] 	PROGMEM = "Неиспр.верс. БСК";
+static const char fcPrdFault0100rzsk[] 	PROGMEM = "Неиспр.чт.команд";
+static const char fcPrdFault0200rzsk[] 	PROGMEM = "Неиспр.выкл.Тест";
+static const char fcPrdFault0400rzsk[] 	PROGMEM = "Неиспр.вкл. Тест";
+static const char fcPrdFault0800rzsk[] 	PROGMEM = "Неиспр.вход. КСК";
 
-//
+
+
+// пераметры
 static const char fcValue[] 	PROGMEM = "Значение: ";
 static const char fcRange[] 	PROGMEM = "Диапазон: ";
 static const char fcNumCom[] 	PROGMEM = "Номер команды: %d";
@@ -203,4 +205,47 @@ static const char fcNumPunkt[] 	PROGMEM = "Номер: %d  Всего: %d";
 static const char fcOn[]		PROGMEM = "вкл.";
 static const char fcOff[]		PROGMEM = "выкл.";
 
+//	ЖУРНАЛ
+static const char fcJrnEmpty[] 			PROGMEM = "ЖУРНАЛ ПУСТ";
+static const char fcJrnNumEntries[] 	PROGMEM = "Запись %d / %d";
+static const char fcTimeJrn[]			PROGMEM = "Время: %02u:%02u:%02u.%03u";
+static const char fcDateJrn[]			PROGMEM = "Дата: %02u.%02u.%02u";
+// записи журнала событий для К400 и РЗСК
+static char
+fcJrnEventK400[MAX_JRN_EVENT_VALUE - MIN_JRN_EVENT_VALUE + 2] [41] PROGMEM =
+{
+		"Включение питания/перезапуск",			// 1
+		"Выключение питания",               	// 2
+		"Изменение режима работы",          	// 3
+		"Событие не определено - 4",           	// 4
+		"Неисправность теста ПРД",             	// 5
+		"Неисправность теста ПРМ",             	// 6
+		"Неисправность блока БСЗ",             	// 7
+		"Неисправность блока БСК",             	// 8
+		"Неисправность переключателей БСЗ",   	// 9
+		"Нет сигнала манипуляции",             	// 10
+		"Неисправность выходной цепи",         	// 11
+		"Нет сигнала РЗ",                      	// 12
+		"Отсутствие сигнала Пуск",             	// 13
+		"Отсутствие сигнала Стоп",             	// 14
+		"Неисправность чтения команд",         	// 15
+		"Событие не определено - 16",          	// 16
+		"Неисправность работы DSP",            	// 17
+		"Восстановление работы DSP",          	// 18
+		"Низкое напряжение выхода",            	// 19
+		"Высокое напряжение выхода",           	// 20
+		"Нет КЧ в течение 5 сек на ПРМ1",      	// 21
+		"Нет КЧ в течение 5 сек на ПРМ2",      	// 22
+		"Восстановление КЧ на ПРМ1",           	// 23
+		"Восстановление КЧ на ПРМ2",           	// 24
+		"Неисправность чтения/записи 2RAM",    	// 25
+		"Неисправность чтения/записи ПЛИС",    	// 26
+		"Неисправность чтения/записи FLASH",   	// 27
+		"Неисправность часов",                 	// 28
+		"Событие не определено - 29",          	// 29
+		"Событие не определено - 30",          	// 30
+		"Событие не определено - 31",          	// 31
+		"Событие не определено - 32",          	// 32
+		"Событие не определено - %d"          	// 33 - ошибочное значение
+};
 

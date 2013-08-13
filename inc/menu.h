@@ -19,6 +19,9 @@
 /// максимальное кол-во пунктов в меню
 #define MAX_NUM_PUNKTS 15
 
+/// время вывода доп.сообщения на экран
+#define TIME_MESSAGE 10
+
 /// Измеряемые параметры
 enum eMENU_MEAS_PARAM
 {
@@ -32,8 +35,6 @@ enum eMENU_MEAS_PARAM
 	MENU_MEAS_PARAM_IOUT,
 	MENU_MEAS_PARAM_ROUT
 };
-
-
 
 
 class clMenu
@@ -77,6 +78,9 @@ private:
 	// текущее положение курсора (номер строки)
 	uint8_t cursorLine_;
 
+	// текущая запись в журнале
+	uint16_t curEntry_;
+
 	// кол-во отображаемых параметров
 	uint8_t lineParam_;
 
@@ -85,6 +89,9 @@ private:
 
 	// если true - необходимо создать уровень меню
 	bool lvlCreate_;
+
+	// время вывода доп.сообщения на экран (например сообщения об ошибке)
+	uint8_t delay_;
 
 	// измеряемые параметры
 	eMENU_MEAS_PARAM measParam[6];

@@ -35,6 +35,8 @@ enum ePRTS_STATUS
 // номера байт данных в протоколе
 enum ePRTS_DATA_BYTE_NAME
 {
+	COM = 2,
+	NUM = 3,
 	B1 = 4,
 	B2,
 	B3,
@@ -185,6 +187,8 @@ protected:
 	uint8_t addCom	(uint8_t com);
 	// Подготовка к отправке команды с 1 байтом данных (заполнение буфера)
 	uint8_t addCom	(uint8_t com, uint8_t byte);
+	// Подготовка к отправке команды с 2 байтами данных (заполнение буфера)
+	uint8_t addCom(uint8_t com, uint8_t byte1, uint8_t byte2);
 	// Подготовка к отправке команды с данными (заполнение буфера)
 //	uint8_t addCom	(uint8_t com, uint8_t size, uint8_t buf[]);
 

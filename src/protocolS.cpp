@@ -181,9 +181,34 @@ clProtocolS::addCom()
 //	return cnt;
 //}
 
+/**	Подготовка к отправке команды с 2 байтами данных (заполнение буфера)
+ * 	@param com Команда
+ * 	@param byte1 Первый байт данных
+ * 	@param byte2 Второй байт данных
+ * 	@return Кол-во отправляемых байт данных
+ */
+uint8_t
+clProtocolS::addCom(uint8_t com, uint8_t byte1, uint8_t byte2)
+{
+	uint8_t cnt = 0;
+
+	buf[cnt++] = 0x55;
+	buf[cnt++] = 0xAA;
+	buf[cnt++] = com;
+	buf[cnt++] = 0x02;
+	buf[cnt++] = byte1;
+	buf[cnt++] = byte2;
+	buf[cnt++] = com + 0x02 + byte1 + byte2;
+
+	maxLen_ = cnt;
+	stat_ = PRTS_STATUS_WRITE;
+
+	return cnt;
+}
+
 /**	Подготовка к отправке команды с 1 байтом данных (заполнение буфера)
- * 	@param *buf Указатель на начало данных
- * 	@param size Кол-во байт данных
+ * 	@param com Команда
+ * 	@param byte Данные
  * 	@return Кол-во отправляемых байт данных
  */
 uint8_t

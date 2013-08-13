@@ -33,6 +33,10 @@
 /// максимальное кол-во команд в буфере (не считая 3-х основных)
 #define MAX_NUM_COM_BUF 15
 
+/// максимальное и минимальный код типа событий в журнале событий
+#define MIN_JRN_EVENT_VALUE 1
+#define MAX_JRN_EVENT_VALUE 32
+
 /// Минимальные, максимальные значения параметров приемника и их дискретность
 /// ЗАЩИТА
 /// тип защиты
@@ -152,6 +156,19 @@
 #define GLB_IN_DEC_MAX_F	(GLB_IN_DEC_MAX / GLB_IN_DEC_FRACT)
 #define GLB_IN_DEC_DISC_F	(GLB_IN_DEC_DISC / GLB_IN_DEC_FRACT)
 
+/// кол-во записей в журнале событый
+#define GLB_JRN_EVENT_K400_MAX 512
+
+/// кол-во записей в журнале защиты
+#define GLB_JRN_DEF_K400_MAX 0
+
+/// кол-во записей в журнале приемника
+#define GLB_JRN_PRM_K400_MAX 512
+
+/// кол-во записей в журнале передатчика
+#define GLB_JRN_PRD_K400_MAX 512
+
+
 /// Тип аппарата
 enum eGB_TYPE_DEVICE
 {
@@ -164,21 +181,32 @@ enum eGB_TYPE_DEVICE
 	AVANT_K400_OPTIC
 };
 
+/// Устройство
+enum eGB_DEVICE
+{
+	GB_DEVICE_MIN = 0,
+	GB_DEVICE_DEF = 0,
+	GB_DEVICE_PRM,
+	GB_DEVICE_PRD,
+	GB_DEVICE_GLB,
+	GB_DEVICE_MAX
+};
 
 /// Тип канала связи
 enum eGB_TYPE_LINE
 {
 	GB_TYPE_LINE_UM = 1,
 	GB_TYPE_LINE_OPTIC = 2,
-	GB_TYPE_LINE_E1 = 3
+	GB_TYPE_LINE_E1 = 3,
+	GB_TYPE_LINE_MAX
 };
-
 
 /// Кол-во аппаратов в линии
 enum eGB_NUM_DEVICES
 {
 	GB_NUM_DEVICES_2 = 1,
-	GB_NUM_DEVICES_3 = 2
+	GB_NUM_DEVICES_3 = 2,
+	GB_NUM_DEVICES_MAX
 };
 
 /// Совместимость
@@ -187,9 +215,9 @@ enum eGB_COMPATIBILITY
 	GB_COMPATIBILITY_AVANT = 0,
 	GB_COMPATIBILITY_PVZ90 = 1,
 	GB_COMPATIBILITY_AVZK = 2,
-	GB_COMPATIBILITY_PVZUE = 3
+	GB_COMPATIBILITY_PVZUE = 3,
+	GB_COMPATIBILITY_MAX
 };
-
 
 /// Команды
 enum eGB_COM
@@ -231,11 +259,18 @@ enum eGB_COM
 	GB_COM_PRM_RES_IND		= 0x9A,
 	GB_COM_SET_TIME 		= 0xB2,	// !!! не сделана
 	GB_COM_DEF_GET_JRN_CNT	= 0xC1,
+	GB_COM_DEF_GET_JRN_ENTRY= 0xC2,
+	GB_COM_DEF_JRN_CLR		= 0xCA,	// ! стирание журнала ЗАЩ, только с ПК
 	GB_COM_PRM_GET_JRN_CNT	= 0xD1,
+	GB_COM_PRM_GET_JRN_ENTRY= 0xD2,
+	GB_COM_PRM_JRN_CLR		= 0xDA,	// ! стирание журнала ПРМ, только с ПК
 	GB_COM_PRD_GET_JRN_CNT	= 0xE1,
-	GB_COM_GET_JRN_CNT		= 0xF1
+	GB_COM_PRD_GET_JRN_ENTRY= 0xE2,
+	GB_COM_PRD_JRN_CLR		= 0xEA,	// ! стирание журнала ПРД, только с ПК
+	GB_COM_GET_JRN_CNT		= 0xF1,
+	GB_COM_GET_JRN_ENTRY	= 0xF2,
+	GB_COM_JRN_CLR			= 0xFA	// ! стирание журнала событий, только с ПК
 };
-
 
 /// Маски команд
 enum eGB_COM_MASK
@@ -266,8 +301,10 @@ enum eGB_CONTROL
 	GB_CONTROL_PUSK_UD_ALL	= 6,
 	GB_CONTROL_CALL			= 7,
 	GB_CONTROL_PUSK_ON		= 8,
-	GB_CONTROL_PUSK_OFF		= 9
+	GB_CONTROL_PUSK_OFF		= 9,
+	GB_CONTROL_MAX
 };
+
 
 /// Класс для даты и времени
 class TDataTime
@@ -385,7 +422,21 @@ public:
 		return stat;
 	}
 
+	// считывание и установка миллисекунд
+	uint16_t getMsSecond() const { return msSecond_; }
+	bool setMsSecond(uint16_t val)
+	{
+		bool stat = false;
+		if (val < 1000)
+		{
+			msSecond_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+
 private:
+	uint16_t msSecond_;
 	uint8_t second_;
 	uint8_t minute_;
 	uint8_t hour_;
@@ -578,13 +629,16 @@ public:
 		versDsp_ = 0;
 
 		timeSinchr_ = false;
-		deviceNum_ = 1;
+		deviceNum_ = GLB_DEV_NUM_MIN_F;
 		outCheck_ = false;
-		cfThreshold_ = 0;
-		timeRerun_ = 0;
+		cfThreshold_ = GLB_CF_THRESH_MIN_F;
+		timeRerun_ = GLB_T_RERUN_MIN_F;
 		comPrdKeep_ = false;
 		comPrmKeep_ = false;
-		inDecrease_ = 0;
+		inDecrease_ = GLB_IN_DEC_MIN_F;
+
+		numJrnEntry_ = 0;
+		maxNumJrnEntry_ = 0;
 	}
 
 	TDeviceStatus status;
@@ -756,7 +810,7 @@ public:
 	{
 		bool stat = false;
 		val &= 0x3FFF;
-		if (val <= 1024 )
+		if (val <= maxNumJrnEntry_ )
 		{
 			numJrnEntry_ = val;
 			stat = true;
@@ -764,6 +818,19 @@ public:
 		return stat;
 	}
 	uint16_t getNumJrnEntry() { return numJrnEntry_; }
+
+	// максимальное кол-во записей в журнале
+	bool setMaxNumJrnEntry(uint16_t max)
+	{
+		bool stat = false;
+		if (max <= 1024)
+		{
+			stat = true;
+			maxNumJrnEntry_ = max;
+		}
+		return stat;
+	}
+	uint16_t getMaxNumJrnEntry() { return maxNumJrnEntry_; }
 
 private:
 	// кол-во аппаратов в линии 2 или 3
@@ -807,6 +874,9 @@ private:
 
 	// кол-во записей в журнале
 	uint16_t numJrnEntry_;
+
+	// максимальное кол-во записей в журнале
+	uint16_t maxNumJrnEntry_;
 };
 
 
@@ -814,6 +884,20 @@ private:
 class TDeviceDef
 {
 public:
+	TDeviceDef()
+	{
+		defType_ = DEF_TYPE_MIN;
+		lineType_ = DEF_LINE_TYPE_MIN;
+		timeNoMan_ = DEF_T_NO_MAN_MIN_F;
+		overlap_ = DEF_OVERLAP_MIN_F;
+		delay_ = DEF_DELAY_MIN_F;
+		rzThreshold_ = DEF_RZ_THRESH_MIN_F;
+		rzDec_ = DEF_RZ_DEC_MIN_F;
+		prmType_ = DEF_PRM_TYPE_MIN;
+		numJrnEntry_ = 0;
+		maxNumJrnEntry_ = 0;
+	}
+
 	TDeviceStatus status;
 
 	// тип защиты
@@ -847,7 +931,7 @@ public:
 	{
 		bool stat = false;
 		val = (val / DEF_T_NO_MAN_DISC_F) * DEF_T_NO_MAN_DISC_F;
-		if ( (val >= DEF_T_NO_MAN_MIN) && (val <= DEF_T_NO_MAN_MAX) )
+		if ( (val >= DEF_T_NO_MAN_MIN_F) && (val <= DEF_T_NO_MAN_MAX_F) )
 		{
 			timeNoMan_ = val;
 			stat = true;
@@ -861,7 +945,7 @@ public:
 	{
 		bool stat = false;
 		val = (val / DEF_OVERLAP_DISC_F) * DEF_OVERLAP_DISC_F;
-		if ( (val >= DEF_OVERLAP_MIN) && (val <= DEF_OVERLAP_MAX) )
+		if ( (val >= DEF_OVERLAP_MIN_F) && (val <= DEF_OVERLAP_MAX_F) )
 		{
 			overlap_ = val;
 			stat = true;
@@ -875,7 +959,7 @@ public:
 	{
 		bool stat = false;
 		val = (val / DEF_DELAY_DISC_F) * DEF_DELAY_DISC_F;
-		if ( (val >= DEF_DELAY_MIN) && (val <= DEF_DELAY_MAX) )
+		if ( (val >= DEF_DELAY_MIN_F) && (val <= DEF_DELAY_MAX_F) )
 		{
 			delay_ = val;
 			stat = true;
@@ -889,7 +973,7 @@ public:
 	{
 		bool stat = false;
 		val = (val / DEF_RZ_THRESH_DISC_F) * DEF_RZ_THRESH_DISC_F;
-		if ( (val >= DEF_RZ_THRESH_MIN) && (val <= DEF_RZ_THRESH_MAX) )
+		if ( (val >= DEF_RZ_THRESH_MIN_F) && (val <= DEF_RZ_THRESH_MAX_F) )
 		{
 			rzThreshold_ = val;
 			stat = true;
@@ -903,7 +987,7 @@ public:
 	{
 		bool stat = false;
 		val = (val / DEF_RZ_DEC_DISC_F) * DEF_RZ_DEC_DISC_F;
-		if ( (val >= DEF_RZ_DEC_MIN) && (val <= DEF_RZ_DEC_MAX) )
+		if ( (val >= DEF_RZ_DEC_MIN_F) && (val <= DEF_RZ_DEC_MAX_F) )
 		{
 			rzDec_ = val;
 			stat = true;
@@ -929,7 +1013,7 @@ public:
 	bool setNumJrnEntry(uint16_t val)
 	{
 		bool stat = false;
-		if (val <= 1024 )
+		if (val <= maxNumJrnEntry_)
 		{
 			numJrnEntry_ = val;
 			stat = true;
@@ -937,6 +1021,19 @@ public:
 		return stat;
 	}
 	uint16_t getNumJrnEntry() { return numJrnEntry_; }
+
+	// максимальное кол-во записей в журнале
+	bool setMaxNumJrnEntry(uint16_t max)
+	{
+		bool stat = false;
+		if (max <= 1024)
+		{
+			stat = true;
+			maxNumJrnEntry_ = max;
+		}
+		return stat;
+	}
+	uint16_t getMaxNumJrnEntry() { return maxNumJrnEntry_; }
 
 private:
 	// тип защиты
@@ -965,6 +1062,9 @@ private:
 
 	// кол-во записей в журнале
 	uint16_t numJrnEntry_;
+
+	// максимальное кол-во записей в журнале
+	uint16_t maxNumJrnEntry_;
 };
 
 
@@ -972,6 +1072,21 @@ private:
 class TDevicePrm
 {
 public:
+	TDevicePrm()
+	{
+		numCom_ = 0;
+		timeOn_ = PRM_TIME_ON_MIN_F;
+
+		for(uint_fast8_t i = 0; i < MAX_NUM_COM_PRM; i++)
+		{
+			blockCom_[i] = false;
+			timeOff_[i] = PRM_TIME_OFF_MIN_F;
+		}
+
+		numJrnEntry_ = 0;
+		maxNumJrnEntry_ = 0;
+	}
+
 	TDeviceStatus status;
 
 	// установка кол-ва команд в ПРМ, если оно равно 0 или больше 32
@@ -1060,6 +1175,19 @@ public:
 	}
 	uint16_t getNumJrnEntry() { return numJrnEntry_; }
 
+	// максимальное кол-во записей в журнале
+	bool setMaxNumJrnEntry(uint16_t max)
+	{
+		bool stat = false;
+		if (max <= 1024)
+		{
+			stat = true;
+			maxNumJrnEntry_ = max;
+		}
+		return stat;
+	}
+	uint16_t getMaxNumJrnEntry() { return maxNumJrnEntry_; }
+
 private:
 	// кол-во команд приемника
 	uint8_t numCom_;
@@ -1075,6 +1203,9 @@ private:
 
 	// кол-во записей в журнале
 	uint16_t numJrnEntry_;
+
+	// максимальное кол-во записей в журнале
+	uint16_t maxNumJrnEntry_;
 };
 
 
@@ -1082,6 +1213,22 @@ private:
 class TDevicePrd
 {
 public:
+	TDevicePrd()
+	{
+		numCom_ = 0;
+		timeOn_ = PRD_TIME_ON_MIN_F;
+		for(uint_fast8_t i = 0; i < MAX_NUM_COM_PRD; i++)
+		{
+			blockCom_[i] = false;
+			longCom_[i] = false;
+		}
+		duration_ = PRD_DURATION_MIN_F;
+		testCom_ = false;
+
+		numJrnEntry_ = 0;
+		maxNumJrnEntry_ = 0;
+	}
+
 	TDeviceStatus status;
 
 	// установка кол-ва команд в ПРМ, если оно равно 0 или больше 32
@@ -1090,7 +1237,7 @@ public:
 	bool setNumCom(uint8_t numCom)
 	{
 		bool status = false;
-		if ( (numCom <= 32) && (numCom_ != numCom) )
+		if ( (numCom <= MAX_NUM_COM_PRD) && (numCom_ != numCom) )
 		{
 			numCom_ = numCom;
 			this->status.setEnable(numCom != 0);
@@ -1201,6 +1348,19 @@ public:
 	}
 	uint16_t getNumJrnEntry() { return numJrnEntry_; }
 
+	// максимальное кол-во записей в журнале
+	bool setMaxNumJrnEntry(uint16_t max)
+	{
+		bool stat = false;
+		if (max <= 1024)
+		{
+			stat = true;
+			maxNumJrnEntry_ = max;
+		}
+		return stat;
+	}
+	uint16_t getMaxNumJrnEntry() { return maxNumJrnEntry_; }
+
 private:
 	// текущее кол-во команд
 	uint8_t numCom_;
@@ -1222,6 +1382,9 @@ private:
 
 	// кол-во записей в журнале
 	uint16_t numJrnEntry_;
+
+	// макстмалбное кол-во записей в журнале
+	uint16_t maxNumJrnEntry_;
 
 };
 
@@ -1390,8 +1553,12 @@ public:
 	uint8_t getNumCom() { return numCom_; }
 
 	// запись\считывание одного байта на передачу
-	void 	setByte(uint8_t byte) { byte_[0] = byte; }
-	uint8_t getByte() { return byte_[0]; }
+	void 	setInt8(uint8_t byte) { byte_[0] = byte; }
+	uint8_t getInt8() { return byte_[0]; }
+
+	// запись\считывание переменной типа INT
+	void setInt16(uint16_t val) { *((uint16_t *) byte_) = val; }
+	uint16_t getInt16() { return *((uint16_t *) byte_); }
 
 private:
 	// буфер команд
@@ -1405,6 +1572,49 @@ private:
 
 	// данные на передачу
 	uint8_t byte_[6];
+};
+
+class TJournalEntry
+{
+public:
+	TDataTime dataTime;
+
+	// запись\считывание устройства для которого сделана запись
+	bool setDevice(eGB_DEVICE device)
+	{
+		bool state = false;
+		if ( (device >= GB_DEVICE_MIN) && (device < GB_DEVICE_MAX) )
+		{
+			device_ = device;
+			state = true;
+		}
+		else
+			device_ = GB_DEVICE_MAX;
+		return true;
+	}
+	eGB_DEVICE getDevice() const { return device_; }
+
+	// тип события
+	bool setEventType(uint8_t val)
+	{
+		bool state = false;
+		if ( (val >= MIN_JRN_EVENT_VALUE) && (val <= MAX_JRN_EVENT_VALUE) )
+		{
+			eventType_ = val;
+			state = true;
+		}
+		else
+			eventType_ = MAX_JRN_EVENT_VALUE - MIN_JRN_EVENT_VALUE + 1;
+		return state;
+	}
+	uint8_t getEventType() const { return eventType_; }
+
+private:
+	// устройство
+	eGB_DEVICE device_;
+
+	// тип события
+	uint8_t eventType_;
 };
 
 /// Структура параметров БСП
@@ -1432,6 +1642,9 @@ struct stGBparam
 
 	// буфер команд
 	TTxCom txComBuf;
+
+	// запись в журнале
+	TJournalEntry journalEntry;
 };
 
 #endif /* GLBDEF_H_ */

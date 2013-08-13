@@ -203,7 +203,7 @@ main (void)
 	protBSPs.setEnable(PRTS_STATUS_NO);
 
 	// зададим тип аппарата
-	menu.setTypeDevice(AVANT_NO);
+	// menu.setTypeDevice(AVANT_NO);
 
 	while(1)
 	{

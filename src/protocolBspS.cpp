@@ -274,6 +274,20 @@ bool clProtocolBspS::getData()
 			{
 				stat = sParam_->glb.setNumJrnEntry(TO_INT16(buf[B2], buf[B1]));
 			}
+			else if (com == GB_COM_GET_JRN_ENTRY)
+			{
+				sParam_->journalEntry.dataTime.setYearFromBCD(buf[B16]);
+				sParam_->journalEntry.dataTime.setMonthFromBCD(buf[B15]);
+				sParam_->journalEntry.dataTime.setDayFromBCD(buf[B14]);
+				// B13 - день недели
+				sParam_->journalEntry.dataTime.setHourFromBCD(buf[B12]);
+				sParam_->journalEntry.dataTime.setMinuteFromBCD(buf[B11]);
+				sParam_->journalEntry.dataTime.setSecondFromBCD(buf[B10]);
+				uint16_t t = TO_INT16(buf[B9], buf[B8]);
+				sParam_->journalEntry.dataTime.setMsSecond(t);
+
+				stat = true;
+			}
 		}
 	}
 
@@ -310,7 +324,7 @@ clProtocolBspS::sendData(eGB_COM com)
 
 		if (com == GB_COM_SET_CONTROL)
 		{
-			num = addCom(com, sParam_->txComBuf.getByte());
+			num = addCom(com, sParam_->txComBuf.getInt8());
 		}
 		else if (com == GB_COM_PRM_ENTER)
 		{
@@ -466,25 +480,38 @@ clProtocolBspS::sendData(eGB_COM com)
 	else if (mask == GB_COM_MASK_GROUP_READ_JOURNAL)
 	{
 		// команды работы с журналом
-		if (com == GB_COM_MASK_DEVICE_DEF)
+		mask = com & GB_COM_MASK_DEVICE;
+		if (mask == GB_COM_MASK_DEVICE_DEF)
 		{
 			if (com == GB_COM_DEF_GET_JRN_CNT)
 			{
 				num = addCom(com);
 			}
+			else if (com == GB_COM_DEF_GET_JRN_ENTRY)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt16());
+			}
 		}
-		else if (com == GB_COM_MASK_DEVICE_PRM)
+		else if (mask == GB_COM_MASK_DEVICE_PRM)
 		{
 			if (com == GB_COM_PRM_GET_JRN_CNT)
 			{
 				num = addCom(com);
 			}
+			else if (com == GB_COM_PRM_GET_JRN_ENTRY)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt16());
+			}
 		}
-		else if (com == GB_COM_MASK_DEVICE_PRD)
+		else if (mask == GB_COM_MASK_DEVICE_PRD)
 		{
 			if (com == GB_COM_PRD_GET_JRN_CNT)
 			{
 				num = addCom(com);
+			}
+			else if (com == GB_COM_PRD_GET_JRN_ENTRY)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt16());
 			}
 		}
 		else
@@ -492,6 +519,11 @@ clProtocolBspS::sendData(eGB_COM com)
 			if (com == GB_COM_GET_JRN_CNT)
 			{
 				num = addCom(com);
+			}
+			else if (com == GB_COM_GET_JRN_ENTRY)
+			{
+				uint16_t t = sParam_->txComBuf.getInt16();
+				num = addCom(com, t >> 8, t);
 			}
 		}
 	}
