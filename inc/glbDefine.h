@@ -30,10 +30,6 @@
 /// максимальное кол-во команд в буфере (не счита€ 3-х основных)
 #define MAX_NUM_COM_BUF 15
 
-/// максимальное и минимальный код типа событий в журнале событий
-#define MIN_JRN_EVENT_VALUE 1
-#define MAX_JRN_EVENT_VALUE 33
-
 /// ћинимальные, максимальные значени€ параметров приемника и их дискретность
 /// «јў»“ј
 /// тип защиты
@@ -101,8 +97,9 @@
 #define PRM_TIME_OFF_DISC_F	(PRM_TIME_OFF_DISC/ PRM_TIME_OFF_FRACT)
 /// ѕ–ƒ
 /// врем€ включени€
-#define PRD_TIME_ON_MIN		0
-#define PRD_TIME_ON_MAX		10
+/// было от 0 до 10, изменено по требованию ј√
+#define PRD_TIME_ON_MIN		5
+#define PRD_TIME_ON_MAX		20
 #define PRD_TIME_ON_DISC	1
 #define PRD_TIME_ON_FRACT	1
 #define PRD_TIME_ON_MIN_F	(PRD_TIME_ON_MIN / PRM_TIME_ON_FRACT)
@@ -150,6 +147,10 @@
 #define GLB_IN_DEC_MAX_F	(GLB_IN_DEC_MAX / GLB_IN_DEC_FRACT)
 #define GLB_IN_DEC_DISC_F	(GLB_IN_DEC_DISC / GLB_IN_DEC_FRACT)
 
+/// максимальное и минимальный код типа событий в журнале событий
+#define MIN_JRN_EVENT_VALUE 1
+#define MAX_JRN_EVENT_VALUE 33
+
 /// кол-во записей в журнале событый
 #define GLB_JRN_EVENT_K400_MAX 512
 
@@ -161,6 +162,9 @@
 
 /// кол-во записей в журнале передатчика
 #define GLB_JRN_PRD_K400_MAX 512
+
+/// максимально возможное кол-во записей в одном архиве
+#define GLB_JRN_MAX 1024
 
 
 /// “ип аппарата
@@ -644,10 +648,6 @@ public:
 		comPrdKeep_ = false;
 		comPrmKeep_ = false;
 		inDecrease_ = GLB_IN_DEC_MIN_F;
-
-		numJrnEntry_ = 0;
-		maxNumJrnEntry_ = 0;
-		overflow_ = false;
 	}
 
 	TDeviceStatus status;
@@ -817,40 +817,6 @@ public:
 	}
 	uint8_t getInDecrease() { return (inDecrease_ * GLB_IN_DEC_FRACT); }
 
-	// количество записей в журнале
-	bool setNumJrnEntry(uint16_t val)
-	{
-		bool stat = false;
-		val &= 0x3FFF;
-
-		overflow_ = (val & 0xC000) != 0;
-		val &= 0x3FFF;
-
-		if (val <= maxNumJrnEntry_ )
-		{
-			numJrnEntry_ = val;
-			stat = true;
-		}
-		return stat;
-	}
-	uint16_t getNumJrnEntry() { return numJrnEntry_; }
-
-	// максимальное кол-во записей в журнале
-	bool setMaxNumJrnEntry(uint16_t max)
-	{
-		bool stat = false;
-		if (max <= 1024)
-		{
-			stat = true;
-			maxNumJrnEntry_ = max;
-		}
-		return stat;
-	}
-	uint16_t getMaxNumJrnEntry() { return maxNumJrnEntry_; }
-
-	// переполнение журнала
-	bool isOverflow() const { return overflow_; }
-
 private:
 	// кол-во аппаратов в линии 2 или 3
 	eGB_NUM_DEVICES numDevices_;
@@ -890,15 +856,6 @@ private:
 
 	// уменьшение усилени€ входного сигнала
 	uint8_t inDecrease_;
-
-	// кол-во записей в журнале
-	uint16_t numJrnEntry_;
-
-	// максимальное кол-во записей в журнале
-	uint16_t maxNumJrnEntry_;
-
-	// переполнение журнала
-	bool overflow_;
 };
 
 
@@ -1631,27 +1588,55 @@ class TJournalEntry
 public:
 	TJournalEntry()
 	{
-		device_ = GB_DEVICE_MAX;
+		clear();
+	}
+
+	void clear()
+	{
+		currentDevice_ = GB_DEVICE_MAX;
+		deviceJrn_ = GB_DEVICE_MAX;
 		eventType_ = MAX_JRN_EVENT_VALUE - MIN_JRN_EVENT_VALUE + 1;
 		regime_ = GB_REGIME_MAX;
+
+		numJrnEntries_ = 0;
+		maxNumJrnEntry_ = 0;
+		overflow_ = false;
+		addressFirstEntry_ = 0;
+
+		currentEntry_ = 1;
+		ready_ = false;
 	}
 
 	TDataTime dataTime;
 
-	// запись\считывание устройства дл€ которого сделана запись
-	bool setDevice(eGB_DEVICE device)
+	bool setCurrentDevice(eGB_DEVICE device)
 	{
 		bool stat = false;
 		if ( (device >= GB_DEVICE_MIN) && (device < GB_DEVICE_MAX) )
 		{
-			device_ = device;
+			currentDevice_ = device;
 			stat = true;
 		}
 		else
-			device_ = GB_DEVICE_MAX;
+			currentDevice_ = GB_DEVICE_MAX;
 		return stat;
 	}
-	eGB_DEVICE getDevice() const { return device_; }
+	eGB_DEVICE getCurrentDevice() const { return currentDevice_; }
+
+	// запись\считывание устройства дл€ которого сделана запись
+	bool setDeviceJrn(eGB_DEVICE device)
+	{
+		bool stat = false;
+		if ( (device >= GB_DEVICE_MIN) && (device < GB_DEVICE_MAX) )
+		{
+			deviceJrn_ = device;
+			stat = true;
+		}
+		else
+			deviceJrn_ = GB_DEVICE_MAX;
+		return stat;
+	}
+	eGB_DEVICE getDeviceJrn() const { return deviceJrn_; }
 
 	// тип событи€
 	bool setEventType(uint8_t val)
@@ -1683,16 +1668,120 @@ public:
 	}
 	eGB_REGIME getRegime() const { return regime_; }
 
+	// количество записей в журнале
+	bool setNumJrnEntry(uint16_t val)
+	{
+		bool stat = false;
+
+		overflow_ = (val & 0xC000) != 0;
+
+		val &= 0x3FFF;
+
+		if (val <= maxNumJrnEntry_)
+		{
+			if (overflow_)
+			{
+				numJrnEntries_ = maxNumJrnEntry_;
+				addressFirstEntry_ = val;
+			}
+			else
+			{
+				numJrnEntries_ = val;
+				addressFirstEntry_ = 0;
+			}
+			stat = true;
+		}
+		return stat;
+	}
+	uint16_t getNumJrnEntries() { return numJrnEntries_; }
+
+	// максимальное кол-во записей в журнале
+	bool setMaxNumJrnEntries(uint16_t max)
+	{
+		bool stat = false;
+		if (max <= GLB_JRN_MAX)
+		{
+			stat = true;
+			maxNumJrnEntry_ = max;
+		}
+		return stat;
+	}
+	uint16_t getMaxNumJrnEntry() { return maxNumJrnEntry_; }
+
+	// переполнение журнала
+	bool isOverflow() const { return overflow_; }
+
+	// номер адреса текущей записи в журнале
+	uint16_t getEntryAdress()
+	{
+		return (currentEntry_ + addressFirstEntry_ - 1) % numJrnEntries_;
+	}
+
+	// текуща€ запись
+	uint16_t getCurrentEntry() const { return currentEntry_; }
+	// следующа€/предыдуща€ запись возвращает true если новое значение
+	// отличаетс€ от предыдущего
+	bool setNextEntry()
+	{
+		bool stat = false;
+		uint16_t tmp = currentEntry_;
+		tmp = (tmp < numJrnEntries_) ? currentEntry_ + 1 : 1;
+		if (tmp != currentEntry_)
+		{
+			currentEntry_ = tmp;
+			ready_ = false;
+			stat = true;
+		}
+		return stat;
+	}
+	bool setPreviousEntry()
+	{
+		bool stat = false;
+		uint16_t tmp = currentEntry_;
+		tmp = (tmp > 1) ? tmp - 1 : numJrnEntries_;
+		if (tmp != currentEntry_)
+		{
+			currentEntry_ = tmp;
+			ready_ = false;
+			stat = true;
+		}
+		return stat;
+	}
+
+	// утстановка и считывание флага получени€ информации о текущей записи
+	bool setReady() { return (ready_ = true); }
+	bool isReady() const { return ready_; }
 
 private:
+	// текущий журнал
+	eGB_DEVICE currentDevice_;
+
 	// устройство
-	eGB_DEVICE device_;
+	eGB_DEVICE deviceJrn_;
 
 	// тип событи€
 	uint8_t eventType_;
 
 	// режим
 	eGB_REGIME regime_;
+
+	// кол-во записей в журнале
+	uint16_t numJrnEntries_;
+
+	// максимальное кол-во записей в журнале
+	uint16_t maxNumJrnEntry_;
+
+	// переполнение журнала
+	bool overflow_;
+
+	// адрес первой записи
+	uint16_t addressFirstEntry_;
+
+	// адрес текущей записи (отображаемой на экране)
+	uint16_t currentEntry_;
+
+	// флаг получени€ информации о текущей записи
+	bool ready_;
 };
 
 /// —труктура параметров Ѕ—ѕ

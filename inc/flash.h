@@ -93,20 +93,20 @@ static const char fcDefSost09[] PROGMEM =	"Нет РЗ";
 static const char fcDefSost10[] PROGMEM =	"Речь";
 // состояния Приемника
 static const char fcPrmSost00[] PROGMEM = 	"Исходн.";
-static const char fcPrmSost01[] PROGMEM = 	"ПРМ КЧ";
-static const char fcPrmSost02[] PROGMEM = 	"ПРМ ПА";
+static const char fcPrmSost01[] PROGMEM = 	"ПРМ КЧ%01u";
+static const char fcPrmSost02[] PROGMEM = 	"ПРМ ПА%02u";
 static const char fcPrmSost03[] PROGMEM = 	"Нет КЧ";
 static const char fcPrmSost04[] PROGMEM = 	"Неиспр.";
 static const char fcPrmSost05[] PROGMEM = 	"П.неиспр";
 static const char fcPrmSost06[] PROGMEM = 	"Ожидание";
-static const char fcPrmSost07[] PROGMEM = 	"БЛК КМ";
+static const char fcPrmSost07[] PROGMEM = 	"БЛК КМ%02u";
 static const char fcPrmSost08[] PROGMEM = 	"?0x08?";
 static const char fcPrmSost09[] PROGMEM = 	"?0x09?";
 static const char fcPrmSost10[] PROGMEM = 	"Речь";
 // состояния Передатчика
 static const char fcPrdSost00[] PROGMEM = 	"Исходн.";
-static const char fcPrdSost01[] PROGMEM =	"ПРД КЧ";
-static const char fcPrdSost02[] PROGMEM =	"ПРД ПА";
+static const char fcPrdSost01[] PROGMEM =	"ПРД КЧ%01u";
+static const char fcPrdSost02[] PROGMEM =	"ПРД ПА%02u";
 static const char fcPrdSost03[] PROGMEM =	"Нет КЧ";
 static const char fcPrdSost04[] PROGMEM =	"Неиспр.";
 static const char fcPrdSost05[] PROGMEM =	"П.неиспр";
@@ -203,7 +203,6 @@ static const char fcPrdFault0400rzsk[] 	PROGMEM = "Неиспр.вкл. Тест";
 static const char fcPrdFault0800rzsk[] 	PROGMEM = "Неиспр.вход. КСК";
 
 
-
 // пераметры
 static const char fcValue[] 			PROGMEM = "Значение: ";
 static const char fcRange[] 			PROGMEM = "Диапазон: ";
@@ -215,12 +214,14 @@ static const char fcNumPunkt[] 			PROGMEM = "Номер: %d  Всего: %d";
 static const char fcOn[]				PROGMEM = "вкл.";
 static const char fcOff[]				PROGMEM = "выкл.";
 
+
 //	ЖУРНАЛ
 static const char fcJrnEmpty[] 			PROGMEM = "ЖУРНАЛ ПУСТ";
 static const char fcJrnNumEntries[] 	PROGMEM = "Запись %d / %d";
 static const char fcRegimeJrn[]			PROGMEM = "Режим:";
 static const char fcDateJrn[]			PROGMEM = "Дата: %02u.%02u.%02u";
 static const char fcTimeJrn[]			PROGMEM = "Время: %02u:%02u:%02u.%03u";
+static const char fcJrnNotReady[]		PROGMEM = "СЧИТЫВАНИЕ ЗАПИСИ";
 
 // записи журнала событий для К400 и РЗСК
 static char

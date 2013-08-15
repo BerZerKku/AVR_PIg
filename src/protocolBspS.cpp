@@ -272,24 +272,32 @@ bool clProtocolBspS::getData()
 			}
 			else if (com == GB_COM_GET_JRN_CNT)
 			{
-				stat = sParam_->glb.setNumJrnEntry(TO_INT16(buf[B2], buf[B1]));
+				if (sParam_->journalEntry.getCurrentDevice() == GB_DEVICE_GLB)
+				{
+					uint16_t t = TO_INT16(buf[B2], buf[B1]);
+					stat = sParam_->journalEntry.setNumJrnEntry(t);
+				}
 			}
 			else if (com == GB_COM_GET_JRN_ENTRY)
 			{
-				sParam_->journalEntry.dataTime.setYearFromBCD(buf[B16]);
-				sParam_->journalEntry.dataTime.setMonthFromBCD(buf[B15]);
-				sParam_->journalEntry.dataTime.setDayFromBCD(buf[B14]);
-				// B13 - день недели
-				sParam_->journalEntry.dataTime.setHourFromBCD(buf[B12]);
-				sParam_->journalEntry.dataTime.setMinuteFromBCD(buf[B11]);
-				sParam_->journalEntry.dataTime.setSecondFromBCD(buf[B10]);
-				uint16_t t = TO_INT16(buf[B9], buf[B8]);
-				sParam_->journalEntry.dataTime.setMsSecond(t);
-				// ! B1 - тип устройства, на данный момент игнорируется
-				// ! sParam_->journalEntry.setDevice((eGB_DEVICE) buf[B1]);
-				sParam_->journalEntry.setEventType(buf[B2]);
-				sParam_->journalEntry.setRegime((eGB_REGIME) buf[B3]);
-				stat = true;
+				if (sParam_->journalEntry.getCurrentDevice() == GB_DEVICE_GLB)
+				{
+					sParam_->journalEntry.dataTime.setYearFromBCD(buf[B16]);
+					sParam_->journalEntry.dataTime.setMonthFromBCD(buf[B15]);
+					sParam_->journalEntry.dataTime.setDayFromBCD(buf[B14]);
+					// B13 - день недели
+					sParam_->journalEntry.dataTime.setHourFromBCD(buf[B12]);
+					sParam_->journalEntry.dataTime.setMinuteFromBCD(buf[B11]);
+					sParam_->journalEntry.dataTime.setSecondFromBCD(buf[B10]);
+					uint16_t t = TO_INT16(buf[B9], buf[B8]);
+					sParam_->journalEntry.dataTime.setMsSecond(t);
+					// ! B1 - тип устройства, на данный момент игнорируется
+					// ! sParam_->journalEntry.setDevice((eGB_DEVICE) buf[B1]);
+					sParam_->journalEntry.setEventType(buf[B2]);
+					sParam_->journalEntry.setRegime((eGB_REGIME) buf[B3]);
+					sParam_->journalEntry.setReady();
+					stat = true;
+				}
 			}
 		}
 	}

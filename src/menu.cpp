@@ -275,8 +275,6 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			sParam.glb.status.warningText[6] = fcGlbWarning40;
 			sParam.glb.status.warningText[7] = fcUnknownWarning;
 
-			sParam.glb.setMaxNumJrnEntry(GLB_JRN_EVENT_K400_MAX);
-
 			// отключение защиты
 			sParam.def.status.setEnable(false);
 
@@ -309,8 +307,6 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			sParam.prm.status.warningText[6] = fcUnknownWarning;
 			sParam.prm.status.warningText[7] = fcUnknownWarning;
 
-			sParam.prm.setMaxNumJrnEntry(GLB_JRN_PRM_K400_MAX);
-
 			// включение передатчика
 			// и заполнение массивов неисправностей и предупреждений
 			sParam.prd.status.setEnable(true);
@@ -339,8 +335,6 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			sParam.prd.status.warningText[5] = fcUnknownWarning;
 			sParam.prd.status.warningText[6] = fcUnknownWarning;
 			sParam.prd.status.warningText[7] = fcUnknownWarning;
-
-			sParam.prd.setMaxNumJrnEntry(GLB_JRN_PRD_K400_MAX);
 
 			status = true;
 		}
@@ -727,8 +721,9 @@ clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device)
 	else
 	{
 		text = device->stateText;
-		poz += snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]) + 1;
-		snprintf_P(&vLCDbuf[poz], 9, text[device->getState()]);
+		poz += 1 + snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
+		snprintf_P(&vLCDbuf[poz], 9,
+				text[device->getState()], device->getDopByte());
 	}
 }
 
@@ -1021,29 +1016,20 @@ clMenu::lvlJournal()
 		if (type == AVANT_R400)
 		{
 			punkt_[num++] = punkt1;
-			sParam.txComBuf.addCom(GB_COM_GET_JRN_CNT);
 			punkt_[num++] = punkt2;
-			sParam.txComBuf.addCom(GB_COM_DEF_GET_JRN_CNT);
 		}
 		else if (type == AVANT_RZSK)
 		{
 			punkt_[num++] = punkt1;
-			sParam.txComBuf.addCom(GB_COM_GET_JRN_CNT);
 			punkt_[num++] = punkt2;
-			sParam.txComBuf.addCom(GB_COM_DEF_GET_JRN_CNT);
 			punkt_[num++] = punkt3;
-			sParam.txComBuf.addCom(GB_COM_PRM_GET_JRN_CNT);
 			punkt_[num++] = punkt4;
-			sParam.txComBuf.addCom(GB_COM_PRD_GET_JRN_CNT);
 		}
 		else if ( (type == AVANT_K400) || (type == AVANT_K400_OPTIC) )
 		{
 			punkt_[num++] = punkt1;
-			sParam.txComBuf.addCom(GB_COM_GET_JRN_CNT);
 			punkt_[num++] = punkt3;
-			sParam.txComBuf.addCom(GB_COM_PRM_GET_JRN_CNT);
 			punkt_[num++] = punkt4;
-			sParam.txComBuf.addCom(GB_COM_PRD_GET_JRN_CNT);
 		}
 		numPunkts_ = num;
 	}
@@ -1104,7 +1090,6 @@ clMenu::lvlJournalEvent()
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-		curEntry_ = 1;
 		cursorEnable_ = false;
 		lineParam_ = 1;
 		delay_ = 0;
@@ -1112,54 +1097,63 @@ clMenu::lvlJournalEvent()
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
+		// установка текущего журнала и максимального кол-во записей в нем
+		sParam.journalEntry.clear();
+		sParam.journalEntry.setCurrentDevice(GB_DEVICE_GLB);
+		if (sParam.typeDevice == AVANT_K400)
+			sParam.journalEntry.setMaxNumJrnEntries(GLB_JRN_EVENT_K400_MAX);
+
 		// доплнительные команды
 		sParam.txComBuf.clear();
 		sParam.txComBuf.addCom(GB_COM_GET_JRN_CNT);
 		sParam.txComBuf.addCom(GB_COM_GET_JRN_ENTRY);
-		sParam.txComBuf.setInt16(curEntry_);
+		sParam.txComBuf.setInt16(sParam.journalEntry.getEntryAdress());
 	}
 
-	uint16_t max_entries = sParam.glb.getNumJrnEntry();
-	uint16_t cur_entry = curEntry_;
-
-	if ( (cur_entry > max_entries) || (cur_entry == 0) )
-	{
-		cur_entry = 1;
-	}
-	if (sParam.glb.isOverflow())
-	{
-		uint16_t max_jrn_entries = sParam.glb.getMaxNumJrnEntry();
-		sParam.txComBuf.setInt16((cur_entry-1+max_entries) % max_jrn_entries);
-	}
-	else
-		sParam.txComBuf.setInt16(cur_entry - 1);
+	// номер текущей записи в архиве и максимальное кол-во записей
+	uint16_t cur_entry = sParam.journalEntry.getCurrentEntry();
+	uint16_t num_entries = sParam.journalEntry.getNumJrnEntries();
 
 	uint8_t poz = 0;
+	// вывод названия текущего пункта меню
 	snprintf_P(&vLCDbuf[poz], 21, title);
 	poz += 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, max_entries);
+	// вывод номер текущей записи и их кол-ва
+	snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
 	poz += 20;
 
-	if (max_entries == 0)
+	if (num_entries == 0)
+	{
+		// вывод сообщения об отсутствии записей в журнале
 		snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
+	}
+	else if (!sParam.journalEntry.isReady())
+	{
+		// ифнорация о текущей записи еще не получена
+		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
+	}
 	else
 	{
+		// вывод режима
 		snprintf_P(&vLCDbuf[poz], 21, fcRegimeJrn);
 		snprintf_P(&vLCDbuf[poz + 7], 13,
 				fcRegime[sParam.journalEntry.getRegime()]);
 		poz += 20;
+		// вывод даты
 		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
 				sParam.journalEntry.dataTime.getDay(),
 				sParam.journalEntry.dataTime.getMonth(),
 				sParam.journalEntry.dataTime.getYear());
 		poz += 20;
 //	    snprintf_P(&vLCDbuf[poz],4,fcDevices[sParam.journalEntry.getDevice()]);
+		// вывод времени
 		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
 						sParam.journalEntry.dataTime.getHour(),
 						sParam.journalEntry.dataTime.getMinute(),
 						sParam.journalEntry.dataTime.getSecond(),
 						sParam.journalEntry.dataTime.getMsSecond());
 		poz += 20;
+		// вывод события
 		uint8_t event = sParam.journalEntry.getEventType();
 		snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event], event);
 	}
@@ -1167,10 +1161,12 @@ clMenu::lvlJournalEvent()
 	switch(key_)
 	{
 		case KEY_UP:
-			cur_entry  = (cur_entry  > 1) ? cur_entry - 1 : max_entries;
+			if (sParam.journalEntry.setPreviousEntry())
+				sParam.txComBuf.addFastCom(GB_COM_GET_JRN_ENTRY);
 			break;
 		case KEY_DOWN:
-			cur_entry  = (cur_entry  >= max_entries) ? 1 : cur_entry  + 1;
+			if (sParam.journalEntry.setNextEntry())
+				sParam.txComBuf.addFastCom(GB_COM_GET_JRN_ENTRY);
 			break;
 
 		case KEY_CANCEL:
@@ -1181,7 +1177,11 @@ clMenu::lvlJournalEvent()
 		default:
 			break;
 	}
-	curEntry_ = cur_entry;
+
+	// поместим в сообщение для БСП адрес необходимой записи
+	// размещен в конце, чтобы не терять время до следующего обращения к
+	// данному пункту меню
+	sParam.txComBuf.setInt16(sParam.journalEntry.getEntryAdress());
 }
 
 /** Уровень меню. Журнал защиты.
@@ -1241,6 +1241,11 @@ clMenu::lvlJournalDef()
 		default:
 			break;
 	}
+
+	// поместим в сообщение для БСП адрес необходимой записи
+	// размещен в конце, чтобы не терять время до следующего обращения к
+	// данному пункту меню
+	sParam.txComBuf.setInt16(sParam.journalEntry.getEntryAdress());
 }
 
 /** Уровень меню. Журнал приемника.
@@ -1931,7 +1936,7 @@ clMenu::lvlSetupParamPrm()
 {
 	static char title[] PROGMEM = "Параметры\\Приемник";
 
-	static char punkt1[] PROGMEM = "Время включения ком.";
+	static char punkt1[] PROGMEM = "Задержка срабат. ДВ";
 	static char punkt2[] PROGMEM = "Блокиров. команды";
 	static char punkt3[] PROGMEM = "Задержка на выкл.ком";
 
