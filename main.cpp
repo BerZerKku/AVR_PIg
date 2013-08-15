@@ -168,6 +168,7 @@ static bool uartWrite()
 	{
 		// отправка запроса БСП
 		eGB_COM com = menu.getTxCommand();
+		sDebug.byte1 = com;
 		uint8_t num = protBSPs.sendData(com);
 		uartBSP.trData(num);
 	}

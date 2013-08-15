@@ -27,24 +27,18 @@
 /// максимально возможное кол-во состояний устройств
 #define MAX_NUM_DEVICE_STATE 11
 
-/// максимально возможное кол-во режимов устройств
-#define MAX_NUM_REGIME 6
-
 /// максимальное кол-во команд в буфере (не считая 3-х основных)
 #define MAX_NUM_COM_BUF 15
 
 /// максимальное и минимальный код типа событий в журнале событий
 #define MIN_JRN_EVENT_VALUE 1
-#define MAX_JRN_EVENT_VALUE 32
+#define MAX_JRN_EVENT_VALUE 33
 
 /// Минимальные, максимальные значения параметров приемника и их дискретность
 /// ЗАЩИТА
 /// тип защиты
 #define DEF_TYPE_MIN		0
 #define DEF_TYPE_MAX		7
-/// тип линии
-#define DEF_LINE_TYPE_MIN 	1
-#define DEF_LINE_TYPE_MAX 	2
 /// допустимое время без манипуляции
 #define DEF_T_NO_MAN_MIN	0
 #define DEF_T_NO_MAN_MAX	99
@@ -195,6 +189,7 @@ enum eGB_DEVICE
 /// Тип канала связи
 enum eGB_TYPE_LINE
 {
+	GB_TYPE_LINE_MIN = 1,
 	GB_TYPE_LINE_UM = 1,
 	GB_TYPE_LINE_OPTIC = 2,
 	GB_TYPE_LINE_E1 = 3,
@@ -204,6 +199,7 @@ enum eGB_TYPE_LINE
 /// Кол-во аппаратов в линии
 enum eGB_NUM_DEVICES
 {
+	GB_NUM_DEVICES_MIN = 1,
 	GB_NUM_DEVICES_2 = 1,
 	GB_NUM_DEVICES_3 = 2,
 	GB_NUM_DEVICES_MAX
@@ -212,11 +208,25 @@ enum eGB_NUM_DEVICES
 /// Совместимость
 enum eGB_COMPATIBILITY
 {
+	GB_COMPATIBILITY_MIN = 0,
 	GB_COMPATIBILITY_AVANT = 0,
 	GB_COMPATIBILITY_PVZ90 = 1,
 	GB_COMPATIBILITY_AVZK = 2,
 	GB_COMPATIBILITY_PVZUE = 3,
 	GB_COMPATIBILITY_MAX
+};
+
+/// Режимы работы
+enum eGB_REGIME
+{
+	GB_REGIME_MIN = 0,
+	GB_REGIME_DISABLED = 0,	// выведен
+	GB_REGIME_READY,		// готов
+	GB_REGIME_ENABLED,		// введен
+	GB_REGIME_TALK,			// речь
+	GB_REGIME_TEST_1,		// тест 1
+	GB_REGIME_TEST_2,		// тест 2
+	GB_REGIME_MAX
 };
 
 /// Команды
@@ -485,8 +495,8 @@ public:
 		warnings_ = 0;
 		numWarnings_ = 0;
 
-		regime_ = 0;
-		state_ = 0;
+		regime_ = GB_REGIME_MAX;
+		state_ = MAX_NUM_DEVICE_STATE;
 		dopByte_ = 0;
 	}
 
@@ -516,35 +526,33 @@ public:
 	uint8_t getNumWarnings()const { return numWarnings_; }
 
 	// режим работы
-	bool setRegime(uint8_t regime)
+	bool setRegime(eGB_REGIME regime)
 	{
-		bool status = false;
-		if (regime < MAX_NUM_REGIME)
+		bool stat = false;
+		if ( (regime >= GB_REGIME_MIN) && (regime <= GB_REGIME_MAX) )
 		{
 			regime_ = regime;
-			status = true;
+			stat = true;
 		}
 		else
-			regime = MAX_NUM_REGIME;
-
-
-		return true;
+			regime = GB_REGIME_MAX;
+		return stat;
 	}
 	uint8_t getRegime() 	const { return regime_; }
 
 	//состояние
 	bool setState(uint8_t state)
 	{
-		bool status = false;
+		bool stat = false;
 		if (state < MAX_NUM_DEVICE_STATE)
 		{
 			state_ = state;
-			status = true;
+			stat = true;
 		}
 		else
 			state = MAX_NUM_DEVICE_STATE;
 
-		return status;
+		return stat;
 	}
 	uint8_t getState()		const { return state_; }
 
@@ -555,13 +563,13 @@ public:
 	// возвращает true если новое значение отличается от текущего
 	bool setEnable(bool enable)
 	{
-		bool status = false;
+		bool stat = false;
 		if (enable_ != enable)
 		{
 			enable_ = enable;
-			status = true;
+			stat = true;
 		}
-		return status;
+		return stat;
 	}
 	bool isEnable()	const { return enable_; }
 
@@ -622,9 +630,9 @@ class TDeviceGlb
 public:
 	TDeviceGlb()
 	{
-		numDevices_ = GB_NUM_DEVICES_2;
-		typeLine_ = GB_TYPE_LINE_UM;
-		compatibility_ = GB_COMPATIBILITY_AVANT;
+		numDevices_ = GB_NUM_DEVICES_MAX;
+		typeLine_ = GB_TYPE_LINE_MAX;
+		compatibility_ = GB_COMPATIBILITY_MAX;
 		versBsp_ = 0;
 		versDsp_ = 0;
 
@@ -639,6 +647,7 @@ public:
 
 		numJrnEntry_ = 0;
 		maxNumJrnEntry_ = 0;
+		overflow_ = false;
 	}
 
 	TDeviceStatus status;
@@ -647,29 +656,32 @@ public:
 	eGB_NUM_DEVICES getNumDevices() const { return numDevices_; }
 	bool setNumDevices(eGB_NUM_DEVICES numDevices)
 	{
-		bool status = false;
-		if ( (numDevices == GB_NUM_DEVICES_2) ||
-				(numDevices == GB_NUM_DEVICES_3) )
+		bool stat = false;
+		if ( (numDevices >= GB_NUM_DEVICES_MIN) &&
+				(numDevices <= GB_NUM_DEVICES_MAX) )
 		{
 			numDevices_ = numDevices;
-			status = true;
+			stat = true;
 		}
-		return status;
+		else
+			numDevices_ = numDevices;
+		return stat;
 	}
 
 	// при установке возвращает true если новое значени отличается от текущего
 	eGB_TYPE_LINE getTypeLine() const { return typeLine_; }
 	bool setTypeLine(eGB_TYPE_LINE typeLine)
 	{
-		bool status = false;
+		bool stat = false;
 
-		if ( (typeLine == GB_TYPE_LINE_UM) || (typeLine == GB_TYPE_LINE_E1) ||
-				(typeLine == GB_TYPE_LINE_OPTIC) )
+		if ( (typeLine >= GB_TYPE_LINE_MIN) && (typeLine <= GB_TYPE_LINE_MAX) )
 		{
 			typeLine_ = typeLine;
-			status = true;
+			stat = true;
 		}
-		return status;
+		else
+			typeLine_ = GB_TYPE_LINE_MAX;
+		return stat;
 	}
 
 	// версия прошивки AtMega BSP
@@ -684,16 +696,16 @@ public:
 	eGB_COMPATIBILITY getCompatibility() const { return compatibility_; }
 	bool setCompatibility(eGB_COMPATIBILITY compatibility)
 	{
-		bool status = false;
-		if ( (compatibility == GB_COMPATIBILITY_AVANT) ||
-				(compatibility == GB_COMPATIBILITY_AVZK) ||
-				(compatibility == GB_COMPATIBILITY_PVZ90) ||
-				(compatibility == GB_COMPATIBILITY_PVZUE) )
+		bool stat = false;
+		if ( (compatibility >= GB_COMPATIBILITY_MIN) &&
+				(compatibility <= GB_COMPATIBILITY_MAX) )
 		{
 			compatibility_ = compatibility;
-			status = true;
+			stat = true;
 		}
-		return status;
+		else
+			compatibility_ = GB_COMPATIBILITY_MAX;
+		return stat;
 	}
 
 	// синхронизация часов
@@ -810,6 +822,10 @@ public:
 	{
 		bool stat = false;
 		val &= 0x3FFF;
+
+		overflow_ = (val & 0xC000) != 0;
+		val &= 0x3FFF;
+
 		if (val <= maxNumJrnEntry_ )
 		{
 			numJrnEntry_ = val;
@@ -831,6 +847,9 @@ public:
 		return stat;
 	}
 	uint16_t getMaxNumJrnEntry() { return maxNumJrnEntry_; }
+
+	// переполнение журнала
+	bool isOverflow() const { return overflow_; }
 
 private:
 	// кол-во аппаратов в линии 2 или 3
@@ -877,6 +896,9 @@ private:
 
 	// максимальное кол-во записей в журнале
 	uint16_t maxNumJrnEntry_;
+
+	// переполнение журнала
+	bool overflow_;
 };
 
 
@@ -887,7 +909,7 @@ public:
 	TDeviceDef()
 	{
 		defType_ = DEF_TYPE_MIN;
-		lineType_ = DEF_LINE_TYPE_MIN;
+		numDevices_ = GB_NUM_DEVICES_MAX;
 		timeNoMan_ = DEF_T_NO_MAN_MIN_F;
 		overlap_ = DEF_OVERLAP_MIN_F;
 		delay_ = DEF_DELAY_MIN_F;
@@ -896,6 +918,7 @@ public:
 		prmType_ = DEF_PRM_TYPE_MIN;
 		numJrnEntry_ = 0;
 		maxNumJrnEntry_ = 0;
+		overflow_ = false;
 	}
 
 	TDeviceStatus status;
@@ -914,17 +937,19 @@ public:
 	uint8_t getDefType() { return defType_ ; }
 
 	// тип линии
-	bool setLineType(uint8_t val)
+	bool setNumDevices(eGB_NUM_DEVICES val)
 	{
 		bool stat = false;
-		if ( (val >= DEF_LINE_TYPE_MIN) && (val <= DEF_LINE_TYPE_MAX) )
+		if ( (val >= GB_NUM_DEVICES_MIN) && (val <= GB_NUM_DEVICES_MAX) )
 		{
-			lineType_ = val;
+			numDevices_ = val;
 			stat = true;
 		}
+		else
+			val = GB_NUM_DEVICES_MAX;
 		return stat;
 	}
-	uint8_t getLineType() { return lineType_; }
+	uint8_t getNumDevices() { return numDevices_; }
 
 	// допустимое время без манипуляции
 	bool setTimeNoMan(uint8_t val)
@@ -1010,17 +1035,23 @@ public:
 	uint8_t getPrmType() { return prmType_; }
 
 	// количество записей в журнале
-	bool setNumJrnEntry(uint16_t val)
-	{
-		bool stat = false;
-		if (val <= maxNumJrnEntry_)
+	// количество записей в журнале
+		bool setNumJrnEntry(uint16_t val)
 		{
-			numJrnEntry_ = val;
-			stat = true;
+			bool stat = false;
+			val &= 0x3FFF;
+
+			overflow_ = (val & 0xC000) != 0;
+			val &= 0x3FFF;
+
+			if (val <= maxNumJrnEntry_ )
+			{
+				numJrnEntry_ = val;
+				stat = true;
+			}
+			return stat;
 		}
-		return stat;
-	}
-	uint16_t getNumJrnEntry() { return numJrnEntry_; }
+		uint16_t getNumJrnEntry() { return numJrnEntry_; }
 
 	// максимальное кол-во записей в журнале
 	bool setMaxNumJrnEntry(uint16_t max)
@@ -1040,7 +1071,7 @@ private:
 	uint8_t defType_;
 
 	// тип линии (кол-во аппаратов)
-	uint8_t lineType_;
+	eGB_NUM_DEVICES numDevices_;
 
 	// допустимое время без манипуляции
 	uint8_t timeNoMan_;
@@ -1065,6 +1096,9 @@ private:
 
 	// максимальное кол-во записей в журнале
 	uint16_t maxNumJrnEntry_;
+
+	// флаг переполнения журнала
+	bool overflow_;
 };
 
 
@@ -1085,6 +1119,7 @@ public:
 
 		numJrnEntry_ = 0;
 		maxNumJrnEntry_ = 0;
+		overflow_ = false;
 	}
 
 	TDeviceStatus status;
@@ -1094,14 +1129,14 @@ public:
 	// устанавливает флаг enable
 	bool setNumCom(uint8_t numCom)
 	{
-		bool status = false;
+		bool stat = false;
 		if ( (numCom <= MAX_NUM_COM_PRM) && (numCom_ != numCom) )
 		{
 			numCom_ = numCom;
 			this->status.setEnable(numCom != 0);
-			status = true;
+			stat = true;
 		}
-		return status;
+		return stat;
 	}
 	uint8_t getNumCom() const { return numCom_; }
 
@@ -1166,7 +1201,12 @@ public:
 	bool setNumJrnEntry(uint16_t val)
 	{
 		bool stat = false;
-		if (val <= 1024 )
+		val &= 0x3FFF;
+
+		overflow_ = (val & 0xC000) != 0;
+		val &= 0x3FFF;
+
+		if (val <= maxNumJrnEntry_ )
 		{
 			numJrnEntry_ = val;
 			stat = true;
@@ -1206,6 +1246,9 @@ private:
 
 	// максимальное кол-во записей в журнале
 	uint16_t maxNumJrnEntry_;
+
+	// флаг переполнения журнала
+	bool overflow_;
 };
 
 
@@ -1227,6 +1270,7 @@ public:
 
 		numJrnEntry_ = 0;
 		maxNumJrnEntry_ = 0;
+		overflow_ = false;
 	}
 
 	TDeviceStatus status;
@@ -1236,14 +1280,14 @@ public:
 	// устанавливает флаг enable
 	bool setNumCom(uint8_t numCom)
 	{
-		bool status = false;
+		bool stat = false;
 		if ( (numCom <= MAX_NUM_COM_PRD) && (numCom_ != numCom) )
 		{
 			numCom_ = numCom;
 			this->status.setEnable(numCom != 0);
-			status = true;
+			stat = true;
 		}
-		return status;
+		return stat;
 	}
 	uint8_t getNumCom() const { return numCom_; }
 
@@ -1336,10 +1380,16 @@ public:
 	uint8_t getDuration() { return duration_ * PRD_TIME_ON_FRACT; }
 
 	// количество записей в журнале
+	// количество записей в журнале
 	bool setNumJrnEntry(uint16_t val)
 	{
 		bool stat = false;
-		if (val <= 1024 )
+		val &= 0x3FFF;
+
+		overflow_ = (val & 0xC000) != 0;
+		val &= 0x3FFF;
+
+		if (val <= maxNumJrnEntry_ )
 		{
 			numJrnEntry_ = val;
 			stat = true;
@@ -1354,8 +1404,8 @@ public:
 		bool stat = false;
 		if (max <= 1024)
 		{
-			stat = true;
 			maxNumJrnEntry_ = max;
+			stat = true;
 		}
 		return stat;
 	}
@@ -1386,6 +1436,9 @@ private:
 	// макстмалбное кол-во записей в журнале
 	uint16_t maxNumJrnEntry_;
 
+	// флаг переполнения журнала
+	bool overflow_;
+
 };
 
 /// класс для измеряемых параметров
@@ -1406,13 +1459,13 @@ public:
 	int8_t getVoltageDef() const { return voltDef_; }
 	bool setVoltageDef(int8_t voltDef)
 	{
-		bool state = false;
+		bool stat = false;
 		if ( (voltDef > - 100) && (voltDef < 100) )
 		{
 			voltDef_ = voltDef;
-			state = true;
+			stat = true;
 		}
-		return state;
+		return stat;
 
 	}
 
@@ -1420,13 +1473,13 @@ public:
 	int8_t getVoltageCf() const { return voltCf_; }
 	bool setVoltageCf(int8_t voltCf)
 	{
-		bool state = false;
+		bool stat = false;
 		if ( (voltCf > -100) && (voltCf < 100) )
 		{
 			voltCf_ = voltCf;
-			state = true;
+			stat = true;
 		}
-		return state;
+		return stat;
 
 	}
 
@@ -1435,52 +1488,52 @@ public:
 	uint8_t getVoltageOutFract() const { return (voltOut_ % 10); }
 	bool setVoltageOut(uint8_t voltOutInt, uint8_t voltOutFract)
 	{
-		bool state = false;
+		bool stat = false;
 		if ( (voltOutInt < 100) && (voltOutFract < 10) )
 		{
 			voltOut_ = (((uint16_t) voltOutInt) * 10) + voltOutFract;
-			state = true;
+			stat = true;
 		}
-		return state;
+		return stat;
 	}
 
 	// ток выхода
 	uint16_t getCurrentOut() const { return curOut_; }
 	bool setCurrentOut(uint16_t curOut)
 	{
-		bool state = false;
+		bool stat = false;
 		if (curOut < 999)
 		{
 			curOut_ = curOut;
-			state = true;
+			stat = true;
 		}
-		return state;
+		return stat;
 	}
 
 	// сопротивление выхода
 	uint16_t getResistOut() const { return resistOut_; }
 	bool setResistOut(uint16_t resistOut)
 	{
-		bool state = false;
+		bool stat = false;
 		if (resistOut < 999)
 		{
 			resistOut_ = resistOut;
-			state = true;
+			stat = true;
 		}
-		return state;
+		return stat;
 	}
 
 	// уровень шума
 	int8_t getVoltageNoise() const { return voltNoise_; }
 	bool setVoltageNoise(int8_t voltNoise)
 	{
-		bool state = false;
+		bool stat = false;
 		if ( (voltNoise > -100) && (voltNoise < 100) )
 		{
 			voltNoise_ = voltNoise;
-			state = true;
+			stat = true;
 		}
-		return state;
+		return stat;
 	}
 private:
 	// запас по защите (-99 .. 99)дБ
@@ -1532,7 +1585,6 @@ public:
 	{
 		if (cnt_ >= numCom_)
 			cnt_ = 0;
-
 		return com_[cnt_++];
 	}
 
@@ -1577,20 +1629,27 @@ private:
 class TJournalEntry
 {
 public:
+	TJournalEntry()
+	{
+		device_ = GB_DEVICE_MAX;
+		eventType_ = MAX_JRN_EVENT_VALUE - MIN_JRN_EVENT_VALUE + 1;
+		regime_ = GB_REGIME_MAX;
+	}
+
 	TDataTime dataTime;
 
 	// запись\считывание устройства для которого сделана запись
 	bool setDevice(eGB_DEVICE device)
 	{
-		bool state = false;
+		bool stat = false;
 		if ( (device >= GB_DEVICE_MIN) && (device < GB_DEVICE_MAX) )
 		{
 			device_ = device;
-			state = true;
+			stat = true;
 		}
 		else
 			device_ = GB_DEVICE_MAX;
-		return true;
+		return stat;
 	}
 	eGB_DEVICE getDevice() const { return device_; }
 
@@ -1604,10 +1663,26 @@ public:
 			state = true;
 		}
 		else
-			eventType_ = MAX_JRN_EVENT_VALUE - MIN_JRN_EVENT_VALUE + 1;
+			eventType_ = MAX_JRN_EVENT_VALUE;
 		return state;
 	}
 	uint8_t getEventType() const { return eventType_; }
+
+	// режим
+	bool setRegime(eGB_REGIME regime)
+	{
+		bool state = false;
+		if ( (regime >= GB_REGIME_MIN) && (regime <= GB_REGIME_MAX) )
+		{
+			regime_ = regime;
+			state = true;
+		}
+		else
+			regime_ = GB_REGIME_MAX;
+		return state;
+	}
+	eGB_REGIME getRegime() const { return regime_; }
+
 
 private:
 	// устройство
@@ -1615,6 +1690,9 @@ private:
 
 	// тип события
 	uint8_t eventType_;
+
+	// режим
+	eGB_REGIME regime_;
 };
 
 /// Структура параметров БСП

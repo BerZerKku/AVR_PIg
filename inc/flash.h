@@ -27,7 +27,7 @@ static const char fcDeviceName02[] PROGMEM = "ПРД";
 
 // режимы устройств
 // кол-во режимов (без учета "Ошибка") должно совпадать с MAX_NUM_REGIME
-static const char fcRegime[] [8] PROGMEM =
+static const char fcRegime[GB_REGIME_MAX + 1] [8] PROGMEM =
 {
 	"Выведен",
 	"Готов",
@@ -51,11 +51,12 @@ static const char fcDefType[DEF_TYPE_MAX + 1] [11] PROGMEM =
 	"ППЗ-МК",
 };
 
-static const char fcTypeLine[DEF_LINE_TYPE_MAX + 1] [11] PROGMEM =
+static const char fcNumDevices[GB_NUM_DEVICES_MAX + 1] [11] PROGMEM =
 {
 		"ошибка",
 		"2 концевая",
-		"3 концевая"
+		"3 концевая",
+		"ошибка",
 };
 
 static const char fcPrmType[DEF_PRM_TYPE_MAX + 1] [11] PROGMEM =
@@ -63,6 +64,15 @@ static const char fcPrmType[DEF_PRM_TYPE_MAX + 1] [11] PROGMEM =
 		"Акт+Пасс",
 		"Активный",
 		"Пассивный"
+};
+
+static const char fcDevices[GB_DEVICE_MAX + 1] [4] PROGMEM =
+{
+		"ЗАЩ",
+		"ПРМ",
+		"ПРД",
+		"ОБЩ",
+		"ОШБ"
 };
 
 // состояния устройств
@@ -195,57 +205,61 @@ static const char fcPrdFault0800rzsk[] 	PROGMEM = "Неиспр.вход. КСК";
 
 
 // пераметры
-static const char fcValue[] 	PROGMEM = "Значение: ";
-static const char fcRange[] 	PROGMEM = "Диапазон: ";
-static const char fcNumCom[] 	PROGMEM = "Номер команды: %d";
-static const char fcRangeDec[] 	PROGMEM = "%d..%d%s";
-static const char fcRangeList[] PROGMEM = "список";
-static const char fcRangeOnOff[]PROGMEM = "вкл./выкл.";
-static const char fcNumPunkt[] 	PROGMEM = "Номер: %d  Всего: %d";
-static const char fcOn[]		PROGMEM = "вкл.";
-static const char fcOff[]		PROGMEM = "выкл.";
+static const char fcValue[] 			PROGMEM = "Значение: ";
+static const char fcRange[] 			PROGMEM = "Диапазон: ";
+static const char fcNumCom[] 			PROGMEM = "Номер команды: %d";
+static const char fcRangeDec[] 			PROGMEM = "%d..%d%s";
+static const char fcRangeList[] 		PROGMEM = "список";
+static const char fcRangeOnOff[]		PROGMEM = "вкл./выкл.";
+static const char fcNumPunkt[] 			PROGMEM = "Номер: %d  Всего: %d";
+static const char fcOn[]				PROGMEM = "вкл.";
+static const char fcOff[]				PROGMEM = "выкл.";
 
 //	ЖУРНАЛ
 static const char fcJrnEmpty[] 			PROGMEM = "ЖУРНАЛ ПУСТ";
 static const char fcJrnNumEntries[] 	PROGMEM = "Запись %d / %d";
-static const char fcTimeJrn[]			PROGMEM = "Время: %02u:%02u:%02u.%03u";
+static const char fcRegimeJrn[]			PROGMEM = "Режим:";
 static const char fcDateJrn[]			PROGMEM = "Дата: %02u.%02u.%02u";
+static const char fcTimeJrn[]			PROGMEM = "Время: %02u:%02u:%02u.%03u";
+
 // записи журнала событий для К400 и РЗСК
 static char
-fcJrnEventK400[MAX_JRN_EVENT_VALUE - MIN_JRN_EVENT_VALUE + 2] [41] PROGMEM =
+fcJrnEventK400[MAX_JRN_EVENT_VALUE + 1] [21] PROGMEM =
 {
-		"Включение питания/перезапуск",			// 1
-		"Выключение питания",               	// 2
-		"Изменение режима работы",          	// 3
-		"Событие не определено - 4",           	// 4
-		"Неисправность теста ПРД",             	// 5
-		"Неисправность теста ПРМ",             	// 6
-		"Неисправность блока БСЗ",             	// 7
-		"Неисправность блока БСК",             	// 8
-		"Неисправность переключателей БСЗ",   	// 9
-		"Нет сигнала манипуляции",             	// 10
-		"Неисправность выходной цепи",         	// 11
-		"Нет сигнала РЗ",                      	// 12
-		"Отсутствие сигнала Пуск",             	// 13
-		"Отсутствие сигнала Стоп",             	// 14
-		"Неисправность чтения команд",         	// 15
-		"Событие не определено - 16",          	// 16
-		"Неисправность работы DSP",            	// 17
-		"Восстановление работы DSP",          	// 18
-		"Низкое напряжение выхода",            	// 19
-		"Высокое напряжение выхода",           	// 20
-		"Нет КЧ в течение 5 сек на ПРМ1",      	// 21
-		"Нет КЧ в течение 5 сек на ПРМ2",      	// 22
-		"Восстановление КЧ на ПРМ1",           	// 23
-		"Восстановление КЧ на ПРМ2",           	// 24
-		"Неисправность чтения/записи 2RAM",    	// 25
-		"Неисправность чтения/записи ПЛИС",    	// 26
-		"Неисправность чтения/записи FLASH",   	// 27
-		"Неисправность часов",                 	// 28
-		"Событие не определено - 29",          	// 29
-		"Событие не определено - 30",          	// 30
-		"Событие не определено - 31",          	// 31
-		"Событие не определено - 32",          	// 32
-		"Событие не определено - %d"          	// 33 - ошибочное значение
+	   //01234567890123456789
+		"Событие - %d",          	// 0 - ошибочное значение
+		"Вкл. питания/перезап",		// 1
+		"Выключение питания",       // 2
+		"Изменение режима раб",     // 3
+		"Событие - %d",           	// 4
+		"Неиспр теста ПРД",         // 5
+		"Неиспр теста ПРМ",         // 6
+		"Неиспр блока БСЗ",         // 7
+		"Неиспр блока БСК",         // 8
+		"Неиспр перекл-ей БСЗ",   	// 9
+		"Нет сигнала манипул.",     // 10
+		"Неиспр выходной цепи",     // 11
+		"Нет сигнала РЗ",           // 12
+		"Отсут-е сигнала Пуск",    	// 13
+		"Отсут-е сигнала Стоп",    	// 14
+		"Неиспр чтения команд",     // 15
+		"Событие - %d",          	// 16
+		"Неиспр. работы DSP",		// 17
+		"Восстан-е работы DSP",		// 18
+		"Низкое напр. выхода",    	// 19
+		"Высокое напр. выхода",    	// 20
+		"Нет КЧ 5 сек на ПРМ1",     // 21
+		"Нет КЧ 5 сек на ПРМ2",     // 22
+		"Восстан-е КЧ на ПРМ1",     // 23
+		"Восстан-е КЧ на ПРМ2",     // 24
+		"Неиспр чт/зап 2RAM",    	// 25
+		"Неиспр чт/зап ПЛИС",    	// 26
+		"Неиспр чт/зап FLASH",   	// 27
+		"Неисправность часов",      // 28
+		"Событие - %d",          	// 29
+		"Событие - %d",          	// 30
+		"Событие - %d",          	// 31
+		"Событие - %d",          	// 32
+		"Событие - %d"          	// 33 - ошибочное значение
 };
 

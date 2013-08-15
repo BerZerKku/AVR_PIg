@@ -12,7 +12,7 @@
 #include "../inc/flash.h"
 
 /// буфер текста выводимого на ЖКИ
-static char vLCDbuf[SIZE_BUF_STRING];
+static char vLCDbuf[SIZE_BUF_STRING + 1];
 
 /// кол-во строк данных отображаемых на экране
 #define NUM_TEXT_LINES 6
@@ -1105,7 +1105,7 @@ clMenu::lvlJournalEvent()
 	{
 		lvlCreate_ = false;
 		curEntry_ = 1;
-		cursorEnable_ = true;
+		cursorEnable_ = false;
 		lineParam_ = 1;
 		delay_ = 0;
 
@@ -1119,7 +1119,6 @@ clMenu::lvlJournalEvent()
 		sParam.txComBuf.setInt16(curEntry_);
 	}
 
-
 	uint16_t max_entries = sParam.glb.getNumJrnEntry();
 	uint16_t cur_entry = curEntry_;
 
@@ -1127,7 +1126,13 @@ clMenu::lvlJournalEvent()
 	{
 		cur_entry = 1;
 	}
-	sParam.txComBuf.setInt16(cur_entry - 1);	// !!! Узнать номер 1 записи
+	if (sParam.glb.isOverflow())
+	{
+		uint16_t max_jrn_entries = sParam.glb.getMaxNumJrnEntry();
+		sParam.txComBuf.setInt16((cur_entry-1+max_entries) % max_jrn_entries);
+	}
+	else
+		sParam.txComBuf.setInt16(cur_entry - 1);
 
 	uint8_t poz = 0;
 	snprintf_P(&vLCDbuf[poz], 21, title);
@@ -1139,16 +1144,24 @@ clMenu::lvlJournalEvent()
 		snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
 	else
 	{
+		snprintf_P(&vLCDbuf[poz], 21, fcRegimeJrn);
+		snprintf_P(&vLCDbuf[poz + 7], 13,
+				fcRegime[sParam.journalEntry.getRegime()]);
+		poz += 20;
 		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
 				sParam.journalEntry.dataTime.getDay(),
 				sParam.journalEntry.dataTime.getMonth(),
 				sParam.journalEntry.dataTime.getYear());
 		poz += 20;
+//	    snprintf_P(&vLCDbuf[poz],4,fcDevices[sParam.journalEntry.getDevice()]);
 		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
 						sParam.journalEntry.dataTime.getHour(),
 						sParam.journalEntry.dataTime.getMinute(),
 						sParam.journalEntry.dataTime.getSecond(),
 						sParam.journalEntry.dataTime.getMsSecond());
+		poz += 20;
+		uint8_t event = sParam.journalEntry.getEventType();
+		snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event], event);
 	}
 
 	switch(key_)
@@ -1863,7 +1876,7 @@ clMenu::lvlSetupParamDef()
 	}
 	else if (p == punkt2)
 	{
-		snprintf_P(&vLCDbuf[poz], 11, fcTypeLine[sParam.def.getLineType()]);
+		snprintf_P(&vLCDbuf[poz], 11, fcNumDevices[sParam.def.getNumDevices()]);
 	}
 	else if (p == punkt3)
 	{
@@ -2404,7 +2417,6 @@ clMenu::lvlSetupDT()
 	static char title[]  PROGMEM = "Настройка\\Время&дата";
 	static char punkt1[] PROGMEM = "%d. Дата";
 	static char punkt2[] PROGMEM = "%d. Время";
-
 
 	if (lvlCreate_)
 	{

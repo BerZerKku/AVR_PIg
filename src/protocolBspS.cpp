@@ -47,7 +47,7 @@ bool clProtocolBspS::getData()
 			}
 			else if (com == GB_COM_DEF_GET_LINE_TYPE)
 			{
-				stat = sParam_->def.setLineType(buf[B1]);
+				stat = sParam_->def.setNumDevices((eGB_NUM_DEVICES) buf[B1]);
 			}
 			else if (com == GB_COM_DEF_GET_T_NO_MAN)
 			{
@@ -165,15 +165,15 @@ bool clProtocolBspS::getData()
 			else if (com == GB_COM_GET_SOST)
 			{
 
-				sParam_->def.status.setRegime(buf[B1]);
+				sParam_->def.status.setRegime((eGB_REGIME) buf[B1]);
 				sParam_->def.status.setState(buf[B2]);
 				sParam_->def.status.setDopByte(buf[B3]);
 
-				sParam_->prm.status.setRegime(buf[B4]);
+				sParam_->prm.status.setRegime((eGB_REGIME) buf[B4]);
 				sParam_->prm.status.setState(buf[B5]);
 				sParam_->prm.status.setDopByte(buf[B6]);
 
-				sParam_->prd.status.setRegime(buf[B7]);
+				sParam_->prd.status.setRegime((eGB_REGIME) buf[B7]);
 				sParam_->prd.status.setState(buf[B8]);
 				sParam_->prd.status.setDopByte(buf[B9]);
 				stat = true;
@@ -285,7 +285,10 @@ bool clProtocolBspS::getData()
 				sParam_->journalEntry.dataTime.setSecondFromBCD(buf[B10]);
 				uint16_t t = TO_INT16(buf[B9], buf[B8]);
 				sParam_->journalEntry.dataTime.setMsSecond(t);
-
+				// ! B1 - тип устройства, на данный момент игнорируется
+				// ! sParam_->journalEntry.setDevice((eGB_DEVICE) buf[B1]);
+				sParam_->journalEntry.setEventType(buf[B2]);
+				sParam_->journalEntry.setRegime((eGB_REGIME) buf[B3]);
 				stat = true;
 			}
 		}
