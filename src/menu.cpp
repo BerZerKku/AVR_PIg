@@ -1256,57 +1256,84 @@ void
 clMenu::lvlJournalPrm()
 {
 	static char title[] PROGMEM = "Журнал\\Приемник";
-	static char punkt0[] [21] PROGMEM =
-	{
-			"Номер: 1  Всего: 2",
-			"Дата:  05.07.12",
-			"Время: 14:13:45.987",
-			"Тип: Команда 2",
-			"Значение: Начало"
-	};
-
-	static char punkt1[] [21] PROGMEM =
-	{
-			"Номер: 2  Всего: 2",
-			"Дата:  05.07.12",
-			"Время: 14:13:46.033",
-			"Тип: Команда 2",
-			"Значение: Конец"
-	};
-
-
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-		cursorLine_ = 1;
-		cursorEnable_ = true;
+		cursorEnable_ = false;
 		lineParam_ = 1;
+		delay_ = 0;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
+		// установка текущего журнала и максимального кол-во записей в нем
+		sParam.journalEntry.clear();
+		sParam.journalEntry.setCurrentDevice(GB_DEVICE_PRM);
+		if (sParam.typeDevice == AVANT_K400)
+			sParam.journalEntry.setMaxNumJrnEntries(GLB_JRN_PRM_K400_MAX);
+
 		// доплнительные команды
 		sParam.txComBuf.clear();
+		sParam.txComBuf.addCom(GB_COM_PRM_GET_JRN_CNT);
+		sParam.txComBuf.addCom(GB_COM_PRM_GET_JRN_ENTRY);
+		sParam.txComBuf.setInt16(sParam.journalEntry.getEntryAdress());
 	}
 
-	snprintf_P(&vLCDbuf[0], 21, title);
-	for(uint_fast8_t i = 0; i < 5; i++)
+	// номер текущей записи в архиве и максимальное кол-во записей
+	uint16_t cur_entry = sParam.journalEntry.getCurrentEntry();
+	uint16_t num_entries = sParam.journalEntry.getNumJrnEntries();
+
+	uint8_t poz = 0;
+	// вывод названия текущего пункта меню
+	snprintf_P(&vLCDbuf[poz], 21, title);
+	poz += 20;
+	// вывод номер текущей записи и их кол-ва
+	snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+	poz += 20;
+
+	if (num_entries == 0)
 	{
-		if (cursorLine_ == 1)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt0[i]);
-		if (cursorLine_ == 2)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt1[i]);
+		// вывод сообщения об отсутствии записей в журнале
+		snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
+	}
+	else if (!sParam.journalEntry.isReady())
+	{
+		// ифнорация о текущей записи еще не получена
+		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
+	}
+	else
+	{
+		// вывод номера команды
+		snprintf_P(&vLCDbuf[poz], 21,
+				fcNumComJrn, sParam.journalEntry.getNumCom());
+		poz += 20;
+		// вывод даты
+		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
+				sParam.journalEntry.dataTime.getDay(),
+				sParam.journalEntry.dataTime.getMonth(),
+				sParam.journalEntry.dataTime.getYear());
+		poz += 20;
+		// вывод времени
+		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
+				sParam.journalEntry.dataTime.getHour(),
+				sParam.journalEntry.dataTime.getMinute(),
+				sParam.journalEntry.dataTime.getSecond(),
+				sParam.journalEntry.dataTime.getMsSecond());
+		poz += 20;
+		// вывод события
+		uint8_t event = sParam.journalEntry.getEventType();
+		snprintf_P(&vLCDbuf[poz], 21, fcJrnPrd[event], event);
 	}
 
 	switch(key_)
 	{
 		case KEY_UP:
-			if (cursorLine_ > 1)
-				cursorLine_--;
+			if (sParam.journalEntry.setPreviousEntry())
+				sParam.txComBuf.addFastCom(GB_COM_PRM_GET_JRN_ENTRY);
 			break;
 		case KEY_DOWN:
-			if (cursorLine_ < 2)
-				cursorLine_++;
+			if (sParam.journalEntry.setNextEntry())
+				sParam.txComBuf.addFastCom(GB_COM_PRM_GET_JRN_ENTRY);
 			break;
 
 		case KEY_CANCEL:
@@ -1317,6 +1344,11 @@ clMenu::lvlJournalPrm()
 		default:
 			break;
 	}
+
+	// поместим в сообщение для БСП адрес необходимой записи
+	// размещен в конце, чтобы не терять время до следующего обращения к
+	// данному пункту меню
+	sParam.txComBuf.setInt16(sParam.journalEntry.getEntryAdress());
 }
 
 /** Уровень меню. Журнал передатчика.
@@ -1327,57 +1359,85 @@ void
 clMenu::lvlJournalPrd()
 {
 	static char title[] PROGMEM = "Журнал\\Передатчик";
-	static char punkt0[] [21] PROGMEM =
-	{
-			"Номер: 1  Всего: 2",
-			"Дата:  05.07.12",
-			"Время: 14:13:45.964",
-			"Тип: Команда 2",
-			"Значение: Начало"
-	};
-
-	static char punkt1[] [21] PROGMEM =
-	{
-			"Номер: 2  Всего: 2",
-			"Дата:  05.07.12",
-			"Время: 14:13:46.0014",
-			"Тип: Команда 2",
-			"Значение: Конец"
-	};
-
 
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-		cursorLine_ = 1;
-		cursorEnable_ = true;
+		cursorEnable_ = false;
 		lineParam_ = 1;
+		delay_ = 0;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
+		// установка текущего журнала и максимального кол-во записей в нем
+		sParam.journalEntry.clear();
+		sParam.journalEntry.setCurrentDevice(GB_DEVICE_PRD);
+		if (sParam.typeDevice == AVANT_K400)
+			sParam.journalEntry.setMaxNumJrnEntries(GLB_JRN_PRD_K400_MAX);
+
 		// доплнительные команды
 		sParam.txComBuf.clear();
+		sParam.txComBuf.addCom(GB_COM_PRD_GET_JRN_CNT);
+		sParam.txComBuf.addCom(GB_COM_PRD_GET_JRN_ENTRY);
+		sParam.txComBuf.setInt16(sParam.journalEntry.getEntryAdress());
 	}
 
-	snprintf_P(&vLCDbuf[0], 21, title);
-	for(uint_fast8_t i = 0; i < 5; i++)
+	// номер текущей записи в архиве и максимальное кол-во записей
+	uint16_t cur_entry = sParam.journalEntry.getCurrentEntry();
+	uint16_t num_entries = sParam.journalEntry.getNumJrnEntries();
+
+	uint8_t poz = 0;
+	// вывод названия текущего пункта меню
+	snprintf_P(&vLCDbuf[poz], 21, title);
+	poz += 20;
+	// вывод номер текущей записи и их кол-ва
+	snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+	poz += 20;
+
+	if (num_entries == 0)
 	{
-		if (cursorLine_ == 1)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt0[i]);
-		if (cursorLine_ == 2)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt1[i]);
+		// вывод сообщения об отсутствии записей в журнале
+		snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
+	}
+	else if (!sParam.journalEntry.isReady())
+	{
+		// ифнорация о текущей записи еще не получена
+		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
+	}
+	else
+	{
+		// вывод номера команды
+		snprintf_P(&vLCDbuf[poz], 21,
+				fcNumComJrn, sParam.journalEntry.getNumCom());
+		poz += 20;
+		// вывод даты
+		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
+				sParam.journalEntry.dataTime.getDay(),
+				sParam.journalEntry.dataTime.getMonth(),
+				sParam.journalEntry.dataTime.getYear());
+		poz += 20;
+		// вывод времени
+		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
+				sParam.journalEntry.dataTime.getHour(),
+				sParam.journalEntry.dataTime.getMinute(),
+				sParam.journalEntry.dataTime.getSecond(),
+				sParam.journalEntry.dataTime.getMsSecond());
+		poz += 20;
+		// вывод события
+		uint8_t event = sParam.journalEntry.getEventType();
+		snprintf_P(&vLCDbuf[poz], 21, fcJrnPrd[event], event);
 	}
 
 	switch(key_)
 	{
 		case KEY_UP:
-			if (cursorLine_ > 1)
-				cursorLine_--;
+			if (sParam.journalEntry.setPreviousEntry())
+				sParam.txComBuf.addFastCom(GB_COM_PRD_GET_JRN_ENTRY);
 			break;
 		case KEY_DOWN:
-			if (cursorLine_ < 2)
-				cursorLine_++;
+			if (sParam.journalEntry.setNextEntry())
+				sParam.txComBuf.addFastCom(GB_COM_PRD_GET_JRN_ENTRY);
 			break;
 
 		case KEY_CANCEL:
@@ -1388,6 +1448,11 @@ clMenu::lvlJournalPrd()
 		default:
 			break;
 	}
+
+	// поместим в сообщение для БСП адрес необходимой записи
+	// размещен в конце, чтобы не терять время до следующего обращения к
+	// данному пункту меню
+	sParam.txComBuf.setInt16(sParam.journalEntry.getEntryAdress());
 }
 
 /**	Уровень меню. Управление.
@@ -1936,7 +2001,7 @@ clMenu::lvlSetupParamPrm()
 {
 	static char title[] PROGMEM = "Параметры\\Приемник";
 
-	static char punkt1[] PROGMEM = "Задержка срабат. ДВ";
+	static char punkt1[] PROGMEM = "Задержка на фикс.ком";
 	static char punkt2[] PROGMEM = "Блокиров. команды";
 	static char punkt3[] PROGMEM = "Задержка на выкл.ком";
 
@@ -1955,7 +2020,7 @@ clMenu::lvlSetupParamPrm()
 		uint8_t num = 0;
 		eGB_TYPE_DEVICE type = sParam.typeDevice;
 		sParam.txComBuf.clear();
-		if (sParam.typeDevice == AVANT_K400)
+		if (type == AVANT_K400)
 		{
 			punkt_[num++] = punkt1;
 			sParam.txComBuf.addCom(GB_COM_PRM_GET_BLOCK_COM);
@@ -1964,7 +2029,7 @@ clMenu::lvlSetupParamPrm()
 			punkt_[num++] = punkt3;
 			sParam.txComBuf.addCom(GB_COM_PRM_GET_TIME_OFF);
 		}
-		else if (sParam.typeDevice == AVANT_RZSK)
+		else if (type == AVANT_RZSK)
 		{
 			punkt_[num++] = punkt1;
 			sParam.txComBuf.addCom(GB_COM_PRM_GET_BLOCK_COM);
@@ -2065,10 +2130,10 @@ void
 clMenu::lvlSetupParamPrd()
 {
 	static char title[]  PROGMEM = "Параметры\\Передатчик";
-	static char punkt1[] PROGMEM = "Время включения";
+	static char punkt1[] PROGMEM = "Задержка срабат. ДВ";
 	static char punkt2[] PROGMEM = "Длительность команды";
 	static char punkt3[] PROGMEM = "Тестовая команда";
-	static char punkt4[] PROGMEM = "Длительные команды";
+	static char punkt4[] PROGMEM = "Следящие команды";
 	static char punkt5[] PROGMEM = "Блокиров. команды";
 
 	if (lvlCreate_)

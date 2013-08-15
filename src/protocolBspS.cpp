@@ -107,7 +107,31 @@ bool clProtocolBspS::getData()
 			}
 			else if (com == GB_COM_PRM_GET_JRN_CNT)
 			{
-				stat = sParam_->prm.setNumJrnEntry(TO_INT16(buf[B2], buf[B1]));
+				if (sParam_->journalEntry.getCurrentDevice() == GB_DEVICE_PRM)
+				{
+					uint16_t t = TO_INT16(buf[B2], buf[B1]);
+					stat = sParam_->journalEntry.setNumJrnEntry(t);
+				}
+			}
+			else if (com ==  GB_COM_PRM_GET_JRN_ENTRY)
+			{
+				if (sParam_->journalEntry.getCurrentDevice() == GB_DEVICE_PRM)
+				{
+					sParam_->journalEntry.dataTime.setYearFromBCD(buf[B16]);
+					sParam_->journalEntry.dataTime.setMonthFromBCD(buf[B15]);
+					sParam_->journalEntry.dataTime.setDayFromBCD(buf[B14]);
+					// B13 - день недели
+					sParam_->journalEntry.dataTime.setHourFromBCD(buf[B12]);
+					sParam_->journalEntry.dataTime.setMinuteFromBCD(buf[B11]);
+					sParam_->journalEntry.dataTime.setSecondFromBCD(buf[B10]);
+					uint16_t t = TO_INT16(buf[B9], buf[B8]);
+					sParam_->journalEntry.dataTime.setMsSecond(t);
+					sParam_->journalEntry.setDeviceJrn((eGB_DEVICE) buf[B1]);
+					sParam_->journalEntry.setNumCom(buf[B2]);
+					sParam_->journalEntry.setEventType(buf[B3]);
+					sParam_->journalEntry.setReady();
+					stat = true;
+				}
 			}
 		}
 		else if (mask == GB_COM_MASK_DEVICE_PRD)
@@ -143,9 +167,33 @@ bool clProtocolBspS::getData()
 				sParam_->prd.setLongCom(3, buf[B4]);
 				stat = true;
 			}
-			else if (com == GB_COM_DEF_GET_JRN_CNT)
+			else if (com == GB_COM_PRD_GET_JRN_CNT)
 			{
-				stat = sParam_->prd.setNumJrnEntry(TO_INT16(buf[B2], buf[B1]));
+				if (sParam_->journalEntry.getCurrentDevice() == GB_DEVICE_PRD)
+				{
+					uint16_t t = TO_INT16(buf[B2], buf[B1]);
+					stat = sParam_->journalEntry.setNumJrnEntry(t);
+				}
+			}
+			else if (com ==  GB_COM_PRD_GET_JRN_ENTRY)
+			{
+				if (sParam_->journalEntry.getCurrentDevice() == GB_DEVICE_PRD)
+				{
+					sParam_->journalEntry.dataTime.setYearFromBCD(buf[B16]);
+					sParam_->journalEntry.dataTime.setMonthFromBCD(buf[B15]);
+					sParam_->journalEntry.dataTime.setDayFromBCD(buf[B14]);
+					// B13 - день недели
+					sParam_->journalEntry.dataTime.setHourFromBCD(buf[B12]);
+					sParam_->journalEntry.dataTime.setMinuteFromBCD(buf[B11]);
+					sParam_->journalEntry.dataTime.setSecondFromBCD(buf[B10]);
+					uint16_t t = TO_INT16(buf[B9], buf[B8]);
+					sParam_->journalEntry.dataTime.setMsSecond(t);
+					sParam_->journalEntry.setDeviceJrn((eGB_DEVICE) buf[B1]);
+					sParam_->journalEntry.setNumCom(buf[B2]);
+					sParam_->journalEntry.setEventType(buf[B3]);
+					sParam_->journalEntry.setReady();
+					stat = true;
+				}
 			}
 		}
 		else
@@ -500,7 +548,8 @@ clProtocolBspS::sendData(eGB_COM com)
 			}
 			else if (com == GB_COM_DEF_GET_JRN_ENTRY)
 			{
-				num = addCom(com, sParam_->txComBuf.getInt16());
+				uint16_t t = sParam_->txComBuf.getInt16();
+				num = addCom(com, t >> 8, t);
 			}
 		}
 		else if (mask == GB_COM_MASK_DEVICE_PRM)
@@ -511,7 +560,8 @@ clProtocolBspS::sendData(eGB_COM com)
 			}
 			else if (com == GB_COM_PRM_GET_JRN_ENTRY)
 			{
-				num = addCom(com, sParam_->txComBuf.getInt16());
+				uint16_t t = sParam_->txComBuf.getInt16();
+				num = addCom(com, t >> 8, t);
 			}
 		}
 		else if (mask == GB_COM_MASK_DEVICE_PRD)
@@ -522,7 +572,8 @@ clProtocolBspS::sendData(eGB_COM com)
 			}
 			else if (com == GB_COM_PRD_GET_JRN_ENTRY)
 			{
-				num = addCom(com, sParam_->txComBuf.getInt16());
+				uint16_t t = sParam_->txComBuf.getInt16();
+				num = addCom(com, t >> 8, t);
 			}
 		}
 		else

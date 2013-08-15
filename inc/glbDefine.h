@@ -319,6 +319,14 @@ enum eGB_CONTROL
 	GB_CONTROL_MAX
 };
 
+// События журнала передатчика/приемника - конец и начало команды
+enum eGB_STATE_COM
+{
+	GB_STATE_COM_MIN = 0,
+	GB_STATE_COM_END = 0,
+	GB_STATE_COM_START,
+	GB_STATE_COM_MAX
+};
 
 /// Класс для даты и времени
 class TDataTime
@@ -1597,6 +1605,7 @@ public:
 		deviceJrn_ = GB_DEVICE_MAX;
 		eventType_ = MAX_JRN_EVENT_VALUE - MIN_JRN_EVENT_VALUE + 1;
 		regime_ = GB_REGIME_MAX;
+		numCom_ = 0;
 
 		numJrnEntries_ = 0;
 		maxNumJrnEntry_ = 0;
@@ -1642,13 +1651,30 @@ public:
 	bool setEventType(uint8_t val)
 	{
 		bool state = false;
-		if ( (val >= MIN_JRN_EVENT_VALUE) && (val <= MAX_JRN_EVENT_VALUE) )
+
+		uint8_t min = 255;
+		uint8_t max = 0;
+		// установка мин/макс значения события, в зависимости от
+		// текущего журнала
+		if (currentDevice_ == GB_DEVICE_GLB)
+		{
+			min = MIN_JRN_EVENT_VALUE;
+			max = MAX_JRN_EVENT_VALUE;
+		}
+		else if (currentDevice_ == GB_DEVICE_PRD)
+		{
+			min = GB_STATE_COM_MIN;
+			max = GB_STATE_COM_MAX;
+		}
+
+		if ( (val >= min) && (val <= max) )
 		{
 			eventType_ = val;
 			state = true;
 		}
 		else
-			eventType_ = MAX_JRN_EVENT_VALUE;
+			eventType_ = max;
+
 		return state;
 	}
 	uint8_t getEventType() const { return eventType_; }
@@ -1667,6 +1693,19 @@ public:
 		return state;
 	}
 	eGB_REGIME getRegime() const { return regime_; }
+
+	// номер команды
+	bool setNumCom(uint8_t num)
+	{
+		bool stat = false;
+		if ( (num > 0) && (num <= MAX_NUM_COM_PRD) )
+		{
+			numCom_ = num;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getNumCom() const { return numCom_; }
 
 	// количество записей в журнале
 	bool setNumJrnEntry(uint16_t val)
@@ -1779,6 +1818,9 @@ private:
 
 	// адрес текущей записи (отображаемой на экране)
 	uint16_t currentEntry_;
+
+	// номер команды в текущей записи
+	uint16_t numCom_;
 
 	// флаг получения информации о текущей записи
 	bool ready_;

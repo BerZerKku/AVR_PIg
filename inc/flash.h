@@ -206,23 +206,31 @@ static const char fcPrdFault0800rzsk[] 	PROGMEM = "Неиспр.вход. КСК";
 // пераметры
 static const char fcValue[] 			PROGMEM = "Значение: ";
 static const char fcRange[] 			PROGMEM = "Диапазон: ";
-static const char fcNumCom[] 			PROGMEM = "Номер команды: %d";
+static const char fcNumCom[] 			PROGMEM = "Номер команды: %u";
 static const char fcRangeDec[] 			PROGMEM = "%d..%d%s";
 static const char fcRangeList[] 		PROGMEM = "список";
 static const char fcRangeOnOff[]		PROGMEM = "вкл./выкл.";
-static const char fcNumPunkt[] 			PROGMEM = "Номер: %d  Всего: %d";
+static const char fcNumPunkt[] 			PROGMEM = "Номер: %u  Всего: %u";
 static const char fcOn[]				PROGMEM = "вкл.";
 static const char fcOff[]				PROGMEM = "выкл.";
 
 
 //	ЖУРНАЛ
 static const char fcJrnEmpty[] 			PROGMEM = "ЖУРНАЛ ПУСТ";
-static const char fcJrnNumEntries[] 	PROGMEM = "Запись %d / %d";
+static const char fcJrnNumEntries[] 	PROGMEM = "Запись %u / %u";
 static const char fcRegimeJrn[]			PROGMEM = "Режим:";
+static const char fcNumComJrn[]			PROGMEM = "Команда: %u";
 static const char fcDateJrn[]			PROGMEM = "Дата: %02u.%02u.%02u";
 static const char fcTimeJrn[]			PROGMEM = "Время: %02u:%02u:%02u.%03u";
 static const char fcJrnNotReady[]		PROGMEM = "СЧИТЫВАНИЕ ЗАПИСИ";
 
+// записи журнала ПРД
+static const char fcJrnPrd[GB_STATE_COM_MAX +1] [21] PROGMEM =
+{
+		"Окончание команды",
+		"Начало команды",
+		"Ошибочное значение"
+};
 // записи журнала событий для К400 и РЗСК
 static char
 fcJrnEventK400[MAX_JRN_EVENT_VALUE + 1] [21] PROGMEM =
