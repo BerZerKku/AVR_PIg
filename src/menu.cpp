@@ -15,9 +15,8 @@
 static char vLCDbuf[SIZE_BUF_STRING + 1];
 
 /// кол-во строк данных отображаемых на экране
-#define NUM_TEXT_LINES 6
+#define NUM_TEXT_LINES (SIZE_BUF_STRING / 20)
 
-//clMenu::clMenu(clProtocolS *protocol) : pProtocol(protocol)
 clMenu::clMenu()
 {
 	lvlMenu = &clMenu::lvlStart;
@@ -576,6 +575,21 @@ clMenu::clearTextBuf()
 		vLCDbuf[i] = ' ';
 }
 
+/** Очистка строки
+ * 	@param line Номер строки 1..NUM_TEXT_LINES
+ * 	@retrun Нет
+ */
+void
+clMenu::clearLine(uint8_t line)
+{
+	if ( (line > 0) && (line <= NUM_TEXT_LINES) )
+	{
+		line = (line - 1) * 20;
+		for(uint_fast8_t i = 0; i < 20; i++)
+			vLCDbuf[line++] = ' ';
+	}
+}
+
 /**	Вывод в указанном месте отображаемого параметра.
  * 	@param poz Текущая позиция (0..5, 0 первая строка слева, 5 - третья справа)
  * 	@param par Второй отображаемый параметр
@@ -1098,21 +1112,21 @@ clMenu::lvlJournalEvent()
 		vLCDdrawBoard(lineParam_);
 
 		// установка текущего журнала и максимального кол-во записей в нем
-		sParam.journalEntry.clear();
-		sParam.journalEntry.setCurrentDevice(GB_DEVICE_GLB);
+		sParam.jrnEntry.clear();
+		sParam.jrnEntry.setCurrentDevice(GB_DEVICE_GLB);
 		if (sParam.typeDevice == AVANT_K400)
-			sParam.journalEntry.setMaxNumJrnEntries(GLB_JRN_EVENT_K400_MAX);
+			sParam.jrnEntry.setMaxNumJrnEntries(GLB_JRN_EVENT_K400_MAX);
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
 		sParam.txComBuf.addCom(GB_COM_GET_JRN_CNT);
 		sParam.txComBuf.addCom(GB_COM_GET_JRN_ENTRY);
-		sParam.txComBuf.setInt16(sParam.journalEntry.getEntryAdress());
+		sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 	}
 
 	// номер текущей записи в архиве и максимальное кол-во записей
-	uint16_t cur_entry = sParam.journalEntry.getCurrentEntry();
-	uint16_t num_entries = sParam.journalEntry.getNumJrnEntries();
+	uint16_t cur_entry = sParam.jrnEntry.getCurrentEntry();
+	uint16_t num_entries = sParam.jrnEntry.getNumJrnEntries();
 
 	uint8_t poz = 0;
 	// вывод названия текущего пункта меню
@@ -1127,7 +1141,7 @@ clMenu::lvlJournalEvent()
 		// вывод сообщения об отсутствии записей в журнале
 		snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
 	}
-	else if (!sParam.journalEntry.isReady())
+	else if (!sParam.jrnEntry.isReady())
 	{
 		// ифнорация о текущей записи еще не получена
 		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
@@ -1137,35 +1151,35 @@ clMenu::lvlJournalEvent()
 		// вывод режима
 		snprintf_P(&vLCDbuf[poz], 21, fcRegimeJrn);
 		snprintf_P(&vLCDbuf[poz + 7], 13,
-				fcRegime[sParam.journalEntry.getRegime()]);
+				fcRegime[sParam.jrnEntry.getRegime()]);
 		poz += 20;
 		// вывод даты
 		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
-				sParam.journalEntry.dataTime.getDay(),
-				sParam.journalEntry.dataTime.getMonth(),
-				sParam.journalEntry.dataTime.getYear());
+				sParam.jrnEntry.dataTime.getDay(),
+				sParam.jrnEntry.dataTime.getMonth(),
+				sParam.jrnEntry.dataTime.getYear());
 		poz += 20;
 //	    snprintf_P(&vLCDbuf[poz],4,fcDevices[sParam.journalEntry.getDevice()]);
 		// вывод времени
 		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
-						sParam.journalEntry.dataTime.getHour(),
-						sParam.journalEntry.dataTime.getMinute(),
-						sParam.journalEntry.dataTime.getSecond(),
-						sParam.journalEntry.dataTime.getMsSecond());
+						sParam.jrnEntry.dataTime.getHour(),
+						sParam.jrnEntry.dataTime.getMinute(),
+						sParam.jrnEntry.dataTime.getSecond(),
+						sParam.jrnEntry.dataTime.getMsSecond());
 		poz += 20;
 		// вывод события
-		uint8_t event = sParam.journalEntry.getEventType();
+		uint8_t event = sParam.jrnEntry.getEventType();
 		snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event], event);
 	}
 
 	switch(key_)
 	{
 		case KEY_UP:
-			if (sParam.journalEntry.setPreviousEntry())
+			if (sParam.jrnEntry.setPreviousEntry())
 				sParam.txComBuf.addFastCom(GB_COM_GET_JRN_ENTRY);
 			break;
 		case KEY_DOWN:
-			if (sParam.journalEntry.setNextEntry())
+			if (sParam.jrnEntry.setNextEntry())
 				sParam.txComBuf.addFastCom(GB_COM_GET_JRN_ENTRY);
 			break;
 
@@ -1181,7 +1195,7 @@ clMenu::lvlJournalEvent()
 	// поместим в сообщение для БСП адрес необходимой записи
 	// размещен в конце, чтобы не терять время до следующего обращения к
 	// данному пункту меню
-	sParam.txComBuf.setInt16(sParam.journalEntry.getEntryAdress());
+	sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 }
 
 /** Уровень меню. Журнал защиты.
@@ -1245,7 +1259,7 @@ clMenu::lvlJournalDef()
 	// поместим в сообщение для БСП адрес необходимой записи
 	// размещен в конце, чтобы не терять время до следующего обращения к
 	// данному пункту меню
-	sParam.txComBuf.setInt16(sParam.journalEntry.getEntryAdress());
+	sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 }
 
 /** Уровень меню. Журнал приемника.
@@ -1267,21 +1281,21 @@ clMenu::lvlJournalPrm()
 		vLCDdrawBoard(lineParam_);
 
 		// установка текущего журнала и максимального кол-во записей в нем
-		sParam.journalEntry.clear();
-		sParam.journalEntry.setCurrentDevice(GB_DEVICE_PRM);
+		sParam.jrnEntry.clear();
+		sParam.jrnEntry.setCurrentDevice(GB_DEVICE_PRM);
 		if (sParam.typeDevice == AVANT_K400)
-			sParam.journalEntry.setMaxNumJrnEntries(GLB_JRN_PRM_K400_MAX);
+			sParam.jrnEntry.setMaxNumJrnEntries(GLB_JRN_PRM_K400_MAX);
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
 		sParam.txComBuf.addCom(GB_COM_PRM_GET_JRN_CNT);
 		sParam.txComBuf.addCom(GB_COM_PRM_GET_JRN_ENTRY);
-		sParam.txComBuf.setInt16(sParam.journalEntry.getEntryAdress());
+		sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 	}
 
 	// номер текущей записи в архиве и максимальное кол-во записей
-	uint16_t cur_entry = sParam.journalEntry.getCurrentEntry();
-	uint16_t num_entries = sParam.journalEntry.getNumJrnEntries();
+	uint16_t cur_entry = sParam.jrnEntry.getCurrentEntry();
+	uint16_t num_entries = sParam.jrnEntry.getNumJrnEntries();
 
 	uint8_t poz = 0;
 	// вывод названия текущего пункта меню
@@ -1296,7 +1310,7 @@ clMenu::lvlJournalPrm()
 		// вывод сообщения об отсутствии записей в журнале
 		snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
 	}
-	else if (!sParam.journalEntry.isReady())
+	else if (!sParam.jrnEntry.isReady())
 	{
 		// ифнорация о текущей записи еще не получена
 		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
@@ -1305,34 +1319,34 @@ clMenu::lvlJournalPrm()
 	{
 		// вывод номера команды
 		snprintf_P(&vLCDbuf[poz], 21,
-				fcNumComJrn, sParam.journalEntry.getNumCom());
+				fcNumComJrn, sParam.jrnEntry.getNumCom());
 		poz += 20;
 		// вывод даты
 		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
-				sParam.journalEntry.dataTime.getDay(),
-				sParam.journalEntry.dataTime.getMonth(),
-				sParam.journalEntry.dataTime.getYear());
+				sParam.jrnEntry.dataTime.getDay(),
+				sParam.jrnEntry.dataTime.getMonth(),
+				sParam.jrnEntry.dataTime.getYear());
 		poz += 20;
 		// вывод времени
 		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
-				sParam.journalEntry.dataTime.getHour(),
-				sParam.journalEntry.dataTime.getMinute(),
-				sParam.journalEntry.dataTime.getSecond(),
-				sParam.journalEntry.dataTime.getMsSecond());
+				sParam.jrnEntry.dataTime.getHour(),
+				sParam.jrnEntry.dataTime.getMinute(),
+				sParam.jrnEntry.dataTime.getSecond(),
+				sParam.jrnEntry.dataTime.getMsSecond());
 		poz += 20;
 		// вывод события
-		uint8_t event = sParam.journalEntry.getEventType();
+		uint8_t event = sParam.jrnEntry.getEventType();
 		snprintf_P(&vLCDbuf[poz], 21, fcJrnPrd[event], event);
 	}
 
 	switch(key_)
 	{
 		case KEY_UP:
-			if (sParam.journalEntry.setPreviousEntry())
+			if (sParam.jrnEntry.setPreviousEntry())
 				sParam.txComBuf.addFastCom(GB_COM_PRM_GET_JRN_ENTRY);
 			break;
 		case KEY_DOWN:
-			if (sParam.journalEntry.setNextEntry())
+			if (sParam.jrnEntry.setNextEntry())
 				sParam.txComBuf.addFastCom(GB_COM_PRM_GET_JRN_ENTRY);
 			break;
 
@@ -1348,7 +1362,7 @@ clMenu::lvlJournalPrm()
 	// поместим в сообщение для БСП адрес необходимой записи
 	// размещен в конце, чтобы не терять время до следующего обращения к
 	// данному пункту меню
-	sParam.txComBuf.setInt16(sParam.journalEntry.getEntryAdress());
+	sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 }
 
 /** Уровень меню. Журнал передатчика.
@@ -1371,21 +1385,21 @@ clMenu::lvlJournalPrd()
 		vLCDdrawBoard(lineParam_);
 
 		// установка текущего журнала и максимального кол-во записей в нем
-		sParam.journalEntry.clear();
-		sParam.journalEntry.setCurrentDevice(GB_DEVICE_PRD);
+		sParam.jrnEntry.clear();
+		sParam.jrnEntry.setCurrentDevice(GB_DEVICE_PRD);
 		if (sParam.typeDevice == AVANT_K400)
-			sParam.journalEntry.setMaxNumJrnEntries(GLB_JRN_PRD_K400_MAX);
+			sParam.jrnEntry.setMaxNumJrnEntries(GLB_JRN_PRD_K400_MAX);
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
 		sParam.txComBuf.addCom(GB_COM_PRD_GET_JRN_CNT);
 		sParam.txComBuf.addCom(GB_COM_PRD_GET_JRN_ENTRY);
-		sParam.txComBuf.setInt16(sParam.journalEntry.getEntryAdress());
+		sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 	}
 
 	// номер текущей записи в архиве и максимальное кол-во записей
-	uint16_t cur_entry = sParam.journalEntry.getCurrentEntry();
-	uint16_t num_entries = sParam.journalEntry.getNumJrnEntries();
+	uint16_t cur_entry = sParam.jrnEntry.getCurrentEntry();
+	uint16_t num_entries = sParam.jrnEntry.getNumJrnEntries();
 
 	uint8_t poz = 0;
 	// вывод названия текущего пункта меню
@@ -1400,7 +1414,7 @@ clMenu::lvlJournalPrd()
 		// вывод сообщения об отсутствии записей в журнале
 		snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
 	}
-	else if (!sParam.journalEntry.isReady())
+	else if (!sParam.jrnEntry.isReady())
 	{
 		// ифнорация о текущей записи еще не получена
 		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
@@ -1409,34 +1423,34 @@ clMenu::lvlJournalPrd()
 	{
 		// вывод номера команды
 		snprintf_P(&vLCDbuf[poz], 21,
-				fcNumComJrn, sParam.journalEntry.getNumCom());
+				fcNumComJrn, sParam.jrnEntry.getNumCom());
 		poz += 20;
 		// вывод даты
 		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
-				sParam.journalEntry.dataTime.getDay(),
-				sParam.journalEntry.dataTime.getMonth(),
-				sParam.journalEntry.dataTime.getYear());
+				sParam.jrnEntry.dataTime.getDay(),
+				sParam.jrnEntry.dataTime.getMonth(),
+				sParam.jrnEntry.dataTime.getYear());
 		poz += 20;
 		// вывод времени
 		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
-				sParam.journalEntry.dataTime.getHour(),
-				sParam.journalEntry.dataTime.getMinute(),
-				sParam.journalEntry.dataTime.getSecond(),
-				sParam.journalEntry.dataTime.getMsSecond());
+				sParam.jrnEntry.dataTime.getHour(),
+				sParam.jrnEntry.dataTime.getMinute(),
+				sParam.jrnEntry.dataTime.getSecond(),
+				sParam.jrnEntry.dataTime.getMsSecond());
 		poz += 20;
 		// вывод события
-		uint8_t event = sParam.journalEntry.getEventType();
+		uint8_t event = sParam.jrnEntry.getEventType();
 		snprintf_P(&vLCDbuf[poz], 21, fcJrnPrd[event], event);
 	}
 
 	switch(key_)
 	{
 		case KEY_UP:
-			if (sParam.journalEntry.setPreviousEntry())
+			if (sParam.jrnEntry.setPreviousEntry())
 				sParam.txComBuf.addFastCom(GB_COM_PRD_GET_JRN_ENTRY);
 			break;
 		case KEY_DOWN:
-			if (sParam.journalEntry.setNextEntry())
+			if (sParam.jrnEntry.setNextEntry())
 				sParam.txComBuf.addFastCom(GB_COM_PRD_GET_JRN_ENTRY);
 			break;
 
@@ -1452,7 +1466,7 @@ clMenu::lvlJournalPrd()
 	// поместим в сообщение для БСП адрес необходимой записи
 	// размещен в конце, чтобы не терять время до следующего обращения к
 	// данному пункту меню
-	sParam.txComBuf.setInt16(sParam.journalEntry.getEntryAdress());
+	sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 }
 
 /**	Уровень меню. Управление.
@@ -1880,66 +1894,57 @@ clMenu::lvlSetupParamDef()
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	uint8_t poz = lineParam_ * 20;
+	uint8_t poz = 20;
 	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, numPunkts_);
-	poz += 20;
 
+	poz = 40;
 	PGM_P p = punkt_[cursorLine_ - 1];
 	snprintf_P(&vLCDbuf[poz], 21, p);
-	poz += 20;
 
 	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
-	snprintf_P(&vLCDbuf[poz], 11, fcRange);
-	poz += 10;
+	poz = 80;
+	poz += snprintf_P(&vLCDbuf[poz], 11, fcRange);
 	if (p == punkt1)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
-		poz += 10;
 	}
 	else if (p == punkt2)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
-		poz += 10;
 	}
 	else if (p == punkt3)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
 				DEF_T_NO_MAN_MIN, DEF_T_NO_MAN_MAX, "час");
-		poz += 10;
 	}
 	else if (p == punkt4)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
 				DEF_OVERLAP_MIN, DEF_OVERLAP_MAX, "град");
-		poz += 10;
 	}
 	else if (p == punkt5)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
 				DEF_DELAY_MIN, DEF_DELAY_MAX, "град");
-		poz += 10;
 	}
 	else if (p == punkt6)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
 				DEF_RZ_THRESH_MIN, DEF_RZ_THRESH_MAX, "дБ");
-		poz += 10;
 	}
 	else if (p == punkt7)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
 				DEF_RZ_DEC_MIN, DEF_RZ_DEC_MAX, "дБ");
-		poz += 10;
 	}
 	else if (p == punkt8)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
-		poz += 10;
 	}
 
 	// вывод надписи "Значение:" и переход к выводу самого значения
-	snprintf_P(&vLCDbuf[poz], 11, fcValue);
-	poz += 10;
+	poz = 100;
+	poz += snprintf_P(&vLCDbuf[poz], 11, fcValue);
 	if (p == punkt1)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcDefType[sParam.def.getDefType()]);
@@ -2043,52 +2048,49 @@ clMenu::lvlSetupParamPrm()
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	uint8_t poz = lineParam_ * 20;
+	uint8_t poz = 20;
 	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, numPunkts_);
-	poz += 20;
 
+	poz = 40;
 	PGM_P p = punkt_[cursorLine_ - 1];
 	snprintf_P(&vLCDbuf[poz], 21, p);
-	poz += 20;
+
+	// при необходимости, вывод подномера данного параметра
+	poz = 60;
+	if ( (p == punkt2) || (p == punkt3) )
+	{
+		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_);
+	}
 
 	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
-	snprintf_P(&vLCDbuf[poz], 11, fcRange);
-	poz += 10;
+	poz = 80;
+	poz += snprintf_P(&vLCDbuf[poz], 11, fcRange);
 	if (p == punkt1)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
 				PRM_TIME_ON_MIN, PRM_TIME_ON_MAX, "мс");
-		poz += 10;
 	}
 	else if (p == punkt2)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
-		poz += 10;
-		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_);
-		poz += 20;
 	}
 	else if (p == punkt3)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
 				PRM_TIME_OFF_MIN, PRM_TIME_OFF_MAX, "мс");
-		poz += 10;
-		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_);
-		poz += 20;
 	}
 
 	// вывод надписи "Значение:" и переход к выводу самого значения
-	snprintf_P(&vLCDbuf[poz], 11, fcValue);
-	poz += 10;
+	poz = 100;
+	poz += snprintf_P(&vLCDbuf[poz], 11, fcValue);
 	if (p == punkt1)
 	{
 		snprintf(&vLCDbuf[poz], 11, "%dмс", sParam.prm.getTimeOn());
 	}
 	else if (p == punkt2)
 	{
-		if (sParam.prm.getBlockCom(curCom_ - 1))
-			snprintf_P(&vLCDbuf[poz], 11, fcOn);
-		else
-			snprintf_P(&vLCDbuf[poz], 11, fcOff);
+		uint8_t val = (sParam.prm.getBlockCom(curCom_ - 1) > 0) ? 1 : 0;
+		snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
 	}
 	else if (p == punkt3)
 	{
@@ -2180,52 +2182,49 @@ clMenu::lvlSetupParamPrd()
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	uint8_t poz = lineParam_ * 20;
+	uint8_t poz = 20;
 	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, numPunkts_);
-	poz += 20;
 
+	poz = 40;
 	PGM_P p = punkt_[cursorLine_ - 1];
 	snprintf_P(&vLCDbuf[poz], 21, p);
-	poz += 20;
+
+	// при необходимости выводим подномер данного параметра
+	poz = 60;
+	if ( (p == punkt4) || (p == punkt5) )
+	{
+		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_);
+	}
 
 	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
-	snprintf_P(&vLCDbuf[poz], 11, fcRange);
-	poz += 10;
+	poz = 80;
+	poz += snprintf_P(&vLCDbuf[poz], 11, fcRange);
 	if (p == punkt1)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
 				PRD_TIME_ON_MIN, PRD_TIME_ON_MAX, "мс");
-		poz += 10;
 	}
 	else if (p == punkt2)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
 				PRD_DURATION_MIN, PRD_DURATION_MAX, "мс");
-		poz += 10;
 	}
 	else if (p == punkt3)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
-		poz += 10;
 	}
 	else if (p == punkt4)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
-		poz += 10;
-		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_);
-		poz += 20;
 	}
 	else if (p == punkt5)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
-		poz += 10;
-		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_);
-		poz += 20;
 	}
 
 	// вывод надписи "Значение:" и переход к выводу самого значения
-	snprintf_P(&vLCDbuf[poz], 11, fcValue);
-	poz += 10;
+	poz = 100;
+	poz += snprintf_P(&vLCDbuf[poz], 11, fcValue);
 	if (p == punkt1)
 	{
 		snprintf(&vLCDbuf[poz], 11, "%dмс", sParam.prd.getTimeOn());
@@ -2354,65 +2353,56 @@ clMenu::lvlSetupParamGlb()
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	uint8_t poz = lineParam_ * 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, numPunkts_);
-	poz += 20;
+	uint8_t poz = 20;
+	snprintf_P(&vLCDbuf[20], 21, fcNumPunkt, cursorLine_, numPunkts_);
 
+	poz = 40;
 	PGM_P p = punkt_[cursorLine_ - 1];
 	snprintf_P(&vLCDbuf[poz], 21, p);
-	poz += 20;
 
 	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
-	snprintf_P(&vLCDbuf[poz], 11, fcRange);
-	poz += 10;
+	poz = 80;
+	poz += snprintf_P(&vLCDbuf[poz], 11, fcRange);
 	if (p == punkt1)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
-		poz += 10;
 	}
 	else if (p == punkt2)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
 				GLB_DEV_NUM_MIN, GLB_DEV_NUM_MAX, "");
-		poz += 10;
 	}
 	else if (p == punkt3)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
-		poz += 10;
 	}
 	else if (p == punkt4)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
 				GLB_CF_THRESH_MIN, GLB_CF_THRESH_MAX, "дБ");
-		poz += 10;
 	}
 	else if (p == punkt5)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
 				GLB_T_RERUN_MIN, GLB_T_RERUN_MAX,  "c");
-		poz += 10;
 	}
 	else if (p == punkt6)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
-		poz += 10;
 	}
 	else if (p == punkt7)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
-		poz += 10;
 	}
 	else if (p == punkt8)
 	{
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec,
 				GLB_IN_DEC_MIN, GLB_IN_DEC_MAX, "дБ");
-		poz += 10;
 	}
 
 	// вывод надписи "Значение:" и переход к выводу самого значения
-	snprintf_P(&vLCDbuf[poz], 11, fcValue);
-	poz += 10;
+	poz = 100;
+	poz += snprintf_P(&vLCDbuf[poz], 11, fcValue);
 	if (p == punkt1)
 	{
 		if (sParam.glb.getTimeSinchr())
@@ -2485,8 +2475,12 @@ void
 clMenu::lvlSetupDT()
 {
 	static char title[]  PROGMEM = "Настройка\\Время&дата";
-	static char punkt1[] PROGMEM = "%d. Дата";
-	static char punkt2[] PROGMEM = "%d. Время";
+	static char punkt1[] PROGMEM = "%d. Год";
+	static char punkt2[] PROGMEM = "%d. Месяц";
+	static char punkt3[] PROGMEM = "%d. День";
+	static char punkt4[] PROGMEM = "%d. Часы";
+	static char punkt5[] PROGMEM = "%d. Минуты";
+	static char punkt6[] PROGMEM = "%d. Секунды";
 
 	if (lvlCreate_)
 	{
@@ -2501,15 +2495,41 @@ clMenu::lvlSetupDT()
 		uint8_t num = 0;
 		punkt_[num++] = punkt1;
 		punkt_[num++] = punkt2;
+		punkt_[num++] = punkt3;
+		punkt_[num++] = punkt4;
+		punkt_[num++] = punkt5;
+		punkt_[num++] = punkt6;
 		numPunkts_ = num;
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
+		sParam.txComBuf.addCom(GB_COM_GET_TIME);
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 	printPunkts();
 
+
+	if (enterParam.isEnable())
+	{
+		eMENU_ENTER_PARAM stat = (this->*enterFunc_) ();
+
+		if (stat != MENU_ENTER_PARAM_WORK)
+		{
+			// если состояние отлично от работы, закончим ввод параметра
+			if (stat == MENU_ENTER_PARAM_READY)
+			{
+				// при завершении ввода, введеное значение копируется на свое
+				// место в буфере ввода
+				// а затем происходит копирование в буфер передачи
+				enterParam.uint8[enterParam.uint8[6] - 1] =
+						BIN_TO_BCD(enterParam.getValue());
+				sParam.txComBuf.copyToBufer(enterParam.uint8, 6);
+				sParam.txComBuf.addFastCom(GB_COM_SET_TIME);
+			}
+			enterParam.setDisable();
+		}
+	}
 
 	switch(key_)
 	{
@@ -2520,6 +2540,64 @@ clMenu::lvlSetupDT()
 			cursorLineDown();
 			break;
 
+		case KEY_ENTER:
+			if (punkt_[cursorLine_ - 1] == punkt1)
+			{
+				enterParam.setEnable();
+				enterParam.setValueRange(0, 99);
+				enterParam.setValue(sParam.dataTime.getYear());
+				enterParam.uint8[6] = 1;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt2)
+			{
+				enterParam.setEnable();
+				enterParam.setValueRange(1, 12);
+				enterParam.setValue(sParam.dataTime.getMonth());
+				enterParam.uint8[6] = 2;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt3)
+			{
+				enterParam.setEnable();
+				uint8_t max = sParam.dataTime.getNumDaysInMonth();
+				enterParam.setValueRange(1, max);
+				enterParam.setValue(sParam.dataTime.getDay());
+				enterParam.uint8[6] = 3;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt4)
+			{
+				enterParam.setEnable();
+				enterParam.setValueRange(0, 23);
+				enterParam.setValue(sParam.dataTime.getHour());
+				enterParam.uint8[6] = 4;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt5)
+			{
+				enterParam.setEnable();
+				enterParam.setValueRange(0, 59);
+				enterParam.setValue(sParam.dataTime.getMinute());
+				enterParam.uint8[6] = 5;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt6)
+			{
+				enterParam.setEnable();
+				enterParam.setValueRange(0, 59);
+				enterParam.setValue(sParam.dataTime.getSecond());
+				enterParam.uint8[6] = 6;
+			}
+
+			// буфер значений общий для обоих случаев
+			// байты расположены в порядке передачи в БСП
+			enterFunc_ = &clMenu::enterValue;
+			enterParam.com = GB_COM_SET_TIME;
+			// сохраним текущие значения даты и времени
+			enterParam.uint8[0] = BIN_TO_BCD(sParam.dataTime.getYear());
+			enterParam.uint8[1] = BIN_TO_BCD(sParam.dataTime.getMonth());
+			enterParam.uint8[2] = BIN_TO_BCD(sParam.dataTime.getDay());
+			enterParam.uint8[3] = BIN_TO_BCD(sParam.dataTime.getHour());
+			enterParam.uint8[4] = BIN_TO_BCD(sParam.dataTime.getMinute());
+			enterParam.uint8[5] = BIN_TO_BCD(sParam.dataTime.getSecond());
+			break;
+
 		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlSetup;
 			lvlCreate_ = true;
@@ -2528,6 +2606,60 @@ clMenu::lvlSetupDT()
 		default:
 			break;
 	}
+}
+
+/** Ввод целого значения.
+ * 	@param нет
+ * 	@return True - по окончанию
+ */
+eMENU_ENTER_PARAM
+clMenu::enterValue()
+{
+	static char enter[5] [13] PROGMEM =
+	{
+			"Ввод: %S    ",
+			"Ввод: %01u  ",
+			"Ввод: %02u  ",
+			"Ввод: %03u  ",
+			"Ввод: %04u  "
+	};
+
+	eMENU_ENTER_PARAM stat = MENU_ENTER_PARAM_WORK;
+
+	uint16_t val = enterParam.getValue();
+	uint8_t num = enterParam.getValueNumSymbols();
+	// проверка на максимальное кол-во вводимых символов
+	// при 0 - строка из флеш
+	if (num >= 5)
+		num = 0;
+
+	clearLine(NUM_TEXT_LINES);
+
+	uint8_t poz = 100;
+	poz += snprintf_P(&vLCDbuf[poz], 21, enter[num], val);
+
+	switch(key_)
+	{
+		case KEY_CANCEL:
+			stat = MENU_ENTER_PARAM_NO;
+			break;
+
+		case KEY_UP:
+			enterParam.incValue();
+			break;
+		case KEY_DOWN:
+			enterParam.decValue();
+			break;
+
+		case KEY_ENTER:
+			stat = MENU_ENTER_PARAM_READY;
+			break;
+		default:
+			break;
+	}
+	key_ = KEY_NO;
+
+	return stat;
 }
 
 /**	Вывод на экран текущих пунктов меню и курсора

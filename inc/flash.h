@@ -27,7 +27,7 @@ static const char fcDeviceName02[] PROGMEM = "ПРД";
 
 // режимы устройств
 // кол-во режимов (без учета "Ошибка") должно совпадать с MAX_NUM_REGIME
-static const char fcRegime[GB_REGIME_MAX + 1] [8] PROGMEM =
+static const char fcRegime[GB_REGIME_MAX + 1] [11] PROGMEM =
 {
 	"Выведен",
 	"Готов",
@@ -35,7 +35,7 @@ static const char fcRegime[GB_REGIME_MAX + 1] [8] PROGMEM =
 	"Речь",
 	"Тест 1",
 	"Тест 2",
-	"Ошибка"
+	"ошибка"
 };
 
 // тип защиты
@@ -49,6 +49,7 @@ static const char fcDefType[DEF_TYPE_MAX + 1] [11] PROGMEM =
 	"НЗ-МК",
 	"ППЗ-ПрПд",
 	"ППЗ-МК",
+	"ошибка"
 };
 
 static const char fcNumDevices[GB_NUM_DEVICES_MAX + 1] [11] PROGMEM =
@@ -63,7 +64,15 @@ static const char fcPrmType[DEF_PRM_TYPE_MAX + 1] [11] PROGMEM =
 {
 		"Акт+Пасс",
 		"Активный",
-		"Пассивный"
+		"Пассивный",
+		"ошибка"
+};
+
+static const char fcOnOff[3] [11] PROGMEM =
+{
+		"Выкл.",
+		"Вкл.",
+		"ошибка"
 };
 
 static const char fcDevices[GB_DEVICE_MAX + 1] [4] PROGMEM =
@@ -204,6 +213,7 @@ static const char fcPrdFault0800rzsk[] 	PROGMEM = "Неиспр.вход. КСК";
 
 
 // пераметры
+static const char fcEnterInt[]			PROGMEM = "Ввод: %f";
 static const char fcValue[] 			PROGMEM = "Значение: ";
 static const char fcRange[] 			PROGMEM = "Диапазон: ";
 static const char fcNumCom[] 			PROGMEM = "Номер команды: %u";
@@ -214,7 +224,6 @@ static const char fcNumPunkt[] 			PROGMEM = "Номер: %u  Всего: %u";
 static const char fcOn[]				PROGMEM = "вкл.";
 static const char fcOff[]				PROGMEM = "выкл.";
 
-
 //	ЖУРНАЛ
 static const char fcJrnEmpty[] 			PROGMEM = "ЖУРНАЛ ПУСТ";
 static const char fcJrnNumEntries[] 	PROGMEM = "Запись %u / %u";
@@ -224,8 +233,8 @@ static const char fcDateJrn[]			PROGMEM = "Дата: %02u.%02u.%02u";
 static const char fcTimeJrn[]			PROGMEM = "Время: %02u:%02u:%02u.%03u";
 static const char fcJrnNotReady[]		PROGMEM = "СЧИТЫВАНИЕ ЗАПИСИ";
 
-// записи журнала ПРД
-static const char fcJrnPrd[GB_STATE_COM_MAX +1] [21] PROGMEM =
+// записи журнала ПРД и ПРМ
+static const char fcJrnPrd[GB_STATE_COM_MAX + 1] [21] PROGMEM =
 {
 		"Окончание команды",
 		"Начало команды",

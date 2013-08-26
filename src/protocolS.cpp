@@ -154,32 +154,33 @@ clProtocolS::addCom()
 
 
 /**	Подготовка к отправке команды с данными (заполнение буфера)
- * 	@param *buf Указатель на начало данных
+ * 	@param com Команда
  * 	@param size Кол-во байт данных
+ * 	@param b[] Указатель на начало данных
  * 	@return Кол-во отправляемых байт данных
  */
-//uint8_t
-//clProtocolS::addCom(uint8_t com, uint8_t size, uint8_t buf[])
-//{
-//	uint8_t cnt = 0;
-//
-//	if (size < (this->size - 5))
-//	{
-//		buf[cnt++] = 0x55;
-//		buf[cnt++] = 0xAA;
-//		buf[cnt++] = com;
-//		buf[cnt++] = size;
-//		// Скопируем данные в буфер передатчика
-//		for(uint8_t i = 0; i < size; i++, cnt++)
-//			buf[cnt] = buf[i];
-//		buf[cnt++] = getCRC();
-//
-//		maxLen = cnt;
-//		stat = PRTS_STATUS_WRITE;
-//	}
-//
-//	return cnt;
-//}
+uint8_t
+clProtocolS::addCom(uint8_t com, uint8_t size, uint8_t b[])
+{
+	uint8_t cnt = 0;
+
+	if (size < (this->size_ - 5))
+	{
+		buf[cnt++] = 0x55;
+		buf[cnt++] = 0xAA;
+		buf[cnt++] = com;
+		buf[cnt++] = size;
+		// Скопируем данные в буфер передатчика
+		for(uint8_t i = 0; i < size; i++, cnt++)
+			buf[cnt] = b[i];
+		buf[cnt++] = getCRC();
+
+		maxLen_ = cnt;
+		stat_ = PRTS_STATUS_WRITE;
+	}
+
+	return cnt;
+}
 
 /**	Подготовка к отправке команды с 2 байтами данных (заполнение буфера)
  * 	@param com Команда

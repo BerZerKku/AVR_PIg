@@ -5,6 +5,13 @@
  *      Author: Shcheblykin
  */
 
+/**
+ * 	Максимальное значение для строковых параметров на 1 больше возможного,
+ * 	для хранения в массиве ошибочного значения и удобства пользования
+ * 	перечислениями.
+ * 	Так что для ввода строкового значения максимум должен быть меньше на 1 !!!
+ */
+
 #ifndef GLBDEF_H_
 #define GLBDEF_H_
 
@@ -34,7 +41,7 @@
 /// ЗАЩИТА
 /// тип защиты
 #define DEF_TYPE_MIN		0
-#define DEF_TYPE_MAX		7
+#define DEF_TYPE_MAX		8
 /// допустимое время без манипуляции
 #define DEF_T_NO_MAN_MIN	0
 #define DEF_T_NO_MAN_MAX	99
@@ -77,7 +84,7 @@
 #define DEF_RZ_DEC_DISC_F	(DEF_RZ_DEC_DISC / DEF_RZ_DEC_FRACT)
 /// тип приемника
 #define DEF_PRM_TYPE_MIN	0
-#define DEF_PRM_TYPE_MAX	2
+#define DEF_PRM_TYPE_MAX	3
 /// ПРМ
 /// время включения
 #define PRM_TIME_ON_MIN		0
@@ -271,7 +278,7 @@ enum eGB_COM
 	GB_COM_SET_PASSWORD 	= 0x73,	// ! только с ПК
 	GB_COM_GET_PASSWORD 	= 0x74,	// ! только с ПК
 	GB_COM_PRM_RES_IND		= 0x9A,
-	GB_COM_SET_TIME 		= 0xB2,	// !!! не сделана
+	GB_COM_SET_TIME 		= 0xB2,
 	GB_COM_DEF_GET_JRN_CNT	= 0xC1,
 	GB_COM_DEF_GET_JRN_ENTRY= 0xC2,
 	GB_COM_DEF_JRN_CLR		= 0xCA,	// ! стирание журнала ЗАЩ, только с ПК
@@ -328,13 +335,15 @@ enum eGB_STATE_COM
 	GB_STATE_COM_MAX
 };
 
+#define BCD_TO_BIN(val) ((val >> 4) * 10 + (val & 0x0F))
+#define BIN_TO_BCD(val) (((val / 10) << 4) + (val % 10))
+
 /// Класс для даты и времени
 class TDataTime
 {
 public:
 	// Считывание и установка секунд
 	uint8_t getSecond() const { return second_; }
-	bool setSecondFromBCD(uint8_t val) { return setSecond(bcdToBin(val)); }
 	bool setSecond(uint8_t val)
 	{
 		bool stat = false;
@@ -343,12 +352,15 @@ public:
 			second_ = val;
 			stat = true;
 		}
+		else
+		{
+			second_ = 61;
+		}
 		return stat;
 	}
 
 	// считывание и установка минут
 	uint8_t getMinute() const { return minute_; }
-	bool setMinuteFromBCD(uint8_t val) { return setMinute(bcdToBin(val)); }
 	bool setMinute(uint8_t val)
 	{
 		bool stat = false;
@@ -357,12 +369,15 @@ public:
 			minute_ = val;
 			stat = true;
 		}
+		else
+		{
+			minute_ = 61;
+		}
 		return stat;
 	}
 
 	// считывание и установка часов
 	uint8_t getHour() const { return hour_; }
-	bool setHourFromBCD(uint8_t val) { return setHour(bcdToBin(val)); }
 	bool setHour(uint8_t val)
 	{
 		bool stat = false;
@@ -371,54 +386,60 @@ public:
 			hour_ = val;
 			stat = true;
 		}
+		else
+		{
+			hour_ = 25;
+		}
 		return stat;
 	}
 
 	// считывание и установка дня
 	uint8_t getDay() const { return day_; }
-	bool setDayFromBCD(uint8_t val) { return setDay(bcdToBin(val)); }
 	bool setDay(uint8_t val)
 	{
 		bool stat = false;
 
-		if (val > 0)
+		if ( (val > 0) && (val <= getNumDaysInMonth()) )
 		{
-			if ( (month_ == 4) || (month_ == 6) || (month_ == 9) ||
-					 	 	 	 	 	 	 	 	 	 	 (month_ == 11) )
-			{
-				if (val < 31)
-				{
-					day_ = val;
-					stat = true;
-				}
-			}
-			else if (month_ == 2)
-			{
-				if (val <= 28)
-				{
-
-				}
-				else if ( ((val <= 29)) && ((year_ % 4) == 0) )
-				{
-					day_ = val;
-					stat = true;
-				}
-			}
-			else
-			{
-				if (val <= 31)
-				{
-					day_ = val;
-					stat = true;
-				}
-			}
+			day_ = val;
+			stat = true;
 		}
+		else
+		{
+			day_ = 32;
+		}
+
 		return stat;
+	}
+
+	// возвращает кол-во дней в месяце
+	// если месяц не задан, возвращается для текущего
+	uint8_t getNumDaysInMonth(uint8_t month = 0)
+	{
+		uint8_t num = 0;
+
+		if (month == 0)
+			month = month_;
+
+		if ( (month == 4) || (month == 6) || (month == 9) ||
+				(month == 11) )
+		{
+			num = 30;
+		}
+		else if (month == 2)
+		{
+			num = ((year_ % 4) == 0) ? 29 : 28;
+		}
+		else if ( (month != 0) && (month < 13) )
+		{
+			num = 31;
+		}
+
+		return num;
 	}
 
 	// считывание и установка месяца
 	uint8_t getMonth() const { return month_; }
-	bool setMonthFromBCD(uint8_t val) { return setMonth(bcdToBin(val)); }
 	bool setMonth(uint8_t val)
 	{
 		bool stat = false;
@@ -427,12 +448,15 @@ public:
 			month_ = val;
 			stat = true;
 		}
+		else
+		{
+			month_ = 13;
+		}
 		return stat;
 	}
 
 	// считывание и установка года
 	uint8_t getYear() 	const { return year_; }
-	bool setYearFromBCD(uint8_t val) { return setYear(bcdToBin(val)); }
 	bool setYear(uint8_t val)
 	{
 		bool stat = false;
@@ -440,6 +464,10 @@ public:
 		{
 			year_ = val;
 			stat = true;
+		}
+		else
+		{
+			year_ = 0;
 		}
 		return stat;
 	}
@@ -454,6 +482,10 @@ public:
 			msSecond_ = val;
 			stat = true;
 		}
+		else
+		{
+			msSecond_ = 1000;
+		}
 		return stat;
 	}
 
@@ -467,6 +499,7 @@ private:
 	uint8_t year_;
 
 	uint8_t bcdToBin(uint8_t val) { return (val >> 4) * 10 + (val & 0x0F); }
+	uint8_t binToBcd(uint8_t val) { return ((val / 10) << 4) + (val % 10); }
 };
 
 
@@ -892,7 +925,7 @@ public:
 	bool setDefType(uint8_t val)
 	{
 		bool stat = false;
-		if ( (val >= DEF_TYPE_MIN) && (val <= DEF_TYPE_MAX) )
+		if ( (val >= DEF_TYPE_MIN) && (val < DEF_TYPE_MAX) )
 		{
 			defType_ = val;
 			stat = true;
@@ -990,7 +1023,7 @@ public:
 	bool setPrmType(uint8_t val)
 	{
 		bool stat = false;
-		if ( (val >= DEF_PRM_TYPE_MIN) && (val <= DEF_PRM_TYPE_MAX) )
+		if ( (val >= DEF_PRM_TYPE_MIN) && (val < DEF_PRM_TYPE_MAX) )
 		{
 			prmType_ = val;
 			stat = true;
@@ -1574,8 +1607,39 @@ public:
 	uint8_t getInt8() { return byte_[0]; }
 
 	// запись\считывание переменной типа INT
-	void setInt16(uint16_t val) { *((uint16_t *) byte_) = val; }
-	uint16_t getInt16() { return *((uint16_t *) byte_); }
+	// хранится в byte_[1]
+	void setInt16(uint16_t val) { *((uint16_t *) (byte_ + 1)) = val; }
+	uint16_t getInt16() { return *((uint16_t *) (byte_ + 1)); }
+
+	// запись нескольких байт данных
+	// source - указатель на массив данных
+	// num - кол-во копируемых байт данных
+	void copyToBufer(uint8_t *source, uint8_t num)
+	{
+		for(uint_fast8_t i = 0; i < num; i++)
+		{
+			// учет размера буфера
+			if (i >= 6)
+				break;
+			byte_[i] = *source++;
+
+		}
+	}
+	// считывание нескольких байт данных
+	// destination- указатель на массив данных
+	// num - кол-во копируемых байт данных
+	void copyFromBufer(uint8_t *destination, uint8_t num)
+	{
+		for(uint_fast8_t i = 0; i < num; i++)
+		{
+			// учет размера буфера
+			if (i >= 6)
+				break;
+			*destination++ = byte_[i];
+		}
+	}
+	// возвразает указатель на буфер данных
+	uint8_t* getBuferAddress() { return byte_; }
 
 private:
 	// буфер команд
@@ -1586,7 +1650,6 @@ private:
 	uint8_t numCom_;
 	// текущее положение указателя
 	uint8_t cnt_;
-
 	// данные на передачу
 	uint8_t byte_[6];
 };
@@ -1853,7 +1916,7 @@ struct stGBparam
 	TTxCom txComBuf;
 
 	// запись в журнале
-	TJournalEntry journalEntry;
+	TJournalEntry jrnEntry;
 };
 
 #endif /* GLBDEF_H_ */

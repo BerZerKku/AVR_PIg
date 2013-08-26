@@ -190,7 +190,7 @@ protected:
 	// Подготовка к отправке команды с 2 байтами данных (заполнение буфера)
 	uint8_t addCom(uint8_t com, uint8_t byte1, uint8_t byte2);
 	// Подготовка к отправке команды с данными (заполнение буфера)
-//	uint8_t addCom	(uint8_t com, uint8_t size, uint8_t buf[]);
+	uint8_t addCom	(uint8_t com, uint8_t size, uint8_t buf[]);
 
 	// Проверка принятой контрольной суммы
 	bool checkCRC();
