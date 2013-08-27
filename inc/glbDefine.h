@@ -103,7 +103,7 @@
 #define PRM_TIME_OFF_MAX_F	(PRM_TIME_OFF_MAX / PRM_TIME_OFF_FRACT)
 #define PRM_TIME_OFF_DISC_F	(PRM_TIME_OFF_DISC/ PRM_TIME_OFF_FRACT)
 /// ПРД
-/// время включения
+/// время включения (задержка срабатывания дискретного входа)
 /// было от 0 до 10, изменено по требованию АГ
 #define PRD_TIME_ON_MIN		5
 #define PRD_TIME_ON_MAX		20
@@ -277,8 +277,16 @@ enum eGB_COM
 	GB_COM_SET_CONTROL		= 0x72,
 	GB_COM_SET_PASSWORD 	= 0x73,	// ! только с ПК
 	GB_COM_GET_PASSWORD 	= 0x74,	// ! только с ПК
+	GB_COM_PRM_SET_TIME_ON	= 0x91,
+	GB_COM_PRM_SET_TIME_OFF	= 0x93,
+	GB_COM_PRM_SET_BLOCK_COM= 0x94,
 	GB_COM_PRM_RES_IND		= 0x9A,
+	GB_COM_PRD_SET_TIME_ON	= 0xA1,
+	GB_COM_PRD_SET_DURATION = 0xA2,
 	GB_COM_SET_TIME 		= 0xB2,
+	GB_COM_SET_TIME_RERUN	= 0xB9,
+	GB_COM_SET_DEVICE_NUM	= 0xBB,
+	GB_COM_SET_CF_THRESHOLD	= 0xBC,
 	GB_COM_DEF_GET_JRN_CNT	= 0xC1,
 	GB_COM_DEF_GET_JRN_ENTRY= 0xC2,
 	GB_COM_DEF_JRN_CLR		= 0xCA,	// ! стирание журнала ЗАЩ, только с ПК
@@ -1603,8 +1611,20 @@ public:
 	uint8_t getNumCom() { return numCom_; }
 
 	// запись\считывание одного байта на передачу
-	void 	setInt8(uint8_t byte) { byte_[0] = byte; }
-	uint8_t getInt8() { return byte_[0]; }
+	// byte байт данных
+	// num номер байта в буфере
+	void 	setInt8(uint8_t byte, uint8_t num = 0)
+	{
+		if (num < 6)
+			byte_[num] = byte;
+	}
+	uint8_t getInt8(uint8_t num = 0)
+	{
+		uint8_t byte = 0;
+		if (num < 6)
+			byte = byte_[num];
+		return byte;
+	}
 
 	// запись\считывание переменной типа INT
 	// хранится в byte_[1]

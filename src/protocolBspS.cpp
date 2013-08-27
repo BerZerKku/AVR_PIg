@@ -376,20 +376,54 @@ clProtocolBspS::sendData(eGB_COM com)
 		}
 		else if (mask == GB_COM_MASK_DEVICE_PRM)
 		{
-			if (com == GB_COM_PRM_RES_IND)
+			if (com == GB_COM_PRM_SET_TIME_ON)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt8());
+			}
+			else if (com == GB_COM_PRM_SET_TIME_OFF)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt8(0),
+						sParam_->txComBuf.getInt8(1));
+			}
+			else if (com == GB_COM_PRM_SET_BLOCK_COM)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt8(0),
+						sParam_->txComBuf.getInt8(1));
+			}
+			else if (com == GB_COM_PRM_RES_IND)
 			{
 				num = addCom(com);
 			}
 		}
 		else if (mask == GB_COM_MASK_DEVICE_PRD)
 		{
-
+			if (com == GB_COM_PRD_SET_TIME_ON)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt8());
+			}
+			else if (com == GB_COM_PRD_SET_DURATION)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt8());
+			}
 		}
 		else
 		{
 			if (com == GB_COM_SET_TIME)
 			{
 				num = addCom(com, 6, sParam_->txComBuf.getBuferAddress());
+			}
+			else if (com == GB_COM_SET_TIME_RERUN)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt8());
+			}
+			else if (com == GB_COM_SET_DEVICE_NUM)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt8());
+			}
+			else if (com == GB_COM_SET_CF_THRESHOLD)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt8(0),
+										sParam_->txComBuf.getInt8(1));
 			}
 		}
 	}

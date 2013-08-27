@@ -39,28 +39,31 @@ enum eMENU_MEAS_PARAM
 /// Режим работы функции ввода параметров
 enum eMENU_ENTER_PARAM
 {
-	MENU_ENTER_PARAM_NO,	// отмена изменения параметра
-	MENU_ENTER_PARAM_WORK,	// изменение параметра
-	MENU_ENTER_PARAM_READY	// необходимо изменить параметр
+	MENU_ENTER_PARAM_NO,		// отмена изменения параметра
+	MENU_ENTER_PARAM_WORK,		// изменение параметра
+	MENU_ENTER_PARAM_READY,		// необходимо изменить параметр
+	MENU_ENTER_PARAM_MESSAGE	// вывод сообщения на экран
 };
 
 // структура параметров для ввода значений
 class TEnterParam
 {
 public:
-	bool isEnable() const { return enable_; }
-	void setEnable()
+	TEnterParam()
 	{
-		enable_ = true;
-		cursorPos_ = 0;
+		setDisable();
+	}
 
-	};
-	void setDisable() { enable_ = false; }
-
-	// функции работы с текущим положением курсора
-	uint8_t getCursorPos() const { return cursorPos_; }
-	void incCursorPos() { if (cursorPos_ < (numSymbols_ - 1)) cursorPos_++; }
-	void decCursorPos() { if (cursorPos_ > 0) cursorPos_--; }
+	bool isEnable()
+	{
+		// проверка текущего статуса на достоверное значение
+		if ( (status_ <  MENU_ENTER_PARAM_NO) ||
+				(status_ > MENU_ENTER_PARAM_MESSAGE) )
+			status_ = MENU_ENTER_PARAM_NO;
+		return (status_ != MENU_ENTER_PARAM_NO);
+	}
+	void setEnable() { status_ = MENU_ENTER_PARAM_WORK; }
+	void setDisable() { status_ = MENU_ENTER_PARAM_NO; }
 
 	// диапазон значений
 	void setValueRange(uint16_t min, uint16_t max)
@@ -93,33 +96,57 @@ public:
 	// возвращает текущее значение
 	uint16_t getValue() const { return val_; }
 
+	// возвращает введеное значение с учетом дискретности и делителя
+	uint8_t getValueEnter()
+	{
+		return ((val_ / disc_) * disc_) / fract_;
+	}
+
 	// увеличение/уменьшение текущего значения
 	uint16_t incValue()
 	{
-		if (val_ < max_)
-			val_++;
+		if (val_ <= (max_ - disc_))
+			val_ += disc_;
+		else
+			val_ = min_;
 		return val_;
 	}
 	uint16_t decValue()
 	{
-		if (val_ > min_)
-			val_--;
+		if (val_ >= (min_ + disc_))
+			val_ -= disc_;
+		else
+			val_ = max_;
 		return val_;
 	}
 
+	// запись/считывание дополнительного байта
+	void setDopByte(uint8_t byte) { dopByte_ = byte; }
+	uint8_t getDopByte() const { return dopByte_; }
 
-	// буферы значений
-	uint8_t uint8[8];
+	// запись/считывание дискретности
+	void setDisc(uint8_t disc) { disc_ = disc; }
+	uint8_t getDisc() const { return disc_; }
+
+	// запись/считывание делителя
+	void setFract(uint8_t fract) { fract_ = fract; }
+	uint8_t getFract() const { return fract_; }
+
+	// вывод сообщения на экран
+	void printMessage() { status_ = MENU_ENTER_PARAM_MESSAGE; cnt_ = 0; }
+
+	// считывание текущиего статуса
+	eMENU_ENTER_PARAM getStatus() const { return status_; }
+	void setEnterValueReady() { status_ = MENU_ENTER_PARAM_READY; }
 
 	// команда на передачу
 	eGB_COM com;
 
+	// счетчик времени
+	uint8_t cnt_;
 private:
 	// true - идет ввод значения
 	bool enable_;
-
-	// текущее положение курсора
-	uint8_t cursorPos_;
 
 	// текущее значение
 	uint16_t val_;
@@ -132,6 +159,20 @@ private:
 
 	// кол-во символов
 	uint8_t numSymbols_;
+
+	// байт с дополнительой информацией
+	uint8_t dopByte_;
+
+	// дискретность
+	uint8_t disc_;
+
+	// делитель
+	uint8_t fract_;
+
+
+
+	// текущий статус устройства
+	eMENU_ENTER_PARAM status_;
 };
 
 // класс меню
