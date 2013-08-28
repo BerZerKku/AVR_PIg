@@ -22,10 +22,10 @@
 /// версия текущей прошивки
 #define VERS 0x0100
 
-/// максимально кол-во команд на прием
+/// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
 
-/// максимальное кол-во команд на передачу
+/// максимальное кол-во команд на передачу (должно быть кратно 8)
 #define MAX_NUM_COM_PRD 32
 
 /// преобразование двух CHAR в INT
@@ -334,7 +334,7 @@ enum eGB_CONTROL
 	GB_CONTROL_MAX
 };
 
-// События журнала передатчика/приемника - конец и начало команды
+/// События журнала передатчика/приемника - конец и начало команды
 enum eGB_STATE_COM
 {
 	GB_STATE_COM_MIN = 0,
@@ -591,7 +591,7 @@ public:
 			regime = GB_REGIME_MAX;
 		return stat;
 	}
-	uint8_t getRegime() 	const { return regime_; }
+	eGB_REGIME getRegime() 	const { return regime_; }
 
 	//состояние
 	bool setState(uint8_t state)
@@ -644,7 +644,7 @@ private:
 	uint8_t numWarnings_;
 
 
-	uint8_t regime_;
+	eGB_REGIME regime_;
 	uint8_t state_;
 	uint8_t dopByte_;
 
@@ -701,23 +701,25 @@ public:
 
 	TDeviceStatus status;
 
-	// при установке возвращает true если новое значение отличается от текущего
 	eGB_NUM_DEVICES getNumDevices() const { return numDevices_; }
+	uint8_t getMaxNumDevices() const
+	{
+		return (numDevices_ ==  GB_NUM_DEVICES_2) ? 2 : 3;
+	}
 	bool setNumDevices(eGB_NUM_DEVICES numDevices)
 	{
 		bool stat = false;
 		if ( (numDevices >= GB_NUM_DEVICES_MIN) &&
-				(numDevices <= GB_NUM_DEVICES_MAX) )
+				(numDevices < GB_NUM_DEVICES_MAX) )
 		{
 			numDevices_ = numDevices;
 			stat = true;
 		}
 		else
-			numDevices_ = numDevices;
+			numDevices_ = GB_NUM_DEVICES_MAX;
 		return stat;
 	}
 
-	// при установке возвращает true если новое значени отличается от текущего
 	eGB_TYPE_LINE getTypeLine() const { return typeLine_; }
 	bool setTypeLine(eGB_TYPE_LINE typeLine)
 	{
@@ -741,7 +743,6 @@ public:
 	uint16_t getVersDsp() const { return versDsp_; }
 	void setVersDsp(uint16_t versDsp) {  versDsp_ = versDsp; }
 
-	// при установке возаращает true если новое значение отличается от текущего
 	eGB_COMPATIBILITY getCompatibility() const { return compatibility_; }
 	bool setCompatibility(eGB_COMPATIBILITY compatibility)
 	{
@@ -776,7 +777,7 @@ public:
 	{
 		bool stat = false;
 		val = (val / GLB_DEV_NUM_DISC_F) * GLB_DEV_NUM_DISC_F;
-		if ( (val >= GLB_DEV_NUM_MIN_F) && (val <= GLB_DEV_NUM_MAX_F) )
+		if ( (val >= GLB_DEV_NUM_MIN_F) && (val <= getMaxNumDevices()) )
 		{
 			deviceNum_ = val;
 			stat = true;
@@ -1163,25 +1164,34 @@ public:
 	// блокированные команды, каждый бит отвечает за отдельную команду
 	// num - номер восьмерки (0 - с 1 по 8 команды, 1 - с 9 по 16 и т.д.)
 	// val - значение
-	bool setBlockCom(uint8_t num, uint8_t val)
+	bool setBlockCom8(uint8_t num, uint8_t val)
 	{
 		bool stat = false;
-
-		num *= 8;	// номер первой команды
-
-		if (num < numCom_ )
+		if (num < (MAX_NUM_COM_PRM / 8))
 		{
-
-			for(uint_fast8_t i = 0x01; (i > 0) && (num < numCom_); i <<= 1)
-			{
-				blockCom_[num++] = (bool) (i & val);
-			}
+			blockCom_[num] = val;
 			stat = true;
 		}
 		return stat;
 	}
 	// возвращает True, если команда заблокирована
-	bool getBlockCom(uint8_t num) { return  blockCom_[num]; }
+	bool getBlockCom(uint8_t num) const
+	{
+		// номер восьмерки
+		uint8_t pl = (num / 8) * 8;
+		// номер внутри восьмерки
+		num = num % 8;
+		return  (blockCom_[pl] & (1 << num)) != 0;
+	}
+	// возвращает воьсмерку команд
+	// num - номер восьмерки (0 - с 1 по 8 команды, 1 - с 9 по 16 и т.д.)
+	uint8_t getBlockCom8(uint8_t num) const
+	{
+		uint8_t val = 0;
+		if (num < (MAX_NUM_COM_PRM / 8))
+			val = blockCom_[num];
+		return val;
+	}
 
 	// задержка на выключение
 	// buf - адрес первого элемента массива
@@ -1242,7 +1252,7 @@ private:
 	uint8_t timeOn_;
 
 	// блокированные команды, true - блокированная
-	bool blockCom_[MAX_NUM_COM_PRM];
+	uint8_t blockCom_[MAX_NUM_COM_PRM / 8];
 
 	// задержка на выключение
 	uint8_t timeOff_[MAX_NUM_COM_PRM];

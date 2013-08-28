@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include "inc/debug.h"
 #include "inc/glbDefine.h"
-#include "inc/setup.h"
 #include "inc/ks0108.h"
 #include "inc/menu.h"
 #include "inc/keyboard.h"
@@ -188,9 +187,6 @@ main (void)
 	uint8_t cnt_1s = 0;
 	uint8_t cnt_wdt = 0;
 
-	wdt_enable(WDTO_250MS);
-
-	vSETUP();
 	sei();
 
 	vLCDinit();

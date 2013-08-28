@@ -8,6 +8,8 @@
 #include <avr/pgmspace.h>
 #include <glbDefine.h>
 
+#define STRING_LENGHT 11
+
 static const char fcNull[] PROGMEM = "";
 
 // измеряемые параметры
@@ -27,7 +29,7 @@ static const char fcDeviceName02[] PROGMEM = "ПРД";
 
 // режимы устройств
 // кол-во режимов (без учета "Ошибка") должно совпадать с MAX_NUM_REGIME
-static const char fcRegime[GB_REGIME_MAX + 1] [11] PROGMEM =
+static const char fcRegime[GB_REGIME_MAX + 1] [STRING_LENGHT] PROGMEM =
 {
 	"Выведен",
 	"Готов",
@@ -39,7 +41,7 @@ static const char fcRegime[GB_REGIME_MAX + 1] [11] PROGMEM =
 };
 
 // тип защиты
-static const char fcDefType[DEF_TYPE_MAX + 1] [11] PROGMEM =
+static const char fcDefType[DEF_TYPE_MAX + 1] [STRING_LENGHT] PROGMEM =
 {
 	"ДФЗ-ПрПд",
 	"ДФЗ-МК1",
@@ -52,7 +54,7 @@ static const char fcDefType[DEF_TYPE_MAX + 1] [11] PROGMEM =
 	"ошибка"
 };
 
-static const char fcNumDevices[GB_NUM_DEVICES_MAX + 1] [11] PROGMEM =
+static const char fcNumDevices[GB_NUM_DEVICES_MAX + 1] [STRING_LENGHT] PROGMEM =
 {
 		"ошибка",
 		"2 концевая",
@@ -60,7 +62,7 @@ static const char fcNumDevices[GB_NUM_DEVICES_MAX + 1] [11] PROGMEM =
 		"ошибка",
 };
 
-static const char fcPrmType[DEF_PRM_TYPE_MAX + 1] [11] PROGMEM =
+static const char fcPrmType[DEF_PRM_TYPE_MAX + 1] [STRING_LENGHT] PROGMEM =
 {
 		"Акт+Пасс",
 		"Активный",
@@ -68,7 +70,7 @@ static const char fcPrmType[DEF_PRM_TYPE_MAX + 1] [11] PROGMEM =
 		"ошибка"
 };
 
-static const char fcOnOff[3] [11] PROGMEM =
+static const char fcOnOff[3] [STRING_LENGHT] PROGMEM =
 {
 		"Выкл.",
 		"Вкл.",
@@ -221,9 +223,14 @@ static const char fcRangeDec[] 			PROGMEM = "%d..%d%s";
 static const char fcRangeList[] 		PROGMEM = "список";
 static const char fcRangeOnOff[]		PROGMEM = "вкл./выкл.";
 static const char fcNumPunkt[] 			PROGMEM = "Номер: %u  Всего: %u";
-static const char fcOn[]				PROGMEM = "вкл.";
-static const char fcOff[]				PROGMEM = "выкл.";
-
+//static const char fcOn[]				PROGMEM = "вкл.";
+//static const char fcOff[]				PROGMEM = "выкл.";
+static char message[3] [21] PROGMEM =
+{
+		" Изменить параметр  ",
+		"  можно только в    ",
+		"  режиме ВЫВЕДЕН    "
+};
 //	ЖУРНАЛ
 static const char fcJrnEmpty[] 			PROGMEM = "ЖУРНАЛ ПУСТ";
 static const char fcJrnNumEntries[] 	PROGMEM = "Запись %u / %u";
@@ -280,4 +287,5 @@ fcJrnEventK400[MAX_JRN_EVENT_VALUE + 1] [21] PROGMEM =
 		"Событие - %d",          	// 32
 		"Событие - %d"          	// 33 - ошибочное значение
 };
+
 

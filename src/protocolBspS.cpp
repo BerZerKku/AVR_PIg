@@ -95,10 +95,10 @@ bool clProtocolBspS::getData()
 			}
 			else if (com == GB_COM_PRM_GET_BLOCK_COM)
 			{
-				sParam_->prm.setBlockCom(0, buf[B1]);
-				sParam_->prm.setBlockCom(1, buf[B2]);
-				sParam_->prm.setBlockCom(2, buf[B3]);
-				sParam_->prm.setBlockCom(3, buf[B4]);
+				sParam_->prm.setBlockCom8(0, buf[B1]);
+				sParam_->prm.setBlockCom8(1, buf[B2]);
+				sParam_->prm.setBlockCom8(2, buf[B3]);
+				sParam_->prm.setBlockCom8(3, buf[B4]);
 				stat = true;
 			}
 			else if (com == GB_COM_PRM_GET_TIME_OFF)
@@ -224,6 +224,27 @@ bool clProtocolBspS::getData()
 				sParam_->prd.status.setRegime((eGB_REGIME) buf[B7]);
 				sParam_->prd.status.setState(buf[B8]);
 				sParam_->prd.status.setDopByte(buf[B9]);
+
+				// если хоть одно из имеющихся устройств не в режиме ВЫВЕДЕН
+				// (GB_REGIME_DISABLED) общий режим будет равен GB_REGIME_MAX
+				eGB_REGIME reg = GB_REGIME_DISABLED;
+				if (sParam_->prd.status.isEnable())
+				{
+					if (sParam_->prd.status.getRegime() != GB_REGIME_DISABLED)
+						reg = GB_REGIME_MAX;
+				}
+				if (sParam_->prm.status.isEnable())
+				{
+					if (sParam_->prm.status.getRegime() != GB_REGIME_DISABLED)
+						reg = GB_REGIME_MAX;
+				}
+				if (sParam_->def.status.isEnable())
+				{
+					if (sParam_->def.status.getRegime() != GB_REGIME_DISABLED)
+						reg = GB_REGIME_MAX;
+				}
+				sParam_->glb.status.setRegime(reg);
+
 				stat = true;
 			}
 			else if (com == GB_COM_GET_FAULT)

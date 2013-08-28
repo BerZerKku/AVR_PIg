@@ -40,7 +40,9 @@ enum eMENU_MEAS_PARAM
 enum eMENU_ENTER_PARAM
 {
 	MENU_ENTER_PARAM_NO,		// отмена изменения параметра
-	MENU_ENTER_PARAM_WORK,		// изменение параметра
+	MENU_ENTER_PARAM_INT,		// изменение параметра (целое значение)
+	MENU_ENTER_PARAM_LIST,		// изменение параметра (выбор из списка)
+	MENU_ENTER_PARAM_U_COR,		// изменение параметра (коррекция напряжения)
 	MENU_ENTER_PARAM_READY,		// необходимо изменить параметр
 	MENU_ENTER_PARAM_MESSAGE	// вывод сообщения на экран
 };
@@ -62,7 +64,12 @@ public:
 			status_ = MENU_ENTER_PARAM_NO;
 		return (status_ != MENU_ENTER_PARAM_NO);
 	}
-	void setEnable() { status_ = MENU_ENTER_PARAM_WORK; }
+	// начало работы, передается способ ввода переменной
+	void setEnable(eMENU_ENTER_PARAM s=MENU_ENTER_PARAM_INT)
+	{
+		if ((s>=MENU_ENTER_PARAM_INT) && (s<=MENU_ENTER_PARAM_U_COR))
+			status_ = s;
+	}
 	void setDisable() { status_ = MENU_ENTER_PARAM_NO; }
 
 	// диапазон значений
@@ -139,6 +146,9 @@ public:
 	eMENU_ENTER_PARAM getStatus() const { return status_; }
 	void setEnterValueReady() { status_ = MENU_ENTER_PARAM_READY; }
 
+	// указатель на первый элемент списка
+	PGM_P list;
+
 	// команда на передачу
 	eGB_COM com;
 
@@ -168,8 +178,6 @@ private:
 
 	// делитель
 	uint8_t fract_;
-
-
 
 	// текущий статус устройства
 	eMENU_ENTER_PARAM status_;
@@ -278,6 +286,9 @@ private:
 
 	// ввод целого значения
 	eMENU_ENTER_PARAM enterValue();
+
+	// ввод значения из списка
+	eMENU_ENTER_PARAM enterValueList();
 
 	// заглушка для ввода значений
 	eMENU_ENTER_PARAM enterNo() { return MENU_ENTER_PARAM_NO; }
