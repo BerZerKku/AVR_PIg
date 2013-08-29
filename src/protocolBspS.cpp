@@ -153,18 +153,18 @@ bool clProtocolBspS::getData()
 			}
 			else if (com == GB_COM_PRD_GET_BLOCK_COM)
 			{
-				sParam_->prd.setBlockCom(0, buf[B1]);
-				sParam_->prd.setBlockCom(1, buf[B2]);
-				sParam_->prd.setBlockCom(2, buf[B3]);
-				sParam_->prd.setBlockCom(3, buf[B4]);
+				sParam_->prd.setBlockCom8(0, buf[B1]);
+				sParam_->prd.setBlockCom8(1, buf[B2]);
+				sParam_->prd.setBlockCom8(2, buf[B3]);
+				sParam_->prd.setBlockCom8(3, buf[B4]);
 				stat = true;
 			}
 			else if (com == GB_COM_PRD_GET_LONG_COM)
 			{
-				sParam_->prd.setLongCom(0, buf[B1]);
-				sParam_->prd.setLongCom(1, buf[B2]);
-				sParam_->prd.setLongCom(2, buf[B3]);
-				sParam_->prd.setLongCom(3, buf[B4]);
+				sParam_->prd.setLongCom8(0, buf[B1]);
+				sParam_->prd.setLongCom8(1, buf[B2]);
+				sParam_->prd.setLongCom8(2, buf[B3]);
+				sParam_->prd.setLongCom8(3, buf[B4]);
 				stat = true;
 			}
 			else if (com == GB_COM_PRD_GET_JRN_CNT)
@@ -425,6 +425,16 @@ clProtocolBspS::sendData(eGB_COM com)
 			else if (com == GB_COM_PRD_SET_DURATION)
 			{
 				num = addCom(com, sParam_->txComBuf.getInt8());
+			}
+			else if (com == GB_COM_PRD_SET_BLOCK_COM)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt8(0),
+						sParam_->txComBuf.getInt8(1));
+			}
+			else if (com == GB_COM_PRD_SET_LONG_COM)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt8(0),
+						sParam_->txComBuf.getInt8(1));
 			}
 		}
 		else

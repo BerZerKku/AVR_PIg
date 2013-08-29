@@ -2180,8 +2180,8 @@ clMenu::lvlSetupParamPrm()
 					enterParam.setValueRange(0, 1);
 					uint8_t val = sParam.prm.getBlockCom(curCom_ - 1) ? 1 : 0;
 					enterParam.setValue(val);
-					enterParam.setDisc(PRM_TIME_ON_DISC);
-					enterParam.setFract(PRM_TIME_ON_FRACT);
+					enterParam.setDisc(1);
+					enterParam.setFract(1);
 					enterParam.list = fcOnOff[0];
 					enterParam.setDopByte(curCom_);
 					enterFunc_ = &clMenu::enterValue;
@@ -2324,20 +2324,30 @@ clMenu::lvlSetupParamPrd()
 			}
 			else if (p == punkt3)
 			{
-				// тестовая команда
-				// !!! ввод из списка
-//				sParam.txComBuf.setInt8(enterParam.getDopByte(), 0);
-//				sParam.txComBuf.setInt8(enterParam.getValueEnter(), 1);
+				sParam.txComBuf.setInt8(enterParam.getValueEnter());
+
 			}
 			else if (p == punkt4)
 			{
-				// следящая команда (длительная)
-				// !!! ввод из списка
+				uint8_t pl = enterParam.getDopByte() - 1;
+				uint8_t val = sParam.prd.getLongCom8(pl / 8);
+				if (enterParam.getValue() > 0)
+					val |= (1 << (pl % 8));
+				else
+					val &= ~ (1 << (pl % 8));
+				sParam.txComBuf.setInt8(pl/8 + 1, 0);
+				sParam.txComBuf.setInt8(val, 1);
 			}
 			else if (p == punkt5)
 			{
-				// блокированная команда
-				// !!! ввод из списка
+				uint8_t pl = enterParam.getDopByte() - 1;
+				uint8_t val = sParam.prd.getBlockCom8(pl / 8);
+				if (enterParam.getValue() > 0)
+					val |= (1 << (pl % 8));
+				else
+					val &= ~ (1 << (pl % 8));
+				sParam.txComBuf.setInt8(pl/8 + 1, 0);
+				sParam.txComBuf.setInt8(val, 1);
 			}
 			sParam.txComBuf.addFastCom(enterParam.com);
 			enterParam.setDisable();
@@ -2428,14 +2438,42 @@ clMenu::lvlSetupParamPrd()
 				else if (punkt_[cursorLine_ - 1] == punkt3)
 				{
 					// !!!
+					enterParam.setEnable(MENU_ENTER_PARAM_LIST);
+					enterParam.setValueRange(0, 1);
+					uint8_t val = sParam.prd.getTestCom() ? 1 : 0;
+					enterParam.setValue(val);
+					enterParam.setDisc(1);
+					enterParam.setFract(1);
+					enterParam.list = fcOnOff[0];
+					enterFunc_ = &clMenu::enterValue;
+					enterParam.com = GB_COM_NO;	// !!! команды нет пока
+//					enterParam.com = GB_COM_PRM_SET_BLOCK_COM;
 				}
 				else if (punkt_[cursorLine_ - 1] == punkt4)
 				{
-					// !!!
+					enterParam.setEnable(MENU_ENTER_PARAM_LIST);
+					enterParam.setValueRange(0, 1);
+					uint8_t val = sParam.prd.getLongCom(curCom_ - 1) ? 1 : 0;
+					enterParam.setValue(val);
+					enterParam.setDisc(1);
+					enterParam.setFract(1);
+					enterParam.setDopByte(curCom_);
+					enterParam.list = fcOnOff[0];
+					enterFunc_ = &clMenu::enterValue;
+					enterParam.com = GB_COM_PRD_SET_LONG_COM;
 				}
 				else if (punkt_[cursorLine_ - 1] == punkt5)
 				{
-					// !!!
+					enterParam.setEnable(MENU_ENTER_PARAM_LIST);
+					enterParam.setValueRange(0, 1);
+					uint8_t val = sParam.prd.getBlockCom(curCom_ - 1) ? 1 : 0;
+					enterParam.setValue(val);
+					enterParam.setDisc(1);
+					enterParam.setFract(1);
+					enterParam.setDopByte(curCom_);
+					enterParam.list = fcOnOff[0];
+					enterFunc_ = &clMenu::enterValue;
+					enterParam.com = GB_COM_PRD_SET_BLOCK_COM;
 				}
 			}
 			break;

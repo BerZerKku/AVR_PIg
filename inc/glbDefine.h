@@ -283,6 +283,8 @@ enum eGB_COM
 	GB_COM_PRM_RES_IND		= 0x9A,
 	GB_COM_PRD_SET_TIME_ON	= 0xA1,
 	GB_COM_PRD_SET_DURATION = 0xA2,
+	GB_COM_PRD_SET_BLOCK_COM= 0xA4,
+	GB_COM_PRD_SET_LONG_COM	= 0xA5,
 	GB_COM_SET_TIME 		= 0xB2,
 	GB_COM_SET_TIME_RERUN	= 0xB9,
 	GB_COM_SET_DEVICE_NUM	= 0xBB,
@@ -1178,7 +1180,7 @@ public:
 	bool getBlockCom(uint8_t num) const
 	{
 		// номер восьмерки
-		uint8_t pl = (num / 8) * 8;
+		uint8_t pl = num / 8;
 		// номер внутри восьмерки
 		num = num % 8;
 		return  (blockCom_[pl] & (1 << num)) != 0;
@@ -1321,51 +1323,69 @@ public:
 	}
 	uint8_t getTimeOn() { return timeOn_ * PRD_TIME_ON_FRACT; }
 
-	// блокированные команды каждый бит отвечает за отдельную команду
+	// блокированные команды, каждый бит отвечает за отдельную команду
 	// num - номер восьмерки (0 - с 1 по 8 команды, 1 - с 9 по 16 и т.д.)
 	// val - значение
-	bool setBlockCom(uint8_t num, uint8_t val)
+	bool setBlockCom8(uint8_t num, uint8_t val)
 	{
 		bool stat = false;
-
-		num *= 8;	// номер первой команды
-
-		if (num < numCom_ )
+		if (num < (MAX_NUM_COM_PRM / 8))
 		{
-
-			for(uint_fast8_t i = 0x01; (i > 0) && (num < numCom_); i <<= 1)
-			{
-				blockCom_[num++] = (bool) (i & val);
-			}
+			blockCom_[num] = val;
 			stat = true;
 		}
 		return stat;
 	}
 	// возвращает True, если команда заблокирована
-	bool getBlockCom(uint8_t num) { return  blockCom_[num]; }
+	bool getBlockCom(uint8_t num) const
+	{
+		// номер восьмерки
+		uint8_t pl = num / 8;
+		// номер внутри восьмерки
+		num = num % 8;
+		return  (blockCom_[pl] & (1 << num)) != 0;
+	}
+	// возвращает воьсмерку команд
+	// num - номер восьмерки (0 - с 1 по 8 команды, 1 - с 9 по 16 и т.д.)
+	uint8_t getBlockCom8(uint8_t num) const
+	{
+		uint8_t val = 0;
+		if (num < (MAX_NUM_COM_PRD / 8))
+			val = blockCom_[num];
+		return val;
+	}
 
 	// длительные команды, каждый бит отвечает за отдельную команду
 	// num - номер восьмерки (0 - с 1 по 8 команды, 1 - с 9 по 16 и т.д.)
 	// val - значение
-	bool setLongCom(uint8_t num, uint8_t val)
+	bool setLongCom8(uint8_t num, uint8_t val)
 	{
 		bool stat = false;
-
-		num *= 8;	// номер первой команды
-
-		if (num < numCom_ )
+		if (num < (MAX_NUM_COM_PRD / 8))
 		{
-
-			for(uint_fast8_t i = 0x01; (i > 0) && (num < numCom_); i <<= 1)
-			{
-				longCom_[num++] = (bool) (i & val);
-			}
+			longCom_[num] = val;
 			stat = true;
 		}
 		return stat;
 	}
 	// возвращает True, если команда заблокирована
-	bool getLongCom(uint8_t num) { return  longCom_[num]; }
+	bool getLongCom(uint8_t num)
+	{
+		// номер восьмерки
+		uint8_t pl = num / 8;
+		// номер внутри восьмерки
+		num = num % 8;
+		return  (longCom_[pl] & (1 << num)) != 0;
+	}
+	// возвращает воьсмерку команд
+	// num - номер восьмерки (0 - с 1 по 8 команды, 1 - с 9 по 16 и т.д.)
+	uint8_t getLongCom8(uint8_t num) const
+	{
+		uint8_t val = 0;
+		if (num < (MAX_NUM_COM_PRD / 8))
+			val = longCom_[num];
+		return val;
+	}
 
 	// тестовая команда
 	// True - включена, False - выключена
@@ -1435,10 +1455,10 @@ private:
 	uint8_t timeOn_;
 
 	// блокированные команды, true - блокированная
-	bool blockCom_[MAX_NUM_COM_PRD];
+	uint8_t blockCom_[MAX_NUM_COM_PRD / 8];
 
 	// длительные команды, true - длительная
-	bool longCom_[MAX_NUM_COM_PRD];
+	uint8_t longCom_[MAX_NUM_COM_PRD / 8];
 
 	// тестовая команда. true - вкл.
 	bool testCom_;
