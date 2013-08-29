@@ -201,6 +201,9 @@ main (void)
 	// зададим тип аппарата
 	// menu.setTypeDevice(AVANT_NO);
 
+	// установка пароля по умолчанию
+	menu.sParam.password.set(0);
+
 	while(1)
 	{
 		if (b100ms)

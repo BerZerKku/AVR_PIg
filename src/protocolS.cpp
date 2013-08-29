@@ -14,6 +14,8 @@ clProtocolS::clProtocolS(uint8_t *buf, uint8_t size, stGBparam *sParam)
 	maxLen_ = 0;
 	old_ = PRTS_STATUS_NO;
 	cntCycle_ = 0;
+	stat_ = PRTS_STATUS_NO;
+	statDef_ = PRTS_STATUS_NO;
 }
 
 /**	Опрос флага наличия принятой посылки.

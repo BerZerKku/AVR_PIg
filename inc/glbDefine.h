@@ -19,6 +19,9 @@
 #include <avr/pgmspace.h>
 #include "debug.h"
 
+/// пароль администратора
+#define PASSWORD_ADMIN 6352
+
 /// версия текущей прошивки
 #define VERS 0x0100
 
@@ -32,7 +35,7 @@
 #define TO_INT16(high, low) (((uint16_t) high << 8) + low)
 
 /// максимально возможное кол-во состояний устройств
-#define MAX_NUM_DEVICE_STATE 11
+#define MAX_NUM_DEVICE_STATE 12
 
 /// максимальное кол-во команд в буфере (не считая 3-х основных)
 #define MAX_NUM_COM_BUF 15
@@ -237,7 +240,19 @@ enum eGB_REGIME
 	GB_REGIME_TALK,			// речь
 	GB_REGIME_TEST_1,		// тест 1
 	GB_REGIME_TEST_2,		// тест 2
-	GB_REGIME_MAX
+	GB_REGIME_MAX,
+};
+
+// Режимы работы для ввода с клавиатуры
+// порядок не совпадает с eGB_REGIME
+enum eGB_REGIME_ENTER
+{
+	GB_REGIME_ENTER_MIN = 0,
+	GB_REGIME_ENTER_DISABLED = 0,
+	GB_REGIME_ENTER_ENABLED = 1,
+	GB_REGIME_ENTER_TEST_1,
+	GB_REGIME_ENTER_TEST_2,
+	GB_REGIME_ENTER_MAX
 };
 
 /// Команды
@@ -274,9 +289,13 @@ enum eGB_COM
 	GB_COM_GET_OUT_CHECK	= 0x3D,
 	GB_COM_GET_VERS			= 0x3F,
 	GB_COM_PRM_ENTER		= 0x51,
+	GB_COM_SET_REG_DISABLED	= 0x70,
+	GB_COM_SET_REG_ENABLED	= 0x71,
 	GB_COM_SET_CONTROL		= 0x72,
 	GB_COM_SET_PASSWORD 	= 0x73,	// ! только с ПК
 	GB_COM_GET_PASSWORD 	= 0x74,	// ! только с ПК
+	GB_COM_SET_REG_TEST_2	= 0x7D,
+	GB_COM_SET_REG_TEST_1	= 0x7E,
 	GB_COM_PRM_SET_TIME_ON	= 0x91,
 	GB_COM_PRM_SET_TIME_OFF	= 0x93,
 	GB_COM_PRM_SET_BLOCK_COM= 0x94,
@@ -521,6 +540,11 @@ private:
 class TPassword
 {
 public:
+	TPassword()
+	{
+		password_ = 10000;
+		admin_ = PASSWORD_ADMIN;
+	}
 	uint16_t get() const { return password_; }
 	bool set(uint16_t pas)
 	{
@@ -533,8 +557,14 @@ public:
 		return stat;
 	}
 
+	bool check(uint16_t pas)
+	{
+		return ( (pas == password_) || (pas == admin_) );
+	}
+
 private:
 	uint16_t password_;
+	uint16_t admin_;
 };
 
 
@@ -585,6 +615,8 @@ public:
 	uint8_t getNumWarnings()const { return numWarnings_; }
 
 	// режим работы
+	// для GLB возвращается GB_REGIME_DISABLED, в случае если все имеющиеся
+	// устройства выведены, иначе GB_REGIME_MAX
 	bool setRegime(eGB_REGIME regime)
 	{
 		bool stat = false;
@@ -1946,7 +1978,6 @@ private:
 /// Структура параметров БСП
 struct stGBparam
 {
-
 	// false - означает что надо настроить меню под текущий тип аппарата
 	bool device;
 	eGB_TYPE_DEVICE typeDevice;

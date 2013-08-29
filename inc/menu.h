@@ -11,8 +11,6 @@
 #include "keyboard.h"
 #include "glbDefine.h"
 
-/// кол-во строк, отображаемых на экране
-
 /// время до переинициализации дисплея (* время цикла ЖКИ)
 #define TIME_TO_REINIT_LCD 50
 
@@ -43,8 +41,12 @@ enum eMENU_ENTER_PARAM
 	MENU_ENTER_PARAM_INT,		// изменение параметра (целое значение)
 	MENU_ENTER_PARAM_LIST,		// изменение параметра (выбор из списка)
 	MENU_ENTER_PARAM_U_COR,		// изменение параметра (коррекция напряжения)
+	MENU_ENTER_PASSWORD,		// ввод пароля
+	MENU_ENTER_PASSWORD_NEW,	// ввод нового пароля
+	MENU_ENTER_PASSWORD_READY,	// введен верный пароль
+	MENU_ENTER_PASSWORD_N_READY,// новый пароль введен корректно
 	MENU_ENTER_PARAM_READY,		// необходимо изменить параметр
-	MENU_ENTER_PARAM_MESSAGE	// вывод сообщения на экран
+	MENU_ENTER_PARAM_MESSAGE,	// вывод сообщения на экран при вводе параметра
 };
 
 // структура параметров для ввода значений
@@ -65,10 +67,25 @@ public:
 		return (status_ != MENU_ENTER_PARAM_NO);
 	}
 	// начало работы, передается способ ввода переменной
+	// если ввод из списка, автоматически дискретность и делитель равны 1
+	// для пароля автоматически выставляются диапазон ввода и начальное значение
 	void setEnable(eMENU_ENTER_PARAM s=MENU_ENTER_PARAM_INT)
 	{
-		if ((s>=MENU_ENTER_PARAM_INT) && (s<=MENU_ENTER_PARAM_U_COR))
+		if ((s>=MENU_ENTER_PARAM_INT) && (s<=MENU_ENTER_PASSWORD_NEW))
+		{
+			if (s == MENU_ENTER_PARAM_LIST)
+			{
+				disc_ = 1;
+				fract_ = 1;
+			}
+			else if (s == MENU_ENTER_PASSWORD)
+			{
+				val_ = 0;
+				min_ = 0;
+				max_ = 9999;
+			}
 			status_ = s;
+		}
 	}
 	void setDisable() { status_ = MENU_ENTER_PARAM_NO; }
 
@@ -106,45 +123,93 @@ public:
 	// возвращает введеное значение с учетом дискретности и делителя
 	uint8_t getValueEnter()
 	{
-		return ((val_ / disc_) * disc_) / fract_;
+		uint8_t val = min_;
+
+		val = ((val_ / disc_) * disc_) / fract_;
+
+		return val;
 	}
 
-	// увеличение/уменьшение текущего значения
+	// увеличение текущего значения
 	uint16_t incValue()
 	{
-		if (val_ <= (max_ - disc_))
-			val_ += disc_;
-		else
-			val_ = min_;
+		if (status_ == MENU_ENTER_PARAM_INT)
+		{
+			// увеличение значения
+			val_ = (val_ <= (max_ - disc_)) ? val_ + disc_ : min_;
+		}
+		else if (status_ == MENU_ENTER_PARAM_LIST)
+		{
+			// в списке порядок обратный (уменьшение индекса массива)
+			val_ = (val_ > min_) ? val_ - 1 : max_;
+		}
+		else if ( (status_ == MENU_ENTER_PASSWORD) ||
+					(status_ == MENU_ENTER_PASSWORD_NEW) )
+		{
+			uint16_t t = 0;
+
+			// находится разряд заданный дискретностью
+			// например для числа 1234 и дискрету 100, получается 2
+			t = val_ % (disc_ * 10);
+			t = t / disc_;
+
+			if (t == 9)
+				val_ -= 9 * disc_;
+			else
+				val_ += disc_;
+		}
 		return val_;
 	}
+	// уменьшение текущего значения
 	uint16_t decValue()
 	{
-		if (val_ >= (min_ + disc_))
-			val_ -= disc_;
-		else
-			val_ = max_;
+		if (status_ == MENU_ENTER_PARAM_INT)
+		{
+			// уменьшение значние
+			val_ = (val_ >= (min_ + disc_)) ? val_ - disc_ : max_;
+		}
+		else if (status_ == MENU_ENTER_PARAM_LIST)
+		{
+			// в списке порядок обратный (увеличие индекса массива)
+			val_ = (val_ < max_) ? val_ + 1 : min_;
+		}
+		else if ( (status_ == MENU_ENTER_PASSWORD) ||
+				(status_ == MENU_ENTER_PASSWORD_NEW) )
+		{
+
+		}
+		sDebug.byte1 = val_;
 		return val_;
 	}
 
 	// запись/считывание дополнительного байта
-	void setDopByte(uint8_t byte) { dopByte_ = byte; }
-	uint8_t getDopByte() const { return dopByte_; }
+	void setDopValue(uint16_t byte) { dopValue_ = byte; }
+	uint16_t getDopValue() const { return dopValue_; }
 
 	// запись/считывание дискретности
-	void setDisc(uint8_t disc) { disc_ = disc; }
-	uint8_t getDisc() const { return disc_; }
+	void setDisc(uint16_t disc) { disc_ = disc; }
+	uint16_t getDisc() const { return disc_; }
 
 	// запись/считывание делителя
 	void setFract(uint8_t fract) { fract_ = fract; }
 	uint8_t getFract() const { return fract_; }
 
 	// вывод сообщения на экран
-	void printMessage() { status_ = MENU_ENTER_PARAM_MESSAGE; cnt_ = 0; }
+	// по умолчанию работает для функции ввода параметра
+	void printMessage()
+	{
+		status_ = MENU_ENTER_PARAM_MESSAGE;
+		cnt_ = 0;
+	}
 
 	// считывание текущиего статуса
 	eMENU_ENTER_PARAM getStatus() const { return status_; }
-	void setEnterValueReady() { status_ = MENU_ENTER_PARAM_READY; }
+
+	// установка флага окончания ввода параметра
+	void setEnterValueReady(eMENU_ENTER_PARAM status = MENU_ENTER_PARAM_READY)
+	{
+		status_ = status;
+	}
 
 	// указатель на первый элемент списка
 	PGM_P list;
@@ -171,10 +236,10 @@ private:
 	uint8_t numSymbols_;
 
 	// байт с дополнительой информацией
-	uint8_t dopByte_;
+	uint16_t dopValue_;
 
 	// дискретность
-	uint8_t disc_;
+	uint16_t disc_;
 
 	// делитель
 	uint8_t fract_;
@@ -268,6 +333,7 @@ private:
 	void lvlError();
 	void lvlStart();
 	void lvlFirst();
+	void lvlInfo();
 	void lvlJournal();
 	void lvlJournalEvent();
 	void lvlJournalDef();
@@ -282,16 +348,13 @@ private:
 	void lvlSetupParamPrd();
 	void lvlSetupParamGlb();
 	void lvlSetupDT();
-	void lvlInfo();
+	void lvlTest1();
+	void lvlTest2();
 
-	// ввод целого значения
+	// ввод параметра
 	eMENU_ENTER_PARAM enterValue();
 
-	// ввод значения из списка
-	eMENU_ENTER_PARAM enterValueList();
-
-	// заглушка для ввода значений
-	eMENU_ENTER_PARAM enterNo() { return MENU_ENTER_PARAM_NO; }
+	eMENU_ENTER_PARAM enterPassword();
 
 	// перемещение курсора вверх
 	void cursorLineUp()
@@ -311,8 +374,8 @@ private:
 	// возвращает текущий номер неисправности/предупреждения
 	uint8_t getNumError(uint16_t val);
 
-	// текущая функция ввода значения
-	eMENU_ENTER_PARAM (clMenu:: *enterFunc_) ();
+	// текущая функция ввода
+	eMENU_ENTER_PARAM (clMenu:: *enterFunc) ();
 
 	// текущий уровень меню
 	void (clMenu:: *lvlMenu) ();

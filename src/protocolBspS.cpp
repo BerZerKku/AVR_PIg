@@ -225,23 +225,29 @@ bool clProtocolBspS::getData()
 				sParam_->prd.status.setState(buf[B8]);
 				sParam_->prd.status.setDopByte(buf[B9]);
 
+				sDebug.byte5 = buf[B2];
+				sDebug.byte6 = buf[B5];
+				sDebug.byte7 = buf[B8];
+
 				// если хоть одно из имеющихся устройств не в режиме ВЫВЕДЕН
 				// (GB_REGIME_DISABLED) общий режим будет равен GB_REGIME_MAX
 				eGB_REGIME reg = GB_REGIME_DISABLED;
 				if (sParam_->prd.status.isEnable())
 				{
-					if (sParam_->prd.status.getRegime() != GB_REGIME_DISABLED)
-						reg = GB_REGIME_MAX;
+					if (sParam_->prd.status.getRegime() == GB_REGIME_ENABLED)
+						reg = GB_REGIME_ENABLED;
 				}
 				if (sParam_->prm.status.isEnable())
 				{
-					if (sParam_->prm.status.getRegime() != GB_REGIME_DISABLED)
-						reg = GB_REGIME_MAX;
+					// в приемнике режим Готов, тоже считаем за Введен
+					if ((sParam_->prm.status.getRegime() == GB_REGIME_ENABLED)||
+						(sParam_->prm.status.getRegime() == GB_REGIME_READY))
+						reg = GB_REGIME_ENABLED;
 				}
 				if (sParam_->def.status.isEnable())
 				{
-					if (sParam_->def.status.getRegime() != GB_REGIME_DISABLED)
-						reg = GB_REGIME_MAX;
+					if (sParam_->def.status.getRegime() == GB_REGIME_ENABLED)
+						reg = GB_REGIME_ENABLED;
 				}
 				sParam_->glb.status.setRegime(reg);
 
@@ -477,14 +483,27 @@ clProtocolBspS::sendData(eGB_COM com)
 	else if (mask == GB_COM_MASK_GROUP_WRITE_REGIME)
 	{
 		// команды изменения режима
-
-		mask = com & GB_COM_MASK_DEVICE;
-
 		if (com == GB_COM_SET_CONTROL)
 		{
 			num = addCom(com, sParam_->txComBuf.getInt8());
 		}
 		else if (com == GB_COM_PRM_ENTER)
+		{
+			num = addCom(com);
+		}
+		else if (com == GB_COM_SET_REG_DISABLED)
+		{
+			num = addCom(com);
+		}
+		else if (com == GB_COM_SET_REG_ENABLED)
+		{
+			num = addCom(com);
+		}
+		else if (com == GB_COM_SET_REG_TEST_2)
+		{
+			num = addCom(com);
+		}
+		else if (com == GB_COM_SET_REG_TEST_1)
 		{
 			num = addCom(com);
 		}
@@ -494,6 +513,7 @@ clProtocolBspS::sendData(eGB_COM com)
 		// команды опроса
 
 		mask = com & GB_COM_MASK_DEVICE;
+
 		if (mask == GB_COM_MASK_DEVICE_DEF)
 		{
 			// ЗАЩИТА

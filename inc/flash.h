@@ -6,7 +6,7 @@
  */
 
 #include <avr/pgmspace.h>
-#include <glbDefine.h>
+#include "glbDefine.h"
 
 #define STRING_LENGHT 11
 
@@ -28,30 +28,38 @@ static const char fcDeviceName01[] PROGMEM = "ПРМ";
 static const char fcDeviceName02[] PROGMEM = "ПРД";
 
 // режимы устройств
-// кол-во режимов (без учета "Ошибка") должно совпадать с MAX_NUM_REGIME
-static const char fcRegime[GB_REGIME_MAX + 1] [STRING_LENGHT] PROGMEM =
+static const char fcRegime[GB_REGIME_MAX + 1] [8] PROGMEM =
 {
-	"Выведен",
-	"Готов",
-	"Введен",
-	"Речь",
-	"Тест 1",
-	"Тест 2",
-	"ошибка"
+		"Выведен",
+		"Готов",
+		"Введен",
+		"Речь",
+		"Тест1",
+		"Тест2",
+		"ошибка"
+};
+
+// режимы устройств, для ввода с клавиатуры
+static const char fcRegimeEnter[GB_REGIME_ENTER_MAX] [STRING_LENGHT] PROGMEM =
+{
+		"Выведен",
+		"Введен",
+		"Тест 1",
+		"Тест 2"
 };
 
 // тип защиты
 static const char fcDefType[DEF_TYPE_MAX + 1] [STRING_LENGHT] PROGMEM =
 {
-	"ДФЗ-ПрПд",
-	"ДФЗ-МК1",
-	"ДФЗ-МК2",
-	"ДФЗ-L60",
-	"НЗ-ПрПд",
-	"НЗ-МК",
-	"ППЗ-ПрПд",
-	"ППЗ-МК",
-	"ошибка"
+		"ДФЗ-ПрПд",
+		"ДФЗ-МК1",
+		"ДФЗ-МК2",
+		"ДФЗ-L60",
+		"НЗ-ПрПд",
+		"НЗ-МК",
+		"ППЗ-ПрПд",
+		"ППЗ-МК",
+		"ошибка"
 };
 
 static const char fcNumDevices[GB_NUM_DEVICES_MAX + 1] [STRING_LENGHT] PROGMEM =
@@ -64,16 +72,16 @@ static const char fcNumDevices[GB_NUM_DEVICES_MAX + 1] [STRING_LENGHT] PROGMEM =
 
 static const char fcPrmType[DEF_PRM_TYPE_MAX + 1] [STRING_LENGHT] PROGMEM =
 {
-		"Акт+Пасс",
-		"Активный",
-		"Пассивный",
+		"акт+пасс",
+		"активный",
+		"пассивный",
 		"ошибка"
 };
 
 static const char fcOnOff[3] [STRING_LENGHT] PROGMEM =
 {
-		"Выкл.",
-		"Вкл.",
+		"выкл.",
+		"вкл.",
 		"ошибка"
 };
 
@@ -102,6 +110,7 @@ static const char fcDefSost07[] PROGMEM =	"Нал.пуск";
 static const char fcDefSost08[] PROGMEM = 	"?0x08?";
 static const char fcDefSost09[] PROGMEM =	"Нет РЗ";
 static const char fcDefSost10[] PROGMEM =	"Речь";
+static const char fcDefSost11[] PROGMEM =	"Тест";
 // состояния Приемника
 static const char fcPrmSost00[] PROGMEM = 	"Исходн.";
 static const char fcPrmSost01[] PROGMEM = 	"ПРМ КЧ%01u";
@@ -114,6 +123,7 @@ static const char fcPrmSost07[] PROGMEM = 	"БЛК КМ%02u";
 static const char fcPrmSost08[] PROGMEM = 	"?0x08?";
 static const char fcPrmSost09[] PROGMEM = 	"?0x09?";
 static const char fcPrmSost10[] PROGMEM = 	"Речь";
+static const char fcPrmSost11[] PROGMEM =	"Тест";
 // состояния Передатчика
 static const char fcPrdSost00[] PROGMEM = 	"Исходн.";
 static const char fcPrdSost01[] PROGMEM =	"ПРД КЧ%01u";
@@ -126,6 +136,7 @@ static const char fcPrdSost07[] PROGMEM = 	"?0x07?";
 static const char fcPrdSost08[] PROGMEM = 	"?0x08?";
 static const char fcPrdSost09[] PROGMEM =	"Систем.";
 static const char fcPrdSost10[] PROGMEM =	"Речь";
+static const char fcPrdSost11[] PROGMEM =	"Тест";
 
 // надписи для неиспользуемых в текущем аппарате кодов
 static const char fcUnknownFault[]		PROGMEM = "Неисправность";
@@ -225,12 +236,7 @@ static const char fcRangeOnOff[]		PROGMEM = "вкл./выкл.";
 static const char fcNumPunkt[] 			PROGMEM = "Номер: %u  Всего: %u";
 //static const char fcOn[]				PROGMEM = "вкл.";
 //static const char fcOff[]				PROGMEM = "выкл.";
-static char message[3] [21] PROGMEM =
-{
-		" Изменить параметр  ",
-		"  можно только в    ",
-		"  режиме ВЫВЕДЕН    "
-};
+
 //	ЖУРНАЛ
 static const char fcJrnEmpty[] 			PROGMEM = "ЖУРНАЛ ПУСТ";
 static const char fcJrnNumEntries[] 	PROGMEM = "Запись %u / %u";
