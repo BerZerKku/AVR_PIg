@@ -443,11 +443,27 @@ clProtocolBspS::sendData(eGB_COM com)
 			{
 				num = addCom(com, 6, sParam_->txComBuf.getBuferAddress());
 			}
+			else if (com == GB_COM_SET_TIME_SINCHR)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt8());
+			}
+			else if (com == GB_COM_SET_COM_PRM_KEEP)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt8());
+			}
+			else if (com == GB_COM_SET_COM_PRD_KEEP)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt8());
+			}
 			else if (com == GB_COM_SET_TIME_RERUN)
 			{
 				num = addCom(com, sParam_->txComBuf.getInt8());
 			}
 			else if (com == GB_COM_SET_DEVICE_NUM)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt8());
+			}
+			else if (com == GB_COM_SET_OUT_CHECK)
 			{
 				num = addCom(com, sParam_->txComBuf.getInt8());
 			}

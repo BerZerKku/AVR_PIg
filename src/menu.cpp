@@ -2614,8 +2614,7 @@ clMenu::lvlSetupParamGlb()
 
 			if (p == punkt1)
 			{
-				// синхронизация часов
-				// !!! ввод из списка
+				sParam.txComBuf.setInt8(enterParam.getValueEnter());
 			}
 			else if (p == punkt2)
 			{
@@ -2623,10 +2622,7 @@ clMenu::lvlSetupParamGlb()
 			}
 			else if (p == punkt3)
 			{
-				// контроль выходного сигнала
-				// !!! ввод из списка
-				//	sParam.txComBuf.setInt8(enterParam.getDopByte(), 0);
-				//	sParam.txComBuf.setInt8(enterParam.getValueEnter(), 1);
+				sParam.txComBuf.setInt8(enterParam.getValueEnter());
 			}
 			else if (p == punkt4)
 			{
@@ -2639,13 +2635,11 @@ clMenu::lvlSetupParamGlb()
 			}
 			else if (p == punkt6)
 			{
-				// удержание реле команд ПРД
-				// !!! ввод из списка
+				sParam.txComBuf.setInt8(enterParam.getValueEnter());
 			}
 			else if (p == punkt7)
 			{
-				// удержание реле команд ПРМ
-				// !!! ввод из списка
+				sParam.txComBuf.setInt8(enterParam.getValueEnter());
 			}
 			else if (p == punkt8)
 			{
@@ -2724,7 +2718,15 @@ clMenu::lvlSetupParamGlb()
 
 				if (punkt_[cursorLine_ - 1] == punkt1)
 				{
-					// !!!
+					enterParam.setEnable(MENU_ENTER_PARAM_LIST);
+					enterParam.setValueRange(0, 1);
+					uint8_t val = sParam.glb.getTimeSinchr() ? 1 : 0;
+					enterParam.setValue(val);
+					enterParam.setDisc(1);
+					enterParam.setFract(1);
+					enterParam.list = fcOnOff[0];
+					enterFunc_ = &clMenu::enterValue;
+					enterParam.com = GB_COM_SET_TIME_SINCHR;
 				}
 				else if (punkt_[cursorLine_ - 1] == punkt2)
 				{
@@ -2739,7 +2741,15 @@ clMenu::lvlSetupParamGlb()
 				}
 				else if (punkt_[cursorLine_ - 1] == punkt3)
 				{
-					// !!!
+					enterParam.setEnable(MENU_ENTER_PARAM_LIST);
+					enterParam.setValueRange(0, 1);
+					uint8_t val = sParam.glb.getOutCheck() ? 1 : 0;
+					enterParam.setValue(val);
+					enterParam.setDisc(1);
+					enterParam.setFract(1);
+					enterParam.list = fcOnOff[0];
+					enterFunc_ = &clMenu::enterValue;
+					enterParam.com = GB_COM_SET_OUT_CHECK;
 				}
 				else if (punkt_[cursorLine_ - 1] == punkt4)
 				{
@@ -2765,11 +2775,27 @@ clMenu::lvlSetupParamGlb()
 				}
 				else if (punkt_[cursorLine_ - 1] == punkt6)
 				{
-					// !!!
+					enterParam.setEnable(MENU_ENTER_PARAM_LIST);
+					enterParam.setValueRange(0, 1);
+					uint8_t val = sParam.glb.getComPrdKeep() ? 1 : 0;
+					enterParam.setValue(val);
+					enterParam.setDisc(1);
+					enterParam.setFract(1);
+					enterParam.list = fcOnOff[0];
+					enterFunc_ = &clMenu::enterValue;
+					enterParam.com = GB_COM_SET_COM_PRD_KEEP;
 				}
 				else if (punkt_[cursorLine_ - 1] == punkt7)
 				{
-					// !!!
+					enterParam.setEnable(MENU_ENTER_PARAM_LIST);
+					enterParam.setValueRange(0, 1);
+					uint8_t val = sParam.glb.getComPrmKeep() ? 1 : 0;
+					enterParam.setValue(val);
+					enterParam.setDisc(1);
+					enterParam.setFract(1);
+					enterParam.list = fcOnOff[0];
+					enterFunc_ = &clMenu::enterValue;
+					enterParam.com = GB_COM_SET_COM_PRM_KEEP;
 				}
 				else if (punkt_[cursorLine_ - 1] == punkt8)
 				{
