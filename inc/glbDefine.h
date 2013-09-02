@@ -40,6 +40,9 @@
 /// максимальное кол-во команд в буфере (не считая 3-х основных)
 #define MAX_NUM_COM_BUF 15
 
+/// максимальное кол-во сигналов в тестах
+#define MAX_NUM_TEST_SIGNAL 40
+
 /// Минимальные, максимальные значения параметров приемника и их дискретность
 /// ЗАЩИТА
 /// тип защиты
@@ -287,6 +290,7 @@ enum eGB_COM
 	GB_COM_GET_DEVICE_NUM	= 0x3B,
 	GB_COM_GET_CF_THRESHOLD	= 0x3C,	// ! порог предупр. по КЧ и загрубления
 	GB_COM_GET_OUT_CHECK	= 0x3D,
+	GB_COM_GET_TEST			= 0x3E,
 	GB_COM_GET_VERS			= 0x3F,
 	GB_COM_PRM_ENTER		= 0x51,
 	GB_COM_SET_REG_DISABLED	= 0x70,
@@ -330,18 +334,18 @@ enum eGB_COM
 enum eGB_COM_MASK
 {
 	// Тип устройства
-	GB_COM_MASK_DEVICE = 0x30,
-	GB_COM_MASK_DEVICE_DEF = 0x00,
-	GB_COM_MASK_DEVICE_PRM = 0x10,
-	GB_COM_MASK_DEVICE_PRD = 0x20,
-	GB_COM_MASK_DEVICE_GLB = 0x30,
+	GB_COM_MASK_DEVICE 		= 0x30,
+	GB_COM_MASK_DEVICE_DEF 	= 0x00,
+	GB_COM_MASK_DEVICE_PRM 	= 0x10,
+	GB_COM_MASK_DEVICE_PRD 	= 0x20,
+	GB_COM_MASK_DEVICE_GLB 	= 0x30,
 
 	// группа команды
-	GB_COM_MASK_GROUP = 0xC0,
-	GB_COM_MASK_GROUP_READ_PARAM = 0x00,
-	GB_COM_MASK_GROUP_WRITE_REGIME = 0x40,
-	GB_COM_MASK_GROUP_WRITE_PARAM = 0x80,
-	GB_COM_MASK_GROUP_READ_JOURNAL = 0xC0
+	GB_COM_MASK_GROUP 				= 0xC0,
+	GB_COM_MASK_GROUP_READ_PARAM 	= 0x00,
+	GB_COM_MASK_GROUP_WRITE_REGIME 	= 0x40,
+	GB_COM_MASK_GROUP_WRITE_PARAM 	= 0x80,
+	GB_COM_MASK_GROUP_READ_JOURNAL	= 0xC0
 };
 
 /// Значения команд управления
@@ -366,6 +370,57 @@ enum eGB_STATE_COM
 	GB_STATE_COM_END = 0,
 	GB_STATE_COM_START,
 	GB_STATE_COM_MAX
+};
+
+/// сигналы в тест1 и тест2
+enum eGB_TEST_SIGNAL
+{
+	GB_SIGNAL_NO = 0,
+	GB_SIGNAL_CF,		// РЗСК
+	GB_SIGNAL_CF1,
+	GB_SIGNAL_CF2,
+	GB_SIGNAL_CF3,
+	GB_SIGNAL_CF4,
+	GB_SIGNAL_CF_NO_RZ,	// РЗСК
+	GB_SIGNAL_CF_RZ,	// РЗСК
+	GB_SIGNAL_RZ,
+	GB_SIGNAL_COM1_RZ,	// РЗСК
+	GB_SIGNAL_COM2_RZ,	// РЗСК
+	GB_SIGNAL_COM3_RZ,	// РЗСК
+	GB_SIGNAL_COM4_RZ,	// РЗСК
+	GB_SIGNAL_COM1,
+	GB_SIGNAL_COM2,
+	GB_SIGNAL_COM3,
+	GB_SIGNAL_COM4,
+	GB_SIGNAL_COM5,
+	GB_SIGNAL_COM6,
+	GB_SIGNAL_COM7,
+	GB_SIGNAL_COM8,
+	GB_SIGNAL_COM9,
+	GB_SIGNAL_COM10,
+	GB_SIGNAL_COM11,
+	GB_SIGNAL_COM12,
+	GB_SIGNAL_COM13,
+	GB_SIGNAL_COM14,
+	GB_SIGNAL_COM15,
+	GB_SIGNAL_COM16,
+	GB_SIGNAL_COM17,
+	GB_SIGNAL_COM18,
+	GB_SIGNAL_COM19,
+	GB_SIGNAL_COM20,
+	GB_SIGNAL_COM21,
+	GB_SIGNAL_COM22,
+	GB_SIGNAL_COM23,
+	GB_SIGNAL_COM24,
+	GB_SIGNAL_COM25,
+	GB_SIGNAL_COM26,
+	GB_SIGNAL_COM27,
+	GB_SIGNAL_COM28,
+	GB_SIGNAL_COM29,
+	GB_SIGNAL_COM30,
+	GB_SIGNAL_COM31,
+	GB_SIGNAL_COM32,
+	GB_SIGNAL_MAX
 };
 
 #define BCD_TO_BIN(val) ((val >> 4) * 10 + (val & 0x0F))
@@ -667,7 +722,7 @@ public:
 	// массивы расшифровок аварий и предупреждений
 	PGM_P faultText[16];
 	PGM_P warningText[8];
-	PGM_P stateText[MAX_NUM_DEVICE_STATE];
+	PGM_P stateText[MAX_NUM_DEVICE_STATE + 1];
 	PGM_P name;
 
 private:
@@ -1975,6 +2030,219 @@ private:
 	bool ready_;
 };
 
+class TTest
+{
+public:
+	TTest()
+	{
+		clear();
+	}
+	// очистка списка сигналов
+	void clear()
+	{
+		signalList[0] =  GB_SIGNAL_NO;
+		num_ = 1;
+		currentSignal_ = GB_SIGNAL_NO;
+	}
+
+	bool addSignalToList(eGB_TEST_SIGNAL signal)
+	{
+		bool stat = false;
+		if ( (num_ < MAX_NUM_TEST_SIGNAL) && (signal < GB_SIGNAL_MAX) )
+		{
+			signalList[num_++] = signal;
+			stat = true;
+		}
+		return stat;
+	}
+
+	// записывает в cf, rz значения КЧ и РЗ, соответственно, для передачи в БСП
+	void getBytes(uint8_t &cf, uint8_t &rz, eGB_TEST_SIGNAL sig)
+	{
+		if ( (sig >= GB_SIGNAL_COM1) && (sig <= GB_SIGNAL_COM32) )
+		{
+			rz = 0;
+			cf =  3 + sig - GB_SIGNAL_COM1; // 3 - кол-во кч ?!
+		}
+		else if ( (sig >= GB_SIGNAL_CF1) && (sig <= GB_SIGNAL_CF4) )
+		{
+			rz = 0;
+			cf = 1 + sig - GB_SIGNAL_CF1;
+		}
+		else if (sig == GB_SIGNAL_CF_NO_RZ)
+		{
+			rz = 1;
+			cf = 1;
+		}
+		else if (sig == GB_SIGNAL_CF_RZ)
+		{
+			rz = 2;
+			cf = 1;
+		}
+		else if (sig == GB_SIGNAL_RZ)
+		{
+			rz = 1;
+			cf = 0;
+		}
+		else if ( (sig >= GB_SIGNAL_COM1_RZ) && (sig <= GB_SIGNAL_COM4_RZ) )
+		{
+			rz = 2;
+			cf = 4 + sig - GB_SIGNAL_COM1_RZ;
+		}
+		else if ( sig == GB_SIGNAL_CF)
+		{
+			rz = 0;
+			cf = 1;
+		}
+		else
+		{
+			rz = 0;
+			cf = 0;
+		}
+	}
+
+	// возвращает кол-во сигналов в списке
+	uint8_t getNumSignals() const { return num_; }
+
+	// установка и считывание текущего сигнала
+	eGB_TEST_SIGNAL setCurrentSignal(uint8_t *s, eGB_TYPE_DEVICE type)
+	{
+		eGB_TEST_SIGNAL signal = GB_SIGNAL_MAX;
+
+		if (type == AVANT_K400)
+		{
+			signal = getCurrentSignalK400(s);
+		}
+		else if (type == AVANT_RZSK)
+		{
+			signal = getCurrentSignalRZSK(s);
+		}
+		currentSignal_ = signal;
+
+		return signal;
+	}
+	eGB_TEST_SIGNAL getCurrentSignal() const { return currentSignal_; }
+
+	// список сигналов
+	uint8_t signalList[MAX_NUM_TEST_SIGNAL];
+private:
+	uint8_t num_;
+
+	eGB_TEST_SIGNAL currentSignal_;
+
+	// возвращает номер первого установленного бита 1..8, либо 0
+	// проверка начинается с 0-ого бита
+	uint8_t getSetBit(uint8_t byte)
+	{
+		uint8_t bit = 0;
+
+		if (byte)
+		{
+			uint8_t b = 0;
+			for(uint_fast8_t i = 1; i > 0; i <<= 1)
+			{
+				b++;
+				if (byte & i)
+				{
+					bit = b;
+					break;
+				}
+			}
+		}
+		return bit;
+	}
+
+	// добавление сигнала в список для К400
+	eGB_TEST_SIGNAL getCurrentSignalK400(uint8_t *s)
+	{
+		eGB_TEST_SIGNAL signal = GB_SIGNAL_NO;
+
+		uint8_t t = *s;
+		// сначала проверяется наличие КЧ1-КЧ2
+		if (t & 0x01 )
+			signal = GB_SIGNAL_CF1;
+		else if (t & 0x02)
+			signal = GB_SIGNAL_CF2;
+		else
+		{
+			// проверяется начичие команд с 1 по 8
+			t = getSetBit(*(++s));
+			if (t)
+			{
+				t =  GB_SIGNAL_COM1 + t - 1;
+				signal = (eGB_TEST_SIGNAL) t;
+			}
+			else
+			{
+				// проверяется начичие команд с 9 по 16
+				t = getSetBit(*(++s));
+				if (t)
+				{
+					t =  GB_SIGNAL_COM9 + t - 1;
+					signal = (eGB_TEST_SIGNAL) t;
+				}
+				else
+				{
+					// проверяется начичие команд с 17 по 24
+					t = getSetBit(*(++s));
+					if (t)
+					{
+						t =  GB_SIGNAL_COM17 + t - 1;
+						signal = (eGB_TEST_SIGNAL) t;
+					}
+					else
+					{
+						// проверяется начичие команд с 25 по 32
+						t = getSetBit(*(++s));
+						if (t)
+						{
+							t =  GB_SIGNAL_COM25 + t - 1;
+							signal = (eGB_TEST_SIGNAL) t;
+						}
+					}
+				}
+			}
+		}
+		return signal;
+	};
+
+	// добавление сигнала в список для РЗСК
+	eGB_TEST_SIGNAL getCurrentSignalRZSK(uint8_t *s)
+	{
+		eGB_TEST_SIGNAL signal = GB_SIGNAL_NO;
+
+		uint8_t t = *s;
+		if (t & 0x11)
+			signal = GB_SIGNAL_CF_NO_RZ;
+		else if (t & 0x12)
+			signal = GB_SIGNAL_CF_RZ;
+		else
+		{
+			if (t & 0x10)
+			{
+				t = getSetBit((*(++s)) & 0x0F);
+				if (t == 0)
+					signal = GB_SIGNAL_CF;
+				else
+				{
+					t = t + GB_SIGNAL_COM1 - 1;
+					signal = (eGB_TEST_SIGNAL) t;
+				}
+			}
+			else if (t & 0x20)
+			{
+				t = getSetBit((*(++s)) & 0x0F);
+				if (t)
+				{
+					t = t + GB_SIGNAL_COM1_RZ - 1;
+					signal = (eGB_TEST_SIGNAL) t;
+				}
+			}
+		}
+		return signal;
+	};
+};
+
 /// Структура параметров БСП
 struct stGBparam
 {
@@ -2002,6 +2270,9 @@ struct stGBparam
 
 	// запись в журнале
 	TJournalEntry jrnEntry;
+
+	// тесты
+	TTest test;
 };
 
 #endif /* GLBDEF_H_ */

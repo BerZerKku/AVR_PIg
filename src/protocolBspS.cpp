@@ -225,10 +225,6 @@ bool clProtocolBspS::getData()
 				sParam_->prd.status.setState(buf[B8]);
 				sParam_->prd.status.setDopByte(buf[B9]);
 
-				sDebug.byte5 = buf[B2];
-				sDebug.byte6 = buf[B5];
-				sDebug.byte7 = buf[B8];
-
 				// если хоть одно из имеющихся устройств не в режиме ВЫВЕДЕН
 				// (GB_REGIME_DISABLED) общий режим будет равен GB_REGIME_MAX
 				eGB_REGIME reg = GB_REGIME_DISABLED;
@@ -344,6 +340,11 @@ bool clProtocolBspS::getData()
 				{
 					stat = sParam_->glb.setComPrdKeep(buf[B1]);
 				}
+			}
+			else if (com == GB_COM_GET_TEST)
+			{
+				eGB_TYPE_DEVICE type = sParam_->typeDevice;
+				sParam_->test.setCurrentSignal(&buf[B1], type);
 			}
 			else if (com == GB_COM_GET_JRN_CNT)
 			{
@@ -505,7 +506,9 @@ clProtocolBspS::sendData(eGB_COM com)
 		}
 		else if (com == GB_COM_SET_REG_TEST_1)
 		{
-			num = addCom(com);
+			uint8_t b1 = sParam_->txComBuf.getInt8(0);
+			uint8_t b2 = sParam_->txComBuf.getInt8(1);
+			num = addCom(com, b1, b2);
 		}
 	}
 	else if (mask == GB_COM_MASK_GROUP_READ_PARAM)
@@ -626,6 +629,10 @@ clProtocolBspS::sendData(eGB_COM com)
 				num = addCom(com);
 			}
 			else if (com == GB_COM_GET_OUT_CHECK)
+			{
+				num = addCom(com);
+			}
+			else if (com == GB_COM_GET_TEST)
 			{
 				num = addCom(com);
 			}

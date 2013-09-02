@@ -38,9 +38,10 @@ enum eMENU_MEAS_PARAM
 enum eMENU_ENTER_PARAM
 {
 	MENU_ENTER_PARAM_NO,		// отмена изменения параметра
-	MENU_ENTER_PARAM_INT,		// изменение параметра (целое значение)
-	MENU_ENTER_PARAM_LIST,		// изменение параметра (выбор из списка)
-	MENU_ENTER_PARAM_U_COR,		// изменение параметра (коррекция напряжения)
+	MENU_ENTER_PARAM_INT,		// изменение параметра, целое значение
+	MENU_ENTER_PARAM_LIST,		// изменение параметра, выбор из списка
+	MENU_ENTER_PARAM_LIST_2,	// изменение параметра, выбор из списка значений
+	MENU_ENTER_PARAM_U_COR,		// изменение параметра, коррекция напряжения
 	MENU_ENTER_PASSWORD,		// ввод пароля
 	MENU_ENTER_PASSWORD_NEW,	// ввод нового пароля
 	MENU_ENTER_PASSWORD_READY,	// введен верный пароль
@@ -73,7 +74,7 @@ public:
 	{
 		if ((s>=MENU_ENTER_PARAM_INT) && (s<=MENU_ENTER_PASSWORD_NEW))
 		{
-			if (s == MENU_ENTER_PARAM_LIST)
+			if ((s == MENU_ENTER_PARAM_LIST) || (s == MENU_ENTER_PARAM_LIST_2))
 			{
 				disc_ = 1;
 				fract_ = 1;
@@ -133,18 +134,20 @@ public:
 	// увеличение текущего значения
 	uint16_t incValue()
 	{
+
 		if (status_ == MENU_ENTER_PARAM_INT)
 		{
 			// увеличение значения
 			val_ = (val_ <= (max_ - disc_)) ? val_ + disc_ : min_;
 		}
-		else if (status_ == MENU_ENTER_PARAM_LIST)
+		else if ( (status_ == MENU_ENTER_PARAM_LIST) ||
+				(status_ == MENU_ENTER_PARAM_LIST_2) )
 		{
 			// в списке порядок обратный (уменьшение индекса массива)
 			val_ = (val_ > min_) ? val_ - 1 : max_;
 		}
 		else if ( (status_ == MENU_ENTER_PASSWORD) ||
-					(status_ == MENU_ENTER_PASSWORD_NEW) )
+				(status_ == MENU_ENTER_PASSWORD_NEW) )
 		{
 			uint16_t t = 0;
 
@@ -158,27 +161,31 @@ public:
 			else
 				val_ += disc_;
 		}
+
+		sDebug.byte1 = val_;
 		return val_;
 	}
 	// уменьшение текущего значения
 	uint16_t decValue()
 	{
-		if (status_ == MENU_ENTER_PARAM_INT)
+		eMENU_ENTER_PARAM s = status_;
+		if (s == MENU_ENTER_PARAM_INT)
 		{
 			// уменьшение значние
 			val_ = (val_ >= (min_ + disc_)) ? val_ - disc_ : max_;
 		}
-		else if (status_ == MENU_ENTER_PARAM_LIST)
+		else if ( (s == MENU_ENTER_PARAM_LIST) ||
+				(s == MENU_ENTER_PARAM_LIST_2) )
 		{
 			// в списке порядок обратный (увеличие индекса массива)
 			val_ = (val_ < max_) ? val_ + 1 : min_;
 		}
-		else if ( (status_ == MENU_ENTER_PASSWORD) ||
-				(status_ == MENU_ENTER_PASSWORD_NEW) )
+		else if ( (s == MENU_ENTER_PASSWORD) ||
+				(s == MENU_ENTER_PASSWORD_NEW) )
 		{
 
 		}
-		sDebug.byte1 = val_;
+		sDebug.byte2 = val_;
 		return val_;
 	}
 
@@ -213,6 +220,9 @@ public:
 
 	// указатель на первый элемент списка
 	PGM_P list;
+
+	// указатель на массив значений
+	uint8_t *listValue;
 
 	// команда на передачу
 	eGB_COM com;

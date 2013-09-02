@@ -333,6 +333,43 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			sParam.prd.status.warningText[6] = fcUnknownWarning;
 			sParam.prd.status.warningText[7] = fcUnknownWarning;
 
+
+			sParam.test.clear();
+			sParam.test.addSignalToList(GB_SIGNAL_CF1);
+			sParam.test.addSignalToList(GB_SIGNAL_CF2);
+			sParam.test.addSignalToList(GB_SIGNAL_COM1);
+			sParam.test.addSignalToList(GB_SIGNAL_COM2);
+			sParam.test.addSignalToList(GB_SIGNAL_COM3);
+			sParam.test.addSignalToList(GB_SIGNAL_COM4);
+			sParam.test.addSignalToList(GB_SIGNAL_COM5);
+			sParam.test.addSignalToList(GB_SIGNAL_COM6);
+			sParam.test.addSignalToList(GB_SIGNAL_COM7);
+			sParam.test.addSignalToList(GB_SIGNAL_COM8);
+			sParam.test.addSignalToList(GB_SIGNAL_COM9);
+			sParam.test.addSignalToList(GB_SIGNAL_COM10);
+			sParam.test.addSignalToList(GB_SIGNAL_COM11);
+			sParam.test.addSignalToList(GB_SIGNAL_COM12);
+			sParam.test.addSignalToList(GB_SIGNAL_COM13);
+			sParam.test.addSignalToList(GB_SIGNAL_COM14);
+			sParam.test.addSignalToList(GB_SIGNAL_COM15);
+			sParam.test.addSignalToList(GB_SIGNAL_COM16);
+			sParam.test.addSignalToList(GB_SIGNAL_COM17);
+			sParam.test.addSignalToList(GB_SIGNAL_COM18);
+			sParam.test.addSignalToList(GB_SIGNAL_COM19);
+			sParam.test.addSignalToList(GB_SIGNAL_COM20);
+			sParam.test.addSignalToList(GB_SIGNAL_COM21);
+			sParam.test.addSignalToList(GB_SIGNAL_COM22);
+			sParam.test.addSignalToList(GB_SIGNAL_COM23);
+			sParam.test.addSignalToList(GB_SIGNAL_COM24);
+			sParam.test.addSignalToList(GB_SIGNAL_COM25);
+			sParam.test.addSignalToList(GB_SIGNAL_COM26);
+			sParam.test.addSignalToList(GB_SIGNAL_COM27);
+			sParam.test.addSignalToList(GB_SIGNAL_COM28);
+			sParam.test.addSignalToList(GB_SIGNAL_COM29);
+			sParam.test.addSignalToList(GB_SIGNAL_COM30);
+			sParam.test.addSignalToList(GB_SIGNAL_COM31);
+			sParam.test.addSignalToList(GB_SIGNAL_COM32);
+
 			status = true;
 		}
 		else if (device == AVANT_RZSK)
@@ -460,8 +497,20 @@ clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			sParam.prd.status.warningText[6] = fcUnknownWarning;
 			sParam.prd.status.warningText[7] = fcUnknownWarning;
 
-			status = true;
+			sParam.test.clear();
+			sParam.test.addSignalToList(GB_SIGNAL_CF);
+			sParam.test.addSignalToList(GB_SIGNAL_CF_NO_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_CF_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_COM1);
+			sParam.test.addSignalToList(GB_SIGNAL_COM2);
+			sParam.test.addSignalToList(GB_SIGNAL_COM3);
+			sParam.test.addSignalToList(GB_SIGNAL_COM4);
+			sParam.test.addSignalToList(GB_SIGNAL_COM1_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_COM2_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_COM3_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_COM4_RZ);
 
+			status = true;
 		}
 		else if (device == AVANT_R400)
 		{
@@ -830,19 +879,16 @@ clMenu::lvlStart()
 	if (sParam.def.status.isEnable())
 	{
 		printDevicesStatus(poz, &sParam.def.status);
-		sDebug.byte1 = sParam.def.status.getState();
 		poz += 20;
 	}
 	if (sParam.prm.status.isEnable())
 	{
 		printDevicesStatus(poz, &sParam.prm.status);
-		sDebug.byte2 = sParam.prm.status.getState();
 		poz += 20;
 	}
 	if (sParam.prd.status.isEnable())
 	{
 		printDevicesStatus(poz, &sParam.prd.status);
-		sDebug.byte3 = sParam.prd.status.getState();
 		poz += 20;
 	}
 
@@ -1782,7 +1828,11 @@ clMenu::lvlRegime()
 			else if (val == GB_REGIME_ENTER_ENABLED)
 				com = GB_COM_SET_REG_ENABLED;
 			else if (val == GB_REGIME_ENTER_TEST_1)
+			{
 				com = GB_COM_SET_REG_TEST_1;
+				sParam.txComBuf.setInt8(0, 0);
+				sParam.txComBuf.setInt8(0, 1);
+			}
 			else if (val == GB_REGIME_ENTER_TEST_2)
 				com = GB_COM_SET_REG_TEST_2;
 
@@ -3044,6 +3094,7 @@ void
 clMenu::lvlTest1()
 {
 	static char title[] PROGMEM = "Меню\\Тест 1";
+	static char punkt1[] PROGMEM = "Сигнал на выходе";
 
 	if (lvlCreate_)
 	{
@@ -3056,25 +3107,60 @@ clMenu::lvlTest1()
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		uint8_t num = 0;
-//		punkt_[num++] = punkt1;
-//		punkt_[num++] = punkt2;
-//		punkt_[num++] = punkt3;
-//		punkt_[num++] = punkt4;
-//		punkt_[num++] = punkt5;
-		numPunkts_ = num;
+		numPunkts_ = 1;
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
+		sParam.txComBuf.addCom(GB_COM_GET_TEST);
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
+	snprintf_P(&vLCDbuf[lineParam_*20], 21, punkt1);
+
+	if (enterParam.isEnable())
+	{
+		// ввод нового значения параметра
+		eMENU_ENTER_PARAM stat = enterValue();
+
+		if (stat == MENU_ENTER_PARAM_READY)
+		{
+			// текущий сигнал(ы)
+			uint8_t sig = enterParam.listValue[enterParam.getValue()];
+			uint8_t rz = 0;
+			uint8_t cf = 0;
+
+			sParam.test.getBytes(cf, rz, (eGB_TEST_SIGNAL) sig);
+			// первый байт - номер группы (1 - кч, 2 - рз)
+			sParam.txComBuf.setInt8(1, 0);
+			// второй байт - номер сигнала (0 - выкл.)
+			sParam.txComBuf.setInt8(cf, 1);
+			sParam.txComBuf.addFastCom(enterParam.com);
+			enterParam.setDisable();
+		}
+	}
+	else
+	{
+		uint8_t poz = 100;
+		poz += snprintf_P(&vLCDbuf[poz], 21, fcValue);
+		snprintf_P(&vLCDbuf[poz], 11,
+				fcTest1K400[sParam.test.getCurrentSignal()]);
+	}
+
 
 	switch(key_)
 	{
 		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlFirst;
 			lvlCreate_ = true;
+			break;
+
+		case KEY_ENTER:
+			enterParam.setValue(0);
+			enterParam.setEnable(MENU_ENTER_PARAM_LIST_2);
+			enterParam.setValueRange(0, sParam.test.getNumSignals() - 1);
+			enterParam.listValue = sParam.test.signalList;
+			enterParam.list = fcTest1K400[0];
+			enterParam.com = GB_COM_SET_REG_TEST_1;
 			break;
 
 		default:
@@ -3191,6 +3277,14 @@ clMenu::enterValue()
 		uint8_t poz = 100;
 		snprintf_P(&vLCDbuf[poz], 21, enterList,
 				enterParam.list + STRING_LENGHT*val);
+	}
+	else if (status == MENU_ENTER_PARAM_LIST_2)
+	{
+		uint16_t val = enterParam.listValue[enterParam.getValue()];
+		clearLine(NUM_TEXT_LINES);
+		uint8_t poz = 100;
+		snprintf_P(&vLCDbuf[poz], 21, enterList,
+						enterParam.list + STRING_LENGHT*val);
 	}
 	else
 		key_ = KEY_CANCEL;
