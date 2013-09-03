@@ -22,6 +22,9 @@
 /// пароль администратора
 #define PASSWORD_ADMIN 6352
 
+/// пароль пользователя по умолчанию
+#define PASSWORD_USER 0
+
 /// версия текущей прошивки
 #define VERS 0x0100
 
@@ -600,7 +603,12 @@ public:
 		password_ = 10000;
 		admin_ = PASSWORD_ADMIN;
 	}
+
+	// возвращает текущий пароль пользователя
 	uint16_t get() const { return password_; }
+
+	// устанавливает пароль пользователя
+	// если он выходит за диапазон, то идет сброс в PASSWORD_USER
 	bool set(uint16_t pas)
 	{
 		bool stat = false;
@@ -609,16 +617,22 @@ public:
 			password_ = pas;
 			stat = true;
 		}
+		else
+			password_ = PASSWORD_USER;
 		return stat;
 	}
 
+	// проверка значения на совпадение с паролем пользователя и администратора
 	bool check(uint16_t pas)
 	{
 		return ( (pas == password_) || (pas == admin_) );
 	}
 
 private:
+	// пароль пользователя
 	uint16_t password_;
+
+	// пароль администратора
 	uint16_t admin_;
 };
 
@@ -2125,9 +2139,12 @@ public:
 
 	// список сигналов
 	uint8_t signalList[MAX_NUM_TEST_SIGNAL];
+
 private:
+	// кол-во возможных сигналов в тесте
 	uint8_t num_;
 
+	// текущий сигнал
 	eGB_TEST_SIGNAL currentSignal_;
 
 	// возвращает номер первого установленного бита 1..8, либо 0

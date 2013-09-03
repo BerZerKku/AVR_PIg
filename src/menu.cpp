@@ -3176,6 +3176,7 @@ void
 clMenu::lvlTest2()
 {
 	static char title[] PROGMEM = "Меню\\Тест 2";
+	static char punkt1[] PROGMEM = "Сигнал на входе";
 
 	if (lvlCreate_)
 	{
@@ -3188,19 +3189,20 @@ clMenu::lvlTest2()
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		uint8_t num = 0;
-//		punkt_[num++] = punkt1;
-//		punkt_[num++] = punkt2;
-//		punkt_[num++] = punkt3;
-//		punkt_[num++] = punkt4;
-//		punkt_[num++] = punkt5;
-		numPunkts_ = num;
+		numPunkts_ = 1;
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
+		sParam.txComBuf.addCom(GB_COM_GET_TEST);
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
+	snprintf_P(&vLCDbuf[lineParam_*20], 21, punkt1);
+
+	uint8_t poz = 100;
+	poz += snprintf_P(&vLCDbuf[poz], 21, fcValue);
+	snprintf_P(&vLCDbuf[poz], 11,
+			fcTest1K400[sParam.test.getCurrentSignal()]);
 
 	switch(key_)
 	{

@@ -8,6 +8,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
+#include <avr/eeprom.h>
 #include <stdio.h>
 #include "inc/debug.h"
 #include "inc/glbDefine.h"
@@ -30,7 +31,6 @@
 /// Максимальное кол-во неполученных сообщений от БСП для ошибки связи
 #define MAX_LOST_COM_FROM_BSP 10
 
-
 // Обработка принятых сообщений по последовательным портам
 static bool uartRead();
 
@@ -40,6 +40,8 @@ static bool uartWrite();
 /// Флаг, устанавливается каждые 100мс
 static volatile bool b100ms = false;
 
+/// пароль пользователя
+#define EEPROM_PASSWORD 0x10
 
 /// Буфер для связи с ПК по последовательному порту
 uint8_t uBufUartPc[BUFF_SIZE_PC];
@@ -202,7 +204,8 @@ main (void)
 	// menu.setTypeDevice(AVANT_NO);
 
 	// установка пароля по умолчанию
-	menu.sParam.password.set(0);
+	menu.sParam.password.set(eeprom_read_word((uint16_t*) EEPROM_PASSWORD));
+	//menu.sParam.password.set(0);
 
 	while(1)
 	{
@@ -240,6 +243,9 @@ main (void)
 			if (cnt_wdt == 4)
 				wdt_reset();
 			cnt_wdt = 0;
+
+			uint16_t password = menu.sParam.password.get();
+			eeprom_update_word((uint16_t*) EEPROM_PASSWORD, password);
 		}
 	}
 }
