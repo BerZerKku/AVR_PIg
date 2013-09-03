@@ -224,6 +224,9 @@ main (void)
 			if (++cnt_1s >= 10)
 			{
 				cnt_1s = 0;
+
+				uint16_t password = menu.sParam.password.get();
+				eeprom_update_word((uint16_t*) EEPROM_PASSWORD, password);
 			}
 
 			cnt_wdt++;
@@ -243,9 +246,6 @@ main (void)
 			if (cnt_wdt == 4)
 				wdt_reset();
 			cnt_wdt = 0;
-
-			uint16_t password = menu.sParam.password.get();
-			eeprom_update_word((uint16_t*) EEPROM_PASSWORD, password);
 		}
 	}
 }
