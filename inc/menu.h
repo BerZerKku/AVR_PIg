@@ -163,8 +163,6 @@ public:
 			else
 				val_ += disc_;
 		}
-
-		sDebug.byte1 = val_;
 		return val_;
 	}
 	// уменьшение текущего значения
@@ -187,7 +185,6 @@ public:
 		{
 
 		}
-		sDebug.byte2 = val_;
 		return val_;
 	}
 
