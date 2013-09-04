@@ -9,7 +9,7 @@
  * 	Максимальное значение для строковых параметров на 1 больше возможного,
  * 	для хранения в массиве ошибочного значения и удобства пользования
  * 	перечислениями.
- * 	Так что для ввода строкового значения максимум должен быть меньше на 1 !!!
+ * 	Так что для ввода строкового значения максимум должен быть меньше на 1 !!
  */
 
 #ifndef GLBDEF_H_
@@ -279,9 +279,9 @@ enum eGB_COM
 	GB_COM_PRM_GET_BLOCK_COM= 0x14,
 	GB_COM_PRD_GET_TIME_ON	= 0x21,
 	GB_COM_PRD_GET_DURATION = 0x22,
-	GB_COM_PRD_GET_TEST_COM = 0,	// !!! пока только в составе МЕГА команды
 	GB_COM_PRD_GET_BLOCK_COM= 0x24,
 	GB_COM_PRD_GET_LONG_COM = 0x25,
+	GB_COM_PRD_GET_TEST_COM = 0x26,
 	GB_COM_GET_SOST			= 0x30,
 	GB_COM_GET_FAULT 		= 0x31,
 	GB_COM_GET_TIME 		= 0x32,
@@ -311,6 +311,7 @@ enum eGB_COM
 	GB_COM_PRD_SET_DURATION = 0xA2,
 	GB_COM_PRD_SET_BLOCK_COM= 0xA4,
 	GB_COM_PRD_SET_LONG_COM	= 0xA5,
+	GB_COM_PRD_SET_TEST_COM = 0xA6,
 	GB_COM_SET_TIME 		= 0xB2,
 	GB_COM_SET_TIME_SINCHR	= 0xB5,
 	GB_COM_SET_COM_PRM_KEEP	= 0xB6,
@@ -391,7 +392,7 @@ enum eGB_TEST_SIGNAL
 	GB_SIGNAL_COM2_RZ,	// РЗСК
 	GB_SIGNAL_COM3_RZ,	// РЗСК
 	GB_SIGNAL_COM4_RZ,	// РЗСК
-	GB_SIGNAL_COM1,
+	GB_SIGNAL_COM1,		// сигналы команд должны идти подряд для заполнения К400
 	GB_SIGNAL_COM2,
 	GB_SIGNAL_COM3,
 	GB_SIGNAL_COM4,
@@ -608,7 +609,6 @@ public:
 	uint16_t get() const { return password_; }
 
 	// устанавливает пароль пользователя
-	// если он выходит за диапазон, то идет сброс в PASSWORD_USER
 	bool set(uint16_t pas)
 	{
 		bool stat = false;
@@ -617,9 +617,15 @@ public:
 			password_ = pas;
 			stat = true;
 		}
-		else
-			password_ = PASSWORD_USER;
 		return stat;
+	}
+
+	// начальная инициализация пароля пользователя
+	// если введено неверное значение, пароль будет PASSWORD_USER
+	void init(uint16_t pas)
+	{
+		if (!set(pas))
+			set(PASSWORD_USER);
 	}
 
 	// проверка значения на совпадение с паролем пользователя и администратора

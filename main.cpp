@@ -189,6 +189,10 @@ main (void)
 	uint8_t cnt_1s = 0;
 	uint8_t cnt_wdt = 0;
 
+	// установка пароля по умолчанию
+	// проводится до включения прерываний, чтобы ничего не мешало
+	menu.sParam.password.init(eeprom_read_word((uint16_t*) EEPROM_PASSWORD));
+
 	sei();
 
 	vLCDinit();
@@ -203,9 +207,7 @@ main (void)
 	// зададим тип аппарата
 	// menu.setTypeDevice(AVANT_NO);
 
-	// установка пароля по умолчанию
-	menu.sParam.password.set(eeprom_read_word((uint16_t*) EEPROM_PASSWORD));
-	//menu.sParam.password.set(0);
+
 
 	while(1)
 	{

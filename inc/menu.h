@@ -74,12 +74,14 @@ public:
 	{
 		if ((s>=MENU_ENTER_PARAM_INT) && (s<=MENU_ENTER_PASSWORD_NEW))
 		{
-			if ((s == MENU_ENTER_PARAM_LIST) || (s == MENU_ENTER_PARAM_LIST_2))
+			if ( (s == MENU_ENTER_PARAM_LIST) ||
+					(s == MENU_ENTER_PARAM_LIST_2) )
 			{
 				disc_ = 1;
 				fract_ = 1;
 			}
-			else if (s == MENU_ENTER_PASSWORD)
+			else if ( (s == MENU_ENTER_PASSWORD) ||
+					(s == MENU_ENTER_PASSWORD_NEW) )
 			{
 				val_ = 0;
 				min_ = 0;

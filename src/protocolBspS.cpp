@@ -148,7 +148,6 @@ bool clProtocolBspS::getData()
 			}
 			else if (com == GB_COM_PRD_GET_TEST_COM)
 			{
-				// !!! пока только в составе МЕГА команды
 				stat = sParam_->prd.setTestCom(buf[B1]);
 			}
 			else if (com == GB_COM_PRD_GET_BLOCK_COM)
@@ -227,22 +226,53 @@ bool clProtocolBspS::getData()
 
 				// если хоть одно из имеющихся устройств не в режиме ВЫВЕДЕН
 				// (GB_REGIME_DISABLED) общий режим будет равен GB_REGIME_MAX
-				eGB_REGIME reg = GB_REGIME_DISABLED;
+//				eGB_REGIME reg = GB_REGIME_DISABLED;
+//				if (sParam_->prd.status.isEnable())
+//				{
+//					if (sParam_->prd.status.getRegime() == GB_REGIME_ENABLED)
+//						reg = GB_REGIME_ENABLED;
+//				}
+//				if (sParam_->prm.status.isEnable())
+//				{
+//					// в приемнике режим Готов, тоже считаем за Введен
+//					if ((sParam_->prm.status.getRegime() == GB_REGIME_ENABLED)||
+//						(sParam_->prm.status.getRegime() == GB_REGIME_READY))
+//						reg = GB_REGIME_ENABLED;
+//				}
+//				if (sParam_->def.status.isEnable())
+//				{
+//					if (sParam_->def.status.getRegime() == GB_REGIME_ENABLED)
+//						reg = GB_REGIME_ENABLED;
+//				}
+//				sParam_->glb.status.setRegime(reg);
+
+
+				eGB_REGIME reg = GB_REGIME_MAX;
+				eGB_REGIME t = GB_REGIME_MAX;
 				if (sParam_->prd.status.isEnable())
 				{
-					if (sParam_->prd.status.getRegime() == GB_REGIME_ENABLED)
+					t = sParam_->prd.status.getRegime();
+					if (reg == GB_REGIME_MAX)
+						reg = t;
+					else if (reg != t)
 						reg = GB_REGIME_ENABLED;
 				}
+
 				if (sParam_->prm.status.isEnable())
 				{
-					// в приемнике режим Готов, тоже считаем за Введен
-					if ((sParam_->prm.status.getRegime() == GB_REGIME_ENABLED)||
-						(sParam_->prm.status.getRegime() == GB_REGIME_READY))
+					t = sParam_->prm.status.getRegime();
+					if (reg == GB_REGIME_MAX)
+						reg = t;
+					else if (reg != t)
 						reg = GB_REGIME_ENABLED;
 				}
+
 				if (sParam_->def.status.isEnable())
 				{
-					if (sParam_->def.status.getRegime() == GB_REGIME_ENABLED)
+					t = sParam_->def.status.getRegime();
+					if (reg == GB_REGIME_MAX)
+						reg = t;
+					else if (reg != t)
 						reg = GB_REGIME_ENABLED;
 				}
 				sParam_->glb.status.setRegime(reg);
@@ -443,6 +473,10 @@ clProtocolBspS::sendData(eGB_COM com)
 				num = addCom(com, sParam_->txComBuf.getInt8(0),
 						sParam_->txComBuf.getInt8(1));
 			}
+			else if (com == GB_COM_PRD_SET_TEST_COM)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt8());
+			}
 		}
 		else
 		{
@@ -589,7 +623,7 @@ clProtocolBspS::sendData(eGB_COM com)
 			}
 			else if (com == GB_COM_PRD_GET_TEST_COM)
 			{
-				num = addCom(com);	// !!! пока только в составе МЕГА команды
+				num = addCom(com);
 			}
 			else if (com == GB_COM_PRD_GET_BLOCK_COM)
 			{
