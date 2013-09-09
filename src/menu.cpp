@@ -27,6 +27,7 @@ clMenu::clMenu()
 	lvlCreate_ = true;
 	blink_ = false;
 	curCom_ = 0;
+	delay_ = TIME_MESSAGE;
 
 	// курсор неактивен
 	cursorEnable_ = false;
@@ -137,6 +138,10 @@ void clMenu::main(void)
 
 	// очистка текстового буфера
 	clearTextBuf();
+
+	// счетчик вывода сообщения
+	if (delay_ < TIME_MESSAGE)
+		delay_++;
 
 	// выведем сообщение, если текущий тип аппарата не определен
 	(this->*lvlMenu)();
@@ -894,6 +899,12 @@ void clMenu::lvlFirst()
 	static char punkt4[] PROGMEM = "%d. Тест";
 	static char punkt5[] PROGMEM = "%d. Информация";
 
+	static char message[] [21] PROGMEM =
+	{
+			"    Перейдите в     ",
+			"   тестовый режим   "
+	};
+
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
@@ -918,7 +929,18 @@ void clMenu::lvlFirst()
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
-	printPunkts();
+
+	if (isMessage())
+	{
+		for (uint_fast8_t i = lineParam_ + 1; i <= NUM_TEXT_LINES; i++)
+			clearLine(i);
+
+		uint8_t poz = 40;
+		for (uint_fast8_t i = 0; i < 2; i++, poz += 20)
+			snprintf_P(&vLCDbuf[poz], 21, message[i]);
+	}
+	else
+		printPunkts();
 
 	switch (key_)
 	{
@@ -955,6 +977,8 @@ void clMenu::lvlFirst()
 						lvlMenu = &clMenu::lvlTest2;
 						lvlCreate_ = true;
 					}
+					else
+						printMessage();
 					break;
 				case 5:
 					lvlMenu = &clMenu::lvlInfo;
@@ -1853,9 +1877,9 @@ void clMenu::lvlRegime()
 void clMenu::lvlSetupParam()
 {
 	static char title[] PROGMEM = "Настройка\\Параметры";
-	static char punkt1[] PROGMEM = "%d. Защиты";
-	static char punkt2[] PROGMEM = "%d. Приемника";
-	static char punkt3[] PROGMEM = "%d. Передатчика";
+	static char punkt1[] PROGMEM = "%d. Защита";
+	static char punkt2[] PROGMEM = "%d. Приемник";
+	static char punkt3[] PROGMEM = "%d. Передатчик";
 	static char punkt4[] PROGMEM = "%d. Общие";
 
 	if (lvlCreate_)
@@ -2163,7 +2187,7 @@ void clMenu::lvlSetupParamPrm()
 	poz = 60;
 	if ((p == punkt2) || (p == punkt3))
 	{
-		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_);
+		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_,sParam.prm.getNumCom());
 	}
 
 	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
@@ -2315,7 +2339,7 @@ void clMenu::lvlSetupParamPrm()
 void clMenu::lvlSetupParamPrd()
 {
 	static char title[] PROGMEM = "Параметры\\Передатчик";
-	static char punkt1[] PROGMEM = "Задержка срабат. ДВ";
+	static char punkt1[] PROGMEM = "Задержка срабат. ПРД";
 	static char punkt2[] PROGMEM = "Длительность команды";
 	static char punkt3[] PROGMEM = "Тестовая команда";
 	static char punkt4[] PROGMEM = "Следящие команды";
@@ -2376,7 +2400,7 @@ void clMenu::lvlSetupParamPrd()
 	poz = 60;
 	if ((p == punkt4) || (p == punkt5))
 	{
-		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_);
+		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_,sParam.prd.getNumCom());
 	}
 
 	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
@@ -2587,7 +2611,7 @@ void clMenu::lvlSetupParamGlb()
 	static char punkt5[] PROGMEM = "Время перезапуска";
 	static char punkt6[] PROGMEM = "Удерж. реле ком. ПРД";
 	static char punkt7[] PROGMEM = "Удерж. реле ком. ПРМ";
-	static char punkt8[] PROGMEM = "Уменьшение усиления";
+	static char punkt8[] PROGMEM = "Загрубл. чувств. ПРМ";
 
 	if (lvlCreate_)
 	{
@@ -3172,8 +3196,12 @@ eMENU_ENTER_PARAM clMenu::enterValue()
 	static char enterInt[] PROGMEM = "Ввод: %01u";
 	static char enterList[] PROGMEM ="Ввод: %S";
 
-	static char message[3][21] PROGMEM = { " Изменить параметр  ",
-			"  можно только в    ", "  режиме ВЫВЕДЕН    " };
+	static char message[3][21] PROGMEM =
+	{
+			" Изменить параметр  ",
+			"  можно только в    ",
+			"  режиме ВЫВЕДЕН    "
+	};
 
 	eMENU_ENTER_PARAM status = enterParam.getStatus();
 	if (status == MENU_ENTER_PARAM_MESSAGE)

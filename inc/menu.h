@@ -57,6 +57,7 @@ public:
 	TEnterParam()
 	{
 		setDisable();
+
 	}
 
 	bool isEnable()
@@ -90,7 +91,11 @@ public:
 			status_ = s;
 		}
 	}
-	void setDisable() { status_ = MENU_ENTER_PARAM_NO; }
+	void setDisable()
+	{
+		status_ = MENU_ENTER_PARAM_NO;
+		cnt_ = TIME_MESSAGE;
+	}
 
 	// диапазон значений
 	void setValueRange(uint16_t min, uint16_t max)
@@ -328,6 +333,12 @@ private:
 
 	// очистка строки
 	void clearLine(uint8_t line);
+
+	// вывод сообщения на экран
+	void printMessage() { delay_ = 0; }
+
+	// возвращает true - в случае необходимости вывода сообщения
+	bool isMessage() { return (delay_ < TIME_MESSAGE); }
 
 	// вывод на экран измеряемого параметра
 	void printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par);
