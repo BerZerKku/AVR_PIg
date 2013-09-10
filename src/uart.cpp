@@ -96,7 +96,6 @@ clUart::trData(uint8_t size)
 uint8_t
 clUart::trData(uint8_t size, const uint8_t *buf)
 {
-	uint8_t *tmp;
 	uint8_t cnt = 0;
 
 	// Скопируем данные в буфер
@@ -105,7 +104,6 @@ clUart::trData(uint8_t size, const uint8_t *buf)
 		// Запретим прием
 		*ucsrb &= ~(1 << RXCIE);
 
-		tmp = this->buf;
 		for(; cnt < size; cnt++)
 			this->buf[cnt] = buf[cnt];
 

@@ -57,7 +57,6 @@ public:
 	TEnterParam()
 	{
 		setDisable();
-
 	}
 
 	bool isEnable()
@@ -91,10 +90,13 @@ public:
 			status_ = s;
 		}
 	}
+
+	// завершение ввода
 	void setDisable()
 	{
 		status_ = MENU_ENTER_PARAM_NO;
 		cnt_ = TIME_MESSAGE;
+		com = GB_COM_NO;
 	}
 
 	// диапазон значений
@@ -129,13 +131,9 @@ public:
 	uint16_t getValue() const { return val_; }
 
 	// возвращает введеное значение с учетом дискретности и делителя
-	uint8_t getValueEnter()
+	uint8_t getValueEnter() const
 	{
-		uint8_t val = min_;
-
-		val = ((val_ / disc_) * disc_) / fract_;
-
-		return val;
+		return ((val_ / disc_) * disc_) / fract_;
 	}
 
 	// увеличение текущего значения
@@ -233,10 +231,8 @@ public:
 
 	// счетчик времени
 	uint8_t cnt_;
-private:
-	// true - идет ввод значения
-	bool enable_;
 
+private:
 	// текущее значение
 	uint16_t val_;
 
@@ -338,7 +334,7 @@ private:
 	void printMessage() { delay_ = 0; }
 
 	// возвращает true - в случае необходимости вывода сообщения
-	bool isMessage() { return (delay_ < TIME_MESSAGE); }
+	bool isMessage() const { return (delay_ < TIME_MESSAGE); }
 
 	// вывод на экран измеряемого параметра
 	void printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par);

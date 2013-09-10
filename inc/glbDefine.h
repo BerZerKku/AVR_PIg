@@ -506,7 +506,7 @@ public:
 
 	// возвращает кол-во дней в месяце
 	// если месяц не задан, возвращается для текущего
-	uint8_t getNumDaysInMonth(uint8_t month = 0)
+	uint8_t getNumDaysInMonth (uint8_t month = 0) const
 	{
 		uint8_t num = 0;
 
@@ -589,9 +589,6 @@ private:
 	uint8_t day_;
 	uint8_t month_;
 	uint8_t year_;
-
-	uint8_t bcdToBin(uint8_t val) { return (val >> 4) * 10 + (val & 0x0F); }
-	uint8_t binToBcd(uint8_t val) { return ((val / 10) << 4) + (val % 10); }
 };
 
 
@@ -629,7 +626,7 @@ public:
 	}
 
 	// проверка значения на совпадение с паролем пользователя и администратора
-	bool check(uint16_t pas)
+	bool check(uint16_t pas) const
 	{
 		return ( (pas == password_) || (pas == admin_) );
 	}
@@ -697,11 +694,11 @@ public:
 		bool stat = false;
 		if ( (regime >= GB_REGIME_MIN) && (regime <= GB_REGIME_MAX) )
 		{
-			regime_ = regime;
 			stat = true;
 		}
 		else
 			regime = GB_REGIME_MAX;
+		regime_ = regime;
 		return stat;
 	}
 	eGB_REGIME getRegime() 	const { return regime_; }
@@ -883,7 +880,7 @@ public:
 		}
 		return stat;
 	}
-	bool getTimeSinchr() { return timeSinchr_; }
+	bool getTimeSinchr() const { return timeSinchr_; }
 
 	// номер аппарата
 	bool setDeviceNum(uint8_t val)
@@ -897,7 +894,7 @@ public:
 		}
 		return stat;
 	}
-	uint8_t getDeviceNum() { return (deviceNum_ * GLB_DEV_NUM_FRACT); }
+	uint8_t getDeviceNum() const { return (deviceNum_ * GLB_DEV_NUM_FRACT); }
 
 	// контроль выходного сигнала
 	bool setOutCheck(uint8_t val)
@@ -910,7 +907,7 @@ public:
 		}
 		return stat;
 	}
-	bool getOutCheck() { return outCheck_; }
+	bool getOutCheck() const { return outCheck_; }
 
 	// порог предупреждения по КЧ
 	bool setCfThreshold(uint8_t val)
@@ -924,7 +921,10 @@ public:
 		}
 		return stat;
 	}
-	uint8_t getCfThreshold() { return (cfThreshold_ * GLB_CF_THRESH_FRACT); }
+	uint8_t getCfThreshold() const 
+	{
+		return (cfThreshold_ * GLB_CF_THRESH_FRACT); 
+	}
 
 	// время перезапуска
 	bool setTimeRerun(uint8_t val)
@@ -938,7 +938,7 @@ public:
 		}
 		return stat;
 	}
-	uint8_t getTimeRerun() { return (timeRerun_ * GLB_T_RERUN_FRACT); }
+	uint8_t getTimeRerun() const { return (timeRerun_ * GLB_T_RERUN_FRACT); }
 
 	// Удержание реле команд ПРД
 	bool setComPrdKeep(uint8_t val)
@@ -951,7 +951,7 @@ public:
 		}
 		return stat;
 	}
-	bool getComPrdKeep() { return comPrdKeep_; }
+	bool getComPrdKeep() const { return comPrdKeep_; }
 
 	// Удержание реле команд ПРМ
 	bool setComPrmKeep(uint8_t val)
@@ -964,7 +964,7 @@ public:
 		}
 		return stat;
 	}
-	bool getComPrmKeep() { return comPrmKeep_; }
+	bool getComPrmKeep() const { return comPrmKeep_; }
 
 	// уменьшение усиления входного сигнала
 	bool setInDecrease(uint8_t val)
@@ -978,7 +978,7 @@ public:
 		}
 		return stat;
 	}
-	uint8_t getInDecrease() { return (inDecrease_ * GLB_IN_DEC_FRACT); }
+	uint8_t getInDecrease() const { return (inDecrease_ * GLB_IN_DEC_FRACT); }
 
 private:
 	// кол-во аппаратов в линии 2 или 3
@@ -1054,7 +1054,7 @@ public:
 		}
 		return stat;
 	}
-	uint8_t getDefType() { return defType_ ; }
+	uint8_t getDefType() const { return defType_ ; }
 
 	// тип линии
 	bool setNumDevices(eGB_NUM_DEVICES val)
@@ -1062,14 +1062,14 @@ public:
 		bool stat = false;
 		if ( (val >= GB_NUM_DEVICES_MIN) && (val <= GB_NUM_DEVICES_MAX) )
 		{
-			numDevices_ = val;
 			stat = true;
 		}
 		else
 			val = GB_NUM_DEVICES_MAX;
+		numDevices_ = val;
 		return stat;
 	}
-	uint8_t getNumDevices() { return numDevices_; }
+	uint8_t getNumDevices() const { return numDevices_; }
 
 	// допустимое время без манипуляции
 	bool setTimeNoMan(uint8_t val)
@@ -1083,7 +1083,7 @@ public:
 		}
 		return stat;
 	}
-	uint8_t getTimeNoMan() { return (timeNoMan_ * DEF_T_NO_MAN_FRACT); }
+	uint8_t getTimeNoMan() const { return (timeNoMan_ * DEF_T_NO_MAN_FRACT); }
 
 	// перекрытие импульсов
 	bool setOverlap(uint8_t val)
@@ -1097,7 +1097,7 @@ public:
 		}
 		return stat;
 	}
-	uint8_t getOverlap() { return (overlap_ * DEF_OVERLAP_FRACT); }
+	uint8_t getOverlap() const { return (overlap_ * DEF_OVERLAP_FRACT); }
 
 	// компенсация задержки на линии
 	bool setDelay(uint8_t val)
@@ -1111,7 +1111,7 @@ public:
 		}
 		return stat;
 	}
-	uint8_t getDelay() { return (delay_ * DEF_DELAY_FRACT); }
+	uint8_t getDelay() const { return (delay_ * DEF_DELAY_FRACT); }
 
 	// порог предуреждения по РЗ
 	bool setRzThreshold(uint8_t val)
@@ -1125,7 +1125,10 @@ public:
 		}
 		return stat;
 	}
-	uint8_t getRzThreshold() { return (rzThreshold_ * DEF_RZ_THRESH_FRACT); }
+	uint8_t getRzThreshold() const 
+	{ 
+		return (rzThreshold_ * DEF_RZ_THRESH_FRACT); 
+	}
 
 	// загрубление чувствительности по РЗ
 	bool setRzDec(uint8_t val)
@@ -1139,7 +1142,7 @@ public:
 		}
 		return stat;
 	}
-	uint8_t getRzDec() { return (rzDec_ * DEF_RZ_DEC_FRACT); }
+	uint8_t getRzDec() const { return (rzDec_ * DEF_RZ_DEC_FRACT); }
 
 	// тип приемника
 	bool setPrmType(uint8_t val)
@@ -1152,26 +1155,25 @@ public:
 		}
 		return stat;
 	}
-	uint8_t getPrmType() { return prmType_; }
+	uint8_t getPrmType() const { return prmType_; }
 
 	// количество записей в журнале
 	// количество записей в журнале
-		bool setNumJrnEntry(uint16_t val)
+	bool setNumJrnEntry(uint16_t val)
+	{
+		bool stat = false;
+
+		overflow_ = (val & 0xC000) != 0;
+		val &= 0x3FFF;
+
+		if (val <= maxNumJrnEntry_ )
 		{
-			bool stat = false;
-			val &= 0x3FFF;
-
-			overflow_ = (val & 0xC000) != 0;
-			val &= 0x3FFF;
-
-			if (val <= maxNumJrnEntry_ )
-			{
-				numJrnEntry_ = val;
-				stat = true;
-			}
-			return stat;
+			numJrnEntry_ = val;
+			stat = true;
 		}
-		uint16_t getNumJrnEntry() { return numJrnEntry_; }
+		return stat;
+	}
+	uint16_t getNumJrnEntry() const { return numJrnEntry_; }
 
 	// максимальное кол-во записей в журнале
 	bool setMaxNumJrnEntry(uint16_t max)
@@ -1184,7 +1186,7 @@ public:
 		}
 		return stat;
 	}
-	uint16_t getMaxNumJrnEntry() { return maxNumJrnEntry_; }
+	uint16_t getMaxNumJrnEntry() const { return maxNumJrnEntry_; }
 
 private:
 	// тип защиты
@@ -1231,7 +1233,7 @@ public:
 		numCom_ = 0;
 		timeOn_ = PRM_TIME_ON_MIN_F;
 
-		for(uint_fast8_t i = 0; i < MAX_NUM_COM_PRM; i++)
+		for(uint_fast8_t i = 0; i < (MAX_NUM_COM_PRM / 8); i++)
 		{
 			blockCom_[i] = false;
 			timeOff_[i] = PRM_TIME_OFF_MIN_F;
@@ -1272,7 +1274,7 @@ public:
 		}
 		return stat;
 	}
-	uint8_t getTimeOn() { return (timeOn_ * PRM_TIME_ON_FRACT); }
+	uint8_t getTimeOn() const { return (timeOn_ * PRM_TIME_ON_FRACT); }
 
 	// блокированные команды, каждый бит отвечает за отдельную команду
 	// num - номер восьмерки (0 - с 1 по 8 команды, 1 - с 9 по 16 и т.д.)
@@ -1324,13 +1326,15 @@ public:
 		}
 		return stat;
 	}
-	uint16_t getTimeOff(uint8_t num) {return timeOff_[num]*PRM_TIME_OFF_FRACT;}
+	uint16_t getTimeOff(uint8_t num) const
+	{
+		return timeOff_[num]*PRM_TIME_OFF_FRACT;
+	}
 
 	// количество записей в журнале
 	bool setNumJrnEntry(uint16_t val)
 	{
 		bool stat = false;
-		val &= 0x3FFF;
 
 		overflow_ = (val & 0xC000) != 0;
 		val &= 0x3FFF;
@@ -1342,7 +1346,7 @@ public:
 		}
 		return stat;
 	}
-	uint16_t getNumJrnEntry() { return numJrnEntry_; }
+	uint16_t getNumJrnEntry() const { return numJrnEntry_; }
 
 	// максимальное кол-во записей в журнале
 	bool setMaxNumJrnEntry(uint16_t max)
@@ -1355,7 +1359,7 @@ public:
 		}
 		return stat;
 	}
-	uint16_t getMaxNumJrnEntry() { return maxNumJrnEntry_; }
+	uint16_t getMaxNumJrnEntry() const { return maxNumJrnEntry_; }
 
 private:
 	// кол-во команд приемника
@@ -1389,7 +1393,7 @@ public:
 	{
 		numCom_ = 0;
 		timeOn_ = PRD_TIME_ON_MIN_F;
-		for(uint_fast8_t i = 0; i < MAX_NUM_COM_PRD; i++)
+		for(uint_fast8_t i = 0; i < (MAX_NUM_COM_PRD / 8); i++)
 		{
 			blockCom_[i] = false;
 			longCom_[i] = false;
@@ -1432,7 +1436,7 @@ public:
 		}
 		return stat;
 	}
-	uint8_t getTimeOn() { return timeOn_ * PRD_TIME_ON_FRACT; }
+	uint8_t getTimeOn() const { return timeOn_ * PRD_TIME_ON_FRACT; }
 
 	// блокированные команды, каждый бит отвечает за отдельную команду
 	// num - номер восьмерки (0 - с 1 по 8 команды, 1 - с 9 по 16 и т.д.)
@@ -1480,7 +1484,7 @@ public:
 		return stat;
 	}
 	// возвращает True, если команда заблокирована
-	bool getLongCom(uint8_t num)
+	bool getLongCom(uint8_t num) const
 	{
 		// номер восьмерки
 		uint8_t pl = num / 8;
@@ -1510,7 +1514,7 @@ public:
 		}
 		return stat;
 	}
-	bool getTestCom() { return testCom_; }
+	bool getTestCom() const { return testCom_; }
 
 	// время включения команды
 	bool setDuration(uint8_t val)
@@ -1524,14 +1528,13 @@ public:
 		}
 		return stat;
 	}
-	uint8_t getDuration() { return duration_ * PRD_TIME_ON_FRACT; }
+	uint8_t getDuration() const { return duration_ * PRD_TIME_ON_FRACT; }
 
 	// количество записей в журнале
 	// количество записей в журнале
 	bool setNumJrnEntry(uint16_t val)
 	{
 		bool stat = false;
-		val &= 0x3FFF;
 
 		overflow_ = (val & 0xC000) != 0;
 		val &= 0x3FFF;
@@ -1543,7 +1546,7 @@ public:
 		}
 		return stat;
 	}
-	uint16_t getNumJrnEntry() { return numJrnEntry_; }
+	uint16_t getNumJrnEntry() const { return numJrnEntry_; }
 
 	// максимальное кол-во записей в журнале
 	bool setMaxNumJrnEntry(uint16_t max)
@@ -1556,7 +1559,7 @@ public:
 		}
 		return stat;
 	}
-	uint16_t getMaxNumJrnEntry() { return maxNumJrnEntry_; }
+	uint16_t getMaxNumJrnEntry() const { return maxNumJrnEntry_; }
 
 private:
 	// текущее кол-во команд
@@ -1749,7 +1752,7 @@ public:
 	}
 
 	// возвращает кол-во команд в буфере
-	uint8_t getNumCom() { return numCom_; }
+	uint8_t getNumCom() const { return numCom_; }
 
 	// запись\считывание одного байта на передачу
 	// byte байт данных
@@ -1759,7 +1762,7 @@ public:
 		if (num < 6)
 			byte_[num] = byte;
 	}
-	uint8_t getInt8(uint8_t num = 0)
+	uint8_t getInt8(uint8_t num = 0) const
 	{
 		uint8_t byte = 0;
 		if (num < 6)
@@ -1770,7 +1773,7 @@ public:
 	// запись\считывание переменной типа INT
 	// хранится в byte_[1]
 	void setInt16(uint16_t val) { *((uint16_t *) (byte_ + 1)) = val; }
-	uint16_t getInt16() { return *((uint16_t *) (byte_ + 1)); }
+	uint16_t getInt16() const { return *((uint16_t *) (byte_ + 1)); }
 
 	// запись нескольких байт данных
 	// source - указатель на массив данных
@@ -1789,7 +1792,7 @@ public:
 	// считывание нескольких байт данных
 	// destination- указатель на массив данных
 	// num - кол-во копируемых байт данных
-	void copyFromBufer(uint8_t *destination, uint8_t num)
+	void copyFromBufer(uint8_t *destination, uint8_t num) const
 	{
 		for(uint_fast8_t i = 0; i < num; i++)
 		{
@@ -1956,7 +1959,7 @@ public:
 		}
 		return stat;
 	}
-	uint16_t getNumJrnEntries() { return numJrnEntries_; }
+	uint16_t getNumJrnEntries() const { return numJrnEntries_; }
 
 	// максимальное кол-во записей в журнале
 	bool setMaxNumJrnEntries(uint16_t max)
@@ -1969,13 +1972,13 @@ public:
 		}
 		return stat;
 	}
-	uint16_t getMaxNumJrnEntry() { return maxNumJrnEntry_; }
+	uint16_t getMaxNumJrnEntry() const { return maxNumJrnEntry_; }
 
 	// переполнение журнала
 	bool isOverflow() const { return overflow_; }
 
 	// номер адреса текущей записи в журнале
-	uint16_t getEntryAdress()
+	uint16_t getEntryAdress() const
 	{
 		return (currentEntry_ + addressFirstEntry_ - 1) % numJrnEntries_;
 	}
@@ -2124,8 +2127,8 @@ public:
 	// возвращает кол-во сигналов в списке
 	uint8_t getNumSignals() const { return num_; }
 
-	// установка и считывание текущего сигнала
-	eGB_TEST_SIGNAL setCurrentSignal(uint8_t *s, eGB_TYPE_DEVICE type)
+	// установка текущего сигнала
+	void setCurrentSignal(uint8_t *s, eGB_TYPE_DEVICE type)
 	{
 		eGB_TEST_SIGNAL signal = GB_SIGNAL_MAX;
 
@@ -2138,8 +2141,6 @@ public:
 			signal = getCurrentSignalRZSK(s);
 		}
 		currentSignal_ = signal;
-
-		return signal;
 	}
 	eGB_TEST_SIGNAL getCurrentSignal() const { return currentSignal_; }
 
@@ -2235,9 +2236,9 @@ private:
 		eGB_TEST_SIGNAL signal = GB_SIGNAL_NO;
 
 		uint8_t t = *s;
-		if (t & 0x11)
+		if ( (t & 0x11) == 0x11)
 			signal = GB_SIGNAL_CF_NO_RZ;
-		else if (t & 0x12)
+		else if ( (t & 0x12) == 0x12)
 			signal = GB_SIGNAL_CF_RZ;
 		else
 		{

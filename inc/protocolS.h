@@ -193,10 +193,10 @@ protected:
 	uint8_t addCom	(uint8_t com, uint8_t size, uint8_t buf[]);
 
 	// Проверка принятой контрольной суммы
-	bool checkCRC();
+	bool checkCRC() const;
 
 	// вычисление контрольной суммы содержимого буфера
-	uint8_t getCRC();
+	uint8_t getCRC() const;
 };
 
 

@@ -686,10 +686,6 @@ clProtocolBspS::sendData(eGB_COM com)
 			{
 				num = addCom(com);
 			}
-			else if (com == GB_COM_GET_COM_PRD_KEEP)
-			{
-				num = addCom(com);
-			}
 			else if (com == GB_COM_GET_VERS)
 			{
 				num = addCom(com);

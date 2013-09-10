@@ -260,16 +260,16 @@ clProtocolS::addCom(uint8_t com)
  * 	@return true - если верная контрольная сумма
  */
 bool
-clProtocolS::checkCRC()
+clProtocolS::checkCRC() const
 {
 	bool stat = false;
 	uint8_t crc = 0;
-	uint8_t len = this->maxLen_ - 1;
+	uint8_t len = maxLen_ - 1;
 
 	for(uint8_t i = 2; i < len; i++)
-		crc += this->buf[i];
+		crc += buf[i];
 
-	if (crc == this->buf[len])
+	if (crc == buf[len])
 		stat = true;
 
 	return stat;
@@ -282,7 +282,7 @@ clProtocolS::checkCRC()
  *
  */
 uint8_t
-clProtocolS::getCRC()
+clProtocolS::getCRC() const
 {
 	uint8_t crc = 0;
 	uint8_t len = buf[3] + 5;

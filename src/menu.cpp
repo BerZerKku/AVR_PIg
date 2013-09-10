@@ -103,8 +103,6 @@ clMenu::clMenu()
  */
 void clMenu::main(void)
 {
-	static const char fcNoConnectBsp[] PROGMEM = " Нет связи с БСП!!! ";
-
 	// Счетчик времени до переинициализации ЖКИ
 	static uint8_t reInit = false;
 
@@ -169,7 +167,10 @@ void clMenu::main(void)
 
 	// вывод сообщения в случае отсутствия связи с БСП
 	if (!isConnectionBsp() && (blink_))
+	{
+		static const char fcNoConnectBsp[] PROGMEM = " Нет связи с БСП!!! ";
 		snprintf_P(&vLCDbuf[0], 20, fcNoConnectBsp);
+	}
 
 	// преобразование строки символов в данные для вывода на экран
 	vLCDputchar(vLCDbuf, lineParam_);
@@ -899,12 +900,6 @@ void clMenu::lvlFirst()
 	static char punkt4[] PROGMEM = "%d. Тест";
 	static char punkt5[] PROGMEM = "%d. Информация";
 
-	static char message[] [21] PROGMEM =
-	{
-			"    Перейдите в     ",
-			"   тестовый режим   "
-	};
-
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
@@ -932,6 +927,10 @@ void clMenu::lvlFirst()
 
 	if (isMessage())
 	{
+		static char message[][21] PROGMEM = {
+												"    Перейдите в     ",
+												"   тестовый режим   " };
+
 		for (uint_fast8_t i = lineParam_ + 1; i <= NUM_TEXT_LINES; i++)
 			clearLine(i);
 
@@ -2668,7 +2667,7 @@ void clMenu::lvlSetupParamGlb()
 	snprintf_P(&vLCDbuf[0], 21, title);
 
 	uint8_t poz = 20;
-	snprintf_P(&vLCDbuf[20], 21, fcNumPunkt, cursorLine_, numPunkts_);
+	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, numPunkts_);
 
 	poz = 40;
 	PGM_P p = punkt_[cursorLine_ - 1];
@@ -3193,15 +3192,7 @@ void clMenu::lvlTest2()
  */
 eMENU_ENTER_PARAM clMenu::enterValue()
 {
-	static char enterInt[] PROGMEM = "Ввод: %01u";
 	static char enterList[] PROGMEM ="Ввод: %S";
-
-	static char message[3][21] PROGMEM =
-	{
-			" Изменить параметр  ",
-			"  можно только в    ",
-			"  режиме ВЫВЕДЕН    "
-	};
 
 	eMENU_ENTER_PARAM status = enterParam.getStatus();
 	if (status == MENU_ENTER_PARAM_MESSAGE)
@@ -3213,6 +3204,11 @@ eMENU_ENTER_PARAM clMenu::enterValue()
 		// затем возврат в исходный пункт меню
 		if (enterParam.cnt_ < TIME_MESSAGE)
 		{
+			static char message[3][21] PROGMEM = {
+													" Изменить параметр  ",
+													"  можно только в    ",
+													"  режиме ВЫВЕДЕН    " };
+
 			enterParam.cnt_++;
 			key_ = KEY_NO;
 
@@ -3239,6 +3235,7 @@ eMENU_ENTER_PARAM clMenu::enterValue()
 		{
 			clearLine(NUM_TEXT_LINES);
 			uint8_t poz = 100;
+			static char enterInt[] PROGMEM = "Ввод: %01u";
 			snprintf_P(&vLCDbuf[poz], 21, enterInt, val);
 		}
 	}
@@ -3291,12 +3288,6 @@ eMENU_ENTER_PARAM clMenu::enterValue()
  */
 eMENU_ENTER_PARAM clMenu::enterPassword()
 {
-	static char enter[] PROGMEM = "Пароль: %04u";
-	static char enterNew[] PROGMEM = "Новый пароль: %04u";
-
-	static char message[3][21] PROGMEM = { "       Введен       ",
-			"    неправильный    ", "       пароль       " };
-
 	eMENU_ENTER_PARAM status = enterParam.getStatus();
 	if (status == MENU_ENTER_PARAM_MESSAGE)
 	{
@@ -3307,6 +3298,11 @@ eMENU_ENTER_PARAM clMenu::enterPassword()
 		// затем возврат в исходный пункт меню
 		if (enterParam.cnt_ < TIME_MESSAGE)
 		{
+			static char message[3][21] PROGMEM = {
+													"       Введен       ",
+													"    неправильный    ",
+													"       пароль       " };
+
 			enterParam.cnt_++;
 			key_ = KEY_NO;
 
@@ -3329,10 +3325,12 @@ eMENU_ENTER_PARAM clMenu::enterPassword()
 
 		if (status == MENU_ENTER_PASSWORD)
 		{
+			static char enter[] PROGMEM = "Пароль: %04u";
 			snprintf_P(&vLCDbuf[poz], 21, enter, val);
 		}
 		else if (status == MENU_ENTER_PASSWORD_NEW)
 		{
+			static char enterNew[] PROGMEM = "Новый пароль: %04u";
 			snprintf_P(&vLCDbuf[poz], 21, enterNew, val);
 		}
 		else
