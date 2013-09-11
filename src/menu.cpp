@@ -270,7 +270,7 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			sParam.glb.status.warningText[1] = fcGlbWarning02;
 			sParam.glb.status.warningText[2] = fcUnknownWarning;
 			sParam.glb.status.warningText[3] = fcUnknownWarning;
-			sParam.glb.status.warningText[4] = fcGlbWarning10;
+			sParam.glb.status.warningText[4] = fcUnknownWarning;
 			sParam.glb.status.warningText[5] = fcGlbWarning20;
 			sParam.glb.status.warningText[6] = fcGlbWarning40;
 			sParam.glb.status.warningText[7] = fcUnknownWarning;
@@ -1057,7 +1057,6 @@ void clMenu::lvlJournal()
 		cursorLine_ = 1;
 		cursorEnable_ = true;
 		lineParam_ = 1;
-		delay_ = 0;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
@@ -1144,7 +1143,6 @@ void clMenu::lvlJournalEvent()
 		lvlCreate_ = false;
 		cursorEnable_ = false;
 		lineParam_ = 1;
-		delay_ = 0;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
@@ -1306,7 +1304,6 @@ void clMenu::lvlJournalPrm()
 		lvlCreate_ = false;
 		cursorEnable_ = false;
 		lineParam_ = 1;
-		delay_ = 0;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
@@ -1408,7 +1405,6 @@ void clMenu::lvlJournalPrd()
 		lvlCreate_ = false;
 		cursorEnable_ = false;
 		lineParam_ = 1;
-		delay_ = 0;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
