@@ -60,7 +60,7 @@
 #define DEF_T_NO_MAN_MAX_F	(DEF_T_NO_MAN_MAX / DEF_T_NO_MAN_FRACT)
 #define DEF_T_NO_MAN_DISC_F	(DEF_T_NO_MAN_DISC / DEF_T_NO_MAN_FRACT)
 /// перекрытие импульсов
-#define DEF_OVERLAP_MIN		0
+#define DEF_OVERLAP_MIN		18	// !!! ВОзможно отличается в разных аппаратах, в Р400 - 18
 #define DEF_OVERLAP_MAX		54
 #define DEF_OVERLAP_DISC	2
 #define DEF_OVERLAP_FRACT	1
@@ -94,6 +94,7 @@
 /// тип приемника
 #define DEF_PRM_TYPE_MIN	0
 #define DEF_PRM_TYPE_MAX	3
+/// тип приемника
 /// ПРМ
 /// время включения
 #define PRM_TIME_ON_MIN		0
@@ -162,6 +163,30 @@
 #define GLB_IN_DEC_MIN_F	(GLB_IN_DEC_MIN / GLB_IN_DEC_FRACT)
 #define GLB_IN_DEC_MAX_F	(GLB_IN_DEC_MAX / GLB_IN_DEC_FRACT)
 #define GLB_IN_DEC_DISC_F	(GLB_IN_DEC_DISC / GLB_IN_DEC_FRACT)
+/// сетевой адрес
+#define GLB_NET_ADR_MIN		0
+#define GLB_NET_ADR_MAX		255
+#define GLB_NET_ADR_DISC 	1
+#define GLB_NET_ADR_FRACT	1
+#define GLB_NET_ADR_MIN_F	(GLB_NET_ADR_MIN / GLB_NET_ADR_FRACT)
+#define GLB_NET_ADR_MAX_F	(GLB_NET_ADR_MAX / GLB_NET_ADR_FRACT)
+#define GLB_NET_ADR_DISC_F	(GLB_NET_ADR_DISC / GLB_NET_ADR_FRACT)
+/// номинальное выходное напряжение
+#define GLB_U_OUT_NOM_MIN	18
+#define GLB_U_OUT_NOM_MAX	50
+#define GLB_U_OUT_NOM_DISC 	1
+#define GLB_U_OUT_NOM_FRACT	1
+#define GLB_U_OUT_NOM_MIN_F	(GLB_U_OUT_NOM_MIN / GLB_U_OUT_NOM_FRACT)
+#define GLB_U_OUT_NOM_MAX_F	(GLB_U_OUT_NOM_MAX / GLB_U_OUT_NOM_FRACT)
+#define GLB_U_OUT_NOM_DISC_F (GLB_U_OUT_NOM_DISC / GLB_U_OUT_NOM_FRACT)
+// частота
+#define GLB_FREQ_MIN		26
+#define GLB_FREQ_MAX		998
+#define GLB_FREQ_DISC 		1
+#define GLB_FREQ_FRACT		1
+#define GLB_FREQ_MIN_F		(GLB_FREQ_MIN / GLB_FREQ_FRACT)
+#define GLB_FREQ_MAX_F		(GLB_FREQ_MAX / GLB_FREQ_FRACT)
+#define GLB_FREQ_DISC_F 	(GLB_FREQ_DISC / GLB_FREQ_FRACT)
 
 /// максимальное и минимальный код типа событий в журнале событий
 #define MIN_JRN_EVENT_VALUE 1
@@ -229,11 +254,26 @@ enum eGB_NUM_DEVICES
 enum eGB_COMPATIBILITY
 {
 	GB_COMPATIBILITY_MIN = 0,
-	GB_COMPATIBILITY_AVANT = 0,
-	GB_COMPATIBILITY_PVZ90 = 1,
-	GB_COMPATIBILITY_AVZK = 2,
-	GB_COMPATIBILITY_PVZUE = 3,
+	GB_COMPATIBILITY_AVANT	= 0,
+	GB_COMPATIBILITY_PVZ90 	= 1,
+	GB_COMPATIBILITY_AVZK80 = 2,
+	GB_COMPATIBILITY_PVZUE 	= 3,
+	GB_COMPATIBILITY_PVZL	= 4,
 	GB_COMPATIBILITY_MAX
+};
+
+/// Тип автоконтроля
+enum eGB_TYPE_AC
+{
+	GB_TYPE_AC_MIN = 1,
+	GB_TYPE_AC_AUTO_FAST = 1,
+	GB_TYPE_AC_AUTO_NORM,
+	GB_TYPE_AC_FAST,
+	GB_TYPE_AC_OFF,
+	GB_TYPE_AC_CHECK,
+	GB_TYPE_AC_TEST,
+	GB_TYPE_AC_PUSK,
+	GB_TYPE_AC_MAX
 };
 
 /// Режимы работы
@@ -271,9 +311,9 @@ enum eGB_COM
 	GB_COM_DEF_GET_DELAY	= 0x04,
 	GB_COM_DEF_GET_OVERLAP	= 0x05,
 	GB_COM_DEF_GET_RZ_DEC	= 0x06,
-	GB_COM_DEF_GET_PRM_TYPE = 0x07,
+	GB_COM_DEF_GET_PRM_TYPE = 0x07,	// ! в Р400 это снижение уровня АК
 	GB_COM_DEF_GET_RZ_THRESH= 0x09,	// ! в Р400 это частота ПРМ
-	GB_COM_DEF_GET_TYPE_AC 	= 0x0A,	// !!! не сделана
+	GB_COM_DEF_GET_TYPE_AC 	= 0x0A,	// !!! Р400 частично
 	GB_COM_PRM_GET_TIME_ON	= 0x11,
 	GB_COM_PRM_GET_TIME_OFF = 0x13,
 	GB_COM_PRM_GET_BLOCK_COM= 0x14,
@@ -287,9 +327,11 @@ enum eGB_COM
 	GB_COM_GET_TIME 		= 0x32,
 	GB_COM_GET_MEAS			= 0x34,
 	GB_COM_GET_TIME_SINCHR	= 0x35,
-	GB_COM_GET_COM_PRM_KEEP = 0x36,
+	GB_COM_GET_COM_PRM_KEEP = 0x36, // ! в Р400 это Uвых номинальное
 	GB_COM_GET_COM_PRD_KEEP	= 0x37,	// ! в Р400 это тип удаленного аппарата
+	GB_COM_GET_NET_ADR		= 0x38,
 	GB_COM_GET_TIME_RERUN	= 0x39,	// ! в Р400 это параметры ПВЗУ-Е
+	GB_COM_GET_FREQ			= 0x3A,
 	GB_COM_GET_DEVICE_NUM	= 0x3B,
 	GB_COM_GET_CF_THRESHOLD	= 0x3C,	// ! порог предупр. по КЧ и загрубления
 	GB_COM_GET_OUT_CHECK	= 0x3D,
@@ -303,6 +345,14 @@ enum eGB_COM
 	GB_COM_GET_PASSWORD 	= 0x74,	// ! только с ПК
 	GB_COM_SET_REG_TEST_2	= 0x7D,
 	GB_COM_SET_REG_TEST_1	= 0x7E,
+	GB_COM_DEF_SET_DEF_TYPE	= 0x81,
+	GB_COM_DEF_SET_LINE_TYPE= 0x82,
+	GB_COM_DEF_SET_T_NO_MAN	= 0x83,
+	GB_COM_DEF_SET_DELAY	= 0x84,
+	GB_COM_DEF_SET_OVERLAP	= 0x85,
+	GB_COM_DEF_SET_RZ_DEC	= 0x86,
+	GB_COM_SET_PRM_TYPE		= 0x87,	// ! в Р400 это снижение уровня АК
+	GB_COM_DEF_SET_TYPE_AC	= 0x8A,
 	GB_COM_PRM_SET_TIME_ON	= 0x91,
 	GB_COM_PRM_SET_TIME_OFF	= 0x93,
 	GB_COM_PRM_SET_BLOCK_COM= 0x94,
@@ -314,9 +364,11 @@ enum eGB_COM
 	GB_COM_PRD_SET_TEST_COM = 0xA6,
 	GB_COM_SET_TIME 		= 0xB2,
 	GB_COM_SET_TIME_SINCHR	= 0xB5,
-	GB_COM_SET_COM_PRM_KEEP	= 0xB6,
-	GB_COM_SET_COM_PRD_KEEP	= 0xB7,
+	GB_COM_SET_COM_PRM_KEEP	= 0xB6, // ! в Р400 это Uвых номинальное
+	GB_COM_SET_COM_PRD_KEEP	= 0xB7, // ! в Р400 это тип удаленного аппарата
+	GB_COM_SET_NET_ADR		= 0xB8,
 	GB_COM_SET_TIME_RERUN	= 0xB9,
+	GB_COM_SET_FREQ			= 0xBA,
 	GB_COM_SET_DEVICE_NUM	= 0xBB,
 	GB_COM_SET_CF_THRESHOLD	= 0xBC,
 	GB_COM_SET_OUT_CHECK	= 0xBD,
@@ -807,6 +859,9 @@ public:
 		comPrdKeep_ = false;
 		comPrmKeep_ = false;
 		inDecrease_ = GLB_IN_DEC_MIN_F;
+		freq_ = GLB_FREQ_MIN_F;
+		uOutNom_ = GLB_U_OUT_NOM_MIN_F;
+		netAdr_ = GLB_NET_ADR_MIN_F;
 	}
 
 	TDeviceStatus status;
@@ -846,14 +901,13 @@ public:
 	}
 
 	// версия прошивки AtMega BSP
-	uint16_t getVersBsp() const { return versBsp_; }
 	void setVersBsp(uint16_t versBsp) { versBsp_ = versBsp; }
+	uint16_t getVersBsp() const { return versBsp_; }
 
 	//  версия прошивки DSP
-	uint16_t getVersDsp() const { return versDsp_; }
 	void setVersDsp(uint16_t versDsp) {  versDsp_ = versDsp; }
+	uint16_t getVersDsp() const { return versDsp_; }
 
-	eGB_COMPATIBILITY getCompatibility() const { return compatibility_; }
 	bool setCompatibility(eGB_COMPATIBILITY compatibility)
 	{
 		bool stat = false;
@@ -867,6 +921,7 @@ public:
 			compatibility_ = GB_COMPATIBILITY_MAX;
 		return stat;
 	}
+	eGB_COMPATIBILITY getCompatibility() const { return compatibility_; }
 
 	// синхронизация часов
 	// True - включена, False - выключена
@@ -980,6 +1035,48 @@ public:
 	}
 	uint8_t getInDecrease() const { return (inDecrease_ * GLB_IN_DEC_FRACT); }
 
+	// сетевой адрес
+	bool setNetAddress(uint8_t val)
+	{
+		bool stat = false;
+		val = (val / GLB_NET_ADR_DISC_F) * GLB_NET_ADR_DISC_F;
+		if ( (val >= GLB_NET_ADR_MIN_F) && (val <= GLB_NET_ADR_MAX_F) )
+		{
+			netAdr_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getNetAddress() const { return (netAdr_ * GLB_NET_ADR_FRACT); }
+
+	// Uвых номинальное
+	bool setUoutNom(uint8_t val)
+	{
+		bool stat = false;
+		val = (val / GLB_U_OUT_NOM_DISC_F) * GLB_U_OUT_NOM_DISC_F;
+		if ( (val >= GLB_U_OUT_NOM_MIN_F) && (val <= GLB_U_OUT_NOM_MAX_F) )
+		{
+			uOutNom_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getUoutNom() const { return (uOutNom_ * GLB_U_OUT_NOM_FRACT); }
+
+	// частота
+	bool setFreq(uint16_t val)
+	{
+		bool stat = false;
+		val = (val / GLB_FREQ_DISC_F) * GLB_FREQ_DISC_F;
+		if ( (val >= GLB_FREQ_MIN_F) && (val <= GLB_FREQ_MAX_F) )
+		{
+			freq_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getFreq() const { return (freq_ * GLB_FREQ_FRACT); }
+
 private:
 	// кол-во аппаратов в линии 2 или 3
 	eGB_NUM_DEVICES numDevices_;
@@ -1019,6 +1116,15 @@ private:
 
 	// уменьшение усиления входного сигнала
 	uint8_t inDecrease_;
+
+	// сетевой адрес
+	uint8_t netAdr_;
+
+	// Uвых номинальное
+	uint8_t uOutNom_;
+
+	// Частота
+	uint16_t  freq_;
 };
 
 
@@ -1036,8 +1142,10 @@ public:
 		rzThreshold_ = DEF_RZ_THRESH_MIN_F;
 		rzDec_ = DEF_RZ_DEC_MIN_F;
 		prmType_ = DEF_PRM_TYPE_MIN;
+		typeAc_ = GB_TYPE_AC_AUTO_FAST;
 		numJrnEntry_ = 0;
 		maxNumJrnEntry_ = 0;
+		acDec_ = false;
 		overflow_ = false;
 	}
 
@@ -1047,7 +1155,7 @@ public:
 	bool setDefType(uint8_t val)
 	{
 		bool stat = false;
-		if ( (val >= DEF_TYPE_MIN) && (val < DEF_TYPE_MAX) )
+		if ( (val >= DEF_TYPE_MIN) && (val <= DEF_TYPE_MAX) )
 		{
 			defType_ = val;
 			stat = true;
@@ -1157,6 +1265,33 @@ public:
 	}
 	uint8_t getPrmType() const { return prmType_; }
 
+	// тип автоконтроля
+	bool setTypeAC(eGB_TYPE_AC val)
+	{
+		bool stat = false;
+		if ( (val >= GB_TYPE_AC_MIN) && (val <= GB_TYPE_AC_MAX))
+		{
+			typeAc_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	eGB_TYPE_AC getTypeAC() const { return typeAc_; }
+
+	// снижение уровня автоконтроля
+	// True - включена, False - выключена
+	bool setAcDec(uint8_t val)
+	{
+		bool stat = false;
+		if (val <= 1)
+		{
+			acDec_ = (bool) val;
+			stat = true;
+		}
+		return stat;
+	}
+	bool getAcDec() const { return acDec_; }
+
 	// количество записей в журнале
 	// количество записей в журнале
 	bool setNumJrnEntry(uint16_t val)
@@ -1212,6 +1347,12 @@ private:
 
 	// тип приемника
 	uint8_t prmType_;
+
+	// тип автоконтроля
+	eGB_TYPE_AC typeAc_;
+
+	// снижение уровня АК
+	bool acDec_;
 
 	// кол-во записей в журнале
 	uint16_t numJrnEntry_;

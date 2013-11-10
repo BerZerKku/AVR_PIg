@@ -17,9 +17,17 @@ static eKEY keyPressed;
  * 	@return eKEY Код нажатой кнопки
  */
 eKEY
-eKEYget(void)
+eKEYget(eGB_TYPE_DEVICE type)
 {
 	eKEY key_tmp = keyPressed;
+
+	if (type == AVANT_R400_MSK)
+	{
+		if (key_tmp == KEY_CANCEL)
+			key_tmp = KEY_NO;
+		else if (key_tmp == KEY_RESET)
+			key_tmp = KEY_CANCEL;
+	}
 
 	keyPressed = KEY_NO;
 	return key_tmp;

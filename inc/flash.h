@@ -94,6 +94,16 @@ static const char fcDevices[GB_DEVICE_MAX + 1] [4] PROGMEM =
 		"ОШБ"
 };
 
+static
+const char fcCompatibility[GB_COMPATIBILITY_MAX + 1] [STRING_LENGHT] PROGMEM =
+{
+ 	 	 "АВАНТ Р400",
+ 	 	 "ПВЗ-90",
+ 	 	 "АВЗК-80",
+ 	 	 "ПВЗУ-Е",
+ 	 	 "ПВЗЛ",
+ 	 	 "ошибка"
+};
 
 // состояния устройств
 // кол-во состояний для всех устройств должно совпадать с MAX_NUM_DEVICE_STATE
