@@ -2094,6 +2094,12 @@ public:
 		eventType_ = MAX_JRN_EVENT_VALUE - MIN_JRN_EVENT_VALUE + 1;
 		regime_ = GB_REGIME_MAX;
 		numCom_ = 0;
+		signalPusk_ = false;
+		signalStop_ = false;
+		signalMan_ = false;
+		signalPrm_ = false;
+		signalPrd_ = false;
+		signalOut_ = false;
 
 		numJrnEntries_ = 0;
 		maxNumJrnEntry_ = 0;
@@ -2186,6 +2192,27 @@ public:
 		return state;
 	}
 	eGB_REGIME getRegime() const { return regime_; }
+
+	// сигналы для журнала защиты
+	bool setSignalDef(uint8_t val)
+	{
+		bool state = true;
+
+		signalPusk_ = (val & 0x10) ? 1 : 0;
+		signalStop_ = (val & 0x20) ? 1 : 0;
+		signalMan_ =  (val & 0x40) ? 1 : 0;
+		signalPrm_ =  (val & 0x01) ? 1 : 0;
+		signalPrd_ =  (val & 0x02) ? 1 : 0;
+		signalOut_ =  (val & 0x03) ? 1 : 0;
+
+		return state;
+	}
+	uint8_t getSignalPusk() const { return signalPusk_; }
+	uint8_t getSignalStop() const { return signalStop_; }
+	uint8_t getSignalMan() const { return signalMan_; }
+	uint8_t getSignalPrm() const { return signalPrm_; }
+	uint8_t getSignalPrd() const { return signalPrd_; }
+	uint8_t getSignalOut() const { return signalOut_; }
 
 	// номер команды
 	bool setNumCom(uint8_t num)
@@ -2296,6 +2323,14 @@ private:
 
 	// режим
 	eGB_REGIME regime_;
+
+	// сигналы для журнала защиты
+	bool signalPusk_;
+	bool signalStop_;
+	bool signalMan_;
+	bool signalPrm_;
+	bool signalPrd_;
+	bool signalOut_;
 
 	// кол-во записей в журнале
 	uint16_t numJrnEntries_;

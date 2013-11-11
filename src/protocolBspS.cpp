@@ -119,6 +119,7 @@ bool clProtocolBspS::getData()
 					sParam_->jrnEntry.dataTime.setMsSecond(t);
 					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE) buf[B1]);
 	//				sParam_->jrnEntry.setNumCom(buf[B2]);
+					sParam_->jrnEntry.setSignalDef((buf[B2]<<4)+(buf[B4]&0x0F));
 					sParam_->jrnEntry.setEventType(buf[B3]);
 					sParam_->jrnEntry.setReady();
 					stat = true;

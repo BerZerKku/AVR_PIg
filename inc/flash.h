@@ -266,6 +266,7 @@ static const char fcNumComJrn[]			PROGMEM = "Команда: %u";
 static const char fcDateJrn[]			PROGMEM = "Дата: %02u.%02u.%02u";
 static const char fcTimeJrn[]			PROGMEM = "Время: %02u:%02u:%02u.%03u";
 static const char fcJrnNotReady[]		PROGMEM = "СЧИТЫВАНИЕ ЗАПИСИ";
+static const char fcSignalDefJrn[]		PROGMEM = "П%dС%dМ%d ПД%dПМ%dВЫХ%d";
 
 // записи журнала ПРД и ПРМ
 static const char fcJrnPrd[GB_STATE_COM_MAX + 1] [21] PROGMEM =
