@@ -202,9 +202,11 @@
 
 /// кол-во записей в журнале событый
 #define GLB_JRN_EVENT_K400_MAX 512
+#define GLB_JRN_EVENT_R400_MSK_MAX 512
 
 /// кол-во записей в журнале защиты
 #define GLB_JRN_DEF_K400_MAX 0
+#define GLB_JRN_DEF_R400_MSK_MAX 1024
 
 /// кол-во записей в журнале приемника
 #define GLB_JRN_PRM_K400_MAX 512
@@ -2151,6 +2153,11 @@ public:
 		{
 			min = GB_STATE_COM_MIN;
 			max = GB_STATE_COM_MAX;
+		}
+		else if (currentDevice_ == GB_DEVICE_DEF)
+		{
+			min = 0;
+			max = MAX_NUM_DEVICE_STATE;
 		}
 
 		if ( (val >= min) && (val <= max) )

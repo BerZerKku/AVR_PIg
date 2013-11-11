@@ -1091,8 +1091,10 @@ void clMenu::lvlJournal()
 		uint8_t num = 0;
 		eGB_TYPE_DEVICE type = sParam.typeDevice;
 		sParam.txComBuf.clear();
+
 		// активаци€ необходимых пунктов меню и соответствующих им команд
-		if (type == AVANT_R400)
+		// по умолчанию только журнал событий
+		if (type == AVANT_R400_MSK)
 		{
 			punkt_[num++] = punkt1;
 			punkt_[num++] = punkt2;
@@ -1104,11 +1106,15 @@ void clMenu::lvlJournal()
 			punkt_[num++] = punkt3;
 			punkt_[num++] = punkt4;
 		}
-		else if ((type == AVANT_K400) || (type == AVANT_K400_OPTIC))
+		else if ( (type == AVANT_K400) || (type == AVANT_K400_OPTIC) )
 		{
 			punkt_[num++] = punkt1;
 			punkt_[num++] = punkt3;
 			punkt_[num++] = punkt4;
+		}
+		else
+		{
+			punkt_[num++] = punkt1;
 		}
 		numPunkts_ = num;
 	}
@@ -1177,8 +1183,12 @@ void clMenu::lvlJournalEvent()
 		// установка текущего журнала и максимального кол-во записей в нем
 		sParam.jrnEntry.clear();
 		sParam.jrnEntry.setCurrentDevice(GB_DEVICE_GLB);
+		uint16_t t = 0;
 		if (sParam.typeDevice == AVANT_K400)
-			sParam.jrnEntry.setMaxNumJrnEntries(GLB_JRN_EVENT_K400_MAX);
+			t = GLB_JRN_EVENT_K400_MAX;
+		else if (sParam.typeDevice == AVANT_R400_MSK)
+			t = GLB_JRN_EVENT_R400_MSK_MAX;
+		sParam.jrnEntry.setMaxNumJrnEntries(t);
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
@@ -1232,7 +1242,13 @@ void clMenu::lvlJournalEvent()
 		poz += 20;
 		// вывод событи€
 		uint8_t event = sParam.jrnEntry.getEventType();
-		snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event], event);
+
+		if (sParam.typeDevice == AVANT_R400_MSK)
+		{
+			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventR400_MSK[event], event);
+		}
+		else
+			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event], event);
 	}
 
 	switch (key_)
@@ -1268,40 +1284,92 @@ void clMenu::lvlJournalEvent()
 void clMenu::lvlJournalDef()
 {
 	static char title[] PROGMEM = "∆урнал\\«ащита";
-	static char punkt0[][21] PROGMEM = { "Ќомер: 1  ¬сего: 1",
-			"ƒата:  04.07.12", "¬рем€: 09:53:45.012", "“ип: Ќет –«",
-			"«начение: 000 000" };
 
 	if (lvlCreate_)
 	{
 		lvlCreate_ = false;
-		cursorLine_ = 1;
-		cursorEnable_ = true;
+		cursorEnable_ = false;
 		lineParam_ = 1;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
+		// установка текущего журнала и максимального кол-во записей в нем
+		sParam.jrnEntry.clear();
+		sParam.jrnEntry.setCurrentDevice(GB_DEVICE_DEF);
+		uint16_t t = 0;
+		if (sParam.typeDevice == AVANT_R400_MSK)
+			t = GLB_JRN_DEF_R400_MSK_MAX;
+		sParam.jrnEntry.setMaxNumJrnEntries(t);
+
 		// доплнительные команды
 		sParam.txComBuf.clear();
+		sParam.txComBuf.addCom(GB_COM_DEF_GET_JRN_CNT);
+		sParam.txComBuf.addCom(GB_COM_DEF_GET_JRN_ENTRY);
+		sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 	}
 
-	snprintf_P(&vLCDbuf[0], 21, title);
-	for (uint_fast8_t i = 0; i < 5; i++)
+	// номер текущей записи в архиве и максимальное кол-во записей
+	uint16_t cur_entry = sParam.jrnEntry.getCurrentEntry();
+	uint16_t num_entries = sParam.jrnEntry.getNumJrnEntries();
+
+	uint8_t poz = 0;
+	// вывод названи€ текущего пункта меню
+	snprintf_P(&vLCDbuf[poz], 21, title);
+	poz += 20;
+	// вывод номер текущей записи и их кол-ва
+	snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+	poz += 20;
+
+	if (num_entries == 0)
 	{
-		if (cursorLine_ == 1)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt0[i]);
+		// вывод сообщени€ об отсутствии записей в журнале
+		snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
+	}
+	else if (!sParam.jrnEntry.isReady())
+	{
+		// ифнораци€ о текущей записи еще не получена
+		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
+	}
+	else
+	{
+		// вывод состо€ни€
+		snprintf_P(&vLCDbuf[poz], 21, fcStateJrn);
+		snprintf_P(&vLCDbuf[poz + 11], 10,
+				sParam.def.status.stateText[sParam.jrnEntry.getEventType()]);
+		poz += 20;
+		// вывод даты
+		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
+				sParam.jrnEntry.dataTime.getDay(),
+				sParam.jrnEntry.dataTime.getMonth(),
+				sParam.jrnEntry.dataTime.getYear());
+		poz += 20;
+		//	    snprintf_P(&vLCDbuf[poz],4,fcDevices[sParam.journalEntry.getDevice()]);
+		// вывод времени
+		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
+				sParam.jrnEntry.dataTime.getHour(),
+				sParam.jrnEntry.dataTime.getMinute(),
+				sParam.jrnEntry.dataTime.getSecond(),
+				sParam.jrnEntry.dataTime.getMsSecond());
+		poz += 20;
+//
+//		if (sParam.typeDevice == AVANT_R400_MSK)
+//		{
+//			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventR400_MSK[event], event);
+//		}
+//		else
+//			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event], event);
 	}
 
 	switch (key_)
 	{
 		case KEY_UP:
-			if (cursorLine_ > 1)
-				cursorLine_--;
+			if (sParam.jrnEntry.setPreviousEntry())
+				sParam.txComBuf.addFastCom(GB_COM_DEF_GET_JRN_ENTRY);
 			break;
 		case KEY_DOWN:
-			if (cursorLine_ < 1)
-				cursorLine_++;
+			if (sParam.jrnEntry.setNextEntry())
+				sParam.txComBuf.addFastCom(GB_COM_DEF_GET_JRN_ENTRY);
 			break;
 
 		case KEY_CANCEL:
