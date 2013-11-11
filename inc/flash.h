@@ -27,6 +27,21 @@ static const char fcDeviceName00[] PROGMEM = "ЗАЩ";
 static const char fcDeviceName01[] PROGMEM = "ПРМ";
 static const char fcDeviceName02[] PROGMEM = "ПРД";
 
+// типы автоконтролей для отображения в начальном меню
+// !!! Р400 тут может быть херня, перепровить надо
+static const char fcAcType[GB_TYPE_AC_MAX + 1] [15] =
+{
+ 	 	 "АК-ошиб",
+ 	 	 "АК-авто %d:%d",
+ 	 	 "АК-авто %d:%d",
+ 	 	 "АК-ускор %d:%d",
+ 	 	 "АК-выкл %d:%d",
+ 	 	 "АК-однос %d:%d",
+ 	 	 "АК-испыт %d:%d",
+ 	 	 "АК-пуск %d:%d",
+ 	 	 "АК-ошиб"
+};
+
 // режимы устройств
 static const char fcRegime[GB_REGIME_MAX + 1] [8] PROGMEM =
 {

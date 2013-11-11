@@ -902,12 +902,20 @@ void clMenu::lvlStart()
 				break;
 
 			case KEY_FUNC_PUSK_PRD:
-				sParam.txComBuf.setInt8(GB_CONTROL_PVZL_PUSK_PRD);
+				if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_AVANT)
+					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
+				else
+					sParam.txComBuf.setInt8(GB_CONTROL_PVZL_PUSK_PRD);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 				break;
 
 			case KEY_FUNC_PUSK_AC_UD:
-				sParam.txComBuf.setInt8(GB_CONTROL_PVZL_PUSK_AC_UD);
+				if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_AVANT)
+				{
+					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_AC_UD);
+				}
+				else
+					sParam.txComBuf.setInt8(GB_CONTROL_PVZL_PUSK_AC_UD);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 				break;
 

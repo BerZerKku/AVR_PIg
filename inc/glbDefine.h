@@ -451,6 +451,7 @@ enum eGB_CONTROL
 	GB_CONTROL_CALL			= 7,	//
 	GB_CONTROL_PUSK_ON		= 8,	//
 	GB_CONTROL_PUSK_OFF		= 9,	//
+	GB_CONTROL_PUSK_AC_UD 	= 10,
 	GB_CONTROL_MAX
 
 };
@@ -1359,9 +1360,40 @@ public:
 			typeAc_ = val;
 			stat = true;
 		}
+
 		return stat;
 	}
 	eGB_TYPE_AC getTypeAC() const { return typeAc_; }
+
+	// время до автоконтроля
+	bool setTimeToAC(uint64_t* val, eGB_COMPATIBILITY comp, uint8_t number)
+	{
+		bool stat = true;
+
+		if (comp == GB_COMPATIBILITY_AVANT)
+		{
+			if (number == 1)
+			{
+
+			}
+			else if (number == 2)
+			{
+
+			}
+			else if (number == 3)
+			{
+
+			}
+		}
+		else if (comp == GB_COMPATIBILITY_PVZL_PI)
+		{
+			timeToAc_ = *val / 1000;
+		}
+
+		return stat;
+	}
+	uint64_t getTimeToAC() const { return timeToAc_; }
+
 
 	// снижение уровня автоконтроля
 	// True - включена, False - выключена
@@ -1464,6 +1496,9 @@ private:
 
 	// тип автоконтроля
 	eGB_TYPE_AC typeAc_;
+
+	// время до автоконтроля
+	uint64_t timeToAc_;
 
 	// снижение уровня АК
 	bool acDec_;

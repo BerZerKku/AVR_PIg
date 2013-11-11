@@ -92,11 +92,13 @@ bool clProtocolBspS::getData()
 			}
 			else if (com == GB_COM_DEF_GET_TYPE_AC)
 			{
-				// !!! Р400
-				// Добавить обработку принятого типа АК и времени до АК
-				// 4 байт - тип АК
-				// 5-8 - время до АК
-				stat = sParam_->def.setTypeAC((eGB_TYPE_AC) (buf[B1]));
+				// 1 байт - тип АК
+				// 2-5 - время до АК
+				stat = sParam_->def.setTypeAC((eGB_TYPE_AC) buf[B1]);
+				eGB_COMPATIBILITY comp = sParam_->glb.getCompatibility();
+				uint8_t number = sParam_->glb.getDeviceNum();
+				stat |= sParam_->def.setTimeToAC((uint64_t *) &buf[B2],
+						comp, number);
 			}
 			else if (com == GB_COM_DEF_GET_JRN_CNT)
 			{
