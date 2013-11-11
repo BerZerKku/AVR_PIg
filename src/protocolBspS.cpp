@@ -76,9 +76,19 @@ bool clProtocolBspS::getData()
 					stat = sParam_->def.setAcDec(buf[B1]);
 				}
 			}
+			else if (com == GB_COM_DEF_GET_FREQ_PRD)
+			{
+				sParam_->def.setFreqPrd((eGB_PVZL_FREQ) buf[B1]);
+			}
 			else if (com == GB_COM_DEF_GET_RZ_THRESH)
 			{
-				stat = sParam_->def.setRzThreshold(buf[B1]);
+				if (sParam_->typeDevice == AVANT_R400_MSK)
+				{
+					// ! В Р400М это частота ПРМ (ПВЗЛ)
+					sParam_->def.setFreqPrm((eGB_PVZL_FREQ) buf[B1]);
+				}
+				else
+					stat = sParam_->def.setRzThreshold(buf[B1]);
 			}
 			else if (com == GB_COM_DEF_GET_TYPE_AC)
 			{
@@ -364,7 +374,14 @@ bool clProtocolBspS::getData()
 			}
 			else if (com == GB_COM_GET_TIME_RERUN)
 			{
-				stat = sParam_->glb.setTimeRerun(buf[B1]);
+				if (sParam_->typeDevice == AVANT_R400_MSK)
+				{
+					stat = sParam_->glb.setAcInDec(buf[B1]);
+				}
+				else
+				{
+					stat = sParam_->glb.setTimeRerun(buf[B1]);
+				}
 			}
 			else if (com == GB_COM_GET_FREQ)
 			{
@@ -493,6 +510,14 @@ clProtocolBspS::sendData(eGB_COM com)
 				// ! в Р400 это снижение уровня АК
 				num = addCom(com, sParam_->txComBuf.getInt8());
 			}
+			else if (com == GB_COM_DEF_SET_FREQ_PRD)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt8());
+			}
+			else if (com == GB_COM_DEF_SET_RZ_THRESH)
+			{
+				num = addCom(com, sParam_->txComBuf.getInt8());
+			}
 		}
 		else if (mask == GB_COM_MASK_DEVICE_PRM)
 		{
@@ -562,7 +587,15 @@ clProtocolBspS::sendData(eGB_COM com)
 			}
 			else if (com == GB_COM_SET_TIME_RERUN)
 			{
-				num = addCom(com, sParam_->txComBuf.getInt8());
+				if (sParam_->typeDevice == AVANT_R400_MSK)
+				{
+					num = addCom(com, sParam_->txComBuf.getInt8(0),
+							sParam_->txComBuf.getInt8(1));
+				}
+				else
+				{
+					num = addCom(com, sParam_->txComBuf.getInt8());
+				}
 			}
 			else if (com == GB_COM_SET_DEVICE_NUM)
 			{
@@ -661,6 +694,10 @@ clProtocolBspS::sendData(eGB_COM com)
 				num = addCom(com);
 			}
 			else if (com == GB_COM_DEF_GET_TYPE_AC)
+			{
+				num = addCom(com);
+			}
+			else if (com == GB_COM_DEF_GET_FREQ_PRD)
 			{
 				num = addCom(com);
 			}

@@ -187,6 +187,14 @@
 #define GLB_FREQ_MIN_F		(GLB_FREQ_MIN / GLB_FREQ_FRACT)
 #define GLB_FREQ_MAX_F		(GLB_FREQ_MAX / GLB_FREQ_FRACT)
 #define GLB_FREQ_DISC_F 	(GLB_FREQ_DISC / GLB_FREQ_FRACT)
+// снижение ответа АК (ПВЗЛ)
+#define GLB_AC_IN_DEC_MIN	0
+#define GLB_AC_IN_DEC_MAX	20
+#define GLB_AC_IN_DEC_DISC 	1
+#define GLB_AC_IN_DEC_FRACT	1
+#define GLB_AC_IN_DEC_MIN_F	(GLB_AC_IN_DEC_MIN / GLB_AC_IN_DEC_FRACT)
+#define GLB_AC_IN_DEC_MAX_F	(GLB_AC_IN_DEC_MAX / GLB_AC_IN_DEC_FRACT)
+#define GLB_AC_IN_DEC_DISC_F (GLB_AC_IN_DEC_DISC / GLB_AC_IN_DEC_FRACT)
 
 /// максимальное и минимальный код типа событий в журнале событий
 #define MIN_JRN_EVENT_VALUE 1
@@ -211,8 +219,8 @@
 /// Тип аппарата
 enum eGB_TYPE_DEVICE
 {
-	AVANT_NO = 0,		// ошибочное значение
-	AVANT_R400 = 1,
+	AVANT_NO 				= 0,	// ошибочное значение
+	AVANT_R400 				= 1,
 	AVANT_R400_MSK,
 	AVANT_RZSK,
 	AVANT_RZSK_OPTIC,
@@ -223,8 +231,8 @@ enum eGB_TYPE_DEVICE
 /// Устройство
 enum eGB_DEVICE
 {
-	GB_DEVICE_MIN = 0,
-	GB_DEVICE_DEF = 0,
+	GB_DEVICE_MIN 			= 0,
+	GB_DEVICE_DEF 			= 0,
 	GB_DEVICE_PRM,
 	GB_DEVICE_PRD,
 	GB_DEVICE_GLB,
@@ -234,31 +242,37 @@ enum eGB_DEVICE
 /// Тип канала связи
 enum eGB_TYPE_LINE
 {
-	GB_TYPE_LINE_MIN = 1,
-	GB_TYPE_LINE_UM = 1,
-	GB_TYPE_LINE_OPTIC = 2,
-	GB_TYPE_LINE_E1 = 3,
+	GB_TYPE_LINE_MIN 		= 1,
+	GB_TYPE_LINE_UM 		= 1,
+	GB_TYPE_LINE_OPTIC 		= 2,
+	GB_TYPE_LINE_E1 		= 3,
 	GB_TYPE_LINE_MAX
 };
 
 /// Кол-во аппаратов в линии
 enum eGB_NUM_DEVICES
 {
-	GB_NUM_DEVICES_MIN = 1,
-	GB_NUM_DEVICES_2 = 1,
-	GB_NUM_DEVICES_3 = 2,
+	GB_NUM_DEVICES_MIN 		= 1,
+	GB_NUM_DEVICES_2 		= 1,
+	GB_NUM_DEVICES_3 		= 2,
 	GB_NUM_DEVICES_MAX
 };
 
 /// Совместимость
 enum eGB_COMPATIBILITY
 {
-	GB_COMPATIBILITY_MIN = 0,
-	GB_COMPATIBILITY_AVANT	= 0,
-	GB_COMPATIBILITY_PVZ90 	= 1,
-	GB_COMPATIBILITY_AVZK80 = 2,
-	GB_COMPATIBILITY_PVZUE 	= 3,
-	GB_COMPATIBILITY_PVZL	= 4,
+//	GB_COMPATIBILITY_MIN = 0,
+//	GB_COMPATIBILITY_AVANT	= 0,
+//	GB_COMPATIBILITY_PVZ90 	= 1,
+//	GB_COMPATIBILITY_AVZK80 = 2,
+//	GB_COMPATIBILITY_PVZUE 	= 3,
+//	GB_COMPATIBILITY_PVZL	= 4,
+//	GB_COMPATIBILITY_MAX
+//
+	GB_COMPATIBILITY_MIN 	= 0,
+	GB_COMPATIBILITY_AVANT 	= 0,
+	GB_COMPATIBILITY_PVZL_BSP = 4,	// !! отправка/получение в(ИЗ) БСП
+	GB_COMPATIBILITY_PVZL_PI= 1,	// !! порядковый номер в ПИ
 	GB_COMPATIBILITY_MAX
 };
 
@@ -266,26 +280,39 @@ enum eGB_COMPATIBILITY
 enum eGB_TYPE_AC
 {
 	GB_TYPE_AC_MIN = 1,
-	GB_TYPE_AC_AUTO_FAST = 1,
-	GB_TYPE_AC_AUTO_NORM,
-	GB_TYPE_AC_FAST,
-	GB_TYPE_AC_OFF,
-	GB_TYPE_AC_CHECK,
-	GB_TYPE_AC_TEST,
-	GB_TYPE_AC_PUSK,
+	GB_TYPE_AC_AUTO_FAST 	= 1,	// в ПВЗЛ АК нормальный
+	GB_TYPE_AC_AUTO_NORM 	= 2,
+	GB_TYPE_AC_FAST 		= 3,
+	GB_TYPE_AC_OFF			= 4,
+	GB_TYPE_AC_CHECK		= 5,	// в ПВЗЛ АК односторонний
+	GB_TYPE_AC_TEST			= 6,
+	GB_TYPE_AC_PUSK_SELF	= 6,	// в ПВЗЛ пуск АК свой
+	GB_TYPE_AC_PUSK			= 7,
 	GB_TYPE_AC_MAX
+};
+
+/// Частоты ПРМ и ПРД в ПВЗЛ
+enum eGB_PVZL_FREQ
+{
+	GB_PVZL_FREQ_MIN 		= 0,
+	GB_PVZL_FREQ_M500 		= 0,
+	GB_PVZL_FREQ_M250		= 1,
+	GB_PVZL_FREQ_0			= 2,
+	GB_PVZL_FREQ_P250		= 3,
+	GB_PVZL_FREQ_P500		= 4,
+	GB_PVZL_FREQ_MAX
 };
 
 /// Режимы работы
 enum eGB_REGIME
 {
-	GB_REGIME_MIN = 0,
-	GB_REGIME_DISABLED = 0,	// выведен
-	GB_REGIME_READY,		// готов
-	GB_REGIME_ENABLED,		// введен
-	GB_REGIME_TALK,			// речь
-	GB_REGIME_TEST_1,		// тест 1
-	GB_REGIME_TEST_2,		// тест 2
+	GB_REGIME_MIN 			= 0,
+	GB_REGIME_DISABLED 		= 0,	// выведен
+	GB_REGIME_READY,				// готов
+	GB_REGIME_ENABLED,				// введен
+	GB_REGIME_TALK,					// речь
+	GB_REGIME_TEST_1,				// тест 1
+	GB_REGIME_TEST_2,				// тест 2
 	GB_REGIME_MAX,
 };
 
@@ -293,8 +320,8 @@ enum eGB_REGIME
 // порядок не совпадает с eGB_REGIME
 enum eGB_REGIME_ENTER
 {
-	GB_REGIME_ENTER_MIN = 0,
-	GB_REGIME_ENTER_DISABLED = 0,
+	GB_REGIME_ENTER_MIN 	= 0,
+	GB_REGIME_ENTER_DISABLED= 0,
 	GB_REGIME_ENTER_ENABLED = 1,
 	GB_REGIME_ENTER_TEST_1,
 	GB_REGIME_ENTER_TEST_2,
@@ -312,6 +339,7 @@ enum eGB_COM
 	GB_COM_DEF_GET_OVERLAP	= 0x05,
 	GB_COM_DEF_GET_RZ_DEC	= 0x06,
 	GB_COM_DEF_GET_PRM_TYPE = 0x07,	// ! в Р400 это снижение уровня АК
+	GB_COM_DEF_GET_FREQ_PRD = 0x08,
 	GB_COM_DEF_GET_RZ_THRESH= 0x09,	// ! в Р400 это частота ПРМ
 	GB_COM_DEF_GET_TYPE_AC 	= 0x0A,	// !!! Р400 частично
 	GB_COM_PRM_GET_TIME_ON	= 0x11,
@@ -330,7 +358,7 @@ enum eGB_COM
 	GB_COM_GET_COM_PRM_KEEP = 0x36, // ! в Р400 это Uвых номинальное
 	GB_COM_GET_COM_PRD_KEEP	= 0x37,	// ! в Р400 это тип удаленного аппарата
 	GB_COM_GET_NET_ADR		= 0x38,
-	GB_COM_GET_TIME_RERUN	= 0x39,	// ! в Р400 это параметры ПВЗУ-Е
+	GB_COM_GET_TIME_RERUN	= 0x39,	// ! в Р400 это параметры для совместимостей
 	GB_COM_GET_FREQ			= 0x3A,
 	GB_COM_GET_DEVICE_NUM	= 0x3B,
 	GB_COM_GET_CF_THRESHOLD	= 0x3C,	// ! порог предупр. по КЧ и загрубления
@@ -352,6 +380,8 @@ enum eGB_COM
 	GB_COM_DEF_SET_OVERLAP	= 0x85,
 	GB_COM_DEF_SET_RZ_DEC	= 0x86,
 	GB_COM_SET_PRM_TYPE		= 0x87,	// ! в Р400 это снижение уровня АК
+	GB_COM_DEF_SET_FREQ_PRD = 0x88,
+	GB_COM_DEF_SET_RZ_THRESH= 0x89,	// ! в Р400 это частота ПРМ
 	GB_COM_DEF_SET_TYPE_AC	= 0x8A,
 	GB_COM_PRM_SET_TIME_ON	= 0x91,
 	GB_COM_PRM_SET_TIME_OFF	= 0x93,
@@ -407,23 +437,27 @@ enum eGB_COM_MASK
 /// Значения команд управления
 enum eGB_CONTROL
 {
-	GB_CONTROL_RESET_SELF 	= 1,
-	GB_CONTROL_RESET_UD_1	= 2,
-	GB_CONTROL_RESET_UD_2	= 3,
-	GB_CONTROL_PUSK_UD_1	= 4,
-	GB_CONTROL_PUSK_UD_2 	= 5,
-	GB_CONTROL_PUSK_UD_ALL	= 6,
-	GB_CONTROL_CALL			= 7,
-	GB_CONTROL_PUSK_ON		= 8,
-	GB_CONTROL_PUSK_OFF		= 9,
+	GB_CONTROL_RESET_SELF 	= 1,	//
+	GB_CONTROL_RESET_UD_1	= 2,	//
+	GB_CONTROL_PVZL_RESET_AC= 2,	//
+	GB_CONTROL_RESET_UD_2	= 3,	//
+	GB_CONTROL_PUSK_UD_1	= 4,	//
+	GB_CONTROL_PUSK_UD_2 	= 5,	//
+	GB_CONTROL_PVZL_PUSK_AC_UD= 5,	//
+	GB_CONTROL_PUSK_UD_ALL	= 6,	//
+	GB_CONTROL_PVZL_PUSK_PRD= 6,	//
+	GB_CONTROL_CALL			= 7,	//
+	GB_CONTROL_PUSK_ON		= 8,	//
+	GB_CONTROL_PUSK_OFF		= 9,	//
 	GB_CONTROL_MAX
+
 };
 
 /// События журнала передатчика/приемника - конец и начало команды
 enum eGB_STATE_COM
 {
-	GB_STATE_COM_MIN = 0,
-	GB_STATE_COM_END = 0,
+	GB_STATE_COM_MIN 		= 0,
+	GB_STATE_COM_END 		= 0,
 	GB_STATE_COM_START,
 	GB_STATE_COM_MAX
 };
@@ -431,21 +465,21 @@ enum eGB_STATE_COM
 /// сигналы в тест1 и тест2
 enum eGB_TEST_SIGNAL
 {
-	GB_SIGNAL_NO = 0,
-	GB_SIGNAL_CF,		// РЗСК
+	GB_SIGNAL_NO		 	= 0,
+	GB_SIGNAL_CF,					// РЗСК
 	GB_SIGNAL_CF1,
 	GB_SIGNAL_CF2,
 	GB_SIGNAL_CF3,
 	GB_SIGNAL_CF4,
-	GB_SIGNAL_CF_NO_RZ,	// РЗСК
-	GB_SIGNAL_CF_RZ,	// РЗСК
+	GB_SIGNAL_CF_NO_RZ,				// РЗСК
+	GB_SIGNAL_CF_RZ,				// РЗСК
 	GB_SIGNAL_RZ,
-	GB_SIGNAL_COM1_RZ,	// РЗСК
-	GB_SIGNAL_COM2_RZ,	// РЗСК
-	GB_SIGNAL_COM3_RZ,	// РЗСК
-	GB_SIGNAL_COM4_RZ,	// РЗСК
-	GB_SIGNAL_COM1,		// сигналы команд должны идти подряд для заполнения К400
-	GB_SIGNAL_COM2,
+	GB_SIGNAL_COM1_RZ,				// РЗСК
+	GB_SIGNAL_COM2_RZ,				// РЗСК
+	GB_SIGNAL_COM3_RZ,				// РЗСК
+	GB_SIGNAL_COM4_RZ,				// РЗСК
+	GB_SIGNAL_COM1,					// сигналы команд должны идти
+	GB_SIGNAL_COM2,					// подряд для заполнения К400
 	GB_SIGNAL_COM3,
 	GB_SIGNAL_COM4,
 	GB_SIGNAL_COM5,
@@ -862,6 +896,8 @@ public:
 		freq_ = GLB_FREQ_MIN_F;
 		uOutNom_ = GLB_U_OUT_NOM_MIN_F;
 		netAdr_ = GLB_NET_ADR_MIN_F;
+		compRefresh_ = true;
+		acInDec_ = GLB_AC_IN_DEC_MIN_F;
 	}
 
 	TDeviceStatus status;
@@ -908,20 +944,45 @@ public:
 	void setVersDsp(uint16_t versDsp) {  versDsp_ = versDsp; }
 	uint16_t getVersDsp() const { return versDsp_; }
 
-	bool setCompatibility(eGB_COMPATIBILITY compatibility)
+
+	// совместимость (тип удаленного аппарата)
+	// в Р400М только авант или ПВЗЛ
+	bool setCompatibility(eGB_COMPATIBILITY val)
 	{
 		bool stat = false;
-		if ( (compatibility >= GB_COMPATIBILITY_MIN) &&
-				(compatibility <= GB_COMPATIBILITY_MAX) )
-		{
-			compatibility_ = compatibility;
-			stat = true;
-		}
+//		if ( (compatibility >= GB_COMPATIBILITY_MIN) &&
+//				(compatibility <= GB_COMPATIBILITY_MAX) )
+//		{
+//			compatibility_ = compatibility;
+//			stat = true;
+//		}
+//		else
+//			compatibility_ = GB_COMPATIBILITY_MAX;
+		eGB_COMPATIBILITY tmp = compatibility_;
+		if (val == GB_COMPATIBILITY_AVANT)
+			compatibility_ = GB_COMPATIBILITY_AVANT;
+		else if (val == GB_COMPATIBILITY_PVZL_BSP)
+			compatibility_ = GB_COMPATIBILITY_PVZL_PI;
 		else
 			compatibility_ = GB_COMPATIBILITY_MAX;
+		// флаг наличия изменения совместимости
+		compRefresh_ = (tmp != compatibility_);
 		return stat;
 	}
 	eGB_COMPATIBILITY getCompatibility() const { return compatibility_; }
+	uint8_t sendCompatibility(uint8_t val) const
+	{
+		// преобразование значения для отправки в БСП
+		return (val == GB_COMPATIBILITY_PVZL_PI) ?
+				GB_COMPATIBILITY_PVZL_BSP : GB_COMPATIBILITY_AVANT;
+	}
+	bool isCompatibilityRefresh()
+	{
+		// возвращает true в случае если произошла смена совместимости
+		bool val = compRefresh_;
+		compRefresh_ = false;
+		return val;
+	}
 
 	// синхронизация часов
 	// True - включена, False - выключена
@@ -1077,6 +1138,20 @@ public:
 	}
 	uint8_t getFreq() const { return (freq_ * GLB_FREQ_FRACT); }
 
+	// снижение ответа АК (ПВЗЛ)
+	bool setAcInDec(uint8_t val)
+	{
+		bool stat = false;
+		val = (val / GLB_AC_IN_DEC_DISC_F) * GLB_AC_IN_DEC_DISC_F;
+		if ( (val >= GLB_AC_IN_DEC_MIN_F) && (val <= GLB_AC_IN_DEC_MAX_F) )
+		{
+			acInDec_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getAcInDec() const { return (acInDec_ * GLB_AC_IN_DEC_FRACT); }
+
 private:
 	// кол-во аппаратов в линии 2 или 3
 	eGB_NUM_DEVICES numDevices_;
@@ -1092,6 +1167,9 @@ private:
 
 	// совместимость
 	eGB_COMPATIBILITY compatibility_;
+
+	// флаг смены совместимости
+	bool compRefresh_;
 
 	// синхронизация часов
 	bool timeSinchr_;
@@ -1125,6 +1203,9 @@ private:
 
 	// Частота
 	uint16_t  freq_;
+
+	// Снижение ответа АК (ПВЗЛ)
+	uint8_t acInDec_;
 };
 
 
@@ -1147,6 +1228,8 @@ public:
 		maxNumJrnEntry_ = 0;
 		acDec_ = false;
 		overflow_ = false;
+		freqPrm_ = GB_PVZL_FREQ_MAX;
+		freqPrd_ = GB_PVZL_FREQ_MAX;
 	}
 
 	TDeviceStatus status;
@@ -1292,6 +1375,35 @@ public:
 	}
 	bool getAcDec() const { return acDec_; }
 
+	// частота ПРМ (ПВЗЛ)
+	// True - включена, False - выключена
+	bool setFreqPrm(eGB_PVZL_FREQ val)
+	{
+		bool stat = false;
+		if ( (val >= GB_PVZL_FREQ_MIN) && (val <= GB_PVZL_FREQ_MAX))
+		{
+			freqPrm_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getFreqPrm() const { return freqPrm_; }
+
+	// частота ПРД (ПВЗЛ)
+	// True - включена, False - выключена
+	bool setFreqPrd(eGB_PVZL_FREQ val)
+	{
+		bool stat = false;
+		if ( (val >= GB_PVZL_FREQ_MIN) && (val <= GB_PVZL_FREQ_MAX))
+		{
+			freqPrd_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	uint8_t getFreqPrd() const { return freqPrd_; }
+
+
 	// количество записей в журнале
 	// количество записей в журнале
 	bool setNumJrnEntry(uint16_t val)
@@ -1362,6 +1474,12 @@ private:
 
 	// флаг переполнения журнала
 	bool overflow_;
+
+	// частота ПРМ (ПВЗЛ)
+	eGB_PVZL_FREQ freqPrm_;
+
+	// частота ПРД (ПВЗЛ)
+	eGB_PVZL_FREQ freqPrd_;
 };
 
 

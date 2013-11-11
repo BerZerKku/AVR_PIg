@@ -98,11 +98,21 @@ static
 const char fcCompatibility[GB_COMPATIBILITY_MAX + 1] [STRING_LENGHT] PROGMEM =
 {
  	 	 "АВАНТ Р400",
- 	 	 "ПВЗ-90",
- 	 	 "АВЗК-80",
- 	 	 "ПВЗУ-Е",
+// 	 	 "ПВЗ-90",
+// 	 	 "АВЗК-80",
+// 	 	 "ПВЗУ-Е",
  	 	 "ПВЗЛ",
  	 	 "ошибка"
+};
+
+static const char fcPvzlFreq[GB_PVZL_FREQ_MAX + 1] [STRING_LENGHT] PROGMEM =
+{
+ 	 "-500Гц",
+ 	 "-250Гц",
+ 	 "0Гц",
+ 	 "+250Гц",
+ 	 "+500Гц",
+ 	 "ошибка"
 };
 
 // состояния устройств
