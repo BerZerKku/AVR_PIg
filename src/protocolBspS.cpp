@@ -95,10 +95,14 @@ bool clProtocolBspS::getData()
 				// 1 байт - тип АК
 				// 2-5 - время до АК
 				stat = sParam_->def.setTypeAC((eGB_TYPE_AC) buf[B1]);
-				eGB_COMPATIBILITY comp = sParam_->glb.getCompatibility();
-				uint8_t number = sParam_->glb.getDeviceNum();
-				stat |= sParam_->def.setTimeToAC((uint64_t *) &buf[B2],
-						comp, number);
+				uint32_t t = buf[B2];
+				t <<= 8;
+				t += buf[B3];
+				t <<= 8;
+				t += buf[B4];
+				t <<= 8;
+				t += buf[B5];
+				stat |= sParam_->def.setTimeToAC(t);
 			}
 			else if (com == GB_COM_DEF_GET_JRN_CNT)
 			{

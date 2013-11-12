@@ -859,7 +859,7 @@ void clMenu::lvlStart()
 			sParam.txComBuf.addCom(GB_COM_GET_MEAS);
 
 		// в Р400 нужна информация по совместимости и типу АК
-		if (sParam.typeDevice == AVANT_R400)
+		if (sParam.typeDevice == AVANT_R400_MSK)
 		{
 			sParam.txComBuf.addCom(GB_COM_DEF_GET_TYPE_AC);
 		}
@@ -874,6 +874,19 @@ void clMenu::lvlStart()
 	{
 		printDevicesStatus(poz, &sParam.def.status);
 		poz += 20;
+
+		if (sParam.typeDevice == AVANT_R400_MSK)
+		{
+			uint16_t time = sParam.def.getTimeToAC();
+			uint8_t ac = static_cast<uint8_t> (sParam.def.getTypeAC());
+			uint8_t t = poz + 20;
+			t += snprintf_P(&vLCDbuf[t], 11, fcAcType[ac], time/60, time%60);
+			uint8_t hour = time / 3600;
+			uint8_t min = (time % 3600) / 60;
+			uint8_t sec = time % 60;
+			snprintf_P(&vLCDbuf[t + 1], 11, fcTimeToAc, hour, min, sec);
+			poz += 20;
+		}
 	}
 	if (sParam.prm.status.isEnable())
 	{

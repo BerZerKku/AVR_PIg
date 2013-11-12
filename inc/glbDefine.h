@@ -343,7 +343,7 @@ enum eGB_COM
 	GB_COM_DEF_GET_PRM_TYPE = 0x07,	// ! в Р400 это снижение уровня АК
 	GB_COM_DEF_GET_FREQ_PRD = 0x08,
 	GB_COM_DEF_GET_RZ_THRESH= 0x09,	// ! в Р400 это частота ПРМ
-	GB_COM_DEF_GET_TYPE_AC 	= 0x0A,	// !!! Р400 частично
+	GB_COM_DEF_GET_TYPE_AC 	= 0x0A,	//
 	GB_COM_PRM_GET_TIME_ON	= 0x11,
 	GB_COM_PRM_GET_TIME_OFF = 0x13,
 	GB_COM_PRM_GET_BLOCK_COM= 0x14,
@@ -1366,28 +1366,16 @@ public:
 	eGB_TYPE_AC getTypeAC() const { return typeAc_; }
 
 	// время до автоконтроля
-	bool setTimeToAC(uint64_t* val, eGB_COMPATIBILITY comp, uint8_t number)
+	bool setTimeToAC(uint32_t val)
 	{
-		bool stat = true;
+		bool stat = false;
 
-		if (comp == GB_COMPATIBILITY_AVANT)
+		val /= 1000;
+
+		if (val <= 60000)
 		{
-			if (number == 1)
-			{
-
-			}
-			else if (number == 2)
-			{
-
-			}
-			else if (number == 3)
-			{
-
-			}
-		}
-		else if (comp == GB_COMPATIBILITY_PVZL_PI)
-		{
-			timeToAc_ = *val / 1000;
+			timeToAc_ = val;
+			stat = true;
 		}
 
 		return stat;
@@ -1497,8 +1485,8 @@ private:
 	// тип автоконтроля
 	eGB_TYPE_AC typeAc_;
 
-	// время до автоконтроля
-	uint64_t timeToAc_;
+	// время до автоконтроля в секундах
+	uint16_t timeToAc_;
 
 	// снижение уровня АК
 	bool acDec_;
