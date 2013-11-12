@@ -955,6 +955,11 @@ void clMenu::lvlStart()
 				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
 				break;
 
+			case KEY_FUNC_REG_AC:
+				sParam.txComBuf.setInt8(GB_CONTROL_REG_AC);
+				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				break;
+
 			default:
 				break;
 		}
