@@ -104,7 +104,7 @@ clMenu::clMenu()
 void clMenu::main(void)
 {
 	// Счетчик времени до переинициализации ЖКИ
-	static uint8_t reInit = false;
+	static uint8_t reInit = TIME_TO_INIT_LCD;
 
 	blink_ = ((reInit % 8) < 4) ? false : true;
 

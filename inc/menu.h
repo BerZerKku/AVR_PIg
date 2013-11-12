@@ -11,6 +11,8 @@
 #include "keyboard.h"
 #include "glbDefine.h"
 
+/// время до первой инициализации дисплея
+#define TIME_TO_INIT_LCD 3
 /// время до переинициализации дисплея (* время цикла ЖКИ)
 #define TIME_TO_REINIT_LCD 50
 
