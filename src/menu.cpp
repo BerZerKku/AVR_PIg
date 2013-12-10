@@ -12,7 +12,7 @@
 #include "../inc/flash.h"
 
 /// режим подсветки по умолчанию
-#define LED_REGIME LED_ON
+#define LED_REGIME LED_SWITCH
 
 /// буфер текста выводимого на ЖКИ
 static char vLCDbuf[SIZE_BUF_STRING + 1];
@@ -93,8 +93,13 @@ clMenu::clMenu()
 	sParam.prm.status.name = fcDeviceName01;
 	sParam.prd.status.name = fcDeviceName02;
 
-	// включение постоянной подсветки
+#ifdef DEBUG
+	// в режиме отладки включена постоянная подсветка
+	vLCDsetLED(LED_ON);
+#else
+	// установка режима работы подсветки
 	vLCDsetLED(LED_REGIME);
+#endif
 }
 
 /**	Работа с текущим уровнем меню
