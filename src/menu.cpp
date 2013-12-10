@@ -1154,7 +1154,7 @@ void clMenu::lvlJournal()
 {
 	static char title[] PROGMEM = "Меню\\Журнал";
 	static char punkt1[] PROGMEM = "%d. События";
-	static char punkt2[] PROGMEM = "%d. Защта";
+	static char punkt2[] PROGMEM = "%d. Защита";
 	static char punkt3[] PROGMEM = "%d. Приемник";
 	static char punkt4[] PROGMEM = "%d. Передатчик";
 

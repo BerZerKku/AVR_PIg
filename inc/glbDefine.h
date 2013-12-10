@@ -1228,6 +1228,7 @@ public:
 		rzDec_ = DEF_RZ_DEC_MIN_F;
 		prmType_ = DEF_PRM_TYPE_MIN;
 		typeAc_ = GB_TYPE_AC_AUTO_FAST;
+		timeToAc_ = 0;
 		numJrnEntry_ = 0;
 		maxNumJrnEntry_ = 0;
 		acDec_ = false;
