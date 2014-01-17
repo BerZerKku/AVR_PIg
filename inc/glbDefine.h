@@ -26,7 +26,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0100
+#define VERS 0x0101
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -1140,7 +1140,7 @@ public:
 		}
 		return stat;
 	}
-	uint8_t getFreq() const { return (freq_ * GLB_FREQ_FRACT); }
+	uint16_t getFreq() const { return (freq_ * GLB_FREQ_FRACT); }
 
 	// снижение ответа АК (ПВЗЛ)
 	bool setAcInDec(uint8_t val)
