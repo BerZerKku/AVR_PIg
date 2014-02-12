@@ -40,6 +40,12 @@
 /// максимально возможное кол-во состояний устройств
 #define MAX_NUM_DEVICE_STATE 12
 
+/// максимальное кол-во неисправностей для любого устройства
+#define MAX_NUM_FAULTS 16
+
+/// максимальное кол-во предупреждений для любого устройства
+#define MAX_NUM_WARNINGS 16
+
 /// максимальное кол-во команд в буфере (не считая 3-х основных)
 #define MAX_NUM_COM_BUF 15
 
@@ -225,9 +231,12 @@ enum eGB_TYPE_DEVICE
 	AVANT_R400 				= 1,
 	AVANT_R400_MSK,
 	AVANT_RZSK,
-	AVANT_RZSK_OPTIC,
+	AVANT_OPTIC,			// TODO см.ниже
 	AVANT_K400,
-	AVANT_K400_OPTIC
+
+	// TODO AVANT_OPTIC - у Женьки программа одна, так что можно не делить
+	// подстравиваться только под наличие команд (и их кол-ва) и защиты.
+	// на данный момент сделаны только неисправности/предупреждения
 };
 
 /// Устройство
@@ -263,18 +272,12 @@ enum eGB_NUM_DEVICES
 /// Совместимость
 enum eGB_COMPATIBILITY
 {
-//	GB_COMPATIBILITY_MIN = 0,
-//	GB_COMPATIBILITY_AVANT	= 0,
-//	GB_COMPATIBILITY_PVZ90 	= 1,
-//	GB_COMPATIBILITY_AVZK80 = 2,
-//	GB_COMPATIBILITY_PVZUE 	= 3,
-//	GB_COMPATIBILITY_PVZL	= 4,
-//	GB_COMPATIBILITY_MAX
-//
-	GB_COMPATIBILITY_MIN 	= 0,
-	GB_COMPATIBILITY_AVANT 	= 0,
-	GB_COMPATIBILITY_PVZL_BSP = 4,	// !! отправка/получение в(ИЗ) БСП
-	GB_COMPATIBILITY_PVZL_PI= 1,	// !! порядковый номер в ПИ
+	GB_COMPATIBILITY_MIN = 0,
+	GB_COMPATIBILITY_AVANT	= 0,
+	GB_COMPATIBILITY_PVZ90 	= 1,
+	GB_COMPATIBILITY_AVZK80 = 2,
+	GB_COMPATIBILITY_PVZUE 	= 3,
+	GB_COMPATIBILITY_PVZL	= 4,
 	GB_COMPATIBILITY_MAX
 };
 
@@ -827,8 +830,8 @@ public:
 	bool isEnable()	const { return enable_; }
 
 	// массивы расшифровок аварий и предупреждений
-	PGM_P faultText[16];
-	PGM_P warningText[8];
+	PGM_P faultText[MAX_NUM_FAULTS];
+	PGM_P warningText[MAX_NUM_WARNINGS];
 	PGM_P stateText[MAX_NUM_DEVICE_STATE + 1];
 	PGM_P name;
 
@@ -954,19 +957,10 @@ public:
 	bool setCompatibility(eGB_COMPATIBILITY val)
 	{
 		bool stat = false;
-//		if ( (compatibility >= GB_COMPATIBILITY_MIN) &&
-//				(compatibility <= GB_COMPATIBILITY_MAX) )
-//		{
-//			compatibility_ = compatibility;
-//			stat = true;
-//		}
-//		else
-//			compatibility_ = GB_COMPATIBILITY_MAX;
+
 		eGB_COMPATIBILITY tmp = compatibility_;
-		if (val == GB_COMPATIBILITY_AVANT)
-			compatibility_ = GB_COMPATIBILITY_AVANT;
-		else if (val == GB_COMPATIBILITY_PVZL_BSP)
-			compatibility_ = GB_COMPATIBILITY_PVZL_PI;
+		if ( (val >= GB_COMPATIBILITY_MIN) && (val <= GB_COMPATIBILITY_MAX) )
+			compatibility_ = val;
 		else
 			compatibility_ = GB_COMPATIBILITY_MAX;
 		// флаг наличия изменения совместимости
@@ -974,12 +968,7 @@ public:
 		return stat;
 	}
 	eGB_COMPATIBILITY getCompatibility() const { return compatibility_; }
-	uint8_t sendCompatibility(uint8_t val) const
-	{
-		// преобразование значения для отправки в БСП
-		return (val == GB_COMPATIBILITY_PVZL_PI) ?
-				GB_COMPATIBILITY_PVZL_BSP : GB_COMPATIBILITY_AVANT;
-	}
+	uint8_t sendCompatibility(uint8_t val) const { return compatibility_; }
 	bool isCompatibilityRefresh()
 	{
 		// возвращает true в случае если произошла смена совместимости

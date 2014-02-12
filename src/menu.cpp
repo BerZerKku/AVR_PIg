@@ -202,9 +202,7 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			if ((sParam.prm.status.isEnable())
 					|| (sParam.prd.status.isEnable()))
 			{
-				if (sParam.glb.getTypeLine() == GB_TYPE_LINE_OPTIC)
-					device = AVANT_RZSK_OPTIC;
-				else if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
+				if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
 					device = AVANT_RZSK;
 			}
 			else
@@ -221,9 +219,7 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			if ((sParam.prd.status.isEnable())
 					|| (sParam.prm.status.isEnable()))
 			{
-				if (sParam.glb.getTypeLine() == GB_TYPE_LINE_OPTIC)
-					device = AVANT_K400_OPTIC;
-				else if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
+				if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
 					device = AVANT_K400;
 			}
 		}
@@ -242,6 +238,26 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 
 	if (!status)
 	{
+		// предварительная "очистка" массивов неисправностей
+		for(uint_fast8_t i = 0; i < MAX_NUM_FAULTS; i++)
+			sParam.glb.status.faultText[i] = fcUnknownFault;
+		for(uint_fast8_t i = 0; i < MAX_NUM_FAULTS; i++)
+			sParam.def.status.faultText[i] = fcUnknownFault;
+		for(uint_fast8_t i = 0; i < MAX_NUM_FAULTS; i++)
+			sParam.prm.status.faultText[i] = fcUnknownFault;
+		for(uint_fast8_t i = 0; i < MAX_NUM_FAULTS; i++)
+			sParam.prd.status.faultText[i] = fcUnknownFault;
+
+		// предварительная "очистка" массивов предупреждений
+		for(uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
+			sParam.glb.status.warningText[i] = fcUnknownWarning;
+		for(uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
+			sParam.def.status.warningText[i] = fcUnknownWarning;
+		for(uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
+			sParam.prm.status.warningText[i] = fcUnknownWarning;
+		for(uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
+			sParam.prd.status.warningText[i] = fcUnknownWarning;
+
 		if (device == AVANT_K400)
 		{
 			sParam.typeDevice = device;
@@ -253,93 +269,55 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			measParam[4] = MENU_MEAS_PARAM_UN;
 			measParam[5] = MENU_MEAS_PARAM_UC;
 
-			// заполнение массива общих неисправностей и предупреждений
+			// заполнение массива общих неисправностей
 			sParam.glb.status.faultText[0] = fcGlbFault0001;
 			sParam.glb.status.faultText[1] = fcGlbFault0002;
 			sParam.glb.status.faultText[2] = fcGlbFault0004;
 			sParam.glb.status.faultText[3] = fcGlbFault0008;
 			sParam.glb.status.faultText[4] = fcGlbFault0010;
-			sParam.glb.status.faultText[5] = fcGlbFault0020rzsk;
-			sParam.glb.status.faultText[6] = fcGlbFault0040;
-			sParam.glb.status.faultText[7] = fcGlbFault0080;
+			// 5-7 нет
 			sParam.glb.status.faultText[8] = fcGlbFault0100;
 			sParam.glb.status.faultText[9] = fcGlbFault0200;
-			sParam.glb.status.faultText[10] = fcGlbFault0400rzsk;
+			// 10 нет
 			sParam.glb.status.faultText[11] = fcGlbFault0800;
 			sParam.glb.status.faultText[12] = fcGlbFault1000;
-			sParam.glb.status.faultText[13] = fcGlbFault2000;
-			sParam.glb.status.faultText[14] = fcGlbFault4000;
-			sParam.glb.status.faultText[15] = fcUnknownFault;
-
+			// 13-15 нет
+			// заполнение массива общих предупреждений
 			sParam.glb.status.warningText[0] = fcGlbWarning01;
-			sParam.glb.status.warningText[1] = fcGlbWarning02;
-			sParam.glb.status.warningText[2] = fcUnknownWarning;
-			sParam.glb.status.warningText[3] = fcUnknownWarning;
-			sParam.glb.status.warningText[4] = fcUnknownWarning;
-			sParam.glb.status.warningText[5] = fcGlbWarning20;
-			sParam.glb.status.warningText[6] = fcGlbWarning40;
-			sParam.glb.status.warningText[7] = fcUnknownWarning;
+			// 1-15 нет
 
-			// отключение защиты
+			// отключение ЗАЩИТЫ
 			sParam.def.status.setEnable(false);
 
-			// включение приемника
-			// и заполнение массивов неисправностей и предупреждений
+			// включение ПРИЕМНИКА
 			sParam.prm.status.setEnable(true);
+			// заполнение массива неисправностей приемника
 			sParam.prm.status.faultText[0] = fcPrmFault0001rzsk;
 			sParam.prm.status.faultText[1] = fcPrmFault0002rzsk;
 			sParam.prm.status.faultText[2] = fcPrmFault0004rzsk;
-			sParam.prm.status.faultText[3] = fcPrmFault0008rzsk;
-			sParam.prm.status.faultText[4] = fcUnknownFault;
-			sParam.prm.status.faultText[5] = fcUnknownFault;
-			sParam.prm.status.faultText[6] = fcUnknownFault;
-			sParam.prm.status.faultText[7] = fcUnknownFault;
+			// 3-7 нет
 			sParam.prm.status.faultText[8] = fcPrmFault0100rzsk;
 			sParam.prm.status.faultText[9] = fcPrmFault0200rzsk;
 			sParam.prm.status.faultText[10] = fcPrmFault0400rzsk;
 			sParam.prm.status.faultText[11] = fcPrmFault0800rzsk;
-			sParam.prm.status.faultText[12] = fcPrmFault1000rzsk;
-			sParam.prm.status.faultText[13] = fcUnknownFault;
-			sParam.prm.status.faultText[14] = fcUnknownFault;
-			sParam.prm.status.faultText[15] = fcPrmFault8000rzsk;
-
+			// 12-15 нет
+			// заполнение массива предупреждений приемника
 			sParam.prm.status.warningText[0] = fcPrmWarning01rzsk;
-			sParam.prm.status.warningText[1] = fcUnknownWarning;
-			sParam.prm.status.warningText[2] = fcUnknownWarning;
-			sParam.prm.status.warningText[3] = fcUnknownWarning;
-			sParam.prm.status.warningText[4] = fcUnknownWarning;
-			sParam.prm.status.warningText[5] = fcUnknownWarning;
-			sParam.prm.status.warningText[6] = fcUnknownWarning;
-			sParam.prm.status.warningText[7] = fcUnknownWarning;
+			// 1-15 нет
 
-			// включение передатчика
-			// и заполнение массивов неисправностей и предупреждений
+			// включение ПЕРЕДАТЧИКА
+			// заполнение массива неисправностей передатчика
 			sParam.prd.status.setEnable(true);
 			sParam.prd.status.faultText[0] = fcPrdFault0001rzsk;
 			sParam.prd.status.faultText[1] = fcPrdFault0002rzsk;
-			sParam.prd.status.faultText[2] = fcUnknownFault;
-			sParam.prd.status.faultText[3] = fcUnknownFault;
-			sParam.prd.status.faultText[4] = fcUnknownFault;
-			sParam.prd.status.faultText[5] = fcUnknownFault;
-			sParam.prd.status.faultText[6] = fcUnknownFault;
-			sParam.prd.status.faultText[7] = fcUnknownFault;
+			// 2-7 нет
 			sParam.prd.status.faultText[8] = fcPrdFault0100rzsk;
 			sParam.prd.status.faultText[9] = fcPrdFault0200rzsk;
 			sParam.prd.status.faultText[10] = fcPrdFault0400rzsk;
 			sParam.prd.status.faultText[11] = fcPrdFault0800rzsk;
-			sParam.prd.status.faultText[12] = fcUnknownFault;
-			sParam.prd.status.faultText[13] = fcUnknownFault;
-			sParam.prd.status.faultText[14] = fcUnknownFault;
-			sParam.prd.status.faultText[15] = fcUnknownFault;
-
-			sParam.prd.status.warningText[0] = fcUnknownWarning;
-			sParam.prd.status.warningText[1] = fcUnknownWarning;
-			sParam.prd.status.warningText[2] = fcUnknownWarning;
-			sParam.prd.status.warningText[3] = fcUnknownWarning;
-			sParam.prd.status.warningText[4] = fcUnknownWarning;
-			sParam.prd.status.warningText[5] = fcUnknownWarning;
-			sParam.prd.status.warningText[6] = fcUnknownWarning;
-			sParam.prd.status.warningText[7] = fcUnknownWarning;
+			// 12-15 нет
+			// заполнение массива предупреждений передатчика
+			// 0-15 нет
 
 			sParam.test.clear();
 			sParam.test.addSignalToList(GB_SIGNAL_CF1);
@@ -365,119 +343,73 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			measParam[4] = MENU_MEAS_PARAM_UZ;
 			measParam[5] = MENU_MEAS_PARAM_UC;
 
-			// включение защиты
-			// и заполнение массивов неисправностей и предупреждений
-			sParam.def.status.setEnable(true);
-			sParam.def.status.faultText[0] = fcDefFault0001;
-			sParam.def.status.faultText[1] = fcDefFault0002;
-			sParam.def.status.faultText[2] = fcDefFault0004;
-			sParam.def.status.faultText[3] = fcDefFault0008;
-			sParam.def.status.faultText[4] = fcUnknownFault;
-			sParam.def.status.faultText[5] = fcUnknownFault;
-			sParam.def.status.faultText[6] = fcUnknownFault;
-			sParam.def.status.faultText[7] = fcUnknownFault;
-			sParam.def.status.faultText[8] = fcDefFault0100;
-			sParam.def.status.faultText[9] = fcDefFault0200;
-			sParam.def.status.faultText[10] = fcUnknownFault;
-			sParam.def.status.faultText[11] = fcDefFault0800;
-			sParam.def.status.faultText[12] = fcUnknownFault;
-			sParam.def.status.faultText[13] = fcDefFault2000;
-			sParam.def.status.faultText[14] = fcDefFault4000;
-			sParam.def.status.faultText[15] = fcUnknownFault;
-
-			sParam.def.status.warningText[0] = fcDefWarning01rzsk;
-			sParam.def.status.warningText[1] = fcDefWarning02;
-			sParam.def.status.warningText[2] = fcUnknownWarning;
-			sParam.def.status.warningText[3] = fcUnknownWarning;
-			sParam.def.status.warningText[4] = fcUnknownWarning;
-			sParam.def.status.warningText[5] = fcUnknownWarning;
-			sParam.def.status.warningText[6] = fcUnknownWarning;
-			sParam.def.status.warningText[7] = fcUnknownWarning;
-
-			// заполнение массива общих неисправностей и предупреждений
+			// заполнение массива общих неисправностей
 			sParam.glb.status.faultText[0] = fcGlbFault0001;
 			sParam.glb.status.faultText[1] = fcGlbFault0002;
 			sParam.glb.status.faultText[2] = fcGlbFault0004;
 			sParam.glb.status.faultText[3] = fcGlbFault0008;
 			sParam.glb.status.faultText[4] = fcGlbFault0010;
-			sParam.glb.status.faultText[5] = fcUnknownFault;
-			sParam.glb.status.faultText[6] = fcUnknownFault;
-			sParam.glb.status.faultText[7] = fcUnknownFault;
+			// 5-7 нет
 			sParam.glb.status.faultText[8] = fcGlbFault0100;
 			sParam.glb.status.faultText[9] = fcGlbFault0200;
-			sParam.glb.status.faultText[10] = fcGlbFault0400rzsk;
+			// 10 нет
 			sParam.glb.status.faultText[11] = fcGlbFault0800;
 			sParam.glb.status.faultText[12] = fcGlbFault1000;
-			sParam.glb.status.faultText[13] = fcUnknownFault;
-			sParam.glb.status.faultText[14] = fcUnknownFault;
-			sParam.glb.status.faultText[15] = fcUnknownFault;
+			// 13-15 нет
+			// заполнение массива общих предупреждений
+			// 1-9 нет
+			sParam.glb.status.warningText[10] = fcGlbWarning01;
+			// 11-15 нет
 
-			sParam.glb.status.warningText[0] = fcGlbWarning01;
-			sParam.glb.status.warningText[1] = fcUnknownWarning;
-			sParam.glb.status.warningText[2] = fcUnknownWarning;
-			sParam.glb.status.warningText[3] = fcUnknownWarning;
-			sParam.glb.status.warningText[4] = fcUnknownWarning;
-			sParam.glb.status.warningText[5] = fcUnknownWarning;
-			sParam.glb.status.warningText[6] = fcUnknownWarning;
-			sParam.glb.status.warningText[7] = fcUnknownWarning;
+			// включение ЗАЩИТЫ
+			sParam.def.status.setEnable(true);
+			// заполнение массива неисправностей защиты
+			sParam.def.status.faultText[0] = fcDefFault0001;
+			sParam.def.status.faultText[1] = fcDefFault0002;
+			sParam.def.status.faultText[2] = fcDefFault0004;
+			// 3-7 нет
+			sParam.def.status.faultText[8] = fcDefFault0100;
+			sParam.def.status.faultText[9] = fcDefFault0200;
+			// 10 нет
+			sParam.def.status.faultText[11] = fcDefFault0800;
+			// 12 нет
+			sParam.def.status.faultText[13] = fcDefFault2000;
+			sParam.def.status.faultText[14] = fcDefFault4000rzsk;
+			// 15 нет
+			// заполнение массива предупреждений защиты
+			sParam.def.status.warningText[0] = fcDefWarning01rzsk;
+			sParam.def.status.warningText[1] = fcDefWarning02;
+			// 2-15 нет
 
-			// включение приемника
-			// и заполнение массивов неисправностей и предупреждений
+			// включение ПРИЕМНИКА
 			sParam.prm.status.setEnable(true);
+			// заполнение массива неисправностей защиты
 			sParam.prm.status.faultText[0] = fcPrmFault0001rzsk;
 			sParam.prm.status.faultText[1] = fcPrmFault0002rzsk;
 			sParam.prm.status.faultText[2] = fcPrmFault0004rzsk;
-			sParam.prm.status.faultText[3] = fcPrmFault0008rzsk;
-			sParam.prm.status.faultText[4] = fcUnknownFault;
-			sParam.prm.status.faultText[5] = fcUnknownFault;
-			sParam.prm.status.faultText[6] = fcUnknownFault;
-			sParam.prm.status.faultText[7] = fcUnknownFault;
+			// 3-7 нет
 			sParam.prm.status.faultText[8] = fcPrmFault0100rzsk;
 			sParam.prm.status.faultText[9] = fcPrmFault0200rzsk;
 			sParam.prm.status.faultText[10] = fcPrmFault0400rzsk;
 			sParam.prm.status.faultText[11] = fcPrmFault0800rzsk;
-			sParam.prm.status.faultText[12] = fcPrmFault1000rzsk;
-			sParam.prm.status.faultText[13] = fcUnknownFault;
-			sParam.prm.status.faultText[14] = fcUnknownFault;
-			sParam.prm.status.faultText[15] = fcPrmFault8000rzsk;
-
+			// 12-15 нет
+			// заполнение массива предупреждений защиты
 			sParam.prm.status.warningText[0] = fcPrmWarning01rzsk;
-			sParam.prm.status.warningText[1] = fcUnknownWarning;
-			sParam.prm.status.warningText[2] = fcUnknownWarning;
-			sParam.prm.status.warningText[3] = fcUnknownWarning;
-			sParam.prm.status.warningText[4] = fcUnknownWarning;
-			sParam.prm.status.warningText[5] = fcUnknownWarning;
-			sParam.prm.status.warningText[6] = fcUnknownWarning;
-			sParam.prm.status.warningText[7] = fcUnknownWarning;
+			// 1-15 нет
 
-			// включение передатчика
-			// и заполнение массивов неисправностей и предупреждений
+			// включение ПЕРЕДАТЧИКА
 			sParam.prd.status.setEnable(true);
+			// заполнение массива неисправностей передатчика
 			sParam.prd.status.faultText[0] = fcPrdFault0001rzsk;
 			sParam.prd.status.faultText[1] = fcPrdFault0002rzsk;
-			sParam.prd.status.faultText[2] = fcUnknownFault;
-			sParam.prd.status.faultText[3] = fcUnknownFault;
-			sParam.prd.status.faultText[4] = fcUnknownFault;
-			sParam.prd.status.faultText[5] = fcUnknownFault;
-			sParam.prd.status.faultText[6] = fcUnknownFault;
-			sParam.prd.status.faultText[7] = fcUnknownFault;
+			// 2-7 нет
 			sParam.prd.status.faultText[8] = fcPrdFault0100rzsk;
 			sParam.prd.status.faultText[9] = fcPrdFault0200rzsk;
 			sParam.prd.status.faultText[10] = fcPrdFault0400rzsk;
 			sParam.prd.status.faultText[11] = fcPrdFault0800rzsk;
-			sParam.prd.status.faultText[12] = fcUnknownFault;
-			sParam.prd.status.faultText[13] = fcUnknownFault;
-			sParam.prd.status.faultText[14] = fcUnknownFault;
-			sParam.prd.status.faultText[15] = fcUnknownFault;
-
-			sParam.prd.status.warningText[0] = fcUnknownWarning;
-			sParam.prd.status.warningText[1] = fcUnknownWarning;
-			sParam.prd.status.warningText[2] = fcUnknownWarning;
-			sParam.prd.status.warningText[3] = fcUnknownWarning;
-			sParam.prd.status.warningText[4] = fcUnknownWarning;
-			sParam.prd.status.warningText[5] = fcUnknownWarning;
-			sParam.prd.status.warningText[6] = fcUnknownWarning;
-			sParam.prd.status.warningText[7] = fcUnknownWarning;
+			// 12-15 нет
+			// заполнение массива предупреждений передатчика
+			// 0-15 нет
 
 			sParam.test.clear();
 			sParam.test.addSignalToList(GB_SIGNAL_CF);
@@ -498,9 +430,6 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 		{
 			sParam.typeDevice = device;
 
-			sParam.prm.status.setEnable(false);
-			sParam.prd.status.setEnable(false);
-
 			measParam[0] = MENU_MEAS_PARAM_TIME;
 			measParam[1] = MENU_MEAS_PARAM_DATE;
 			measParam[2] = MENU_MEAS_PARAM_UOUT;
@@ -508,37 +437,7 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			measParam[4] = MENU_MEAS_PARAM_UZ;
 			measParam[5] = MENU_MEAS_PARAM_UC;
 
-			// включение защиты
-			// и заполнение массивов неисправностей и предупреждений
-			sParam.def.status.setEnable(true);
-
-			sParam.def.status.faultText[0] = fcDefFault0001;
-			sParam.def.status.faultText[1] = fcDefFault0002;
-			sParam.def.status.faultText[2] = fcDefFault0004;
-			sParam.def.status.faultText[3] = fcDefFault0008;
-			sParam.def.status.faultText[4] = fcDefFault0010;
-			sParam.def.status.faultText[5] = fcDefFault0020;
-			sParam.def.status.faultText[6] = fcDefFault0040;
-			sParam.def.status.faultText[7] = fcDefFault0080;
-			sParam.def.status.faultText[8] = fcDefFault0100;
-			sParam.def.status.faultText[9] = fcDefFault0200;
-			sParam.def.status.faultText[10] = fcDefFault0400;
-			sParam.def.status.faultText[11] = fcDefFault0800;
-			sParam.def.status.faultText[12] = fcDefFault1000;
-			sParam.def.status.faultText[13] = fcDefFault2000;
-			sParam.def.status.faultText[14] = fcDefFault4000;
-			sParam.def.status.faultText[15] = fcDefFault8000;
-
-			sParam.def.status.warningText[0] = fcDefWarning01;
-			sParam.def.status.warningText[1] = fcDefWarning02;
-			sParam.def.status.warningText[2] = fcDefWarning04;
-			sParam.def.status.warningText[3] = fcDefWarning08;
-			sParam.def.status.warningText[4] = fcUnknownWarning;
-			sParam.def.status.warningText[5] = fcUnknownWarning;
-			sParam.def.status.warningText[6] = fcUnknownWarning;
-			sParam.def.status.warningText[7] = fcUnknownWarning;
-
-			// заполнение массива общих неисправностей и предупреждений
+			// заполнение массива общих неисправностей
 			sParam.glb.status.faultText[0] = fcGlbFault0001;
 			sParam.glb.status.faultText[1] = fcGlbFault0002;
 			sParam.glb.status.faultText[2] = fcGlbFault0004;
@@ -554,18 +453,134 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 			sParam.glb.status.faultText[12] = fcGlbFault1000;
 			sParam.glb.status.faultText[13] = fcGlbFault2000;
 			sParam.glb.status.faultText[14] = fcGlbFault4000;
-			sParam.glb.status.faultText[15] = fcUnknownFault;
-
+			// 15 нет
+			// заполнение массива общих предупреждений
 			sParam.glb.status.warningText[0] = fcGlbWarning01;
-			sParam.glb.status.warningText[1] = fcUnknownWarning;
-			sParam.glb.status.warningText[2] = fcUnknownWarning;
-			sParam.glb.status.warningText[3] = fcUnknownWarning;
-			sParam.glb.status.warningText[4] = fcGlbWarning10;
-			sParam.glb.status.warningText[5] = fcUnknownWarning;
-			sParam.glb.status.warningText[6] = fcUnknownWarning;
-			sParam.glb.status.warningText[7] = fcUnknownWarning;
+			// 1-15 - нет
+
+			// включение ЗАЩИТЫ
+			sParam.def.status.setEnable(true);
+			// заполнение массива неисправностей защиты
+			sParam.def.status.faultText[0] = fcDefFault0001;
+			sParam.def.status.faultText[1] = fcDefFault0002;
+			sParam.def.status.faultText[2] = fcDefFault0004;
+			// 3 нет
+			sParam.def.status.faultText[4] = fcDefFault0010;
+			// 5 нет
+			sParam.def.status.faultText[6] = fcDefFault0040;
+			sParam.def.status.faultText[7] = fcDefFault0080;
+			sParam.def.status.faultText[8] = fcDefFault0100;
+			sParam.def.status.faultText[9] = fcDefFault0200;
+			sParam.def.status.faultText[10] = fcDefFault0400;
+			sParam.def.status.faultText[11] = fcDefFault0800;
+			sParam.def.status.faultText[12] = fcDefFault1000;
+			sParam.def.status.faultText[13] = fcDefFault2000;
+			sParam.def.status.faultText[14] = fcDefFault4000;
+			sParam.def.status.faultText[15] = fcDefFault8000;
+			// заполнение массива предупреждений защиты
+			sParam.def.status.warningText[0] = fcDefWarning01;
+			sParam.def.status.warningText[1] = fcDefWarning02;
+			sParam.def.status.warningText[2] = fcDefWarning04;
+			sParam.def.status.warningText[3] = fcDefWarning08;
+			// 4-15 нет
+
+			// отключение приемника
+			sParam.prm.status.setEnable(false);
+
+			// отключение передатчика
+			sParam.prd.status.setEnable(false);
+
 
 			status = true;
+		}
+		else if (device == AVANT_OPTIC)
+		{
+			sParam.typeDevice = device;
+
+			// TODO
+			measParam[0] = MENU_MEAS_PARAM_TIME;
+			measParam[1] = MENU_MEAS_PARAM_DATE;
+			for (uint_fast8_t i = 2; i < 6; i++)
+				measParam[i] = MENU_MEAS_PARAM_NO;
+
+			// заполнение массива общих неисправностей
+			sParam.glb.status.faultText[0] = fcGlbFault0001;
+			sParam.glb.status.faultText[1] = fcGlbFault0002;
+			sParam.glb.status.faultText[2] = fcGlbFault0004;
+			sParam.glb.status.faultText[3] = fcGlbFault0008;
+			sParam.glb.status.faultText[4] = fcGlbFault0010;
+			// 5-8 нет
+			sParam.glb.status.faultText[9] = fcGlbFault0200;
+			// 10-15 нет
+			// заполнение массива общих предупреждений
+			sParam.glb.status.warningText[0] = fcGlbWarning01;
+			// 1-15 нет
+
+			// включение ЗАЩИТЫ
+			sParam.def.status.setEnable(true);
+			// заполнение массива неисправностей защиты
+			sParam.def.status.faultText[0] = fcDefFault0001;
+			sParam.def.status.faultText[1] = fcDefFault0002;
+			sParam.def.status.faultText[2] = fcDefFault0004;
+			// 3
+			sParam.def.status.faultText[4] = fcDefFault0010rzsko;
+			// 5-7 нет
+			sParam.def.status.faultText[8] = fcDefFault0100;
+			sParam.def.status.faultText[9] = fcDefFault0200;
+			// 10 нет
+			sParam.def.status.faultText[11] = fcDefFault0800;
+			// 12 нет
+			sParam.def.status.faultText[13] = fcDefFault2000;
+			// 14-15 нет
+			// заполнение массива предупреждений защиты
+			sParam.def.status.warningText[0] = fcDefWarning01rzsko;
+			sParam.def.status.warningText[1] = fcDefWarning02;
+			// 2-15 нет
+
+			// включение ПРИЕМНИКА
+			sParam.prm.status.setEnable(true);
+			// заполнение массива неисправностей защиты
+			sParam.prm.status.faultText[0] = fcPrmFault0001rzsk;
+			sParam.prm.status.faultText[1] = fcPrmFault0002rzsk;
+			sParam.prm.status.faultText[2] = fcPrmFault0004rzsk;
+			// 3-7 нет
+			sParam.prm.status.faultText[8] = fcPrmFault0100rzsk;
+			sParam.prm.status.faultText[9] = fcPrmFault0200rzsk;
+			sParam.prm.status.faultText[10] = fcPrmFault0400rzsk;
+			sParam.prm.status.faultText[11] = fcPrmFault0800rzsk;
+			// 12-15 нет
+			// заполнение массива предупреждений защиты
+			sParam.prm.status.warningText[0] = fcPrmWarning01rzsko;
+			// 1-15 нет
+
+			// включение ПЕРЕДАТЧИКА
+			sParam.prd.status.setEnable(true);
+			// заполнение массива неисправностей передатчика
+			sParam.prd.status.faultText[0] = fcPrdFault0001rzsk;
+			sParam.prd.status.faultText[1] = fcPrdFault0002rzsk;
+			// 2-7 нет
+			sParam.prd.status.faultText[8] = fcPrdFault0100rzsk;
+			sParam.prd.status.faultText[9] = fcPrdFault0200rzsk;
+			sParam.prd.status.faultText[10] = fcPrdFault0400rzsk;
+			sParam.prd.status.faultText[11] = fcPrdFault0800rzsk;
+			// 12-15 нет
+			// заполнение массива предупреждений передатчика
+			// 0-15 нет
+
+			// TODO - надо заполнить сигналы ТЕСТов для оптики
+			// с учетом текущего набора устройств
+			sParam.test.clear();
+			sParam.test.addSignalToList(GB_SIGNAL_CF);
+			sParam.test.addSignalToList(GB_SIGNAL_CF_NO_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_CF_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_COM1);
+			sParam.test.addSignalToList(GB_SIGNAL_COM2);
+			sParam.test.addSignalToList(GB_SIGNAL_COM3);
+			sParam.test.addSignalToList(GB_SIGNAL_COM4);
+			sParam.test.addSignalToList(GB_SIGNAL_COM1_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_COM2_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_COM3_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_COM4_RZ);
 		}
 	}
 
@@ -1191,7 +1206,7 @@ void clMenu::lvlJournal()
 			punkt_[num++] = punkt3;
 			punkt_[num++] = punkt4;
 		}
-		else if ( (type == AVANT_K400) || (type == AVANT_K400_OPTIC) )
+		else if (type == AVANT_K400)
 		{
 			punkt_[num++] = punkt1;
 			punkt_[num++] = punkt3;
@@ -1731,7 +1746,7 @@ void clMenu::lvlControl()
 		if (sParam.typeDevice == AVANT_R400_MSK)
 		{
 			// По умолчанию для совместимости Р400
-			if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_PVZL_PI)
+			if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_PVZL)
 			{
 				punkt_[num++] = punkt07;
 				punkt_[num++] = punkt06;
@@ -1767,10 +1782,6 @@ void clMenu::lvlControl()
 			punkt_[num++] = punkt03;
 		}
 		else if (sParam.typeDevice == AVANT_K400)
-		{
-			punkt_[num++] = punkt03;
-		}
-		else if (sParam.typeDevice == AVANT_K400_OPTIC)
 		{
 			punkt_[num++] = punkt03;
 		}
@@ -2174,12 +2185,6 @@ void clMenu::lvlSetupParam()
 			punkt_[num++] = punkt3;
 			punkt_[num++] = punkt4;
 		}
-		else if (sParam.typeDevice == AVANT_K400_OPTIC)
-		{
-			punkt_[num++] = punkt2;
-			punkt_[num++] = punkt3;
-			punkt_[num++] = punkt4;
-		}
 		numPunkts_ = num;
 
 		// доплнительные команды
@@ -2295,28 +2300,9 @@ void clMenu::lvlSetupParamDef()
 			// добавляется опрос совместимости, для переформирования меню
 			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);
 
-			// по умолчанию берем совместимость с АВАНтом, чтобы в меню
-			// хоть что-то было
-			if (t == GB_COMPATIBILITY_PVZL_PI)
-			{
-				punkt_[num++] = punkt1;
-				sParam.txComBuf.addCom(GB_COM_DEF_GET_DEF_TYPE);
-//				punkt_[num++] = punkt2;
-//				sParam.txComBuf.addCom(GB_COM_DEF_GET_LINE_TYPE);
-				punkt_[num++] = punkt3;
-				sParam.txComBuf.addCom(GB_COM_DEF_GET_T_NO_MAN);
-				punkt_[num++] = punkt4;
-				sParam.txComBuf.addCom(GB_COM_DEF_GET_OVERLAP);
-				punkt_[num++] = punkt5;
-				sParam.txComBuf.addCom(GB_COM_DEF_GET_DELAY);
-				punkt_[num++] = punkt7;
-				sParam.txComBuf.addCom(GB_COM_DEF_GET_RZ_DEC);
-				punkt_[num++] = punkt10;
-				sParam.txComBuf.addCom(GB_COM_DEF_GET_FREQ_PRD);
-				punkt_[num++] = punkt11;
-				sParam.txComBuf.addCom(GB_COM_DEF_GET_RZ_THRESH);
-			}
-			else
+			// для всех совместимостей одинаково,
+			// поэтому всегда есть все пункты
+			if (t <= GB_COMPATIBILITY_MAX)
 			{
 				punkt_[num++] = punkt1;
 				sParam.txComBuf.addCom(GB_COM_DEF_GET_DEF_TYPE);
@@ -2332,6 +2318,10 @@ void clMenu::lvlSetupParamDef()
 				sParam.txComBuf.addCom(GB_COM_DEF_GET_RZ_DEC);
 				punkt_[num++] = punkt9;
 				sParam.txComBuf.addCom(GB_COM_DEF_GET_PRM_TYPE);
+				punkt_[num++] = punkt10;
+				sParam.txComBuf.addCom(GB_COM_DEF_GET_FREQ_PRD);
+				punkt_[num++] = punkt11;
+				sParam.txComBuf.addCom(GB_COM_DEF_GET_RZ_THRESH);
 			}
 		}
 		numPunkts_ = num;
@@ -3128,8 +3118,19 @@ void clMenu::lvlSetupParamGlb()
 	static char punkt9[]  PROGMEM = "Сетевой адрес";
 	static char punkt10[] PROGMEM = "Uвых номинальное";
 	static char punkt11[] PROGMEM = "Частота";
-	static char punkt12[] PROGMEM = "Совместимость";
+	static char punkt12[] PROGMEM = "Совместимость";	// защита
 	static char punkt13[] PROGMEM = "Снижение ответа АК";
+	static char punkt14[] PROGMEM = "Тип детектора";
+	static char punkt15[] PROGMEM = "Коррекция напряжения";
+	static char punkt16[] PROGMEM = "Коррекция тока";
+	static char punkt17[] PROGMEM = "Протокол обмена";
+	static char punkt18[] PROGMEM = "Признак четности";
+	static char punkt19[] PROGMEM = "Допустимые провалы";
+	static char punkt20[] PROGMEM = "Порог по помехе";
+	static char punkt21[] PROGMEM = "Допустимая помеха";
+	static char punkt22[] PROGMEM = "Тип автоконтроля";
+	static char punkt23[] PROGMEM = "Резервирование";
+	static char punkt24[] PROGMEM = "Совместимость";	// упаск
 
 	if (lvlCreate_)
 	{
@@ -3165,10 +3166,24 @@ void clMenu::lvlSetupParamGlb()
 			punkt_[num++] = punkt7;
 			sParam.txComBuf.addCom(GB_COM_GET_COM_PRM_KEEP);
 			punkt_[num++] = punkt8;
-			// sParam.txComBuf.addCom(GB_COM_GET_CF_THRESHOLD);
+			// sParam.txComBuf.addCom(GB_COM_GET_CF_THRESHOLD);					// т.к. уже есть такая команда
+			punkt_[num++] = punkt9;
+			sParam.txComBuf.addCom(GB_COM_GET_NET_ADR);
+			punkt_[num++] = punkt11;
+			sParam.txComBuf.addCom(GB_COM_GET_FREQ);
+			punkt_[num++] = punkt24;
+			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);		// TODO - команда
+			punkt_[num++] = punkt15;
+			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);		// TODO - команда
+			punkt_[num++] = punkt16;
+			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);		// TODO - команда
 		}
 		else if (type == AVANT_RZSK)
 		{
+			punkt_[num++] = punkt1;
+			sParam.txComBuf.addCom(GB_COM_GET_TIME_SINCHR);
+			punkt_[num++] = punkt2;
+			sParam.txComBuf.addCom(GB_COM_GET_DEVICE_NUM);
 			punkt_[num++] = punkt3;
 			sParam.txComBuf.addCom(GB_COM_GET_OUT_CHECK);
 			punkt_[num++] = punkt4;
@@ -3180,50 +3195,74 @@ void clMenu::lvlSetupParamGlb()
 			punkt_[num++] = punkt7;
 			sParam.txComBuf.addCom(GB_COM_GET_COM_PRM_KEEP);
 			punkt_[num++] = punkt8;
-			sParam.txComBuf.addCom(GB_COM_GET_CF_THRESHOLD);
+			// sParam.txComBuf.addCom(GB_COM_GET_CF_THRESHOLD);					// т.к. уже есть такая команда
+			punkt_[num++] = punkt9;
+			sParam.txComBuf.addCom(GB_COM_GET_NET_ADR);
+			punkt_[num++] = punkt11;
+			sParam.txComBuf.addCom(GB_COM_GET_FREQ);
+			punkt_[num++] = punkt14;
+			sParam.txComBuf.addCom(GB_COM_GET_FREQ);				// TODO - команда
+			punkt_[num++] = punkt15;
+			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);		// TODO - команда
+			punkt_[num++] = punkt16;
+			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);		// TODO - команда
+
 		}
 		else if (type == AVANT_R400_MSK)
 		{
 			eGB_COMPATIBILITY t = sParam.glb.getCompatibility();
 
-			// по умолчанию берем совместимость с АВАНтом, чтобы в меню
-			// хоть что-то было
-			if (t == GB_COMPATIBILITY_PVZL_PI)
-			{
-				punkt_[num++] = punkt9;
-				sParam.txComBuf.addCom(GB_COM_GET_NET_ADR);
-				punkt_[num++] = punkt2;
-				sParam.txComBuf.addCom(GB_COM_GET_DEVICE_NUM);
-				punkt_[num++] = punkt3;
-				sParam.txComBuf.addCom(GB_COM_GET_OUT_CHECK);
-				punkt_[num++] = punkt4;
-				sParam.txComBuf.addCom(GB_COM_GET_CF_THRESHOLD);
-				punkt_[num++] = punkt10;
-				sParam.txComBuf.addCom(GB_COM_GET_COM_PRM_KEEP);
-				punkt_[num++] = punkt12;
-				sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);
-				punkt_[num++] = punkt13;
-				sParam.txComBuf.addCom(GB_COM_GET_TIME_RERUN);
-			}
-			else
+			// в совместимостях отличия минимальные
+
+			if (t == GB_COMPATIBILITY_AVANT)
 			{
 				punkt_[num++] = punkt1;
 				sParam.txComBuf.addCom(GB_COM_GET_TIME_SINCHR);
-				punkt_[num++] = punkt9;
-				sParam.txComBuf.addCom(GB_COM_GET_NET_ADR);
-				punkt_[num++] = punkt2;
-				sParam.txComBuf.addCom(GB_COM_GET_DEVICE_NUM);
-				punkt_[num++] = punkt3;
-				sParam.txComBuf.addCom(GB_COM_GET_OUT_CHECK);
-				punkt_[num++] = punkt4;
-				sParam.txComBuf.addCom(GB_COM_GET_CF_THRESHOLD);
-				punkt_[num++] = punkt10;
-				sParam.txComBuf.addCom(GB_COM_GET_COM_PRM_KEEP);
-				punkt_[num++] = punkt11;
-				sParam.txComBuf.addCom(GB_COM_GET_FREQ);
-				punkt_[num++] = punkt12;
-				sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);
 			}
+
+			punkt_[num++] = punkt2;
+			sParam.txComBuf.addCom(GB_COM_GET_DEVICE_NUM);
+			punkt_[num++] = punkt3;
+			sParam.txComBuf.addCom(GB_COM_GET_OUT_CHECK);
+			punkt_[num++] = punkt4;
+			sParam.txComBuf.addCom(GB_COM_GET_CF_THRESHOLD);
+			punkt_[num++] = punkt9;
+			sParam.txComBuf.addCom(GB_COM_GET_NET_ADR);
+			punkt_[num++] = punkt10;
+			sParam.txComBuf.addCom(GB_COM_GET_COM_PRM_KEEP);
+			punkt_[num++] = punkt11;
+			sParam.txComBuf.addCom(GB_COM_GET_FREQ);
+			punkt_[num++] = punkt12;
+			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);
+
+			if (t == GB_COMPATIBILITY_PVZL)
+			{
+				punkt_[num++] = punkt13;
+				sParam.txComBuf.addCom(GB_COM_GET_TIME_RERUN);
+			}
+
+			punkt_[num++] = punkt15;
+			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);		// TODO - команда
+			punkt_[num++] = punkt16;
+			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);		// TODO - команда
+
+			if (t == GB_COMPATIBILITY_PVZUE)
+			{
+				punkt_[num++] = punkt17;
+				sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);	// TODO - команда
+				punkt_[num++] = punkt18;
+				sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);	// TODO - команда
+				punkt_[num++] = punkt19;
+				sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);	// TODO - команда
+				punkt_[num++] = punkt20;
+				sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);	// TODO - команда
+				punkt_[num++] = punkt21;
+				sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);	// TODO - команда
+				punkt_[num++] = punkt22;
+				sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);	// TODO - команда
+
+			}
+
 		}
 		numPunkts_ = num;
 	}

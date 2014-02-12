@@ -114,9 +114,9 @@ static
 const char fcCompatibility[GB_COMPATIBILITY_MAX + 1] [STRING_LENGHT] PROGMEM =
 {
  	 	 "АВАНТ Р400",
-// 	 	 "ПВЗ-90",
-// 	 	 "АВЗК-80",
-// 	 	 "ПВЗУ-Е",
+ 	 	 "ПВЗ-90",
+ 	 	 "АВЗК-80",
+ 	 	 "ПВЗУ-Е",
  	 	 "ПВЗЛ",
  	 	 "ошибка"
 };
@@ -216,7 +216,7 @@ static const char fcDefFault0002[] 		PROGMEM = "Неиспр.верс.БСЗ";
 static const char fcDefFault0004[] 		PROGMEM = "Неиспр.перекл.";
 static const char fcDefFault0008[] 		PROGMEM = "Неиспр.зап. БСЗ";
 static const char fcDefFault0010[] 		PROGMEM = "АК-Нет ответа";
-static const char fcDefFault0010rzsk[] 	PROGMEM = "Нет сигнала ПРМ";
+static const char fcDefFault0010rzsko[]	PROGMEM = "Нет сигнала ПРМ";
 static const char fcDefFault0020[] 		PROGMEM = "Низкий ур. РЗ";
 static const char fcDefFault0040[] 		PROGMEM = "Неиспр.удал. ДФЗ";
 static const char fcDefFault0080[] 		PROGMEM = "Неиспр.удал. ВЫХ";
@@ -227,6 +227,7 @@ static const char fcDefFault0800[] 		PROGMEM = "Неиспр.цепь. ВЫХ";
 static const char fcDefFault1000[] 		PROGMEM = "Уд.ПОСТ обн.пом.";
 static const char fcDefFault2000[] 		PROGMEM = "Неиспр.зап. ВЫХ";
 static const char fcDefFault4000[] 		PROGMEM = "Длительн. помеха";
+static const char fcDefFault4000rzsk[]	PROGMEM = "Нет сигнала РЗ";
 static const char fcDefFault8000[] 		PROGMEM = "Неиспр. ДФЗ";
 
 // предупреждения защиты
