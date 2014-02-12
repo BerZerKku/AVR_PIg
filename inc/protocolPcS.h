@@ -14,7 +14,6 @@ class clProtocolPcS : public clProtocolS
 {
 public:
 	clProtocolPcS(uint8_t *buf, uint8_t size, stGBparam *sParam);
-
 	/// Обработка принятого сообщения. В случае неудачи возвращает False.
 	bool getData();
 };

@@ -197,30 +197,35 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 	// из текущих настроек.
 	if (device == AVANT_NO)
 	{
-		if (sParam.def.status.isEnable())
+
+		if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
 		{
-			if ((sParam.prm.status.isEnable())
-					|| (sParam.prd.status.isEnable()))
+			// ВЧ вариант
+			// если есть защита + команды (прм и/или прд) - РЗСК
+			// если есть только команды (прм и/или прд) - К400
+			// если есть защита и (версия прошивки & 0xF000) = 0xF000 - Р400М
+
+			if (sParam.def.status.isEnable())
 			{
-				if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
+				if ((sParam.prm.status.isEnable())
+						|| (sParam.prd.status.isEnable()))
+				{
 					device = AVANT_RZSK;
+				}
+				else
+				{
+					uint16_t vers = sParam.glb.getVersBsp() & 0xF000;
+					if ( (vers&0xF000) == 0xF000 )
+						device = AVANT_R400_MSK;
+				}
 			}
 			else
 			{
-				// !!! тут еще должно быть определение аппарата для МОСКВЫ
-				// !!! на наднный момент можно опреджелить по версии
-				// !!! ПО для МК БСП - 0x0F
-				if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
-					device = AVANT_R400_MSK;
-			}
-		}
-		else
-		{
-			if ((sParam.prd.status.isEnable())
-					|| (sParam.prm.status.isEnable()))
-			{
-				if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
-					device = AVANT_K400;
+				if ((sParam.prd.status.isEnable())
+						|| (sParam.prm.status.isEnable()))
+				{
+						device = AVANT_K400;
+				}
 			}
 		}
 
@@ -497,7 +502,8 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 		{
 			sParam.typeDevice = device;
 
-			// TODO
+			// TODO - оптика
+			// дополнить список измеряемых параметров, если есть ?!
 			measParam[0] = MENU_MEAS_PARAM_TIME;
 			measParam[1] = MENU_MEAS_PARAM_DATE;
 			for (uint_fast8_t i = 2; i < 6; i++)
@@ -601,7 +607,7 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 		lvlMenu = &clMenu::lvlError;
 	}
 
-	// сброс флага необходимости проверки типа аппарата
+	// "сброс" флага необходимости проверки типа аппарата
 	sParam.device = true;
 
 	return status;
@@ -660,6 +666,7 @@ void clMenu::clearLine(uint8_t line)
 }
 
 /**	Вывод в указанном месте отображаемого параметра.
+ * 	В одной строке выводятся два параметра.
  * 	@param poz Текущая позиция (0..5, 0 первая строка слева, 5 - третья справа)
  * 	@param par Второй отображаемый параметр
  * 	@return Нет
@@ -805,7 +812,7 @@ void clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device)
 	}
 }
 
-/**	Dывод в пунтке меню "Режим" текущего режима устройств
+/**	Вывод в пунтке меню "Режим" текущего режима устройств
  * 	@param poz Начальная позиция в буфере данных ЖКИ
  * 	@param device Данные для текущего устройства
  *	@return Нет
@@ -3172,11 +3179,11 @@ void clMenu::lvlSetupParamGlb()
 			punkt_[num++] = punkt11;
 			sParam.txComBuf.addCom(GB_COM_GET_FREQ);
 			punkt_[num++] = punkt24;
-			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);		// TODO - команда
+			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);		// TODO - команда "Совместимость" УПАСК
 			punkt_[num++] = punkt15;
-			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);		// TODO - команда
+			sParam.txComBuf.addCom(GB_COM_GET_COR_U_I);
 			punkt_[num++] = punkt16;
-			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);		// TODO - команда
+//			sParam.txComBuf.addCom(GB_COM_GET_COR_U_I	);
 		}
 		else if (type == AVANT_RZSK)
 		{
@@ -3203,9 +3210,9 @@ void clMenu::lvlSetupParamGlb()
 			punkt_[num++] = punkt14;
 			sParam.txComBuf.addCom(GB_COM_GET_FREQ);				// TODO - команда
 			punkt_[num++] = punkt15;
-			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);		// TODO - команда
+			sParam.txComBuf.addCom(GB_COM_GET_COR_U_I);
 			punkt_[num++] = punkt16;
-			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);		// TODO - команда
+//			sParam.txComBuf.addCom(GB_COM_GET_COR_U_I);
 
 		}
 		else if (type == AVANT_R400_MSK)
@@ -3242,9 +3249,9 @@ void clMenu::lvlSetupParamGlb()
 			}
 
 			punkt_[num++] = punkt15;
-			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);		// TODO - команда
+			sParam.txComBuf.addCom(GB_COM_GET_COR_U_I);
 			punkt_[num++] = punkt16;
-			sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);		// TODO - команда
+//			sParam.txComBuf.addCom(GB_COM_GET_COR_U_I);
 
 			if (t == GB_COMPATIBILITY_PVZUE)
 			{
@@ -3343,6 +3350,16 @@ void clMenu::lvlSetupParamGlb()
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_AC_IN_DEC_MIN,
 				GLB_AC_IN_DEC_MAX, "дБ");
 	}
+	else if (p == punkt15)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_COR_U_DEC_MIN/10,
+				GLB_COR_U_DEC_MAX/10, "В");
+	}
+	else if (p == punkt16)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, 0,
+				GLB_COR_I_DEC_MAX, "мА");
+	}
 
 	if (enterParam.isEnable())
 	{
@@ -3412,7 +3429,14 @@ void clMenu::lvlSetupParamGlb()
 				sParam.txComBuf.setInt8(enterParam.getDopValue(), 0);
 				sParam.txComBuf.setInt8(enterParam.getValueEnter(), 1);
 			}
-
+			else if (p == punkt15)
+			{
+				// TODO - подготовка данных корр. напряжения к передаче в БСП
+			}
+			else if (p == punkt16)
+			{
+				// TODO - подготовка данных коррекции тока к передаче в БСП
+			}
 			sParam.txComBuf.addFastCom(enterParam.com);
 			enterParam.setDisable();
 		}
@@ -3478,6 +3502,20 @@ void clMenu::lvlSetupParamGlb()
 		else if (p == punkt13)
 		{
 			snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.glb.getAcInDec());
+		}
+		else if (p == punkt15)
+		{
+			int16_t val = sParam.glb.getCorU();
+			int8_t f = val%10;
+			if (f < 0)
+				f = -f;
+			// вывоится целая/дробная часть напряжения коррекции
+			// в дробной части дополнительно отсекается знак числа
+			snprintf(&vLCDbuf[poz], 11, "%d.%dВ", val/10, f);
+		}
+		else if (p == punkt16)
+		{
+			snprintf(&vLCDbuf[poz], 11, "%dмА", sParam.glb.getCorI());
 		}
 	}
 

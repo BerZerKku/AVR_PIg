@@ -60,7 +60,6 @@ class clProtocolS
 
 public:
 	clProtocolS	(uint8_t *buf, uint8_t size, stGBparam *sParam);
-
 //	uint8_t addCom	(uint8_t com, ePRTS_ACTION act);
 //	bool getData	(stMNUparam *param);
 

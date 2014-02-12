@@ -271,6 +271,7 @@ static const char fcRangeDec[] 			PROGMEM = "%d..%d%s";
 static const char fcRangeList[] 		PROGMEM = "список";
 static const char fcRangeOnOff[]		PROGMEM = "вкл./выкл.";
 static const char fcNumPunkt[] 			PROGMEM = "Параметр:%u Всего:%u";
+
 //static const char fcOn[]				PROGMEM = "вкл.";
 //static const char fcOff[]				PROGMEM = "выкл.";
 

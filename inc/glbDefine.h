@@ -26,7 +26,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0101
+#define VERS 0x0102
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -35,7 +35,7 @@
 #define MAX_NUM_COM_PRD 32
 
 /// преобразование двух CHAR в INT
-#define TO_INT16(high, low) (((uint16_t) high << 8) + low)
+#define TO_INT16(high, low) (((uint16_t) (high) << 8) + (low))
 
 /// максимально возможное кол-во состояний устройств
 #define MAX_NUM_DEVICE_STATE 12
@@ -201,6 +201,22 @@
 #define GLB_AC_IN_DEC_MIN_F	(GLB_AC_IN_DEC_MIN / GLB_AC_IN_DEC_FRACT)
 #define GLB_AC_IN_DEC_MAX_F	(GLB_AC_IN_DEC_MAX / GLB_AC_IN_DEC_FRACT)
 #define GLB_AC_IN_DEC_DISC_F (GLB_AC_IN_DEC_DISC / GLB_AC_IN_DEC_FRACT)
+// коррекция тока
+#define GLB_COR_I_DEC_MIN	-999
+#define GLB_COR_I_DEC_MAX	999
+#define GLB_COR_I_DEC_DISC	1
+#define GLB_COR_I_DEC_FRACT	1
+#define GLB_COR_I_DEC_MIN_F	(GLB_COR_I_DEC_MIN / GLB_COR_I_DEC_FRACT)
+#define GLB_COR_I_DEC_MAX_F	(GLB_COR_I_DEC_MAX / GLB_COR_I_DEC_FRACT)
+#define GLB_COR_I_DEC_DISC_F (GLB_COR_I_DEC_DISC / GLB_COR_I_DEC_FRACT)
+// коррекция напряжения
+#define GLB_COR_U_DEC_MIN	-400
+#define GLB_COR_U_DEC_MAX	400
+#define GLB_COR_U_DEC_DISC	1
+#define GLB_COR_U_DEC_FRACT	1
+#define GLB_COR_U_DEC_MIN_F	(GLB_COR_U_DEC_MIN / GLB_COR_U_DEC_FRACT)
+#define GLB_COR_U_DEC_MAX_F	(GLB_COR_U_DEC_MAX / GLB_COR_U_DEC_FRACT)
+#define GLB_COR_U_DEC_DISC_F (GLB_COR_U_DEC_DISC / GLB_COR_U_DEC_FRACT)
 
 /// максимальное и минимальный код типа событий в журнале событий
 #define MIN_JRN_EVENT_VALUE 1
@@ -228,7 +244,6 @@
 enum eGB_TYPE_DEVICE
 {
 	AVANT_NO 				= 0,	// ошибочное значение
-	AVANT_R400 				= 1,
 	AVANT_R400_MSK,
 	AVANT_RZSK,
 	AVANT_OPTIC,			// TODO см.ниже
@@ -343,9 +358,9 @@ enum eGB_COM
 	GB_COM_DEF_GET_DELAY	= 0x04,
 	GB_COM_DEF_GET_OVERLAP	= 0x05,
 	GB_COM_DEF_GET_RZ_DEC	= 0x06,
-	GB_COM_DEF_GET_PRM_TYPE = 0x07,	// ! в Р400 это снижение уровня АК
+	GB_COM_DEF_GET_PRM_TYPE = 0x07,	// ! в Р400М это снижение уровня АК
 	GB_COM_DEF_GET_FREQ_PRD = 0x08,
-	GB_COM_DEF_GET_RZ_THRESH= 0x09,	// ! в Р400 это частота ПРМ
+	GB_COM_DEF_GET_RZ_THRESH= 0x09,	// ! в Р400М это частота ПРМ
 	GB_COM_DEF_GET_TYPE_AC 	= 0x0A,	//
 	GB_COM_PRM_GET_TIME_ON	= 0x11,
 	GB_COM_PRM_GET_TIME_OFF = 0x13,
@@ -358,12 +373,13 @@ enum eGB_COM
 	GB_COM_GET_SOST			= 0x30,
 	GB_COM_GET_FAULT 		= 0x31,
 	GB_COM_GET_TIME 		= 0x32,
+	GB_COM_GET_COR_U_I		= 0x33,	// TODO В Оптике это Резервирование
 	GB_COM_GET_MEAS			= 0x34,
 	GB_COM_GET_TIME_SINCHR	= 0x35,
-	GB_COM_GET_COM_PRM_KEEP = 0x36, // ! в Р400 это Uвых номинальное
-	GB_COM_GET_COM_PRD_KEEP	= 0x37,	// ! в Р400 это тип удаленного аппарата
+	GB_COM_GET_COM_PRM_KEEP = 0x36, // ! в Р400М это Uвых номинальное
+	GB_COM_GET_COM_PRD_KEEP	= 0x37,	// ! в Р400М это тип удаленного аппарата
 	GB_COM_GET_NET_ADR		= 0x38,
-	GB_COM_GET_TIME_RERUN	= 0x39,	// ! в Р400 это параметры для совместимостей
+	GB_COM_GET_TIME_RERUN	= 0x39,	// ! в Р400М это параметры для совместимостей
 	GB_COM_GET_FREQ			= 0x3A,
 	GB_COM_GET_DEVICE_NUM	= 0x3B,
 	GB_COM_GET_CF_THRESHOLD	= 0x3C,	// ! порог предупр. по КЧ и загрубления
@@ -384,9 +400,9 @@ enum eGB_COM
 	GB_COM_DEF_SET_DELAY	= 0x84,
 	GB_COM_DEF_SET_OVERLAP	= 0x85,
 	GB_COM_DEF_SET_RZ_DEC	= 0x86,
-	GB_COM_SET_PRM_TYPE		= 0x87,	// ! в Р400 это снижение уровня АК
+	GB_COM_SET_PRM_TYPE		= 0x87,	// ! в Р400М это снижение уровня АК
 	GB_COM_DEF_SET_FREQ_PRD = 0x88,
-	GB_COM_DEF_SET_RZ_THRESH= 0x89,	// ! в Р400 это частота ПРМ
+	GB_COM_DEF_SET_RZ_THRESH= 0x89,	// ! в Р400М это частота ПРМ
 	GB_COM_DEF_SET_TYPE_AC	= 0x8A,
 	GB_COM_PRM_SET_TIME_ON	= 0x91,
 	GB_COM_PRM_SET_TIME_OFF	= 0x93,
@@ -398,9 +414,10 @@ enum eGB_COM
 	GB_COM_PRD_SET_LONG_COM	= 0xA5,
 	GB_COM_PRD_SET_TEST_COM = 0xA6,
 	GB_COM_SET_TIME 		= 0xB2,
+	GB_COM_SET_COR_U_I		= 0xB3,	// TODO В Оптике это Резервирование
 	GB_COM_SET_TIME_SINCHR	= 0xB5,
-	GB_COM_SET_COM_PRM_KEEP	= 0xB6, // ! в Р400 это Uвых номинальное
-	GB_COM_SET_COM_PRD_KEEP	= 0xB7, // ! в Р400 это тип удаленного аппарата
+	GB_COM_SET_COM_PRM_KEEP	= 0xB6, // ! в Р400М это Uвых номинальное
+	GB_COM_SET_COM_PRD_KEEP	= 0xB7, // ! в Р400М это тип удаленного аппарата
 	GB_COM_SET_NET_ADR		= 0xB8,
 	GB_COM_SET_TIME_RERUN	= 0xB9,
 	GB_COM_SET_FREQ			= 0xBA,
@@ -905,6 +922,9 @@ public:
 		netAdr_ = GLB_NET_ADR_MIN_F;
 		compRefresh_ = true;
 		acInDec_ = GLB_AC_IN_DEC_MIN_F;
+		corI_ = GLB_COR_I_DEC_MIN_F;
+		corU_ = GLB_COR_U_DEC_MIN_F;
+
 	}
 
 	TDeviceStatus status;
@@ -1145,6 +1165,34 @@ public:
 	}
 	uint8_t getAcInDec() const { return (acInDec_ * GLB_AC_IN_DEC_FRACT); }
 
+	// коррекция тока
+	bool setCorI(int16_t val)
+	{
+		bool stat = false;
+		val = (val / GLB_COR_I_DEC_DISC_F) * GLB_COR_I_DEC_DISC_F;
+		if ( (val >= GLB_COR_I_DEC_MIN_F) && (val <= GLB_COR_I_DEC_MAX_F) )
+		{
+			corI_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	int16_t getCorI() const { return (corI_ * GLB_COR_I_DEC_FRACT); }
+
+	// коррекция напряжения
+	bool setCorU(int16_t val)
+	{
+		bool stat = false;
+		val = (val / GLB_COR_U_DEC_DISC_F) * GLB_COR_U_DEC_DISC_F;
+		if ( (val >= GLB_COR_U_DEC_MIN_F) && (val <= GLB_COR_U_DEC_MAX_F) )
+		{
+			corU_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+	int16_t getCorU() const { return (corU_ * GLB_COR_U_DEC_FRACT); }
+
 private:
 	// кол-во аппаратов в линии 2 или 3
 	eGB_NUM_DEVICES numDevices_;
@@ -1199,6 +1247,12 @@ private:
 
 	// Снижение ответа АК (ПВЗЛ)
 	uint8_t acInDec_;
+
+	// Коррекция тока
+	int16_t corI_;
+
+	// Коррекция напряжения
+	int16_t corU_;
 };
 
 
