@@ -11,9 +11,9 @@
 #include "keyboard.h"
 #include "glbDefine.h"
 
-/// время до первой инициализации дисплея
+/// время до первой инициализации дисплея (* время цикла обновления ЖКИ)
 #define TIME_TO_INIT_LCD 3
-/// время до переинициализации дисплея (* время цикла ЖКИ)
+/// время до переинициализации дисплея (* время цикла обновления ЖКИ)
 #define TIME_TO_REINIT_LCD 50
 
 /// максимальное кол-во пунктов в меню
@@ -142,7 +142,8 @@ public:
 	uint16_t incValue()
 	{
 
-		if (status_ == MENU_ENTER_PARAM_INT)
+		if ( (status_ == MENU_ENTER_PARAM_INT) ||
+				(status_ == MENU_ENTER_PARAM_U_COR) )
 		{
 			// увеличение значения
 			val_ = (val_ <= (max_ - disc_)) ? val_ + disc_ : min_;
@@ -174,7 +175,8 @@ public:
 	uint16_t decValue()
 	{
 		eMENU_ENTER_PARAM s = status_;
-		if (s == MENU_ENTER_PARAM_INT)
+		if ( (status_ == MENU_ENTER_PARAM_INT) ||
+				(status_ == MENU_ENTER_PARAM_U_COR) )
 		{
 			// уменьшение значние
 			val_ = (val_ >= (min_ + disc_)) ? val_ - disc_ : max_;

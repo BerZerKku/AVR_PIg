@@ -83,7 +83,7 @@ static const char fcNumDevices[GB_NUM_DEVICES_MAX + 1] [STRING_LENGHT] PROGMEM =
 		"ошибка",
 		"2 концевая",
 		"3 концевая",
-		"ошибка",
+		"ошибка"
 };
 
 static const char fcPrmType[DEF_PRM_TYPE_MAX + 1] [STRING_LENGHT] PROGMEM =
@@ -113,12 +113,12 @@ static const char fcDevices[GB_DEVICE_MAX + 1] [4] PROGMEM =
 static
 const char fcCompatibility[GB_COMPATIBILITY_MAX + 1] [STRING_LENGHT] PROGMEM =
 {
- 	 	 "АВАНТ Р400",
- 	 	 "ПВЗ-90",
- 	 	 "АВЗК-80",
- 	 	 "ПВЗУ-Е",
- 	 	 "ПВЗЛ",
- 	 	 "ошибка"
+ 	"АВАНТ Р400",
+ 	"ПВЗ-90",
+ 	"АВЗК-80",
+    "ПВЗУ-Е",
+ 	"ПВЗЛ",
+ 	"ошибка"
 };
 
 static const char fcPvzlFreq[GB_PVZL_FREQ_MAX + 1] [STRING_LENGHT] PROGMEM =
@@ -129,6 +129,33 @@ static const char fcPvzlFreq[GB_PVZL_FREQ_MAX + 1] [STRING_LENGHT] PROGMEM =
  	 "+250Гц",
  	 "+500Гц",
  	 "ошибка"
+};
+
+static
+const char fcPvzueProtocol[GB_PVZUE_PROTOCOL_MAX + 1] [STRING_LENGHT] PROGMEM =
+{
+ 	"ошибка",
+ 	"быстрый",
+ 	"медленный",
+ 	"ошибка"
+};
+
+static char fcPvzueTypeAC[GB_PVZUE_TYPE_AC_MAX + 1] [STRING_LENGHT] PROGMEM =
+{
+ 	"ошибка",
+ 	"тревожный",
+ 	"нормальный",
+ 	"спокойный",
+ 	"ошибка"
+};
+
+static char fcPvzueParity[GB_PVZUE_PARITY_MAX + 1] [STRING_LENGHT] PROGMEM =
+{
+ 	"ошибка",
+ 	"вкл.",
+ 	"выкл.",
+ 	"ошибка"
+
 };
 
 // состояния устройств

@@ -522,7 +522,10 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com)
 	{
 		if (sParam_->typeDevice == AVANT_R400_MSK)
 		{
+			// в ПВЗЛ это Снижение ответа АК
 			stat = sParam_->glb.setAcInDec(buf[B1]);
+
+			// в ПВЗУ-Е это набор параметров
 		}
 		else
 		{
@@ -740,6 +743,10 @@ uint8_t clProtocolBspS::sendModifGlbCommand(eGB_COM com)
 	{
 		num = addCom(com, sParam_->txComBuf.getInt8(0),
 				sParam_->txComBuf.getInt8(1));
+	}
+	else if (com == GB_COM_SET_COR_U_I)
+	{
+		num = addCom(com, 3, sParam_->txComBuf.getBuferAddress());
 	}
 	else
 	{

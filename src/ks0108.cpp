@@ -68,8 +68,8 @@ vLCDcom(uint8_t com, uint8_t cs)
 	asm volatile (	"nop\n\t"
 	        		"nop\n\t"
 	        		::);
-	PORTA = com;
 	PORT_E |= PIN_E;
+	PORTA = com;
 	asm volatile (	"nop\n\t"
 	        		"nop\n\t"
 	        		::);

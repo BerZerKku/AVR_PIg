@@ -202,6 +202,7 @@
 #define GLB_AC_IN_DEC_MAX_F	(GLB_AC_IN_DEC_MAX / GLB_AC_IN_DEC_FRACT)
 #define GLB_AC_IN_DEC_DISC_F (GLB_AC_IN_DEC_DISC / GLB_AC_IN_DEC_FRACT)
 // коррекция тока
+// при вводе минимум 0, т.к. вводится реальное значение напряжения
 #define GLB_COR_I_DEC_MIN	-999
 #define GLB_COR_I_DEC_MAX	999
 #define GLB_COR_I_DEC_DISC	1
@@ -209,7 +210,8 @@
 #define GLB_COR_I_DEC_MIN_F	(GLB_COR_I_DEC_MIN / GLB_COR_I_DEC_FRACT)
 #define GLB_COR_I_DEC_MAX_F	(GLB_COR_I_DEC_MAX / GLB_COR_I_DEC_FRACT)
 #define GLB_COR_I_DEC_DISC_F (GLB_COR_I_DEC_DISC / GLB_COR_I_DEC_FRACT)
-// коррекция напряжения
+// коррекция напряжения (в 10 раз больше)
+// при вводе минимум 0, т.к. вводится реальное значение напряжения
 #define GLB_COR_U_DEC_MIN	-400
 #define GLB_COR_U_DEC_MAX	400
 #define GLB_COR_U_DEC_DISC	1
@@ -217,6 +219,30 @@
 #define GLB_COR_U_DEC_MIN_F	(GLB_COR_U_DEC_MIN / GLB_COR_U_DEC_FRACT)
 #define GLB_COR_U_DEC_MAX_F	(GLB_COR_U_DEC_MAX / GLB_COR_U_DEC_FRACT)
 #define GLB_COR_U_DEC_DISC_F (GLB_COR_U_DEC_DISC / GLB_COR_U_DEC_FRACT)
+// допустимые провалы (ПВЗУ-Е)
+#define GLB_PVZUE_FAIL_MIN		0
+#define GLB_PVZUE_FAIL_MAX		90
+#define GLB_PVZUE_FAIL_DISC		18
+#define GLB_PVZUE_FAIL_FRACT	1
+#define GLB_PVZUE_FAIL_MIN_F	(GLB_PVZUE_FAIL_MIN / GLB_PVZUE_FAIL_FRACT)
+#define GLB_PVZUE_FAIL_MAX_F	(GLB_PVZUE_FAIL_MAX / GLB_PVZUE_FAIL_FRACT)
+#define GLB_PVZUE_FAIL_DISC_F	(GLB_PVZUE_FAIL_DISC / GLB_PVZUE_FAIL_FRACT)
+// порог по помехе (ПВЗУ-Е)
+#define GLB_PVZUE_N_TH_MIN		0
+#define GLB_PVZUE_N_TH_MAX		255
+#define GLB_PVZUE_N_TH_DISC		1
+#define GLB_PVZUE_N_TH_FRACT	1
+#define GLB_PVZUE_N_TH_MIN_F	(GLB_PVZUE_N_TH_MIN / GLB_PVZUE_N_TH_FRACT)
+#define GLB_PVZUE_N_TH_MAX_F	(GLB_PVZUE_N_TH_MAX / GLB_PVZUE_N_TH_FRACT)
+#define GLB_PVZUE_N_TH_DISC_F	(GLB_PVZUE_N_TH_DISC / GLB_PVZUE_N_TH_FRACT)
+// допустимая помеха (ПВЗУ-Е)
+#define GLB_PVZUE_N_LVL_MIN		18
+#define GLB_PVZUE_N_LVL_MAX		90
+#define GLB_PVZUE_N_LVL_DISC	18
+#define GLB_PVZUE_N_LVL_FRACT	1
+#define GLB_PVZUE_N_LVL_MIN_F	(GLB_PVZUE_N_LVL_MIN / GLB_PVZUE_N_LVL_FRACT)
+#define GLB_PVZUE_N_LVL_MAX_F	(GLB_PVZUE_N_LVL_MAX / GLB_PVZUE_N_LVL_FRACT)
+#define GLB_PVZUE_N_LVL_DISC_F	(GLB_PVZUE_N_LVL_DISC / GLB_PVZUE_N_LVL_FRACT)
 
 /// максимальное и минимальный код типа событий в журнале событий
 #define MIN_JRN_EVENT_VALUE 1
@@ -321,6 +347,34 @@ enum eGB_PVZL_FREQ
 	GB_PVZL_FREQ_P250		= 3,
 	GB_PVZL_FREQ_P500		= 4,
 	GB_PVZL_FREQ_MAX
+};
+
+// Протокол обмена (ПВЗУ-Е)
+enum eGB_PVZUE_PROTOCOL
+{
+	GB_PVZUE_PROTOCOL_MIN 	= 1,
+	GB_PVZUE_PROTOCOL_FAST 	= 1,
+	GB_PVZUE_PROTOCOL_SLOW 	= 2,
+	GB_PVZUE_PROTOCOL_MAX
+};
+
+// Тип автоконтроля (ПВЗУ-Е)
+enum eGB_PVZUE_TYPE_AC
+{
+	GB_PVZUE_TYPE_AC_MIN 	= 1,
+	GB_PVZUE_TYPE_AC_ALARM	= 1,
+	GB_PVZUE_TYPE_AC_NORM	= 2,
+	GB_PVZUE_TYPE_AC_CALM	= 3,
+	GB_PVZUE_TYPE_AC_MAX
+};
+
+// Признак четности (ПВЗУ-Е)
+enum eGB_PVZUE_PARITY
+{
+	GB_PVZUE_PARITY_MIN = 1,
+	GB_PVZUE_PARITY_ON = 1,
+	GB_PVZUE_PARITY_OFF = 2,
+	GB_PVZUE_PARITY_MAX
 };
 
 /// Режимы работы
@@ -922,6 +976,12 @@ public:
 		netAdr_ = GLB_NET_ADR_MIN_F;
 		compRefresh_ = true;
 		acInDec_ = GLB_AC_IN_DEC_MIN_F;
+		pvzueProtocol_ = GB_PVZUE_PROTOCOL_MAX;
+		pvzueParity_ = GB_PVZUE_PARITY_MAX;
+		pvzueFail_ = GLB_PVZUE_FAIL_MIN_F;
+		pvzueNoiseTH_ = GLB_PVZUE_N_TH_MIN_F;
+		pvzueNoiseLvl_= GLB_PVZUE_N_LVL_MIN_F;
+		pvzueTypeAC_ = GB_PVZUE_TYPE_AC_MAX;
 		corI_ = GLB_COR_I_DEC_MIN_F;
 		corU_ = GLB_COR_U_DEC_MIN_F;
 
@@ -988,7 +1048,6 @@ public:
 		return stat;
 	}
 	eGB_COMPATIBILITY getCompatibility() const { return compatibility_; }
-	uint8_t sendCompatibility(uint8_t val) const { return compatibility_; }
 	bool isCompatibilityRefresh()
 	{
 		// возвращает true в случае если произошла смена совместимости
@@ -1165,6 +1224,105 @@ public:
 	}
 	uint8_t getAcInDec() const { return (acInDec_ * GLB_AC_IN_DEC_FRACT); }
 
+	// Протокол обмена (ПВЗУ-Е)
+	bool setPvzueProtocol(eGB_PVZUE_PROTOCOL val)
+	{
+		bool stat = false;
+
+		if ( (val >= GB_PVZUE_PROTOCOL_MIN) && (val <= GB_PVZUE_PROTOCOL_MAX) )
+		{
+			pvzueProtocol_ = val;
+			stat = true;
+		}
+		else
+			pvzueProtocol_ = GB_PVZUE_PROTOCOL_MAX;
+
+		return stat;
+	}
+	eGB_PVZUE_PROTOCOL getPvzueProtocol() const { return pvzueProtocol_; }
+
+	// Признак четности (ПВЗУ-Е)
+	bool setPvzueParity(eGB_PVZUE_PARITY val)
+	{
+		bool stat = false;
+
+		if ( (val >= GB_PVZUE_PARITY_MIN) && (val <= GB_PVZUE_PARITY_MAX) )
+		{
+			pvzueParity_ = val;
+			stat = true;
+		}
+		else
+			pvzueParity_ = GB_PVZUE_PARITY_MAX;
+
+		return stat;
+	}
+	eGB_PVZUE_PARITY getPvzueParity() const { return pvzueParity_; }
+
+	// Допустимые провалы (ПВЗУ-Е)
+	bool setPvzueFail(uint8_t val)
+	{
+		bool stat = false;
+
+		val = (val / GLB_PVZUE_FAIL_DISC_F) * GLB_PVZUE_FAIL_DISC_F;
+		if ( (val >= GLB_PVZUE_FAIL_MIN_F) && (val <= GLB_PVZUE_FAIL_MAX_F) )
+		{
+			pvzueFail_ = val;
+			stat = true;
+		}
+
+		return stat;
+	}
+	uint8_t getPvzueFail() const { return pvzueFail_; }
+
+	// Порог по помехе (ПВЗУ-Е)
+	bool setPvzueNoiseTH(uint8_t val)
+	{
+		bool stat = false;
+
+		val = (val / GLB_PVZUE_N_TH_DISC_F) * GLB_PVZUE_N_TH_DISC_F;
+		if ( (val >= GLB_PVZUE_N_TH_MIN_F) && (val <= GLB_PVZUE_N_TH_MAX_F) )
+		{
+			pvzueNoiseTH_ = val;
+			stat = true;
+		}
+
+		return stat;
+	}
+	uint8_t getPvzueNoiseTH() const { return pvzueNoiseTH_; }
+
+	// Допустимая помеха (ПВЗУ-Е)
+	bool setPvzueNoiseLvl(uint8_t val)
+	{
+		bool stat = false;
+
+		val = (val / GLB_PVZUE_N_LVL_DISC_F) * GLB_PVZUE_N_LVL_DISC_F;
+		if ( (val >= GLB_PVZUE_N_LVL_MIN_F) && (val <= GLB_PVZUE_N_LVL_MAX_F) )
+		{
+			pvzueNoiseLvl_ = val;
+			stat = true;
+		}
+
+		return stat;
+	}
+	uint8_t getPvzueNoiseLvl() const { return pvzueNoiseLvl_; }
+
+	// Тип автоконтроля
+	bool setPvzueTypeAC(eGB_PVZUE_TYPE_AC val)
+	{
+		bool stat = false;
+
+		if ( (val >= GB_PVZUE_TYPE_AC_MIN) && (val <= GB_PVZUE_TYPE_AC_MAX) )
+		{
+			pvzueTypeAC_ = val;
+			stat = true;
+		}
+		else
+			pvzueTypeAC_ = GB_PVZUE_TYPE_AC_MAX;
+
+		return stat;
+	}
+	eGB_PVZUE_TYPE_AC getPvzueTypeAC() const { return pvzueTypeAC_; }
+
 	// коррекция тока
 	bool setCorI(int16_t val)
 	{
@@ -1247,6 +1405,24 @@ private:
 
 	// Снижение ответа АК (ПВЗЛ)
 	uint8_t acInDec_;
+
+	// Протокол обмена (ПВЗУ-Е)
+	eGB_PVZUE_PROTOCOL pvzueProtocol_;
+
+	// Признак четности (ПВЗУ-Е)
+	eGB_PVZUE_PARITY pvzueParity_;
+
+	// Допустимые провалы (ПВЗУ-Е)
+	uint8_t pvzueFail_;
+
+	// Порог по помехе (ПВЗУ-Е)
+	uint8_t pvzueNoiseTH_;
+
+	// Допустимая помеха (ПВЗУ-Е)
+	uint8_t pvzueNoiseLvl_;
+
+	// Тип автоконтроля (ПВЗУ-Е)
+	eGB_PVZUE_TYPE_AC pvzueTypeAC_;
 
 	// Коррекция тока
 	int16_t corI_;
@@ -1965,6 +2141,7 @@ public:
 	// напряжение выхода
 	uint8_t getVoltageOutInt() const { return (voltOut_ / 10); }
 	uint8_t getVoltageOutFract() const { return (voltOut_ % 10); }
+	uint16_t getVoltageOut() const { return voltOut_; }
 	bool setVoltageOut(uint8_t voltOutInt, uint8_t voltOutFract)
 	{
 		bool stat = false;

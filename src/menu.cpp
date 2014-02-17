@@ -631,6 +631,8 @@ eGB_COM clMenu::getTxCommand()
 			com = GB_COM_GET_SOST;
 		else if (cnt == 2)
 			com = GB_COM_GET_FAULT;
+		else if (cnt == 3)
+			com = GB_COM_GET_MEAS;
 		else
 		{
 			com = sParam.txComBuf.getCom();
@@ -2432,7 +2434,7 @@ void clMenu::lvlSetupParamDef()
 				}
 				else if (p == punkt6)
 				{
-					// !!! РЗСК надо сделать
+					// !!! TODO
 				}
 				else if (p == punkt7)
 				{
@@ -2440,7 +2442,7 @@ void clMenu::lvlSetupParamDef()
 				}
 				else if (p == punkt8)
 				{
-					// !!! РЗСК надо сделать
+					// !!! TODO
 				}
 				else if (p == punkt9)
 				{
@@ -2467,7 +2469,8 @@ void clMenu::lvlSetupParamDef()
 			poz += snprintf_P(&vLCDbuf[poz], 11, fcValue);
 			if (p == punkt1)
 			{
-				snprintf_P(&vLCDbuf[poz], 11, fcDefType[sParam.def.getDefType()]);
+				uint8_t val = sParam.def.getDefType();
+				snprintf_P(&vLCDbuf[poz], 11, fcDefType[val]);
 			}
 			else if (p == punkt2)
 			{
@@ -3125,7 +3128,7 @@ void clMenu::lvlSetupParamGlb()
 	static char punkt9[]  PROGMEM = "Сетевой адрес";
 	static char punkt10[] PROGMEM = "Uвых номинальное";
 	static char punkt11[] PROGMEM = "Частота";
-	static char punkt12[] PROGMEM = "Совместимость";	// защита
+	static char punkt12[] PROGMEM = "Совместимость";		// защита
 	static char punkt13[] PROGMEM = "Снижение ответа АК";
 	static char punkt14[] PROGMEM = "Тип детектора";
 	static char punkt15[] PROGMEM = "Коррекция напряжения";
@@ -3137,7 +3140,7 @@ void clMenu::lvlSetupParamGlb()
 	static char punkt21[] PROGMEM = "Допустимая помеха";
 	static char punkt22[] PROGMEM = "Тип автоконтроля";
 	static char punkt23[] PROGMEM = "Резервирование";
-	static char punkt24[] PROGMEM = "Совместимость";	// упаск
+	static char punkt24[] PROGMEM = "Совместимость";		// упаск
 
 	if (lvlCreate_)
 	{
@@ -3256,20 +3259,18 @@ void clMenu::lvlSetupParamGlb()
 			if (t == GB_COMPATIBILITY_PVZUE)
 			{
 				punkt_[num++] = punkt17;
-				sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);	// TODO - команда
+				sParam.txComBuf.addCom(GB_COM_GET_TIME_RERUN);
 				punkt_[num++] = punkt18;
-				sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);	// TODO - команда
+//				sParam.txComBuf.addCom(GB_COM_GET_TIME_RERUN);
 				punkt_[num++] = punkt19;
-				sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);	// TODO - команда
+//				sParam.txComBuf.addCom(GB_COM_GET_TIME_RERUN);
 				punkt_[num++] = punkt20;
-				sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);	// TODO - команда
+//				sParam.txComBuf.addCom(GB_COM_GET_TIME_RERUN);
 				punkt_[num++] = punkt21;
-				sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);	// TODO - команда
+//				sParam.txComBuf.addCom(GB_COM_GET_TIME_RERUN);
 				punkt_[num++] = punkt22;
-				sParam.txComBuf.addCom(GB_COM_GET_COM_PRD_KEEP);	// TODO - команда
-
+//				sParam.txComBuf.addCom(GB_COM_GET_TIME_RERUN);
 			}
-
 		}
 		numPunkts_ = num;
 	}
@@ -3360,6 +3361,34 @@ void clMenu::lvlSetupParamGlb()
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, 0,
 				GLB_COR_I_DEC_MAX, "мА");
 	}
+	else if (p == punkt17)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
+	}
+	else if (p == punkt18)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
+	}
+	else if (p == punkt19)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_PVZUE_FAIL_MIN,
+				GLB_PVZUE_FAIL_MAX, "град");
+	}
+	else if (p == punkt20)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_PVZUE_N_TH_MIN,
+				GLB_PVZUE_N_TH_MAX, "сек");
+	}
+	else if (p == punkt21)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_PVZUE_N_LVL_MIN,
+				GLB_PVZUE_N_LVL_MAX, "град");
+	}
+	else if (p == punkt22)
+	{
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
+	}
+
 
 	if (enterParam.isEnable())
 	{
@@ -3421,7 +3450,6 @@ void clMenu::lvlSetupParamGlb()
 			else if (p == punkt12)
 			{
 				uint8_t t = enterParam.getValueEnter();
-				t = sParam.glb.sendCompatibility(t);
 				sParam.txComBuf.setInt8(t);
 			}
 			else if (p == punkt13)
@@ -3431,11 +3459,69 @@ void clMenu::lvlSetupParamGlb()
 			}
 			else if (p == punkt15)
 			{
-				// TODO - подготовка данных корр. напряжения к передаче в БСП
+				// если текущее значение коррекции тока равно 0
+				// то передается сообщение с под.байтом равным 4
+				// означающим сброс коррекции
+				int16_t t = static_cast<int16_t>(enterParam.getValue());
+				uint8_t dop = enterParam.getDopValue();
+				if (t == 0)
+					dop = 4;
+				else
+				{
+					// новая коррекция =
+					// напряжение прибора - (напряжение с БСП - коррекция)
+					t -= static_cast<int16_t>(sParam.measParam.getVoltageOut());
+					t += sParam.glb.getCorU();
+				}
+				sParam.txComBuf.setInt8(dop, 0);
+				sParam.txComBuf.setInt8(t/10, 1);
+				sParam.txComBuf.setInt8((t%10)*10, 2);
+
+				sDebug.byte1 = t / 10;
+				sDebug.byte2 =(t % 10)*10;
 			}
 			else if (p == punkt16)
 			{
-				// TODO - подготовка данных коррекции тока к передаче в БСП
+				// если текущее значение коррекции тока равно 0
+				// то передается сообщение с под.байтом равным 5
+				// означающим сброс коррекции
+				int16_t t = static_cast<int16_t>(enterParam.getValue());
+				uint8_t dop = enterParam.getDopValue();
+				if (t == 0)
+					dop = 5;
+				else
+				{
+					// новая коррекция = ток прибора - (ток с БСП - коррекция)
+					t -= static_cast<int16_t>(sParam.measParam.getCurrentOut());
+					t += sParam.glb.getCorI();
+				}
+				sParam.txComBuf.setInt8(dop, 0);
+				sParam.txComBuf.setInt8((t >> 8), 1);
+				sParam.txComBuf.setInt8((t), 2);
+			}
+			else if (p == punkt17)
+			{
+				// TODO
+			}
+			else if (p == punkt18)
+			{
+				// TODO
+			}
+			else if (p == punkt19)
+			{
+				// TODO
+			}
+			else if (p == punkt20)
+			{
+				// TODO
+			}
+			else if (p == punkt21)
+			{
+				// TODO
+			}
+			else if (p == punkt22)
+			{
+				// TODO
 			}
 			sParam.txComBuf.addFastCom(enterParam.com);
 			enterParam.setDisable();
@@ -3517,6 +3603,33 @@ void clMenu::lvlSetupParamGlb()
 		{
 			snprintf(&vLCDbuf[poz], 11, "%dмА", sParam.glb.getCorI());
 		}
+		else if (p == punkt17)
+		{
+			uint8_t val = sParam.glb.getPvzueProtocol();
+			snprintf(&vLCDbuf[poz], 11, fcPvzueProtocol[val]);
+		}
+		else if (p == punkt18)
+		{
+			uint8_t val = sParam.glb.getPvzueParity();
+			snprintf(&vLCDbuf[poz], 11, fcPvzueParity[val]);
+		}
+		else if (p == punkt19)
+		{
+			snprintf(&vLCDbuf[poz], 11, "%uград", sParam.glb.getPvzueFail());
+		}
+		else if (p == punkt20)
+		{
+			snprintf(&vLCDbuf[poz], 11, "%uсек", sParam.glb.getPvzueNoiseTH());
+		}
+		else if (p == punkt21)
+		{
+			snprintf(&vLCDbuf[poz],11,"%uград", sParam.glb.getPvzueNoiseLvl());
+		}
+		else if (p == punkt22)
+		{
+			uint8_t val = sParam.glb.getPvzueTypeAC();
+			snprintf(&vLCDbuf[poz], 11, fcPvzueTypeAC[val]);
+		}
 	}
 
 	switch (key_)
@@ -3535,142 +3648,227 @@ void clMenu::lvlSetupParamGlb()
 
 		case KEY_ENTER:
 			enterFunc = &clMenu::enterValue;
-			if (sParam.glb.status.getRegime() == GB_REGIME_ENABLED)
+			// коррекция тока и напряжения вводятся в любом режиме
+			// остальные параметры только в "Выведен"
+			if (punkt_[cursorLine_ - 1] == punkt15)
+			{
+				// вводится реальное значение напряжения
+				// по умолчанию стоит 0, что значит сброс настроек
+				enterParam.setEnable(MENU_ENTER_PARAM_U_COR);
+				enterParam.setValueRange(0,	GLB_COR_U_DEC_MAX);
+				enterParam.setValue(0);
+				enterParam.setDisc(GLB_COR_U_DEC_DISC);
+				enterParam.setFract(GLB_COR_U_DEC_FRACT);
+				enterParam.setDopValue(1);
+				enterParam.com = GB_COM_SET_COR_U_I;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt16)
+			{
+				// вводится реальное значение тока
+				// по умолчанию стоит 0, что значит сброс настроек
+				enterParam.setEnable();
+				enterParam.setValueRange(0,	GLB_COR_I_DEC_MAX);
+				enterParam.setValue(0);
+				enterParam.setDisc(GLB_COR_I_DEC_DISC);
+				enterParam.setFract(GLB_AC_IN_DEC_FRACT);
+				enterParam.setDopValue(2);
+				enterParam.com = GB_COM_SET_COR_U_I;
+			}
+			else if (sParam.glb.status.getRegime() == GB_REGIME_ENABLED)
 			{
 				// если хоть одно из имеющихся устройств введено
 				// изменение параметров запрещено
 				enterParam.printMessage();
 			}
-			else
+			else if (punkt_[cursorLine_ - 1] == punkt1)
 			{
-				if (punkt_[cursorLine_ - 1] == punkt1)
-				{
-					enterParam.setEnable(MENU_ENTER_PARAM_LIST);
-					enterParam.setValueRange(0, 1);
-					uint8_t val = sParam.glb.getTimeSinchr() ? 1 : 0;
-					enterParam.setValue(val);
-					enterParam.list = fcOnOff[0];
-					enterParam.com = GB_COM_SET_TIME_SINCHR;
-				}
-				else if (punkt_[cursorLine_ - 1] == punkt2)
-				{
-					enterParam.setEnable();
-					enterParam.setValueRange(GLB_DEV_NUM_MIN,
-							sParam.glb.getMaxNumDevices());
-					enterParam.setValue(sParam.glb.getDeviceNum());
-					enterParam.setDisc(GLB_DEV_NUM_DISC);
-					enterParam.setFract(GLB_DEV_NUM_FRACT);
-					enterParam.com = GB_COM_SET_DEVICE_NUM;
-				}
-				else if (punkt_[cursorLine_ - 1] == punkt3)
-				{
-					enterParam.setEnable(MENU_ENTER_PARAM_LIST);
-					enterParam.setValueRange(0, 1);
-					uint8_t val = sParam.glb.getOutCheck() ? 1 : 0;
-					enterParam.setValue(val);
-					enterParam.list = fcOnOff[0];
-					enterParam.com = GB_COM_SET_OUT_CHECK;
-				}
-				else if (punkt_[cursorLine_ - 1] == punkt4)
-				{
-					enterParam.setEnable();
-					enterParam.setValueRange(GLB_CF_THRESH_MIN,
-							GLB_CF_THRESH_MAX);
-					enterParam.setValue(sParam.glb.getCfThreshold());
-					enterParam.setDisc(GLB_CF_THRESH_DISC);
-					enterParam.setFract(GLB_CF_THRESH_FRACT);
-					enterParam.setDopValue(1);
-					enterParam.com = GB_COM_SET_CF_THRESHOLD;
-				}
-				else if (punkt_[cursorLine_ - 1] == punkt5)
-				{
-					enterParam.setEnable();
-					enterParam.setValueRange(GLB_T_RERUN_MIN, GLB_T_RERUN_MAX);
-					enterParam.setValue(sParam.glb.getTimeRerun());
-					enterParam.setDisc(GLB_T_RERUN_DISC);
-					enterParam.setFract(GLB_T_RERUN_FRACT);
-					enterParam.com = GB_COM_SET_TIME_RERUN;
-				}
-				else if (punkt_[cursorLine_ - 1] == punkt6)
-				{
-					enterParam.setEnable(MENU_ENTER_PARAM_LIST);
-					enterParam.setValueRange(0, 1);
-					uint8_t val = sParam.glb.getComPrdKeep() ? 1 : 0;
-					enterParam.setValue(val);
-					enterParam.list = fcOnOff[0];
-					enterParam.com = GB_COM_SET_COM_PRD_KEEP;
-				}
-				else if (punkt_[cursorLine_ - 1] == punkt7)
-				{
-					enterParam.setEnable(MENU_ENTER_PARAM_LIST);
-					enterParam.setValueRange(0, 1);
-					uint8_t val = sParam.glb.getComPrmKeep() ? 1 : 0;
-					enterParam.setValue(val);
-					enterParam.list = fcOnOff[0];
-					enterParam.com = GB_COM_SET_COM_PRM_KEEP;
-				}
-				else if (punkt_[cursorLine_ - 1] == punkt8)
-				{
-					enterParam.setEnable();
-					enterParam.setValueRange(GLB_IN_DEC_MIN, GLB_IN_DEC_MAX);
-					enterParam.setValue(sParam.glb.getCfThreshold());
-					enterParam.setDisc(GLB_IN_DEC_DISC);
-					enterParam.setFract(GLB_IN_DEC_FRACT);
-					enterParam.setDopValue(2);
-					enterParam.com = GB_COM_SET_CF_THRESHOLD;
-				}
-				else if (punkt_[cursorLine_ - 1] == punkt9)
-				{
-					enterParam.setEnable();
-					enterParam.setValueRange(GLB_NET_ADR_MIN, GLB_NET_ADR_MAX);
-					enterParam.setValue(sParam.glb.getNetAddress());
-					enterParam.setDisc(GLB_NET_ADR_DISC);
-					enterParam.setFract(GLB_NET_ADR_FRACT);
-					enterParam.com = GB_COM_SET_NET_ADR;
-				}
-				else if (punkt_[cursorLine_ - 1] == punkt10)
-				{
-					enterParam.setEnable();
-					enterParam.setValueRange(GLB_U_OUT_NOM_MIN,
-							GLB_U_OUT_NOM_MAX);
-					enterParam.setValue(sParam.glb.getUoutNom());
-					enterParam.setDisc(GLB_U_OUT_NOM_DISC);
-					enterParam.setFract(GLB_U_OUT_NOM_FRACT);
-					enterParam.com = GB_COM_SET_COM_PRM_KEEP;
-				}
-				else if (punkt_[cursorLine_ - 1] == punkt11)
-				{
-					enterParam.setEnable();
-					enterParam.setValueRange(GLB_FREQ_MIN, GLB_FREQ_MAX);
-					enterParam.setValue(sParam.glb.getFreq());
-					enterParam.setDisc(GLB_FREQ_DISC);
-					enterParam.setFract(GLB_FREQ_FRACT);
-					enterParam.com = GB_COM_SET_FREQ;
-				}
-				else if (punkt_[cursorLine_ - 1] == punkt12)
-				{
-					enterParam.setEnable(MENU_ENTER_PARAM_LIST);
-					enterParam.setValueRange(GB_COMPATIBILITY_MIN,
-							GB_COMPATIBILITY_MAX - 1);
-					uint8_t val = (uint8_t) sParam.glb.getCompatibility();
-					enterParam.setValue(val);
-					enterParam.list = fcCompatibility[0];
-					enterParam.com = GB_COM_SET_COM_PRD_KEEP;
-				}
-				else if (punkt_[cursorLine_ - 1] == punkt13)
-				{
-					enterParam.setEnable();
-					enterParam.setValueRange(GLB_AC_IN_DEC_MIN,
-							GLB_AC_IN_DEC_MAX);
-					enterParam.setValue(sParam.glb.getAcInDec());
-					enterParam.setDisc(GLB_AC_IN_DEC_DISC);
-					enterParam.setFract(GLB_AC_IN_DEC_FRACT);
-					enterParam.setDopValue(1);
-					enterParam.com = GB_COM_SET_TIME_RERUN;
-				}
+				enterParam.setEnable(MENU_ENTER_PARAM_LIST);
+				enterParam.setValueRange(0, 1);
+				uint8_t val = sParam.glb.getTimeSinchr() ? 1 : 0;
+				enterParam.setValue(val);
+				enterParam.list = fcOnOff[0];
+				enterParam.com = GB_COM_SET_TIME_SINCHR;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt2)
+			{
+				enterParam.setEnable();
+				enterParam.setValueRange(GLB_DEV_NUM_MIN,
+						sParam.glb.getMaxNumDevices());
+				enterParam.setValue(sParam.glb.getDeviceNum());
+				enterParam.setDisc(GLB_DEV_NUM_DISC);
+				enterParam.setFract(GLB_DEV_NUM_FRACT);
+				enterParam.com = GB_COM_SET_DEVICE_NUM;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt3)
+			{
+				enterParam.setEnable(MENU_ENTER_PARAM_LIST);
+				enterParam.setValueRange(0, 1);
+				uint8_t val = sParam.glb.getOutCheck() ? 1 : 0;
+				enterParam.setValue(val);
+				enterParam.list = fcOnOff[0];
+				enterParam.com = GB_COM_SET_OUT_CHECK;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt4)
+			{
+				enterParam.setEnable();
+				enterParam.setValueRange(GLB_CF_THRESH_MIN,
+						GLB_CF_THRESH_MAX);
+				enterParam.setValue(sParam.glb.getCfThreshold());
+				enterParam.setDisc(GLB_CF_THRESH_DISC);
+				enterParam.setFract(GLB_CF_THRESH_FRACT);
+				enterParam.setDopValue(1);
+				enterParam.com = GB_COM_SET_CF_THRESHOLD;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt5)
+			{
+				enterParam.setEnable();
+				enterParam.setValueRange(GLB_T_RERUN_MIN, GLB_T_RERUN_MAX);
+				enterParam.setValue(sParam.glb.getTimeRerun());
+				enterParam.setDisc(GLB_T_RERUN_DISC);
+				enterParam.setFract(GLB_T_RERUN_FRACT);
+				enterParam.com = GB_COM_SET_TIME_RERUN;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt6)
+			{
+				enterParam.setEnable(MENU_ENTER_PARAM_LIST);
+				enterParam.setValueRange(0, 1);
+				uint8_t val = sParam.glb.getComPrdKeep() ? 1 : 0;
+				enterParam.setValue(val);
+				enterParam.list = fcOnOff[0];
+				enterParam.com = GB_COM_SET_COM_PRD_KEEP;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt7)
+			{
+				enterParam.setEnable(MENU_ENTER_PARAM_LIST);
+				enterParam.setValueRange(0, 1);
+				uint8_t val = sParam.glb.getComPrmKeep() ? 1 : 0;
+				enterParam.setValue(val);
+				enterParam.list = fcOnOff[0];
+				enterParam.com = GB_COM_SET_COM_PRM_KEEP;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt8)
+			{
+				enterParam.setEnable();
+				enterParam.setValueRange(GLB_IN_DEC_MIN, GLB_IN_DEC_MAX);
+				enterParam.setValue(sParam.glb.getInDecrease());
+				enterParam.setDisc(GLB_IN_DEC_DISC);
+				enterParam.setFract(GLB_IN_DEC_FRACT);
+				enterParam.setDopValue(2);
+				enterParam.com = GB_COM_SET_CF_THRESHOLD;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt9)
+			{
+				enterParam.setEnable();
+				enterParam.setValueRange(GLB_NET_ADR_MIN, GLB_NET_ADR_MAX);
+				enterParam.setValue(sParam.glb.getNetAddress());
+				enterParam.setDisc(GLB_NET_ADR_DISC);
+				enterParam.setFract(GLB_NET_ADR_FRACT);
+				enterParam.com = GB_COM_SET_NET_ADR;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt10)
+			{
+				enterParam.setEnable();
+				enterParam.setValueRange(GLB_U_OUT_NOM_MIN,
+						GLB_U_OUT_NOM_MAX);
+				enterParam.setValue(sParam.glb.getUoutNom());
+				enterParam.setDisc(GLB_U_OUT_NOM_DISC);
+				enterParam.setFract(GLB_U_OUT_NOM_FRACT);
+				enterParam.com = GB_COM_SET_COM_PRM_KEEP;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt11)
+			{
+				enterParam.setEnable();
+				enterParam.setValueRange(GLB_FREQ_MIN, GLB_FREQ_MAX);
+				enterParam.setValue(sParam.glb.getFreq());
+				enterParam.setDisc(GLB_FREQ_DISC);
+				enterParam.setFract(GLB_FREQ_FRACT);
+				enterParam.com = GB_COM_SET_FREQ;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt12)
+			{
+				enterParam.setEnable(MENU_ENTER_PARAM_LIST);
+				enterParam.setValueRange(GB_COMPATIBILITY_MIN,
+						GB_COMPATIBILITY_MAX - 1);
+				uint8_t val = (uint8_t) sParam.glb.getCompatibility();
+				enterParam.setValue(val);
+				enterParam.list = fcCompatibility[0];
+				enterParam.com = GB_COM_SET_COM_PRD_KEEP;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt13)
+			{
+				enterParam.setEnable();
+				enterParam.setValueRange(GLB_AC_IN_DEC_MIN,
+						GLB_AC_IN_DEC_MAX);
+				enterParam.setValue(sParam.glb.getAcInDec());
+				enterParam.setDisc(GLB_AC_IN_DEC_DISC);
+				enterParam.setFract(GLB_AC_IN_DEC_FRACT);
+				enterParam.setDopValue(1);
+				enterParam.com = GB_COM_SET_TIME_RERUN;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt17)
+			{
+				enterParam.setEnable(MENU_ENTER_PARAM_LIST);
+				enterParam.setValueRange(GB_PVZUE_PROTOCOL_MIN,
+						GB_PVZUE_PROTOCOL_MAX -1);
+				enterParam.setValue(sParam.glb.getPvzueProtocol());
+				enterParam.list = fcPvzueProtocol[0];
+				enterParam.setDopValue(1);
+				enterParam.com = GB_COM_GET_TIME_RERUN;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt18)
+			{
+				enterParam.setEnable(MENU_ENTER_PARAM_LIST);
+				enterParam.setValueRange(GB_PVZUE_PARITY_MIN,
+						GB_PVZUE_PARITY_MAX -1);
+				enterParam.setValue(sParam.glb.getPvzueParity());
+				enterParam.list = fcPvzueParity[0];
+				enterParam.setDopValue(2);
+				enterParam.com = GB_COM_GET_TIME_RERUN;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt19)
+			{
+				enterParam.setEnable();
+				enterParam.setValueRange(GLB_PVZUE_FAIL_MIN,
+						GLB_PVZUE_FAIL_MAX);
+				enterParam.setValue(sParam.glb.getPvzueFail());
+				enterParam.setDisc(GLB_PVZUE_FAIL_DISC);
+				enterParam.setFract(GLB_PVZUE_FAIL_FRACT);
+				enterParam.setDopValue(3);
+				enterParam.com = GB_COM_SET_TIME_RERUN;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt20)
+			{
+				enterParam.setEnable();
+				enterParam.setValueRange(GLB_PVZUE_N_TH_MIN,
+						GLB_PVZUE_N_TH_MAX);
+				enterParam.setValue(sParam.glb.getPvzueNoiseTH());
+				enterParam.setDisc(GLB_PVZUE_N_TH_DISC);
+				enterParam.setFract(GLB_PVZUE_N_TH_FRACT);
+				enterParam.setDopValue(4);
+				enterParam.com = GB_COM_SET_TIME_RERUN;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt21)
+			{
+				enterParam.setEnable();
+				enterParam.setValueRange(GLB_PVZUE_N_LVL_MIN,
+						GLB_PVZUE_N_LVL_MAX);
+				enterParam.setValue(sParam.glb.getPvzueNoiseLvl());
+				enterParam.setDisc(GLB_PVZUE_N_LVL_DISC);
+				enterParam.setFract(GLB_PVZUE_N_LVL_FRACT);
+				enterParam.setDopValue(5);
+				enterParam.com = GB_COM_SET_TIME_RERUN;
+			}
+			else if (punkt_[cursorLine_ - 1] == punkt22)
+			{
+				enterParam.setEnable(MENU_ENTER_PARAM_LIST);
+				enterParam.setValueRange(GB_PVZUE_TYPE_AC_MIN,
+						GB_PVZUE_TYPE_AC_MAX -1);
+				enterParam.setValue(sParam.glb.getPvzueTypeAC());
+				enterParam.list = fcPvzueTypeAC[0];
+				enterParam.setDopValue(6);
+				enterParam.com = GB_COM_GET_TIME_RERUN;
 			}
 			break;
-
 		default:
 			break;
 	}
@@ -3956,7 +4154,9 @@ void clMenu::lvlTest2()
  */
 eMENU_ENTER_PARAM clMenu::enterValue()
 {
-	static char enterList[] PROGMEM ="Ввод: %S";
+	static char enterList[] PROGMEM = "Ввод: %S";
+	static char enterInt[] 	PROGMEM = "Ввод: %01u";
+	static char enterUcor[]	PROGMEM = "Ввод: %01u.%01u";
 
 	eMENU_ENTER_PARAM status = enterParam.getStatus();
 	if (status == MENU_ENTER_PARAM_MESSAGE)
@@ -3969,9 +4169,9 @@ eMENU_ENTER_PARAM clMenu::enterValue()
 		if (enterParam.cnt_ < TIME_MESSAGE)
 		{
 			static char message[3][21] PROGMEM = {
-													" Изменить параметр  ",
-													"  можно только в    ",
-													"  режиме ВЫВЕДЕН    " };
+			                                      " Изменить параметр  ",
+			                                      "  можно только в    ",
+			                                      "  режиме ВЫВЕДЕН    " };
 
 			enterParam.cnt_++;
 			key_ = KEY_NO;
@@ -3999,8 +4199,24 @@ eMENU_ENTER_PARAM clMenu::enterValue()
 		{
 			clearLine(NUM_TEXT_LINES);
 			uint8_t poz = 100;
-			static char enterInt[] PROGMEM = "Ввод: %01u";
 			snprintf_P(&vLCDbuf[poz], 21, enterInt, val);
+		}
+	}
+	else if (status == MENU_ENTER_PARAM_U_COR)
+	{
+		uint16_t val = enterParam.getValue();
+		uint8_t num = enterParam.getValueNumSymbols();
+
+		// если кол-во символов выходит за допустимые значения, закончим ввод
+		if ((num >= 5) || (num == 0))
+		{
+			key_ = KEY_CANCEL;
+		}
+		else
+		{
+			clearLine(NUM_TEXT_LINES);
+			uint8_t poz = 100;
+			snprintf_P(&vLCDbuf[poz], 21, enterUcor, val/10, val%10);
 		}
 	}
 	else if (status == MENU_ENTER_PARAM_LIST)
