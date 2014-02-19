@@ -11,16 +11,28 @@
 #include "keyboard.h"
 #include "glbDefine.h"
 
-/// время до первой инициализации дисплея (* время цикла обновления ЖКИ)
-#define TIME_TO_INIT_LCD 3
-/// время до переинициализации дисплея (* время цикла обновления ЖКИ)
-#define TIME_TO_REINIT_LCD 50
+/// время одно цикла работы с меню, мс
+#define MENU_TIME_CYLCE 200
+
+/// время до первой инициализации дисплея, мс
+#define TIME_TO_INIT_LCD (600 / MENU_TIME_CYLCE)
+/// время до переинициализации дисплея, мс
+#define TIME_TO_REINIT_LCD (10000 / MENU_TIME_CYLCE)
 
 /// максимальное кол-во пунктов в меню
 #define MAX_NUM_PUNKTS 15
 
-/// время вывода доп.сообщения на экран
-#define TIME_MESSAGE 10
+/// максимальное кол-во отображаемых на экране параметров
+#define MAX_NUM_MEAS_PARAM 6
+
+/// время вывода измеряемого параметра на экран, мс
+#define TIME_MEAS_PARAM (3000 / MENU_TIME_CYLCE)
+
+/// время вывода доп.сообщения на экран, мс
+#define TIME_MESSAGE (3000 / MENU_TIME_CYLCE)
+
+/// время вывода текста на экран, мс (например авария/код аварии)
+#define TIME_TEXT (1000 / MENU_TIME_CYLCE)
 
 /// Измеряемые параметры
 enum eMENU_MEAS_PARAM
@@ -29,8 +41,14 @@ enum eMENU_MEAS_PARAM
 	MENU_MEAS_PARAM_DATE,
 	MENU_MEAS_PARAM_TIME,
 	MENU_MEAS_PARAM_UZ,
+	MENU_MEAS_PARAM_UZ1,
+	MENU_MEAS_PARAM_UZ2,
 	MENU_MEAS_PARAM_UC,
+	MENU_MEAS_PARAM_UC1,
+	MENU_MEAS_PARAM_UC2,
 	MENU_MEAS_PARAM_UN,
+	MENU_MEAS_PARAM_UN1,
+	MENU_MEAS_PARAM_UN2,
 	MENU_MEAS_PARAM_UOUT,
 	MENU_MEAS_PARAM_IOUT,
 	MENU_MEAS_PARAM_ROUT
@@ -292,8 +310,11 @@ private:
 	// код кнопки
 	eKEY key_;
 
-	// флаг мигания надписи
+	// флаг мигания надписей
 	bool blink_;
+
+	// флаг смены измеряемых параметров
+	bool blinkMeasParam_;
 
 	// флаг текущего сосотояния связи с БСП, True - есть
 	bool connectionBsp_;
@@ -317,7 +338,7 @@ private:
 	uint8_t delay_;
 
 	// измеряемые параметры
-	eMENU_MEAS_PARAM measParam[6];
+	eMENU_MEAS_PARAM measParam[MAX_NUM_MEAS_PARAM*2];
 
 	// кол-во пунктов в текущем меню
 	uint8_t numPunkts_;

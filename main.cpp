@@ -19,8 +19,8 @@
 #include "inc/protocolPcS.h"
 #include "inc/protocolBspS.h"
 
-/// Период обновления экрана * 100 мс
-#define LCD_REFRESH_PERIOD 2
+/// Время работы одного цикла (зависит от настройки таймеров), мс
+#define TIME_CYLCE 100
 
 /// Размер буфера для общения с БСП
 #define BUFF_SIZE_BSP 128
@@ -232,9 +232,10 @@ main (void)
 			}
 
 			cnt_wdt++;
+
 			// обновление экрана
-			// выполняется с периодом LCD_REFRESH_PERIOD * 100мс
-			if (++cnt_lcd >= LCD_REFRESH_PERIOD)
+			// где 100 - время рабочего цикла
+			if (++cnt_lcd >= (MENU_TIME_CYLCE / TIME_CYLCE))
 			{
 				cnt_lcd = 0;
 				menu.main();

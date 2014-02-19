@@ -17,8 +17,14 @@ static const char fcUout[]  PROGMEM = "U=%02u.%01uб";
 static const char fcIout[] 	PROGMEM	= "I=%03uЛю";
 static const char fcRout[] 	PROGMEM = "R=%03uнЛ";
 static const char fcUz[]	PROGMEM	= "UГ=%02dДа";
+static const char fcUz1[] 	PROGMEM = "UГ1=%02dДа";
+static const char fcUz2[] 	PROGMEM = "UГ2=%02dДа";
 static const char fcUcf[] 	PROGMEM	= "UЙ=%02dДа";
+static const char fcUcf1[] 	PROGMEM	= "UЙ1=%02dДа";
+static const char fcUcf2[] 	PROGMEM	= "UЙ2=%02dДа";
 static const char fcUn[] 	PROGMEM	= "UЬ=%02dДа";
+static const char fcUn1[] 	PROGMEM	= "UЬ1=%02dДа";
+static const char fcUn2[] 	PROGMEM	= "UЬ2=%02dДа";
 static const char fcDate[] 	PROGMEM = "%02u.%02u.%02u";
 static const char fcTime[] 	PROGMEM = "%02u:%02u:%02u";
 

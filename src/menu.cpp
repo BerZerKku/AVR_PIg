@@ -106,22 +106,25 @@ clMenu::clMenu()
  * 	@param Нет
  * 	@return Нет
  */
-void clMenu::main(void)
-{
+void clMenu::main(void) {
 	// Счетчик времени до переинициализации ЖКИ
-	static uint8_t reInit = TIME_TO_INIT_LCD;
+	static uint8_t cntInitLcd = 0;
+	static uint8_t cntBlinkMeas = 0;
+	static uint8_t cntBlinkText = 0;
 
-	blink_ = ((reInit % 8) < 4) ? false : true;
-
-	// Переинициализация дисплея
-	if (reInit > 0)
-	{
-		reInit--;
+	if (++cntBlinkMeas >= TIME_MEAS_PARAM) {
+		blinkMeasParam_ = !blinkMeasParam_;
+		cntBlinkMeas = 0;
 	}
-	else
-	{
-		reInit = TIME_TO_REINIT_LCD - 1;
+
+	if (++cntBlinkText >= TIME_TEXT) {
+		blink_ = !blink_;
+		cntBlinkText = 0;
+	}
+
+	if (++cntInitLcd >= TIME_TO_INIT_LCD) {
 		vLCDinit();
+		cntInitLcd = 0;
 	}
 
 	if (!sParam.device)
@@ -130,8 +133,7 @@ void clMenu::main(void)
 	// Считаем код с клавиатуры
 	// Если нажата любая кнопка - включится кратковременная подсветка
 	eKEY tmp = eKEYget(sParam.typeDevice);
-	if (tmp != KEY_NO)
-	{
+	if (tmp != KEY_NO) {
 		if (tmp == KEY_FUNC)
 			tmp = KEY_NO;
 		key_ = tmp;
@@ -139,14 +141,13 @@ void clMenu::main(void)
 		vLCDsetLED(LED_SWITCH);
 	}
 
-	// очистка текстового буфера
-	clearTextBuf();
-
 	// счетчик вывода сообщения
 	if (delay_ < TIME_MESSAGE)
 		delay_++;
 
-	// выведем сообщение, если текущий тип аппарата не определен
+	// вывод в буфер содержимого текущего меню
+	// либо сообщения что тип аппарата не определен
+	clearTextBuf();
 	(this->*lvlMenu)();
 	key_ = KEY_NO;
 
@@ -171,8 +172,7 @@ void clMenu::main(void)
 #endif
 
 	// вывод сообщения в случае отсутствия связи с БСП
-	if (!isConnectionBsp() && (blink_))
-	{
+	if (!isConnectionBsp() && (blink_)) {
 		static const char fcNoConnectBsp[] PROGMEM = " Нет связи с БСП!!! ";
 		snprintf_P(&vLCDbuf[0], 20, fcNoConnectBsp);
 	}
@@ -263,16 +263,24 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 		for(uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
 			sParam.prd.status.warningText[i] = fcUnknownWarning;
 
+		// предварительная очистка массива отображаемых параметров
+		for(uint_fast8_t i = 0; i < (MAX_NUM_MEAS_PARAM*2); i++)
+			measParam[i] = MENU_MEAS_PARAM_NO;
+
 		if (device == AVANT_K400)
 		{
 			sParam.typeDevice = device;
 
-			measParam[0] = MENU_MEAS_PARAM_TIME;
-			measParam[1] = MENU_MEAS_PARAM_DATE;
-			measParam[2] = MENU_MEAS_PARAM_UOUT;
-			measParam[3] = MENU_MEAS_PARAM_IOUT;
-			measParam[4] = MENU_MEAS_PARAM_UN;
-			measParam[5] = MENU_MEAS_PARAM_UC;
+			// TODO - в 3-х концевой Uк1/2, Uш1/2
+			// первый столбец параметров
+			measParam[0] = MENU_MEAS_PARAM_TIME; // дата <-> время
+			measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
+			measParam[2]=measParam[2+MAX_NUM_MEAS_PARAM]= MENU_MEAS_PARAM_UOUT;
+			measParam[4]=measParam[4+MAX_NUM_MEAS_PARAM]= MENU_MEAS_PARAM_IOUT;
+			// второй столбец параметров
+			measParam[3]=measParam[3+MAX_NUM_MEAS_PARAM]=MENU_MEAS_PARAM_UC;
+			measParam[5]=measParam[5+MAX_NUM_MEAS_PARAM]=MENU_MEAS_PARAM_UN;
+
 
 			// заполнение массива общих неисправностей
 			sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -341,12 +349,17 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 		{
 			sParam.typeDevice = device;
 
-			measParam[0] = MENU_MEAS_PARAM_TIME;
-			measParam[1] = MENU_MEAS_PARAM_DATE;
-			measParam[2] = MENU_MEAS_PARAM_UOUT;
-			measParam[3] = MENU_MEAS_PARAM_IOUT;
-			measParam[4] = MENU_MEAS_PARAM_UZ;
-			measParam[5] = MENU_MEAS_PARAM_UC;
+			// TODO - в 3-х концевой Uк1/2, Uз1/2, Uш1/2
+			// первый столбец параметров
+			measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
+			measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
+			measParam[2]=measParam[2+MAX_NUM_MEAS_PARAM]= MENU_MEAS_PARAM_UOUT;
+			measParam[4]=measParam[4+MAX_NUM_MEAS_PARAM]= MENU_MEAS_PARAM_IOUT;
+
+			// второй столбец параметров
+			measParam[1]=measParam[1+MAX_NUM_MEAS_PARAM]= MENU_MEAS_PARAM_UZ;
+			measParam[3]=measParam[3+MAX_NUM_MEAS_PARAM]= MENU_MEAS_PARAM_UC;
+			measParam[5]=measParam[5+MAX_NUM_MEAS_PARAM]= MENU_MEAS_PARAM_UN;
 
 			// заполнение массива общих неисправностей
 			sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -435,12 +448,17 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 		{
 			sParam.typeDevice = device;
 
-			measParam[0] = MENU_MEAS_PARAM_TIME;
-			measParam[1] = MENU_MEAS_PARAM_DATE;
-			measParam[2] = MENU_MEAS_PARAM_UOUT;
-			measParam[3] = MENU_MEAS_PARAM_IOUT;
-			measParam[4] = MENU_MEAS_PARAM_UZ;
-			measParam[5] = MENU_MEAS_PARAM_UC;
+			// TODO - в 3-х концевой Uk1/2
+			// первый столбец параметров
+			measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
+			measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
+			measParam[2]=measParam[2+MAX_NUM_MEAS_PARAM]= MENU_MEAS_PARAM_UOUT;
+			measParam[4]=measParam[4+MAX_NUM_MEAS_PARAM]= MENU_MEAS_PARAM_IOUT;
+
+			// второй столбец параметров
+			measParam[1]=measParam[1+MAX_NUM_MEAS_PARAM]= MENU_MEAS_PARAM_UZ;
+			measParam[3]=measParam[3+MAX_NUM_MEAS_PARAM]= MENU_MEAS_PARAM_UC;
+			measParam[5]=measParam[5+MAX_NUM_MEAS_PARAM]= MENU_MEAS_PARAM_UN;
 
 			// заполнение массива общих неисправностей
 			sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -504,10 +522,8 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 
 			// TODO - оптика
 			// дополнить список измеряемых параметров, если есть ?!
-			measParam[0] = MENU_MEAS_PARAM_TIME;
-			measParam[1] = MENU_MEAS_PARAM_DATE;
-			for (uint_fast8_t i = 2; i < 6; i++)
-				measParam[i] = MENU_MEAS_PARAM_NO;
+			measParam[0]=measParam[0+MAX_NUM_MEAS_PARAM]= MENU_MEAS_PARAM_TIME;
+			measParam[1]=measParam[1+MAX_NUM_MEAS_PARAM]= MENU_MEAS_PARAM_DATE;
 
 			// заполнение массива общих неисправностей
 			sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -596,10 +612,11 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device)
 		// на экране отображается ошибка
 		sParam.typeDevice = AVANT_NO;
 		// в случае неизвестного типа устройства, отключим все
-		measParam[0] = MENU_MEAS_PARAM_TIME;
-		measParam[1] = MENU_MEAS_PARAM_DATE;
-		for (uint_fast8_t i = 2; i < 6; i++)
+		for (uint_fast8_t i = 0; i < (MAX_NUM_MEAS_PARAM*2); i++)
 			measParam[i] = MENU_MEAS_PARAM_NO;
+		measParam[0] = measParam[0+MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TIME;
+		measParam[1] = measParam[1+MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
+
 		sParam.def.status.setEnable(false);
 		sParam.prm.status.setEnable(false);
 		sParam.prd.status.setEnable(false);
@@ -670,33 +687,58 @@ void clMenu::clearLine(uint8_t line)
 /**	Вывод в указанном месте отображаемого параметра.
  * 	В одной строке выводятся два параметра.
  * 	@param poz Текущая позиция (0..5, 0 первая строка слева, 5 - третья справа)
- * 	@param par Второй отображаемый параметр
+ * 	@param par Отображаемый параметр
  * 	@return Нет
  */
 void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par)
 {
 	// смещение в буфере
-	if (poz < 6)
+	if (poz < MAX_NUM_MEAS_PARAM)
 	{
+		// 10 - кол-во символов отведенное на экране под 1 параметр
 		poz = (poz * 10) + 1;
 
 		switch (par)
 		{
 			case MENU_MEAS_PARAM_DATE:
-				snprintf_P(&vLCDbuf[poz], 9, fcDate, sParam.dataTime.getDay(),
-						sParam.dataTime.getMonth(), sParam.dataTime.getYear());
+				snprintf_P(&vLCDbuf[poz], 11, fcDate,
+						sParam.dataTime.getDay(),
+						sParam.dataTime.getMonth(),
+						sParam.dataTime.getYear());
 				break;
 			case MENU_MEAS_PARAM_TIME:
-				snprintf_P(&vLCDbuf[poz], 9, fcTime, sParam.dataTime.getHour(),
+				snprintf_P(&vLCDbuf[poz], 11, fcTime,
+						sParam.dataTime.getHour(),
 						sParam.dataTime.getMinute(),
 						sParam.dataTime.getSecond());
 				break;
 			case MENU_MEAS_PARAM_UZ:
-				snprintf_P(&vLCDbuf[poz], 9, fcUz,
+				snprintf_P(&vLCDbuf[poz], 11, fcUz,
 						sParam.measParam.getVoltageDef());
 				break;
+
+				// TODO - для Uз1 и Uз2 нужны свои параметры
+			case MENU_MEAS_PARAM_UZ1:
+				snprintf_P(&vLCDbuf[poz], 11, fcUz1,
+						sParam.measParam.getVoltageDef());
+				break;
+			case MENU_MEAS_PARAM_UZ2:
+				snprintf_P(&vLCDbuf[poz], 11, fcUz2,
+						sParam.measParam.getVoltageDef());
+				break;
+
 			case MENU_MEAS_PARAM_UC:
 				snprintf_P(&vLCDbuf[poz], 11, fcUcf,
+						sParam.measParam.getVoltageCf());
+				break;
+
+				// TODO - для Uк1 и Uк2 нужны свои параметры
+			case MENU_MEAS_PARAM_UC1:
+				snprintf_P(&vLCDbuf[poz], 11, fcUcf1,
+						sParam.measParam.getVoltageCf());
+				break;
+			case MENU_MEAS_PARAM_UC2:
+				snprintf_P(&vLCDbuf[poz], 11, fcUcf2,
 						sParam.measParam.getVoltageCf());
 				break;
 			case MENU_MEAS_PARAM_UOUT:
@@ -704,6 +746,7 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par)
 						sParam.measParam.getVoltageOutInt(),
 						sParam.measParam.getVoltageOutFract());
 				break;
+
 			case MENU_MEAS_PARAM_IOUT:
 				snprintf_P(&vLCDbuf[poz], 11, fcIout,
 						sParam.measParam.getCurrentOut());
@@ -712,10 +755,21 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par)
 				snprintf_P(&vLCDbuf[poz], 11, fcRout,
 						sParam.measParam.getResistOut());
 				break;
+
 			case MENU_MEAS_PARAM_UN:
 				snprintf_P(&vLCDbuf[poz], 11, fcUn,
 						sParam.measParam.getVoltageNoise());
 				break;
+
+				// TODO - для Uш1 и Uш2 нужны свои параметры
+			case MENU_MEAS_PARAM_UN1:
+							snprintf_P(&vLCDbuf[poz], 11, fcUn1,
+									sParam.measParam.getVoltageNoise());
+							break;
+			case MENU_MEAS_PARAM_UN2:
+							snprintf_P(&vLCDbuf[poz], 11, fcUn2,
+									sParam.measParam.getVoltageNoise());
+							break;
 			default:
 				// ничего не делаем
 				break;
@@ -895,8 +949,14 @@ void clMenu::lvlStart()
 	}
 
 	// вывод на экран измеряемых параметров
-	for (uint_fast8_t i = 0; i < 6; i++)
-		printMeasParam(i, measParam[i]);
+	for (uint_fast8_t i = 0; i < (lineParam_ * 2); i++)
+	{
+		if (blinkMeasParam_)
+			printMeasParam(i, measParam[i]);
+		else
+			printMeasParam(i, measParam[i+MAX_NUM_MEAS_PARAM]);
+	}
+
 
 	uint8_t poz = lineParam_ * 20;
 	if (sParam.def.status.isEnable())
