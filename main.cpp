@@ -51,21 +51,19 @@ uint8_t uBufUartBsp[BUFF_SIZE_BSP];
 /// Класс меню
 clMenu menu;
 /// Класс последовательного порта работающего с ПК
-clUart 		uartPC	(UART_UART1, uBufUartPc, BUFF_SIZE_PC);
+clUart uartPC(UART_UART1, uBufUartPc, BUFF_SIZE_PC);
 /// Класc последовательного порта работающего с БСП
-clUart 		uartBSP	(UART_UART0, uBufUartBsp, BUFF_SIZE_BSP);
+clUart uartBSP(UART_UART0, uBufUartBsp, BUFF_SIZE_BSP);
 /// Класс стандартного протокола работающего с ПК
-clProtocolPcS	protPCs(uBufUartPc, BUFF_SIZE_PC, &menu.sParam);
+clProtocolPcS protPCs(uBufUartPc, BUFF_SIZE_PC, &menu.sParam);
 /// Класс стандартного протокола работающего с БСП
-clProtocolBspS	protBSPs(uBufUartBsp, BUFF_SIZE_BSP, &menu.sParam);
-
+clProtocolBspS protBSPs(uBufUartBsp, BUFF_SIZE_BSP, &menu.sParam);
 
 /**	Работа с принятыми данными по UART
  * 	@param Нет
  * 	@return False - в случае 5-и неполученных сообщений от БСП подряд
  */
-static bool uartRead()
-{
+static bool uartRead() {
 	bool stat = true;
 	// код запрашиваемой с ПК команды
 	static uint8_t lastPcCom = 0;
@@ -75,19 +73,16 @@ static bool uartRead()
 	// перед приемом проверим статус на залипание
 	protBSPs.checkStat();
 	// Проверка наличия сообщения с БСП и ее обработка
-	if (protBSPs.getCurrentStatus() == PRTS_STATUS_READ_OK)
-	{
+	if (protBSPs.getCurrentStatus() == PRTS_STATUS_READ_OK) {
 		// проверка контрольной суммы полученного сообщения и
 		// обработка данных если она соответствует полученной
-		if (protBSPs.checkReadData())
-		{
+		if (protBSPs.checkReadData()) {
 			// обработка принятого сообщения
 			protBSPs.getData();
 
 			// проверка соответствия команды запрошенной с ПК и команды
 			// полученной от БСП и если совпадают пересылка сообщения на ПК
-			if (lastPcCom == protBSPs.getCurrentCom())
-			{
+			if (lastPcCom == protBSPs.getCurrentCom()) {
 				protPCs.copyCommandFrom(protBSPs.buf);
 			}
 		}
@@ -97,9 +92,7 @@ static bool uartRead()
 		lastPcCom = 0;
 		// сброс счетчика потерянных сообщений с БСП
 		cntLostCom = 0;
-	}
-	else
-	{
+	} else {
 		// в случае превышения порога потерянных сообщений при обмене с БСП
 		// флаг состояния сбрасывается в False
 		if (cntLostCom < MAX_LOST_COM_FROM_BSP)
@@ -111,17 +104,14 @@ static bool uartRead()
 	// перед приемом проверим статус на залипание
 	protPCs.checkStat();
 	// проверка наличия команды с ПК и ее обработка
-	if (protPCs.getCurrentStatus() == PRTS_STATUS_READ_OK)
-	{
+	if (protPCs.getCurrentStatus() == PRTS_STATUS_READ_OK) {
 		// проверка контрольной суммы полученного сообщения и
 		// обработка данных если она соответствует полученной
-		if (protPCs.checkReadData())
-		{
+		if (protPCs.checkReadData()) {
 			// обработка принятого сообщения
 			// если сообщение небыло обработано, перешлем его в БСП
 			// (т.е. если это не запрос/изменение пароля)
-			if (!protPCs.getData())
-			{
+			if (!protPCs.getData()) {
 				// сохранение запрашиваемой ПК команды
 				lastPcCom = protPCs.getCurrentCom();
 
@@ -138,19 +128,15 @@ static bool uartRead()
  * 	@param Нет
  * 	@return True - всегда
  */
-static bool uartWrite()
-{
+static bool uartWrite() {
 	// Перед передачей проверим статус протокола на залипание.
 	protPCs.checkStat();
 	// проверка необходимости передачи команды на ПК и ее отправка
 	ePRTS_STATUS stat = protPCs.getCurrentStatus();
-	if (stat == PRTS_STATUS_WRITE_PC)
-	{
+	if (stat == PRTS_STATUS_WRITE_PC) {
 		// пересылка ответа БСП
 		uartPC.trData(protPCs.trCom());
-	}
-	else if (stat == PRTS_STATUS_WRITE)
-	{
+	} else if (stat == PRTS_STATUS_WRITE) {
 		// отправка ответа ПИ
 		uartPC.trData(protPCs.trCom());
 	}
@@ -160,19 +146,15 @@ static bool uartWrite()
 	// проверим нет ли необходимости передачи команды с ПК
 	// если нет, то возьмем команду с МЕНЮ
 	stat = protBSPs.getCurrentStatus();
-	if (stat == PRTS_STATUS_WRITE_PC)
-	{
+	if (stat == PRTS_STATUS_WRITE_PC) {
 		// пересылка запроса ПК
 		uartBSP.trData(protBSPs.trCom());
-	}
-	else if (stat == PRTS_STATUS_NO)
-	{
+	} else if (stat == PRTS_STATUS_NO) {
 		// отправка запроса БСП
 		eGB_COM com = menu.getTxCommand();
 		uint8_t num = protBSPs.sendData(com);
 		uartBSP.trData(num);
 	}
-
 
 	return true;
 }
@@ -182,8 +164,7 @@ static bool uartWrite()
  * 	@return Нет
  */
 int __attribute__ ((OS_main))
-main (void)
-{
+main(void) {
 	// счетчик для обновления ЖКИ
 	uint8_t cnt_lcd = 0;
 	uint8_t cnt_1s = 0;
@@ -207,12 +188,10 @@ main (void)
 	// зададим тип аппарата
 	// menu.setTypeDevice(AVANT_NO);
 
+	while (1) {
+		if (b100ms) {
+			SET_TP2;
 
-
-	while(1)
-	{
-		if (b100ms)
-		{
 			b100ms = false;
 
 			cnt_wdt++;
@@ -223,8 +202,7 @@ main (void)
 
 			cnt_wdt++;
 			// задачи выполняемые раз в 1с
-			if (++cnt_1s >= 10)
-			{
+			if (++cnt_1s >= 10) {
 				cnt_1s = 0;
 
 				uint16_t password = menu.sParam.password.get();
@@ -235,8 +213,7 @@ main (void)
 
 			// обновление экрана
 			// где 100 - время рабочего цикла
-			if (++cnt_lcd >= (MENU_TIME_CYLCE / TIME_CYLCE))
-			{
+			if (++cnt_lcd >= (MENU_TIME_CYLCE / TIME_CYLCE)) {
 				cnt_lcd = 0;
 				menu.main();
 			}
@@ -249,38 +226,37 @@ main (void)
 			if (cnt_wdt == 4)
 				wdt_reset();
 			cnt_wdt = 0;
+
+			CLR_TP2;
 		}
 	}
 }
 
 /**	Прерывание по совпадению Таймер0
- * 	Срабатывает раз в 100 мкс
+ * 	Срабатывает раз в 50 мкс
  * 	@param Нет
  * 	@return Нет
- */
-ISR(TIMER0_COMP_vect)
-{
+ */ISR(TIMER0_COMP_vect) {
 	// Обработчик ЖКИ
 	vLCDmain();
+	// подсветка ЖКИ
+	vLCDled();
 }
 
 /**	Прерывание по совпадению А Таймер1
  * 	Срабатывает раз в 10 мс
  * 	@param Нет
  * 	@return Нет
- */
-ISR(TIMER1_COMPA_vect)
-{
+ */ISR(TIMER1_COMPA_vect) {
 	static uint_fast8_t cnt = 0;
 
 	// обработчик клавиатуры вызываем раз в 10мс
 	vKEYmain();
 
 	// установка флага раз в 100мс
-	if (cnt >  0)
+	if (cnt > 0)
 		cnt--;
-	else
-	{
+	else {
 		cnt = 10 - 1;
 		b100ms = true;
 	}
@@ -289,18 +265,14 @@ ISR(TIMER1_COMPA_vect)
 /**	Прерывание по опустошению передающего буфера UART1
  * 	@param Нет
  * 	@return Нет
- */
-ISR(USART1_UDRE_vect)
-{
+ */ISR(USART1_UDRE_vect) {
 	uartPC.isrUDR();
 }
 
 /** Прерывание по окончанию передачи данных UART1
  * 	@param Нет
  * 	@return Нет
- */
-ISR(USART1_TX_vect)
-{
+ */ISR(USART1_TX_vect) {
 	uartPC.isrTX();
 	protPCs.setCurrentStatus(PRTS_STATUS_READ);
 }
@@ -308,16 +280,12 @@ ISR(USART1_TX_vect)
 /** Прерывание по получению данных UART1
  * 	@param Нет
  * 	@return Нет
- */
-ISR(USART1_RX_vect)
-{
+ */ISR(USART1_RX_vect) {
 	uint8_t tmp = UDR1;
 
 	// обработчик протокола "Стандартный"
-	if (protPCs.isEnable())
-	{
-		if (protPCs.getCurrentStatus() == PRTS_STATUS_READ)
-		{
+	if (protPCs.isEnable()) {
+		if (protPCs.getCurrentStatus() == PRTS_STATUS_READ) {
 			protPCs.checkByte(tmp);
 		}
 	}
@@ -326,18 +294,14 @@ ISR(USART1_RX_vect)
 /**	Прерывание по опустошению передающего буфера UART0
  * 	@param Нет
  * 	@return Нет
- */
-ISR(USART0_UDRE_vect)
-{
+ */ISR(USART0_UDRE_vect) {
 	uartBSP.isrUDR();
 }
 
 /** Прерывание по окончанию передачи данных UART0
  * 	@param Нет
  * 	@return Нет
- */
-ISR(USART0_TX_vect)
-{
+ */ISR(USART0_TX_vect) {
 	uartBSP.isrTX();
 	protBSPs.setCurrentStatus(PRTS_STATUS_READ);
 }
@@ -345,14 +309,11 @@ ISR(USART0_TX_vect)
 /** Прерывание по получению данных UART0
  * 	@param Нет
  * 	@return Нет
- */
-ISR(USART0_RX_vect)
-{
+ */ISR(USART0_RX_vect) {
 	uint8_t tmp = UDR0;
 
 	// обработчик протокола "Стандартный"
-	if (protBSPs.isEnable())
-	{
+	if (protBSPs.isEnable()) {
 		if (protBSPs.getCurrentStatus() == PRTS_STATUS_READ)
 			protBSPs.checkByte(tmp);
 	}

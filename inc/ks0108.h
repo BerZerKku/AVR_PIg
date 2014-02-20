@@ -65,6 +65,7 @@ void vLCDsetXY		(uint8_t x, uint8_t y);
 bool vLCDdrawBoard	(uint8_t num);
 bool vLCDputchar	(const char* buf, uint8_t num);
 
-void vLCDsetLED		(eLCD_LED val);
+void vLCDsetLed		(eLCD_LED val);
+void vLCDled		();
 
 #endif /* KS0108_H_ */

@@ -21,7 +21,7 @@ eKEYget(eGB_TYPE_DEVICE type)
 {
 	eKEY key_tmp = keyPressed;
 
-	if (type == AVANT_R400_MSK)
+	if (type == AVANT_R400M)
 	{
 		if (key_tmp == KEY_CANCEL)
 			key_tmp = KEY_NO;

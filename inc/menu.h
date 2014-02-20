@@ -15,7 +15,7 @@
 #define MENU_TIME_CYLCE 200
 
 /// время до первой инициализации дисплея, мс
-#define TIME_TO_INIT_LCD (600 / MENU_TIME_CYLCE)
+#define TIME_TO_INIT_LCD (200 / MENU_TIME_CYLCE)
 /// время до переинициализации дисплея, мс
 #define TIME_TO_REINIT_LCD (10000 / MENU_TIME_CYLCE)
 
