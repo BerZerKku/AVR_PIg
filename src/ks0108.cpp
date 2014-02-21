@@ -158,7 +158,6 @@ void vLCDmain(void) {
 	static uint8_t y = 0;
 
 	if (bRefresh) {
-		SET_TP1;
 		if (x == 0) {
 			vLCDcom(0xb8 + y, PIN_CS);
 			_delay_us(5);
@@ -177,7 +176,6 @@ void vLCDmain(void) {
 			y = 0;
 			x = 0;
 			bRefresh = false;
-			CLR_TP1;
 		}
 	}
 }

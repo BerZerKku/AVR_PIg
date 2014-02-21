@@ -115,7 +115,9 @@ bool clProtocolBspS::getDefCommand(eGB_COM com) {
 	if (com == GB_COM_DEF_GET_DEF_TYPE) {
 		stat = sParam_->def.setDefType(buf[B1]);
 	} else if (com == GB_COM_DEF_GET_LINE_TYPE) {
+		// TODO - разобраться где должно быть кол-во аппаратов в glb или def
 		stat = sParam_->def.setNumDevices((eGB_NUM_DEVICES) buf[B1]);
+		stat |= sParam_->glb.setNumDevices((eGB_NUM_DEVICES) buf[B1]);
 	} else if (com == GB_COM_DEF_GET_T_NO_MAN) {
 		stat = sParam_->def.setTimeNoMan(buf[B1]);
 	} else if (com == GB_COM_DEF_GET_DELAY) {
@@ -395,10 +397,18 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 		re |= sParam_->prm.setNumCom(buf[B2] * 4);
 		// buf[B3] - прм2
 		re |= sParam_->prd.setNumCom(buf[B4] * 4);
-		re |= sParam_->glb.setNumDevices((eGB_NUM_DEVICES) buf[B5]);
+		// кол-во аппаратов в линии
+		// TODO разобраться где оно должно быть в glb или def
+		// и значение == кол-ву аппаратов, а раньше было на 1 меньше
+		re |= sParam_->glb.setNumDevices((eGB_NUM_DEVICES) (buf[B5] - 1));
+		re |= sParam_->def.setNumDevices((eGB_NUM_DEVICES) (buf[B5] - 1));
+		// тип линии (вч, оптика, ...)
 		re |= sParam_->glb.setTypeLine((eGB_TYPE_LINE) buf[B6]);
+		// версия прошивки АТмега БСП
 		sParam_->glb.setVersBsp(TO_INT16(buf[B7], buf[B8]));
+		// версия прошивки DSP БСП
 		sParam_->glb.setVersDsp(TO_INT16(buf[B9], buf[B10]));
+		// совместимость, только в Р400м
 		re |= sParam_->glb.setCompatibility((eGB_COMPATIBILITY) buf[B11]);
 
 		// "установим" флаг необходимости настройки типа аппарата
@@ -437,7 +447,6 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 			stat = sParam_->glb.setComPrmKeep(buf[B1]);
 		}
 	} else if (com == GB_COM_GET_COM_PRD_KEEP) {
-		// !!! Добавить обработку Типа удаленного аппарата
 		if (sParam_->typeDevice == AVANT_R400M) {
 			// ! в Р400 это Своместимость (тип удаленного аппарата)
 			eGB_COMPATIBILITY t = (eGB_COMPATIBILITY) buf[B1];

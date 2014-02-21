@@ -34,15 +34,14 @@ static const char fcDeviceName01[] PROGMEM = "ПРМ";
 static const char fcDeviceName02[] PROGMEM = "ПРД";
 
 // типы автоконтролей для отображения в начальном меню
-// TODO Перепроверить. В Р400М как минимум АК теперь нормальный.
 static const char fcAcType[GB_TYPE_AC_MAX + 1][9] PROGMEM = {
-// 12345678
-		"АК-ошиб",		//
-		"АК-авто",		//
-		"АК-авто",		//
+// 		12345678
+		"АК-ошиб",		//	см. eGB_TYPE_AC
+		"АК-норм",		//
+		"АК-норм",		//
 		"АК-ускор",		//
 		"АК-выкл",		//
-		"АК-однос",		//
+		"АК-бегл",		//
 		"АК-испыт",		//
 		"АК-пуск",		//
 		"АК-ошиб"		//
@@ -130,11 +129,11 @@ const char fcCompatibility[GB_COMPATIBILITY_MAX + 1][STRING_LENGHT] PROGMEM = {
 
 static const char fcPvzlFreq[GB_PVZL_FREQ_MAX + 1][STRING_LENGHT] PROGMEM = {
 //		 1234567890
+		"-1000Гц",	//
 		"-500Гц",	//
-		"-250Гц",	//
 		"0Гц",		//
-		"+250Гц",	//
 		"+500Гц",	//
+		"+1000Гц",	//
 		"ошибка"	//
 };
 
@@ -173,7 +172,7 @@ static const char fcUnknownSost[] PROGMEM = "Ошибка";
 static const char fcDefSost00[] PROGMEM =	"Исходн.";
 static const char fcDefSost01[] PROGMEM =	"Контроль";
 static const char fcDefSost02[] PROGMEM =	"Пуск";
-static const char fcDefSost03[] PROGMEM =	"Работа";
+static const char fcDefSost03[] PROGMEM =	"Останов";
 static const char fcDefSost04[] PROGMEM =	"Неиспр.";
 static const char fcDefSost05[] PROGMEM =	"П.неиспр";
 static const char fcDefSost06[] PROGMEM =	"Ожидание";
@@ -407,7 +406,7 @@ static char fcJrnEventR400_MSK[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 // сигналы в тестах
 static const char fcTest1K400[GB_SIGNAL_MAX + 1][STRING_LENGHT] PROGMEM = {
 //		 1234567890
-		"Нет",			//
+		"выкл.",		//
 		"КЧ", 			//
 		"КЧ1",			//
 		"КЧ2",			//

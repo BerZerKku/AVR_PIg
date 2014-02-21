@@ -152,8 +152,11 @@ static bool uartWrite() {
 	} else if (stat == PRTS_STATUS_NO) {
 		// отправка запроса БСП
 		eGB_COM com = menu.getTxCommand();
-		uint8_t num = protBSPs.sendData(com);
-		uartBSP.trData(num);
+		// если есть команда, отправляем ее в БСП
+		if (com != GB_COM_NO) {
+			uint8_t num = protBSPs.sendData(com);
+			uartBSP.trData(num);
+		}
 	}
 
 	return true;
@@ -190,8 +193,6 @@ main(void) {
 
 	while (1) {
 		if (b100ms) {
-			SET_TP2;
-
 			b100ms = false;
 
 			cnt_wdt++;
@@ -226,8 +227,6 @@ main(void) {
 			if (cnt_wdt == 4)
 				wdt_reset();
 			cnt_wdt = 0;
-
-			CLR_TP2;
 		}
 	}
 }

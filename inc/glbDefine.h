@@ -53,10 +53,10 @@
 #define MAX_NUM_WARNINGS 16
 
 /// максимальное кол-во команд в первом буфере
-#define MAX_NUM_COM_BUF2 4
+#define MAX_NUM_COM_BUF2 15
 
 /// максимальное кол-во команд во втором буфере
-#define MAX_NUM_COM_BUF1 15
+#define MAX_NUM_COM_BUF1 5
 
 /// максимальное кол-во сигналов в тестах
 #define MAX_NUM_TEST_SIGNAL 40
@@ -327,15 +327,16 @@ enum eGB_COMPATIBILITY {
 
 /// Тип автоконтроля
 enum eGB_TYPE_AC {
-	GB_TYPE_AC_MIN = 1, GB_TYPE_AC_AUTO_FAST = 1,	// в ПВЗЛ АК нормальный
-	GB_TYPE_AC_AUTO_NORM = 2,
-	GB_TYPE_AC_FAST = 3,
-	GB_TYPE_AC_OFF = 4,
-	GB_TYPE_AC_CHECK = 5,	// в ПВЗЛ АК односторонний
-	GB_TYPE_AC_TEST = 6,
-	GB_TYPE_AC_PUSK_SELF = 6,	// в ПВЗЛ пуск АК свой
-	GB_TYPE_AC_PUSK = 7,
-	GB_TYPE_AC_MAX
+	GB_TYPE_AC_MIN = 1, 		//
+	GB_TYPE_AC_AUTO_NORM = 1,	//	АК нормальный / АК включен
+	GB_TYPE_AC_AUTO_REPEAT = 2,	//	АК повторный
+	GB_TYPE_AC_FAST = 3,		//	АК ускоренный
+	GB_TYPE_AC_OFF = 4,			//	АК выключен
+	GB_TYPE_AC_CHECK = 5,		// 	АК беглый
+	GB_TYPE_AC_TEST = 6,		//	Пуск АК свой / АК испытания / АК контр.пров.
+	GB_TYPE_AC_PUSK_SELF = 6,	// 	в ПВЗЛ пуск АК свой
+	GB_TYPE_AC_PUSK = 7,		//	АК пуск
+	GB_TYPE_AC_MAX				//
 };
 
 /// Частоты ПРМ и ПРД в ПВЗЛ
@@ -504,21 +505,26 @@ enum eGB_COM_MASK {
 
 /// Значения команд управления
 enum eGB_CONTROL {
-	GB_CONTROL_RESET_SELF = 1,	//
-	GB_CONTROL_RESET_UD_1 = 2,	//
-	GB_CONTROL_PVZL_RESET_AC = 2,	//
-	GB_CONTROL_RESET_UD_2 = 3,	//
-	GB_CONTROL_PUSK_UD_1 = 4,	//
-	GB_CONTROL_PUSK_UD_2 = 5,	//
-	GB_CONTROL_PVZL_PUSK_AC_UD = 5,	//
-	GB_CONTROL_PUSK_UD_ALL = 6,	//
-	GB_CONTROL_PVZL_PUSK_PRD = 6,	//
-	GB_CONTROL_CALL = 7,	//
-	GB_CONTROL_PUSK_ON = 8,	//
-	GB_CONTROL_PUSK_OFF = 9,	//
-	GB_CONTROL_PUSK_AC_UD = 10,	//
-	GB_CONTROL_REG_AC = 11,	//
-	GB_CONTROL_MAX
+	GB_CONTROL_RESET_SELF 	= 1,	//	сброс своего
+	GB_CONTROL_RESET_UD 	= 2,	//	сброс удаленного (-ых)
+	GB_CONTROL_RESET_AC		= 3,	//	сброс АК
+	GB_CONTROL_PUSK_UD_1 	= 4,	//	пуск удаленного (1)
+	GB_CONTROL_PUSK_UD_2 	= 5,	//	пуск удаленного 2
+	GB_CONTROL_PUSK_UD_ALL 	= 6,	//	пуск удаленных
+	GB_CONTROL_CALL 		= 7,	//	вызов
+	GB_CONTROL_PUSK_ON 		= 8,	//	пуск наладочный вкл.
+	GB_CONTROL_PUSK_OFF 	= 9,	//	пуск наладочный выкл.
+	GB_CONTROL_PUSK_AC_UD 	= 10,	//	пуск АК удаленный
+	// 						= 11
+	// 						= 12
+	GB_CONTROL_PUSK_UD_3 	= 13,	// пуск удаленного 3
+	GB_CONTROL_REG_AC 		= 14,	//
+	// 						= 15
+	GB_CONTROL_MAN_1 		= 16,	// пуск МАН удаленного (1)
+	GB_CONTROL_MAN_2 		= 17,	// пуск МАН удаленного 2
+	GB_CONTROL_MAN_3 		= 18,	// пуск МАН удаленного 3
+	GB_CONTROL_MAN_ALL 		= 19,	// пуск МАН удаленных
+	GB_CONTROL_MAX					//
 
 };
 
@@ -532,7 +538,8 @@ enum eGB_STATE_COM {
 
 /// сигналы в тест1 и тест2
 enum eGB_TEST_SIGNAL {
-	GB_SIGNAL_NO = 0, GB_SIGNAL_CF,					// РЗСК
+	GB_SIGNAL_NO = 0, 				//
+	GB_SIGNAL_CF,					// РЗСК / Р400М
 	GB_SIGNAL_CF1,
 	GB_SIGNAL_CF2,
 	GB_SIGNAL_CF3,
@@ -939,6 +946,7 @@ public:
 		uOutNom_ = GLB_U_OUT_NOM_MIN_F;
 		netAdr_ = GLB_NET_ADR_MIN_F;
 		compRefresh_ = true;
+		numDevicesRefresh_ = true;
 		acInDec_ = GLB_AC_IN_DEC_MIN_F;
 		pvzueProtocol_ = GB_PVZUE_PROTOCOL_MAX;
 		pvzueParity_ = GB_PVZUE_PARITY_MAX;
@@ -962,17 +970,27 @@ public:
 	}
 	bool setNumDevices(eGB_NUM_DEVICES numDevices) {
 		bool stat = false;
+		eGB_NUM_DEVICES tmp = numDevices_;
 		if (numDevices >= GB_NUM_DEVICES_MIN) {
 			if (numDevices < GB_NUM_DEVICES_MAX) {
 				numDevices_ = numDevices;
 				stat = true;
 			}
 		}
-
 		// установка ошибочного значения
 		if (!stat)
 			numDevices_ = GB_NUM_DEVICES_MAX;
+
+		// флаг наличия изменения совместимости
+		numDevicesRefresh_ = (tmp != numDevices_);
 		return stat;
+	}
+
+	bool isNumDevicesRefresh() {
+		// возвращает true в случае если произошла смена кол-ва аппаратов
+		bool val = numDevicesRefresh_;
+		numDevicesRefresh_ = false;
+		return val;
 	}
 
 	// тип линии (вч/оптика и т.д.)
@@ -983,12 +1001,11 @@ public:
 		bool stat = false;
 
 		if (typeLine >= GB_TYPE_LINE_MIN) {
-			if (typeLine <= GB_TYPE_LINE_MAX) {
+			if (typeLine < GB_TYPE_LINE_MAX) {
 				typeLine_ = typeLine;
 				stat = true;
 			}
 		}
-
 		// установка ошибочного значения
 		if (!stat)
 			typeLine_ = GB_TYPE_LINE_MAX;
@@ -1017,10 +1034,16 @@ public:
 		bool stat = false;
 
 		eGB_COMPATIBILITY tmp = compatibility_;
-		if ((val >= GB_COMPATIBILITY_MIN) && (val <= GB_COMPATIBILITY_MAX))
-			compatibility_ = val;
-		else
+		if (val >= GB_COMPATIBILITY_MIN) {
+			if (val < GB_COMPATIBILITY_MAX) {
+				compatibility_ = val;
+				stat = true;
+			}
+		}
+		// утсановка ошибочного значения
+		if (!stat)
 			compatibility_ = GB_COMPATIBILITY_MAX;
+
 		// флаг наличия изменения совместимости
 		compRefresh_ = (tmp != compatibility_);
 		return stat;
@@ -1390,6 +1413,9 @@ private:
 	// кол-во аппаратов в линии 2 или 3
 	eGB_NUM_DEVICES numDevices_;
 
+	// флаг смены кол-ва аппаратов в линии
+	bool numDevicesRefresh_;
+
 	// тип линии
 	eGB_TYPE_LINE typeLine_;
 
@@ -1478,7 +1504,7 @@ public:
 		rzThreshold_ = DEF_RZ_THRESH_MIN_F;
 		rzDec_ = DEF_RZ_DEC_MIN_F;
 		prmType_ = DEF_PRM_TYPE_MIN;
-		typeAc_ = GB_TYPE_AC_AUTO_FAST;
+		typeAc_ = GB_TYPE_AC_AUTO_NORM;
 		timeToAc_ = 0;
 		numJrnEntry_ = 0;
 		maxNumJrnEntry_ = 0;
@@ -1507,7 +1533,7 @@ public:
 	bool setNumDevices(eGB_NUM_DEVICES val) {
 		bool stat = false;
 		if (val >= GB_NUM_DEVICES_MIN) {
-			if (val <= GB_NUM_DEVICES_MAX) {
+			if (val < GB_NUM_DEVICES_MAX) {
 				numDevices_ = val;
 				stat = true;
 			}
@@ -1515,9 +1541,10 @@ public:
 
 		if (!stat)
 			val = GB_NUM_DEVICES_MAX;
+		numDevices_ = val;
 		return stat;
 	}
-	uint8_t getNumDevices() const {
+	eGB_NUM_DEVICES getNumDevices() const {
 		return numDevices_;
 	}
 
@@ -2269,13 +2296,13 @@ public:
 
 	// добавление команды в первый буфер
 	// если num = 0, то заменяется первая команда
-	bool addCom1(eGB_COM com, uint8_t num = 1) {
+	bool addCom1(eGB_COM com, int8_t num = -1) {
 		bool stat = false;
 		if (numCom1_ < MAX_NUM_COM_BUF1) {
-			if (num == 0) {
-				if (numCom1_ == 0)
-					numCom1_ = 1;
-				com1_[0] = com;
+			if (num > 0) {
+				if (num > numCom1_)
+					numCom1_ = num;
+				com1_[num] = com;
 				stat = true;
 			} else {
 				com1_[numCom1_++] = com;
@@ -2384,7 +2411,7 @@ private:
 	// номер текущей команды в первом буфере
 	uint8_t cnt1_;
 	// второй буфер команд
-	eGB_COM com2_[MAX_NUM_COM_BUF1];
+	eGB_COM com2_[MAX_NUM_COM_BUF2];
 	// кол-во команд во втором буфере
 	uint8_t numCom2_;
 	// номер текущей команды во втором буфере
@@ -2675,7 +2702,8 @@ public:
 	}
 	// очистка списка сигналов
 	void clear() {
-		signalList[0] = GB_SIGNAL_NO;
+		for(uint_fast8_t i = 0; i < MAX_NUM_TEST_SIGNAL; i++)
+			signalList[i] = GB_SIGNAL_NO;
 		num_ = 1;
 		currentSignal_ = GB_SIGNAL_NO;
 	}
@@ -2731,6 +2759,9 @@ public:
 			signal = getCurrentSignalK400(s);
 		} else if (type == AVANT_RZSK) {
 			signal = getCurrentSignalRZSK(s);
+		} else if (type == AVANT_R400M)
+		{
+			signal = getCurrentSignalR400M(s);
 		}
 		currentSignal_ = signal;
 	}
@@ -2807,7 +2838,6 @@ private:
 		}
 		return signal;
 	}
-	;
 
 	// добавление сигнала в список для РЗСК
 	eGB_TEST_SIGNAL getCurrentSignalRZSK(uint8_t *s) {
@@ -2837,7 +2867,19 @@ private:
 		}
 		return signal;
 	}
-	;
+
+	// добавление сигнала в список для Р400м
+	eGB_TEST_SIGNAL getCurrentSignalR400M(uint8_t *s) {
+		eGB_TEST_SIGNAL signal = GB_SIGNAL_NO;
+
+		uint8_t t = *s;
+		if (t & 0x10)
+			signal = GB_SIGNAL_RZ;
+		else if (t & 0x01)
+			signal = GB_SIGNAL_CF;
+
+		return signal;
+	}
 };
 
 /// Структура параметров БСП
