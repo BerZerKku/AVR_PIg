@@ -277,12 +277,12 @@
 /// Тип аппарата
 enum eGB_TYPE_DEVICE {
 	AVANT_NO = 0,	// ошибочное значение
-	AVANT_R400M,
-	AVANT_RZSK,
-	AVANT_OPTIC,			// TODO см.ниже
-	AVANT_K400,
+	AVANT_R400M,	//
+	AVANT_RZSK,		//
+	AVANT_OPTIC,	//
+	AVANT_K400		//
 
-// TODO AVANT_OPTIC - у Женьки программа одна, так что можно не делить
+// TODO ОПТИКА - у Женьки программа одна, так что можно не делить
 // подстравиваться только под наличие команд (и их кол-ва) и защиты.
 // на данный момент сделаны только неисправности/предупреждения
 };
@@ -421,7 +421,7 @@ enum eGB_COM {
 	GB_COM_GET_SOST = 0x30,
 	GB_COM_GET_FAULT = 0x31,
 	GB_COM_GET_TIME = 0x32,
-	GB_COM_GET_COR_U_I = 0x33,	// TODO В Оптике это Резервирование
+	GB_COM_GET_COR_U_I = 0x33,	// TODO ОПТИКА это Резервирование
 	GB_COM_GET_MEAS = 0x34,
 	GB_COM_GET_TIME_SINCHR = 0x35,
 	GB_COM_GET_COM_PRM_KEEP = 0x36, // ! в Р400М это Uвых номинальное
@@ -462,7 +462,7 @@ enum eGB_COM {
 	GB_COM_PRD_SET_LONG_COM = 0xA5,
 	GB_COM_PRD_SET_TEST_COM = 0xA6,
 	GB_COM_SET_TIME = 0xB2,
-	GB_COM_SET_COR_U_I = 0xB3,	// TODO В Оптике это Резервирование
+	GB_COM_SET_COR_U_I = 0xB3,	// TODO ОПТИКА это Резервирование
 	GB_COM_SET_TIME_SINCHR = 0xB5,
 	GB_COM_SET_COM_PRM_KEEP = 0xB6, // ! в Р400М это Uвых номинальное
 	GB_COM_SET_COM_PRD_KEEP = 0xB7, // ! в Р400М это тип удаленного аппарата
@@ -772,6 +772,10 @@ private:
 class TDeviceStatus {
 public:
 	TDeviceStatus() {
+		// присваивание иемени по умолчанию
+		static const char nameDev[] PROGMEM = "НЕТ";
+		name = nameDev;
+
 		enable_ = false;
 
 		fault_ = 0;

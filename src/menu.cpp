@@ -25,6 +25,7 @@ clMenu::clMenu() {
 	lineParam_ = 3;
 	lvlCreate_ = true;
 	blink_ = false;
+	blinkMeasParam_ = false;
 	curCom_ = 0;
 	delay_ = TIME_MESSAGE;
 
@@ -258,7 +259,7 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device) {
 		if (device == AVANT_K400) {
 			sParam.typeDevice = device;
 
-			// TODO - в 3-х концевой Uк1/2, Uш1/2
+			// TODO ВСЕ в 3-х концевой Uк1/2, Uш1/2
 			// первый столбец параметров
 			measParam[0] = MENU_MEAS_PARAM_TIME; // дата <-> время
 			measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
@@ -336,7 +337,7 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device) {
 		} else if (device == AVANT_RZSK) {
 			sParam.typeDevice = device;
 
-			// TODO - в 3-х концевой Uк1/2, Uз1/2, Uш1/2
+			// TODO ВСЕ в 3-х концевой Uк1/2, Uз1/2, Uш1/2
 			// первый столбец параметров
 			measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
 			measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
@@ -438,7 +439,7 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device) {
 		} else if (device == AVANT_R400M) {
 			sParam.typeDevice = device;
 
-			// TODO - в 3-х концевой Uk1/2
+			// TODO ВСЕ в 3-х концевой Uk1/2
 			// первый столбец параметров
 			measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
 			measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
@@ -512,7 +513,7 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device) {
 		} else if (device == AVANT_OPTIC) {
 			sParam.typeDevice = device;
 
-			// TODO - оптика
+			// TODO ОПТИКА
 			// дополнить список измеряемых параметров, если есть ?!
 			measParam[0] = measParam[0 + MAX_NUM_MEAS_PARAM] =
 					MENU_MEAS_PARAM_TIME;
@@ -583,7 +584,7 @@ bool clMenu::setTypeDevice(eGB_TYPE_DEVICE device) {
 			// заполнение массива предупреждений передатчика
 			// 0-15 нет
 
-			// TODO - надо заполнить сигналы ТЕСТов для оптики
+			// TODO ОПТИКА надо заполнить сигналы ТЕСТов
 			// с учетом текущего набора устройств
 			sParam.test.clear();
 			sParam.test.addSignalToList(GB_SIGNAL_CF);
@@ -706,7 +707,7 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 					sParam.measParam.getVoltageDef());
 			break;
 
-			// TODO - для Uз1 и Uз2 нужны свои параметры
+			// TODO ВСЕ для Uз1 и Uз2 нужны свои параметры
 		case MENU_MEAS_PARAM_UZ1:
 			snprintf_P(&vLCDbuf[poz], 11, fcUz1,
 					sParam.measParam.getVoltageDef());
@@ -721,7 +722,7 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 					sParam.measParam.getVoltageCf());
 			break;
 
-			// TODO - для Uк1 и Uк2 нужны свои параметры
+			// TODO ВСЕ для Uк1 и Uк2 нужны свои параметры
 		case MENU_MEAS_PARAM_UC1:
 			snprintf_P(&vLCDbuf[poz], 11, fcUcf1,
 					sParam.measParam.getVoltageCf());
@@ -750,7 +751,7 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 					sParam.measParam.getVoltageNoise());
 			break;
 
-			// TODO - для Uш1 и Uш2 нужны свои параметры
+			// TODO ВСЕ для Uш1 и Uш2 нужны свои параметры
 		case MENU_MEAS_PARAM_UN1:
 			snprintf_P(&vLCDbuf[poz], 11, fcUn1,
 					sParam.measParam.getVoltageNoise());
@@ -1815,7 +1816,7 @@ void clMenu::lvlControl() {
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
-		// TODO Р400М Если анализировать команды переданные с ПК, то не надо
+		// TODO Р400м Если анализировать команды переданные с ПК, то не надо
 		if (sParam.typeDevice == AVANT_R400M) {
 			// совместимость
 			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
@@ -2324,42 +2325,36 @@ void clMenu::lvlSetupParamDef() {
 		} else if (type == AVANT_R400M) {
 			eGB_COMPATIBILITY t = sParam.glb.getCompatibility();
 
-			// TODO P400M Если анализировать команды ПК, то не надо
 			// добавляется опрос совместимости, для переформирования меню
-//			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
+			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
 
-			// для всех совместимостей одинаково,
-			// поэтому всегда есть все пункты
-//			if (t <= GB_COMPATIBILITY_MAX) {
-				punkt_[num++] = punkt1;
-				sParam.txComBuf.addCom2(GB_COM_DEF_GET_DEF_TYPE);
-				punkt_[num++] = punkt2;
-				sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
-				punkt_[num++] = punkt3;
-				sParam.txComBuf.addCom2(GB_COM_DEF_GET_T_NO_MAN);
-				punkt_[num++] = punkt4;
-				sParam.txComBuf.addCom2(GB_COM_DEF_GET_OVERLAP);
-				punkt_[num++] = punkt5;
-				sParam.txComBuf.addCom2(GB_COM_DEF_GET_DELAY);
-				punkt_[num++] = punkt7;
-				sParam.txComBuf.addCom2(GB_COM_DEF_GET_RZ_DEC);
-				if (t == GB_COMPATIBILITY_AVANT) {
-					punkt_[num++] = punkt9;
-					sParam.txComBuf.addCom2(GB_COM_DEF_GET_PRM_TYPE);
-				}
-				punkt_[num++] = punkt10;
-				sParam.txComBuf.addCom2(GB_COM_DEF_GET_FREQ_PRD);
-				punkt_[num++] = punkt11;
-				sParam.txComBuf.addCom2(GB_COM_DEF_GET_RZ_THRESH);
-//			}
+			punkt_[num++] = punkt1;
+			sParam.txComBuf.addCom2(GB_COM_DEF_GET_DEF_TYPE);
+			punkt_[num++] = punkt2;
+			sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
+			punkt_[num++] = punkt3;
+			sParam.txComBuf.addCom2(GB_COM_DEF_GET_T_NO_MAN);
+			punkt_[num++] = punkt4;
+			sParam.txComBuf.addCom2(GB_COM_DEF_GET_OVERLAP);
+			punkt_[num++] = punkt5;
+			sParam.txComBuf.addCom2(GB_COM_DEF_GET_DELAY);
+			punkt_[num++] = punkt7;
+			sParam.txComBuf.addCom2(GB_COM_DEF_GET_RZ_DEC);
+			if (t == GB_COMPATIBILITY_AVANT) {
+				punkt_[num++] = punkt9;
+				sParam.txComBuf.addCom2(GB_COM_DEF_GET_PRM_TYPE);
+			}
+			punkt_[num++] = punkt10;
+			sParam.txComBuf.addCom2(GB_COM_DEF_GET_FREQ_PRD);
+			punkt_[num++] = punkt11;
+			sParam.txComBuf.addCom2(GB_COM_DEF_GET_RZ_THRESH);
 		}
 		numPunkts_ = num;
 	}
 
-	// TODO - Р400М есть ли зависимость от совместимости?
 	// обновление уровня, при наличии смены совместимости
-//	if (sParam.glb.isCompatibilityRefresh())
-//		lvlCreate_ = true;
+	if (sParam.glb.isCompatibilityRefresh())
+		lvlCreate_ = true;
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
@@ -2420,11 +2415,11 @@ void clMenu::lvlSetupParamDef() {
 			} else if (p == punkt5) {
 				sParam.txComBuf.setInt8(enterParam.getValueEnter());
 			} else if (p == punkt6) {
-				// !!! TODO
+				// !!! TODO РЗСК
 			} else if (p == punkt7) {
 				sParam.txComBuf.setInt8(enterParam.getValueEnter());
 			} else if (p == punkt8) {
-				// !!! TODO
+				// !!! TODO РЗСК
 			} else if (p == punkt9) {
 				sParam.txComBuf.setInt8(enterParam.getValueEnter());
 			} else if (p == punkt10) {
@@ -3019,7 +3014,7 @@ void clMenu::lvlSetupParamGlb() {
 			punkt_[num++] = punkt11;
 			sParam.txComBuf.addCom2(GB_COM_GET_FREQ);
 			punkt_[num++] = punkt24;
-			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);// TODO - команда "Совместимость" УПАСК
+			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);// TODO К400 команда "Совместимость"
 			punkt_[num++] = punkt15;
 			sParam.txComBuf.addCom2(GB_COM_GET_COR_U_I);
 			punkt_[num++] = punkt16;
@@ -3046,7 +3041,7 @@ void clMenu::lvlSetupParamGlb() {
 			punkt_[num++] = punkt11;
 			sParam.txComBuf.addCom2(GB_COM_GET_FREQ);
 			punkt_[num++] = punkt14;
-			sParam.txComBuf.addCom2(GB_COM_GET_FREQ);		// TODO - команда
+			sParam.txComBuf.addCom2(GB_COM_GET_FREQ);		// TODO РСЗК команда
 			punkt_[num++] = punkt15;
 			sParam.txComBuf.addCom2(GB_COM_GET_COR_U_I);
 			punkt_[num++] = punkt16;
@@ -3055,7 +3050,7 @@ void clMenu::lvlSetupParamGlb() {
 		} else if (type == AVANT_R400M) {
 			eGB_COMPATIBILITY t = sParam.glb.getCompatibility();
 
-			// TODO Р400М Если ананлизировать команды с ПК, то не надо
+			// TODO Р400м Если ананлизировать команды с ПК, то не надо
 			// опрашиваем совместимость
 			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
 
@@ -3254,17 +3249,17 @@ void clMenu::lvlSetupParamGlb() {
 				sParam.txComBuf.setInt8((t >> 8), 1);
 				sParam.txComBuf.setInt8((t), 2);
 			} else if (p == punkt17) {
-				// TODO
+				// TODO Р400м ПВЗУ-Е
 			} else if (p == punkt18) {
-				// TODO
+				// TODO Р400м ПВЗУ-Е
 			} else if (p == punkt19) {
-				// TODO
+				// TODO Р400м ПВЗУ-Е
 			} else if (p == punkt20) {
-				// TODO
+				// TODO Р400м ПВЗУ-Е
 			} else if (p == punkt21) {
-				// TODO
+				// TODO Р400м ПВЗУ-Е
 			} else if (p == punkt22) {
-				// TODO
+				// TODO Р400м ПВЗУ-Е
 			}
 			sParam.txComBuf.addFastCom(enterParam.com);
 			enterParam.setDisable();
@@ -3697,7 +3692,7 @@ void clMenu::lvlTest1() {
 			uint8_t cf = 0;
 
 			sParam.test.getBytes(cf, rz, (eGB_TEST_SIGNAL) sig);
-			// TODO !!! РЗСК может быть два сигнала КЧ и РЗ одновременно
+			// TODO РЗСК может быть два сигнала КЧ и РЗ одновременно
 			// первый байт - номер группы (1 - кч, 2 - рз)
 			// второй байт - номер сигнала (0 - выкл.)
 			if (rz > 0)

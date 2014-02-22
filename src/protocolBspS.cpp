@@ -115,7 +115,7 @@ bool clProtocolBspS::getDefCommand(eGB_COM com) {
 	if (com == GB_COM_DEF_GET_DEF_TYPE) {
 		stat = sParam_->def.setDefType(buf[B1]);
 	} else if (com == GB_COM_DEF_GET_LINE_TYPE) {
-		// TODO - разобраться где должно быть кол-во аппаратов в glb или def
+		// TODO ВСЕ разобраться где должно быть кол-во аппаратов в glb или def
 		stat = sParam_->def.setNumDevices((eGB_NUM_DEVICES) buf[B1]);
 		stat |= sParam_->glb.setNumDevices((eGB_NUM_DEVICES) buf[B1]);
 	} else if (com == GB_COM_DEF_GET_T_NO_MAN) {
@@ -398,7 +398,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 		// buf[B3] - прм2
 		re |= sParam_->prd.setNumCom(buf[B4] * 4);
 		// кол-во аппаратов в линии
-		// TODO разобраться где оно должно быть в glb или def
+		// TODO ВСЕ разобраться где оно должно быть в glb или def
 		// и значение == кол-ву аппаратов, а раньше было на 1 меньше
 		re |= sParam_->glb.setNumDevices((eGB_NUM_DEVICES) (buf[B5] - 1));
 		re |= sParam_->def.setNumDevices((eGB_NUM_DEVICES) (buf[B5] - 1));
@@ -461,7 +461,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 
 		// в оптике это резервирование, иначе коррекция тока и напряжения
 		if (type == AVANT_OPTIC) {
-			// TODO - ОПТИКА, параметр резервирование
+			// TODO ОПТИКА, параметр резервирование
 		} else {
 			int16_t val = 0;
 			int8_t i = buf[B1];
