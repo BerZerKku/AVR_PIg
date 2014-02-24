@@ -333,10 +333,10 @@ enum eGB_TYPE_AC {
 	GB_TYPE_AC_FAST = 3,		//	АК ускоренный
 	GB_TYPE_AC_OFF = 4,			//	АК выключен
 	GB_TYPE_AC_CHECK = 5,		// 	АК беглый
-	GB_TYPE_AC_TEST = 6,		//	Пуск АК свой / АК испытания / АК контр.пров.
-	GB_TYPE_AC_PUSK_SELF = 6,	// 	в ПВЗЛ пуск АК свой
+	GB_TYPE_AC_PUSK_SELF = 6,	// 	Пуск АК свой / АК испытания / АК контр.пров.
 	GB_TYPE_AC_PUSK = 7,		//	АК пуск
-	GB_TYPE_AC_MAX				//
+	GB_TYPE_AC_MAX,				// 	максимальное принимаемое значение
+	GB_TYPE_AC_ON				// 	Р400м ПВЗЛ - АК включен (подмена АК норм)
 };
 
 /// Частоты ПРМ и ПРД в ПВЗЛ
@@ -583,6 +583,7 @@ enum eGB_TEST_SIGNAL {
 	GB_SIGNAL_COM30,
 	GB_SIGNAL_COM31,
 	GB_SIGNAL_COM32,
+	GB_SIGNAL_CF_RZ_R400M,
 	GB_SIGNAL_MAX
 };
 
@@ -2876,9 +2877,18 @@ private:
 	eGB_TEST_SIGNAL getCurrentSignalR400M(uint8_t *s) {
 		eGB_TEST_SIGNAL signal = GB_SIGNAL_NO;
 
+		// TODO Р400М 3-х концевая вывод сигналов теста
+		// подумать как выводить при наличии РЗ + КЧ1, КЧ2 и т.д.
+
 		uint8_t t = *s;
 		if (t & 0x10)
+		{
 			signal = GB_SIGNAL_RZ;
+
+			// выводится "КЧ и РЗ" при их одновременно наличии
+			if (t & 0x01)
+				signal = GB_SIGNAL_CF_RZ_R400M;
+		}
 		else if (t & 0x01)
 			signal = GB_SIGNAL_CF;
 

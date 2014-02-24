@@ -922,16 +922,19 @@ void clMenu::lvlStart() {
 		sParam.txComBuf.clear();
 		// дополнительные команды
 		// буфер 1
-		// неисправности, измеряемые параметры (в ВЧ)
-		sParam.txComBuf.addCom1(GB_COM_GET_FAULT);
+		// время измеряемые параметры (в ВЧ)
+		sParam.txComBuf.addCom2(GB_COM_GET_TIME);
 		if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
 			sParam.txComBuf.addCom1(GB_COM_GET_MEAS);
 
 		// буфер 2
-		// время, АК в Р400
-		sParam.txComBuf.addCom2(GB_COM_GET_TIME);
-		if (sParam.typeDevice == AVANT_R400M)
+		// неисправности
+		// в Р400м + АК и совместимость
+		sParam.txComBuf.addCom1(GB_COM_GET_FAULT);
+		if (sParam.typeDevice == AVANT_R400M) {
 			sParam.txComBuf.addCom2(GB_COM_DEF_GET_TYPE_AC);
+			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
+		}
 	}
 
 	// вывод на экран измеряемых параметров
@@ -951,6 +954,10 @@ void clMenu::lvlStart() {
 		if (sParam.typeDevice == AVANT_R400M) {
 			uint16_t time = sParam.def.getTimeToAC();
 			eGB_TYPE_AC ac = sParam.def.getTypeAC();
+			if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_PVZL) {
+				if (ac == GB_TYPE_AC_AUTO_NORM)
+					ac = GB_TYPE_AC_ON;
+			}
 			uint8_t t = poz + 20;
 			t += snprintf_P(&vLCDbuf[t],11,fcAcType[static_cast<uint8_t>(ac)]);
 
@@ -3652,7 +3659,7 @@ void clMenu::lvlSetupDT() {
  */
 void clMenu::lvlTest1() {
 	static char title[] PROGMEM = "Меню\\Тест 1";
-	static char punkt1[] PROGMEM = "Сигнал на выходе";
+	static char punkt1[] PROGMEM = "Сигналы передатчика";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3751,7 +3758,7 @@ void clMenu::lvlTest1() {
  */
 void clMenu::lvlTest2() {
 	static char title[] PROGMEM = "Меню\\Тест 2";
-	static char punkt1[] PROGMEM = "Сигнал на входе";
+	static char punkt1[] PROGMEM = "Сигналы приемника";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3809,8 +3816,11 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 		// вывод сообщения до тех пор, пока счетчик времени не обнулится
 		// затем возврат в исходный пункт меню
 		if (enterParam.cnt_ < TIME_MESSAGE) {
-			static char message[3][21] PROGMEM = { " Изменить параметр  ",
-					"  можно только в    ", "  режиме ВЫВЕДЕН    " };
+			static char message[3][21] PROGMEM = {
+			//		 12345678901234567890
+					" Изменить параметр  ",		//
+					"  можно только в    ",		//
+					"  режиме ВЫВЕДЕН    " };
 
 			enterParam.cnt_++;
 			key_ = KEY_NO;

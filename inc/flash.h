@@ -33,10 +33,10 @@ static const char fcDeviceName00[] PROGMEM = "ЗАЩ";
 static const char fcDeviceName01[] PROGMEM = "ПРМ";
 static const char fcDeviceName02[] PROGMEM = "ПРД";
 
-// типы автоконтролей для отображения в начальном меню
-static const char fcAcType[GB_TYPE_AC_MAX + 1][9] PROGMEM = {
+// типы автоконтролей для отображения в начальном меню (eGB_TYPE_AC)
+static const char fcAcType[GB_TYPE_AC_MAX + 2][9] PROGMEM = {
 // 		12345678
-		"АК-ошиб",		//	см. eGB_TYPE_AC
+		"АК-ошиб",		//
 		"АК-норм",		//
 		"АК-норм",		//
 		"АК-ускор",		//
@@ -44,7 +44,8 @@ static const char fcAcType[GB_TYPE_AC_MAX + 1][9] PROGMEM = {
 		"АК-бегл",		//
 		"АК-испыт",		//
 		"АК-пуск",		//
-		"АК-ошиб"		//
+		"АК-ошиб",		//
+		"АК-вкл."		// Р400М ПВЗЛ - подмена АК-норм
 };
 static const char fcTimeToAc[] PROGMEM = "%02d:%02d:%02d";
 
@@ -413,8 +414,8 @@ static const char fcTest1K400[GB_SIGNAL_MAX + 1][STRING_LENGHT] PROGMEM = {
 		"КЧ2",			//
 		"КЧ3",			//
 		"КЧ4",			//
-		"КЧ без блк",	//
-		"КЧ с блок",	//
+		"КЧ без блк",	//	GB_SIGNAL_CF_NO_RZ
+		"КЧ с блок",	//	GB_SIGNAL_CF_RZ
 		"РЗ",			//
 		"Ком1+блок",	//
 		"Ком2+блок",	//
@@ -452,5 +453,6 @@ static const char fcTest1K400[GB_SIGNAL_MAX + 1][STRING_LENGHT] PROGMEM = {
 		"Команда30",	//
 		"Команда31",	//
 		"Команда32",	//
+		"КЧ и РЗ",		//	GB_SIGNAL_CF_RZ_R400M
 		"ошибка"		//
 };
