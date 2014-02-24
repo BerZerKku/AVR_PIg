@@ -34,6 +34,9 @@
 /// время вывода текста на экран, мс (например авария/код аварии)
 #define TIME_TEXT (1000 / MENU_TIME_CYLCE)
 
+/// время до выхода из Тест 1 / Тест 2 и т.д. если режим != данному тесту, мс
+#define TIME_TEST_EXIT (1000 / MENU_TIME_CYLCE)
+
 /// Измеряемые параметры
 enum eMENU_MEAS_PARAM
 {
@@ -398,6 +401,7 @@ private:
 	void lvlSetupParamPrd();
 	void lvlSetupParamGlb();
 	void lvlSetupDT();
+	void lvlTest();
 	void lvlTest1();
 	void lvlTest2();
 

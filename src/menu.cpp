@@ -959,7 +959,8 @@ void clMenu::lvlStart() {
 					ac = GB_TYPE_AC_ON;
 			}
 			uint8_t t = poz + 20;
-			t += snprintf_P(&vLCDbuf[t],11,fcAcType[static_cast<uint8_t>(ac)]);
+			t += snprintf_P(&vLCDbuf[t], 11,
+					fcAcType[static_cast<uint8_t>(ac)]);
 
 			// время до АК
 			// выводится если соблюдаются условия:
@@ -1105,18 +1106,7 @@ void clMenu::lvlFirst() {
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	if (isMessage()) {
-		static char message[][21] PROGMEM = { "    Перейдите в     ",
-				"   тестовый режим   " };
-
-		for (uint_fast8_t i = lineParam_ + 1; i <= NUM_TEXT_LINES; i++)
-			clearLine(i);
-
-		uint8_t poz = 40;
-		for (uint_fast8_t i = 0; i < 2; i++, poz += 20)
-			snprintf_P(&vLCDbuf[poz], 21, message[i]);
-	} else
-		printPunkts();
+	printPunkts();
 
 	switch (key_) {
 	case KEY_UP:
@@ -1141,14 +1131,8 @@ void clMenu::lvlFirst() {
 			lvlCreate_ = true;
 			break;
 		case 4:
-			if (sParam.glb.status.getRegime() == GB_REGIME_TEST_1) {
-				lvlMenu = &clMenu::lvlTest1;
-				lvlCreate_ = true;
-			} else if (sParam.glb.status.getRegime() == GB_REGIME_TEST_2) {
-				lvlMenu = &clMenu::lvlTest2;
-				lvlCreate_ = true;
-			} else
-				printMessage();
+			lvlMenu = &clMenu::lvlTest;
+			lvlCreate_ = true;
 			break;
 		case 5:
 			lvlMenu = &clMenu::lvlInfo;
@@ -1720,7 +1704,6 @@ void clMenu::lvlControl() {
 	static char punkt30[] PROGMEM = "%d. Пуск удал-ых МАН";
 	static char punkt31[] PROGMEM = "%d. АК включен";
 
-
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
 	if (lvlCreate_) {
@@ -1835,7 +1818,6 @@ void clMenu::lvlControl() {
 		}
 	}
 
-
 	// в Р400М меню управление зависит от кол-ва аппаратов в линии
 	// и типа совместимости
 	// поэтому при их изменении обновим уровень меню
@@ -1850,8 +1832,6 @@ void clMenu::lvlControl() {
 	// в РЗСК/Р400м
 	if ((device == AVANT_R400M) || (device == AVANT_RZSK))
 		punkt_[0] = (sParam.def.status.getState() != 7) ? punkt06 : punkt07;
-
-
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 	printPunkts();
@@ -2172,6 +2152,7 @@ void clMenu::lvlRegime() {
 
 	switch (key_) {
 	case KEY_CANCEL:
+		sParam.txComBuf.addFastCom(GB_COM_SET_REG_DISABLED);
 		lvlMenu = &clMenu::lvlSetup;
 		lvlCreate_ = true;
 		break;
@@ -2274,7 +2255,6 @@ void clMenu::lvlSetupParam() {
 	default:
 		break;
 	}
-
 }
 
 /** Уровень меню. Настройка параметров защиты.
@@ -2547,13 +2527,15 @@ void clMenu::lvlSetupParamDef() {
 				enterParam.com = GB_COM_SET_PRM_TYPE;
 			} else if (punkt_[cursorLine_ - 1] == punkt10) {
 				enterParam.setEnable(MENU_ENTER_PARAM_LIST);
-				enterParam.setValueRange(GB_PVZL_FREQ_MIN, GB_PVZL_FREQ_MAX-1);
+				enterParam.setValueRange(GB_PVZL_FREQ_MIN,
+						GB_PVZL_FREQ_MAX - 1);
 				enterParam.setValue(sParam.def.getFreqPrd());
 				enterParam.list = fcPvzlFreq[0];
 				enterParam.com = GB_COM_DEF_SET_FREQ_PRD;
 			} else if (punkt_[cursorLine_ - 1] == punkt11) {
 				enterParam.setEnable(MENU_ENTER_PARAM_LIST);
-				enterParam.setValueRange(GB_PVZL_FREQ_MIN, GB_PVZL_FREQ_MAX-1);
+				enterParam.setValueRange(GB_PVZL_FREQ_MIN,
+						GB_PVZL_FREQ_MAX - 1);
 				enterParam.setValue(sParam.def.getFreqPrm());
 				enterParam.list = fcPvzlFreq[0];
 				enterParam.com = GB_COM_DEF_SET_RZ_THRESH;
@@ -3657,9 +3639,110 @@ void clMenu::lvlSetupDT() {
  * 	@param Нет
  * 	@return Нет
  */
+void clMenu::lvlTest() {
+	static char title[] PROGMEM = "Настройка\\Тесты";
+	static char punkt1[] PROGMEM = "%d. Тест передатчика";
+	static char punkt2[] PROGMEM = "%d. Тест приемника";
+
+	if (lvlCreate_) {
+		lvlCreate_ = false;
+		cursorLine_ = 1;
+		cursorEnable_ = true;
+		lineParam_ = 1;
+
+		vLCDclear();
+		vLCDdrawBoard(lineParam_);
+
+		uint8_t num = 0;
+		// тест передатчика при наличии передатчика или защиты
+		if ((sParam.prd.status.isEnable()) || (sParam.def.status.isEnable())) {
+			punkt_[num++] = punkt1;
+		}
+		// тест приемника при наличии приемника или защиты
+		if ((sParam.prm.status.isEnable()) || (sParam.def.status.isEnable())) {
+			punkt_[num++] = punkt2;
+		}
+		numPunkts_ = num;
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
+	}
+
+	snprintf_P(&vLCDbuf[0], 20, title);
+	if (isMessage()) {
+		static char message[][21] PROGMEM = {
+		//		 12345678901234567890
+				"    Перейдите в     ",//
+				"   режим ВЫВЕДЕН    " 		//
+				};
+
+		for (uint_fast8_t i = lineParam_ + 1; i <= NUM_TEXT_LINES; i++)
+			clearLine(i);
+
+		uint8_t poz = 40;
+		for (uint_fast8_t i = 0; i < 2; i++, poz += 20)
+			snprintf_P(&vLCDbuf[poz], 21, message[i]);
+	} else
+		printPunkts();
+
+
+	eGB_REGIME reg = sParam.glb.status.getRegime();
+	switch (key_) {
+	case KEY_UP:
+		cursorLineUp();
+		break;
+	case KEY_DOWN:
+		cursorLineDown();
+		break;
+
+	case KEY_CANCEL:
+		lvlMenu = &clMenu::lvlFirst;
+		lvlCreate_ = true;
+		break;
+	case KEY_ENTER:
+		if (punkt_[cursorLine_ - 1] == punkt1) {
+			if ((reg == GB_REGIME_DISABLED) || (reg == GB_REGIME_TEST_2)) {
+				sParam.txComBuf.setInt8(0, 0);
+				sParam.txComBuf.setInt8(0, 1);
+				sParam.txComBuf.addFastCom(GB_COM_SET_REG_TEST_1);
+				lvlMenu = &clMenu::lvlTest1;
+				lvlCreate_ = true;
+			} else if (reg == GB_REGIME_TEST_1) {
+				lvlMenu = &clMenu::lvlTest1;
+				lvlCreate_ = true;
+			}
+		} else if (punkt_[cursorLine_ - 1] == punkt2) {
+			if ((reg == GB_REGIME_DISABLED) || (reg == GB_REGIME_TEST_1)) {
+				sParam.txComBuf.addFastCom(GB_COM_SET_REG_TEST_2);
+				lvlMenu = &clMenu::lvlTest2;
+				lvlCreate_ = true;
+			} else if (reg == GB_REGIME_TEST_2) {
+				lvlMenu = &clMenu::lvlTest2;
+				lvlCreate_ = true;
+			}
+		}
+		// если уровень меню (т.е. стоит неверный режим) не изменился,
+		// выведем сообщение
+		if (lvlMenu == &clMenu::lvlTest)
+			printMessage();
+		break;
+
+	default:
+		break;
+	}
+
+}
+
+/** Уровень меню. Тест 1.
+ *  Если в течении 1 секунды небыл получен режим совпадающий с данным тестом
+ * 	происходи выход в предыдущий пункт меню.
+ * 	@param Нет
+ * 	@return Нет
+ */
 void clMenu::lvlTest1() {
 	static char title[] PROGMEM = "Меню\\Тест 1";
 	static char punkt1[] PROGMEM = "Сигналы передатчика";
+	static uint8_t cnt = 0;		// счетчик до выхода при ошибочном режиме
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3667,26 +3750,30 @@ void clMenu::lvlTest1() {
 		cursorLine_ = 1;
 		cursorEnable_ = true;
 
-		lineParam_ = 1;
+		lineParam_ = 2;
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
 		numPunkts_ = 1;
+		cnt = 0;
 
-		// доплнительные команды
+		// дополнительные команды
 		sParam.txComBuf.clear();
-		sParam.txComBuf.addCom2(GB_COM_GET_TEST);
+		sParam.txComBuf.addCom1(GB_COM_GET_MEAS);	// измерения
+		sParam.txComBuf.addCom2(GB_COM_GET_TEST);	// сигналы
 
 		// сигналы для тестов
-		if (sParam.typeDevice == AVANT_R400M)
-		{
+		if (sParam.typeDevice == AVANT_R400M) {
 			sParam.test.clear();
 			sParam.test.addSignalToList(GB_SIGNAL_RZ);
 			if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_AVANT)
 				sParam.test.addSignalToList(GB_SIGNAL_CF);
 		}
-
 	}
+
+	// вывод на экран измеряемых параметров
+	printMeasParam(2, MENU_MEAS_PARAM_UOUT);
+	printMeasParam(3, MENU_MEAS_PARAM_IOUT);
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 	snprintf_P(&vLCDbuf[lineParam_ * 20], 21, punkt1);
@@ -3705,8 +3792,7 @@ void clMenu::lvlTest1() {
 			// TODO РЗСК может быть два сигнала КЧ и РЗ одновременно
 			// первый байт - номер группы (1 - кч, 2 - рз)
 			// второй байт - номер сигнала (0 - выкл.)
-			if (rz > 0)
-			{
+			if (rz > 0) {
 				sParam.txComBuf.setInt8(2, 0);
 				sParam.txComBuf.setInt8(rz, 1);
 			} else if (cf > 0) {
@@ -3728,13 +3814,19 @@ void clMenu::lvlTest1() {
 				fcTest1K400[sParam.test.getCurrentSignal()]);
 	}
 
-	// выход из теста при несооответствии режима
+	// выход из теста при несоответствии режима
 	if (sParam.glb.status.getRegime() != GB_REGIME_TEST_1)
-		key_ = KEY_CANCEL;
+	{
+		if (++cnt >= TIME_TEST_EXIT)
+			key_ = KEY_CANCEL;
+	}
+	else
+		cnt = 0;
 
 	switch (key_) {
 	case KEY_CANCEL:
-		lvlMenu = &clMenu::lvlFirst;
+		sParam.txComBuf.addFastCom(GB_COM_SET_REG_DISABLED);
+		lvlMenu = &clMenu::lvlTest;
 		lvlCreate_ = true;
 		break;
 
@@ -3753,12 +3845,15 @@ void clMenu::lvlTest1() {
 }
 
 /** Уровень меню. Тест 2.
+ * 	Если в течении 1 секунды небыл получен режим совпадающий с данным тестом
+ * 	происходи выход в предыдущий пункт меню.
  * 	@param Нет
  * 	@return Нет
  */
 void clMenu::lvlTest2() {
 	static char title[] PROGMEM = "Меню\\Тест 2";
 	static char punkt1[] PROGMEM = "Сигналы приемника";
+	static uint8_t cnt = 0;		// счетчик до выхода при ошибочном режиме
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3766,16 +3861,23 @@ void clMenu::lvlTest2() {
 		cursorLine_ = 1;
 		cursorEnable_ = true;
 
-		lineParam_ = 1;
+		lineParam_ = 2;
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
 		numPunkts_ = 1;
+		cnt = 0;
 
-		// доплнительные команды
+		// дополнительные команды
 		sParam.txComBuf.clear();
-		sParam.txComBuf.addCom2(GB_COM_GET_TEST);
+		sParam.txComBuf.addCom1(GB_COM_GET_MEAS);	// измерения
+		sParam.txComBuf.addCom2(GB_COM_GET_TEST);	// сигналы
 	}
+
+	// вывод на экран измеряемых параметров
+	// TODO Р400м учесть что в 3-х концевой может быть 2Uk/2Uz
+	printMeasParam(2, MENU_MEAS_PARAM_UC);
+	printMeasParam(3, MENU_MEAS_PARAM_UZ);
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 	snprintf_P(&vLCDbuf[lineParam_ * 20], 21, punkt1);
@@ -3786,11 +3888,17 @@ void clMenu::lvlTest2() {
 
 	// выход из теста при несооответствии режима
 	if (sParam.glb.status.getRegime() != GB_REGIME_TEST_2)
-		key_ = KEY_CANCEL;
+	{
+		if (++cnt >= TIME_TEST_EXIT)
+			key_ = KEY_CANCEL;
+	}
+	else
+		cnt = 0;
 
 	switch (key_) {
 	case KEY_CANCEL:
-		lvlMenu = &clMenu::lvlFirst;
+		sParam.txComBuf.addFastCom(GB_COM_SET_REG_DISABLED);
+		lvlMenu = &clMenu::lvlTest;
 		lvlCreate_ = true;
 		break;
 
@@ -3818,7 +3926,7 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 		if (enterParam.cnt_ < TIME_MESSAGE) {
 			static char message[3][21] PROGMEM = {
 			//		 12345678901234567890
-					" Изменить параметр  ",		//
+					" Изменить параметр  ",//
 					"  можно только в    ",		//
 					"  режиме ВЫВЕДЕН    " };
 

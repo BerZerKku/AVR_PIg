@@ -23,9 +23,9 @@ enum eLCD_LED
 
 /// Время работы кратковременной подсветки * 10мс
 #ifdef DEBUG
-#define LCD_TIME_LED_ON 500
+#define LCD_TIME_LED_ON 1000
 #else
-#define LCD_TIME_LED_ON 6000
+#define LCD_TIME_LED_ON 30000
 #endif
 
 #define PORT_RST 	PORTC

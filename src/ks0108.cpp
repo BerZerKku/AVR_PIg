@@ -234,8 +234,8 @@ void vLCDsetLed(eLCD_LED val) {
  * 	@return Нет
  */
 void vLCDled(void) {
-	// счетчик 100 циклов , т.е. период 10мс
-	static uint8_t cnt = 100 - 1;
+	// счетчик 200 циклов , т.е. период 10мс
+	static uint8_t cnt = 200 - 1;
 
 	// Работа с подсветкой
 	if (eLed == LED_ON)
@@ -245,7 +245,7 @@ void vLCDled(void) {
 		if (cnt > 0)
 			cnt--;
 		else {
-			cnt = 100 - 1;
+			cnt = 200 - 1;
 			uLedTimeOn--;
 		}
 	} else
