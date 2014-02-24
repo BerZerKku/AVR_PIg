@@ -84,7 +84,7 @@ void vLCDclear(void) {
 }
 
 /** Запись данных в ЖКИ
- * 	@param com Данные
+ * 	@param data Байт данных, передаваемый в ЖКИ
  * 	@param cs Выбор кристалла
  * 	@return Нет
  */
@@ -106,8 +106,7 @@ void vLCDdata(uint8_t data, uint8_t cs) {
 }
 
 /** Запись данных в ЖКИ
- * 	@param com Данные
- * 	@param cs Выбор кристалла
+ * 	@param data Байт данных, помещаемый в буфер
  * 	@return Нет
  */
 void vLCDwriteData(uint8_t data) {
@@ -134,7 +133,6 @@ void vLCDinit(void) {
 /**	Установка текущей координаты ЖКИ
  * 	@param x Номер столбца
  * 	@param y Номер строки
- * 	@param cs Выбор кристалла
  * 	@return Нет
  */
 void vLCDsetXY(uint8_t x, uint8_t y) {
@@ -180,8 +178,8 @@ void vLCDmain(void) {
 	}
 }
 
-/** Вывод строки на экран
- *	@param symb Символ
+/** Преобразование массива символов, в данные для вывода на жки
+ * 	@param buf Указатель на буфер данных ЖКИ
  *	@param num Кол-во линий для параметров
  *	@return true - в случае удачного вывода
  */
@@ -230,9 +228,9 @@ void vLCDsetLed(eLCD_LED val) {
 		eLed = val;
 }
 
-/** Управление подсветкой.
+/** Управление подсветкой (формирование ШИМ).
  * 	Частота задается частотой вызова данной функции
- * 	@arg Нет
+ * 	@param Нет
  * 	@return Нет
  */
 void vLCDled(void) {
@@ -255,7 +253,7 @@ void vLCDled(void) {
 }
 
 /** Рисование рамки
- * 	@param num Кол-во линий параметров 2 или 3
+ * 	@param num Кол-во линий параметров 1..3
  * 	@return true - в случае успешной отрисовки
  */
 bool vLCDdrawBoard(uint8_t num) {

@@ -295,7 +295,7 @@ static const char fcPrdFault0200rzsk[] 	PROGMEM = "Неиспр.выкл.Тест";
 static const char fcPrdFault0400rzsk[] 	PROGMEM = "Неиспр.вкл. Тест";
 static const char fcPrdFault0800rzsk[] 	PROGMEM = "Неиспр.вход. КСК";
 
-// пераметры
+// параметры
 static const char fcEnterInt[]			PROGMEM = "Ввод: %f";
 static const char fcValue[] 			PROGMEM = "Значение: ";
 static const char fcRange[] 			PROGMEM = "Диапазон: ";
@@ -319,13 +319,14 @@ static const char fcTimeJrn[]			PROGMEM = "Время: %02u:%02u:%02u.%03u";
 static const char fcJrnNotReady[]		PROGMEM = "СЧИТЫВАНИЕ ЗАПИСИ";
 static const char fcSignalDefJrn[]		PROGMEM = "П%dС%dМ%d ПД%dПМ%dВЫХ%d";
 
-// записи журнала ПРД и ПРМ
+/// записи журнала ПРД и ПРМ
 static const char fcJrnPrd[GB_STATE_COM_MAX + 1][21] PROGMEM = {
 		"Окончание команды",	//
 		"Начало команды",		//
 		"Ошибочное значение"	//
 };
-// записи журнала событий для К400 и РЗСК
+
+/// записи журнала событий для К400 и РЗСК
 static char fcJrnEventK400[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 //		 01234567890123456789
 		"Событие - %d",				// 0 - ошибочное значение
@@ -364,7 +365,7 @@ static char fcJrnEventK400[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 		"Событие - %d"          	// MAX_JRN_EVENT_VALUE - ошибочное значение
 };
 
-// записи журнала событий для Р400М
+/// записи журнала событий для Р400М
 static char fcJrnEventR400_MSK[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 //		 12345678901234567890
 		"Событие - %d",				// 0 - ошибочное значение
@@ -403,7 +404,7 @@ static char fcJrnEventR400_MSK[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 		"Событие - %d"          	// MAX_JRN_EVENT_VALUE - ошибочное значение
 };
 
-// сигналы в тестах
+/// сигналы в тестах
 static const char fcTest1K400[GB_SIGNAL_MAX + 1][STRING_LENGHT] PROGMEM = {
 //		 1234567890
 		"выкл.",		//

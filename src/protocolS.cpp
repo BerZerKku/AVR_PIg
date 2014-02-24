@@ -106,8 +106,7 @@ void clProtocolS::checkStat() {
 
 /**	Подготовка к отправке команды (сама команда, кол-во данных и данные
  * 	уже должны лежать в буфере)
- * 	@param *buf Указатель на начало данных
- * 	@param size Кол-во байт данных
+ * 	@param Нет
  * 	@return Кол-во отправляемых байт данных
  */
 uint8_t clProtocolS::addCom() {
@@ -201,8 +200,7 @@ uint8_t clProtocolS::addCom(uint8_t com, uint8_t byte) {
 }
 
 /**	Подготовка к отправке команды без данных (заполнение буфера)
- * 	@param *buf Указатель на начало данных
- * 	@param size Кол-во байт данных
+ * 	@param com Передаваемая команда
  * 	@return Кол-во отправляемых байт данных
  */
 uint8_t clProtocolS::addCom(uint8_t com) {
