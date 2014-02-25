@@ -1079,7 +1079,7 @@ void clMenu::lvlFirst() {
 	static char punkt1[] PROGMEM = "%d. Журнал";
 	static char punkt2[] PROGMEM = "%d. Управление";
 	static char punkt3[] PROGMEM = "%d. Настройка";
-	static char punkt4[] PROGMEM = "%d. Тест";
+	static char punkt4[] PROGMEM = "%d. Тесты";
 	static char punkt5[] PROGMEM = "%d. Информация";
 
 	if (lvlCreate_) {
@@ -2124,12 +2124,6 @@ void clMenu::lvlRegime() {
 				com = GB_COM_SET_REG_DISABLED;
 			else if (val == GB_REGIME_ENTER_ENABLED)
 				com = GB_COM_SET_REG_ENABLED;
-			else if (val == GB_REGIME_ENTER_TEST_1) {
-				com = GB_COM_SET_REG_TEST_1;
-				sParam.txComBuf.setInt8(0, 0);
-				sParam.txComBuf.setInt8(0, 1);
-			} else if (val == GB_REGIME_ENTER_TEST_2)
-				com = GB_COM_SET_REG_TEST_2;
 
 			sParam.txComBuf.addFastCom(com);
 			enterParam.setDisable();
@@ -2164,11 +2158,11 @@ void clMenu::lvlRegime() {
 			enterFunc = &clMenu::enterPassword;
 			enterParam.setEnable(MENU_ENTER_PASSWORD);
 		} else {
-			// если аппарат выведен, доступны тесты
+			// доступны режимы введен/выведен
 			enterFunc = &clMenu::enterValue;
 			enterParam.setEnable(MENU_ENTER_PARAM_LIST);
 			enterParam.setValueRange(GB_REGIME_ENTER_DISABLED,
-					GB_REGIME_ENTER_MAX - 1);
+					GB_REGIME_ENTER_ENABLED);
 			enterParam.setValue(GB_REGIME_ENTER_ENABLED);
 			enterParam.list = fcRegimeEnter[0];
 			enterParam.com = GB_COM_NO;
@@ -3740,7 +3734,7 @@ void clMenu::lvlTest() {
  * 	@return Нет
  */
 void clMenu::lvlTest1() {
-	static char title[] PROGMEM = "Меню\\Тест 1";
+	static char title[] PROGMEM = "Тесты\\Передатчик";
 	static char punkt1[] PROGMEM = "Сигналы передатчика";
 	static uint8_t cnt = 0;		// счетчик до выхода при ошибочном режиме
 
@@ -3851,7 +3845,7 @@ void clMenu::lvlTest1() {
  * 	@return Нет
  */
 void clMenu::lvlTest2() {
-	static char title[] PROGMEM = "Меню\\Тест 2";
+	static char title[] PROGMEM = "Тесты\\Приемник";
 	static char punkt1[] PROGMEM = "Сигналы приемника";
 	static uint8_t cnt = 0;		// счетчик до выхода при ошибочном режиме
 
