@@ -2952,8 +2952,9 @@ void clMenu::lvlSetupParamGlb() {
 	static char punkt20[] PROGMEM = "Порог по помехе";
 	static char punkt21[] PROGMEM = "Допустимая помеха";
 	static char punkt22[] PROGMEM = "Тип автоконтроля";
-	static char punkt23[] PROGMEM = "Резервирование";
-	static char punkt24[] PROGMEM = "Совместимость";		// упаск
+	static char punkt23[] PROGMEM = "Резервирование";		// TODO ОПТИКА
+	static char punkt24[] PROGMEM = "Совместимость";		// TODO K400
+	static char punkt25[] PROGMEM = "Интерфейс связи";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3082,6 +3083,8 @@ void clMenu::lvlSetupParamGlb() {
 //				sParam.txComBuf.addCom2(GB_COM_GET_TIME_RERUN);
 			}
 		}
+		// интерфейс связи есть у любого аппарата
+		// punkt_[num++] = punkt25; 	// TODO ВСЕ Параметр интерфейс
 		numPunkts_ = num;
 	}
 
@@ -3155,7 +3158,14 @@ void clMenu::lvlSetupParamGlb() {
 				GLB_PVZUE_N_LVL_MAX, "град");
 	} else if (p == punkt22) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
+	} else if (p == punkt23) {
+		// TODO ОПТИКА диапазон для параметра "резервирование"
+	} else if (p == punkt24) {
+		// TODO K400 диапазон для параметра "Совместимость"
+	} else if (p == punkt25) {
+		// TODO ВСЕ диапазон для параметра "Интерфейс"
 	}
+
 
 	if (enterParam.isEnable()) {
 		// ввод нового значения параметра
