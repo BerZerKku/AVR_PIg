@@ -335,8 +335,8 @@ enum eGB_TYPE_AC {
 	GB_TYPE_AC_CHECK = 5,		// 	АК беглый
 	GB_TYPE_AC_PUSK_SELF = 6,	// 	Пуск АК свой / АК испытания / АК контр.пров.
 	GB_TYPE_AC_PUSK = 7,		//	АК пуск
-	GB_TYPE_AC_MAX,				// 	максимальное принимаемое значение
-	GB_TYPE_AC_ON				// 	Р400м ПВЗЛ - АК включен (подмена АК норм)
+	GB_TYPE_AC_ONE_SIDE = 8,	// 	АК односторонний
+	GB_TYPE_AC_MAX				// 	максимальное принимаемое значение
 };
 
 /// Частоты ПРМ и ПРД в ПВЗЛ
@@ -1524,10 +1524,13 @@ public:
 	// тип защиты
 	bool setDefType(uint8_t val) {
 		bool stat = false;
-		if ((val >= DEF_TYPE_MIN) && (val <= DEF_TYPE_MAX)) {
+		if ((val >= DEF_TYPE_MIN) && (val < DEF_TYPE_MAX)) {
 			defType_ = val;
 			stat = true;
+		} else {
+			defType_ = DEF_TYPE_MAX;
 		}
+
 		return stat;
 	}
 	uint8_t getDefType() const {

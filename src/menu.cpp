@@ -929,12 +929,10 @@ void clMenu::lvlStart() {
 
 		// буфер 2
 		// неисправности
-		// в Р400м + АК и совместимость
+		// в Р400м + АК
 		sParam.txComBuf.addCom1(GB_COM_GET_FAULT);
-		if (sParam.typeDevice == AVANT_R400M) {
+		if (sParam.typeDevice == AVANT_R400M)
 			sParam.txComBuf.addCom2(GB_COM_DEF_GET_TYPE_AC);
-			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
-		}
 	}
 
 	// вывод на экран измеряемых параметров
@@ -954,10 +952,7 @@ void clMenu::lvlStart() {
 		if (sParam.typeDevice == AVANT_R400M) {
 			uint16_t time = sParam.def.getTimeToAC();
 			eGB_TYPE_AC ac = sParam.def.getTypeAC();
-			if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_PVZL) {
-				if (ac == GB_TYPE_AC_AUTO_NORM)
-					ac = GB_TYPE_AC_ON;
-			}
+
 			uint8_t t = poz + 20;
 			t += snprintf_P(&vLCDbuf[t], 11,
 					fcAcType[static_cast<uint8_t>(ac)]);
