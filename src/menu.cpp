@@ -3660,6 +3660,11 @@ void clMenu::lvlTest() {
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
+		if (sParam.typeDevice == AVANT_R400M)
+		{
+			// совместимость в Р400М
+			sParam.txComBuf.addCom1(GB_COM_SET_COM_PRD_KEEP);
+		}
 	}
 
 	snprintf_P(&vLCDbuf[0], 20, title);
