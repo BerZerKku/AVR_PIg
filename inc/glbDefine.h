@@ -587,6 +587,19 @@ enum eGB_TEST_SIGNAL {
 	GB_SIGNAL_MAX
 };
 
+// интерфейс связи
+enum eGB_INTERFACE {
+	GB_INTERFACE_MIN = 0,	//
+	GB_INTERFACE_USB = 0,	// подключение через USB на передней панели
+	GB_INTERFACE_RS485,		// подключение через 485 интерфейс на задней панели
+	GB_INTERFACE_MAX		//
+};
+
+struct sEeprom {
+	uint16_t password;
+	eGB_INTERFACE interface;
+};
+
 /// Класс для даты и времени
 class TDataTime {
 public:
@@ -938,6 +951,7 @@ public:
 		compatibility_ = GB_COMPATIBILITY_MAX;
 		versBsp_ = 0;
 		versDsp_ = 0;
+		interface_ = GB_INTERFACE_USB;
 
 		timeSinchr_ = false;
 		deviceNum_ = GLB_DEV_NUM_MIN_F;
@@ -1032,6 +1046,25 @@ public:
 	uint16_t getVersDsp() const {
 		return versDsp_;
 	}
+
+	// Интерфейс связи с АВАНТ
+	bool setInterface(eGB_INTERFACE val) {
+		bool stat = false;
+
+		if (val >= GB_INTERFACE_MIN) {
+			if (val < GB_INTERFACE_MAX) {
+				interface_ = val;
+				stat = true;
+			}
+		}
+
+		// в случае ошибочного значения будет установлен USB
+		if (!stat)
+			interface_ = GB_INTERFACE_USB;
+
+		return stat;
+	}
+	eGB_INTERFACE getInterface() const { return interface_; }
 
 	// совместимость (тип удаленного аппарата)
 	// в Р400М только авант или ПВЗЛ
@@ -1495,6 +1528,9 @@ private:
 
 	// Коррекция напряжения
 	int16_t corU_;
+
+	// Интерфейс связи
+	eGB_INTERFACE interface_;
 };
 
 /// класс для параметров и настроек защиты

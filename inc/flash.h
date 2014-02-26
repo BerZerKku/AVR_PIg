@@ -158,11 +158,18 @@ static char fcPvzueTypeAC[GB_PVZUE_TYPE_AC_MAX + 1][STRING_LENGHT] PROGMEM = {
 
 static char fcPvzueParity[GB_PVZUE_PARITY_MAX + 1][STRING_LENGHT] PROGMEM = {
 //	 	 1234567890
-		"ошибка",//
+		"ошибка",	//
 		"вкл.",		//
 		"выкл.",	//
 		"ошибка"	//
 
+};
+
+static char fcInterface[GB_INTERFACE_MAX +1][STRING_LENGHT] PROGMEM = {
+//	 	 1234567890
+		"USB",		//
+		"RS485",	//
+		"ошибка"	//
 };
 
 // состояния устройств

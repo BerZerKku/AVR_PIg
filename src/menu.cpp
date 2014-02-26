@@ -1681,13 +1681,13 @@ void clMenu::lvlControl() {
 	static char punkt12[] PROGMEM = "%d. Пуск АК свой";
 	static char punkt13[] PROGMEM = "%d. Пуск АК удаленн.";
 	static char punkt14[] PROGMEM = "%d. Пуск ПРД";
-	static char punkt15[] PROGMEM = "%d. АК автоматическ.";
+//	static char punkt15[] PROGMEM = "%d. АК автоматическ.";
 	static char punkt16[] PROGMEM = "%d. АК ускоренный";
 	static char punkt17[] PROGMEM = "%d. АК выключен";
 	static char punkt18[] PROGMEM = "%d. АК испытания";
 	static char punkt19[] PROGMEM = "%d. АК нормальный";
 	static char punkt20[] PROGMEM = "%d. АК беглый";
-	static char punkt21[] PROGMEM = "%d. АК односторонний";
+//	static char punkt21[] PROGMEM = "%d. АК односторонний";
 	static char punkt22[] PROGMEM = "%d. Сброс удаленных";
 	static char punkt23[] PROGMEM = "%d. Пуск удаленн. 1";
 	static char punkt24[] PROGMEM = "%d. Пуск удаленн. 2";
@@ -1981,6 +1981,7 @@ void clMenu::lvlSetup() {
 	static char punkt2[] PROGMEM = "%d. Время и дата";
 	static char punkt3[] PROGMEM = "%d. Параметры";
 	static char punkt4[] PROGMEM = "%d. Пароль";
+	static char punkt5[] PROGMEM = "%d. Интерфейс";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -1996,6 +1997,7 @@ void clMenu::lvlSetup() {
 		punkt_[num++] = punkt2;
 		punkt_[num++] = punkt3;
 		punkt_[num++] = punkt4;
+		punkt_[num++] = punkt5;
 		numPunkts_ = num;
 
 		// доплнительные команды
@@ -2039,26 +2041,23 @@ void clMenu::lvlSetup() {
 		break;
 	case KEY_ENTER: {
 		PGM_P p = punkt_[cursorLine_ - 1];
-		if (p == punkt1)
-		{
+		if (p == punkt1) {
 			lvlMenu = &clMenu::lvlRegime;
 			lvlCreate_ = true;
 		}
-		else if (p == punkt2)
-		{
+		else if (p == punkt2) {
 			lvlMenu = &clMenu::lvlSetupDT;
 			lvlCreate_ = true;
-		}
-		else if (p == punkt3)
-		{
+		} else if (p == punkt3) {
 			lvlMenu = &clMenu::lvlSetupParam;
 			lvlCreate_ = true;
-		}
-		else if (p == punkt4)
-		{
+		} else if (p == punkt4) {
 			enterFunc = &clMenu::enterPassword;
 			enterParam.setEnable(MENU_ENTER_PASSWORD);
 			enterParam.com = GB_COM_NO;
+		} else if (p == punkt5) {
+			lvlMenu = &clMenu::lvlSetupInterface;
+			lvlCreate_ = true;
 		}
 	}
 	break;
@@ -2954,7 +2953,6 @@ void clMenu::lvlSetupParamGlb() {
 	static char punkt22[] PROGMEM = "Тип автоконтроля";
 	static char punkt23[] PROGMEM = "Резервирование";		// TODO ОПТИКА
 	static char punkt24[] PROGMEM = "Совместимость";		// TODO K400
-	static char punkt25[] PROGMEM = "Интерфейс связи";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3083,8 +3081,6 @@ void clMenu::lvlSetupParamGlb() {
 //				sParam.txComBuf.addCom2(GB_COM_GET_TIME_RERUN);
 			}
 		}
-		// интерфейс связи есть у любого аппарата
-		// punkt_[num++] = punkt25; 	// TODO ВСЕ Параметр интерфейс
 		numPunkts_ = num;
 	}
 
@@ -3162,8 +3158,6 @@ void clMenu::lvlSetupParamGlb() {
 		// TODO ОПТИКА диапазон для параметра "резервирование"
 	} else if (p == punkt24) {
 		// TODO K400 диапазон для параметра "Совместимость"
-	} else if (p == punkt25) {
-		// TODO ВСЕ диапазон для параметра "Интерфейс"
 	}
 
 
@@ -3251,6 +3245,10 @@ void clMenu::lvlSetupParamGlb() {
 				// TODO Р400м ПВЗУ-Е
 			} else if (p == punkt22) {
 				// TODO Р400м ПВЗУ-Е
+			} else if (p == punkt23) {
+				// TODO ОПТИКА команда на передачу для "резервирование"
+			} else if (p == punkt24) {
+				// TODO K400 команда на передачу для параметра "Совместимость"
 			}
 			sParam.txComBuf.addFastCom(enterParam.com);
 			enterParam.setDisable();
@@ -3316,6 +3314,10 @@ void clMenu::lvlSetupParamGlb() {
 		} else if (p == punkt22) {
 			uint8_t val = sParam.glb.getPvzueTypeAC();
 			snprintf(&vLCDbuf[poz], 11, fcPvzueTypeAC[val]);
+		} else if (p == punkt23) {
+			// TODO ОПТИКА вывод параметра "резервирование"
+		} else if (p == punkt24) {
+			// TODO K400 вывод параметра "Совместимость"
 		}
 	}
 
@@ -3335,6 +3337,7 @@ void clMenu::lvlSetupParamGlb() {
 	case KEY_ENTER:
 		enterFunc = &clMenu::enterValue;
 		// коррекция тока и напряжения вводятся в любом режиме
+		// а также настройка интерфейса связи
 		// остальные параметры только в "Выведен"
 		if (punkt_[cursorLine_ - 1] == punkt15) {
 			// вводится реальное значение напряжения
@@ -3504,6 +3507,10 @@ void clMenu::lvlSetupParamGlb() {
 			enterParam.list = fcPvzueTypeAC[0];
 			enterParam.setDopValue(6);
 			enterParam.com = GB_COM_GET_TIME_RERUN;
+		} else if (punkt_[cursorLine_ - 1] == punkt23) {
+			// TODO ОПТИКА ввод параметра с клавиатуры "резервирование"
+		} else if (punkt_[cursorLine_ - 1] == punkt24) {
+			// TODO K400 ввод параметра с клавиатуры "Совместимость"
 		}
 		break;
 	default:
@@ -3629,6 +3636,105 @@ void clMenu::lvlSetupDT() {
 		lvlCreate_ = true;
 		break;
 
+	default:
+		break;
+	}
+}
+
+/** Уровень меню. Интерфейс
+ * 	@param Нет
+ * 	@return Нет
+ */
+void clMenu::lvlSetupInterface() {
+	static char title[] PROGMEM = "Настройка\\Интерфейс";
+	static char punkt1[] PROGMEM = "Интерфейс связи";
+
+	static uint8_t cnt = 0;		// счетчик до выхода при ошибочном режиме
+
+	if (lvlCreate_) {
+		lvlCreate_ = false;
+
+		cursorLine_ = 1;
+		cursorEnable_ = true;
+
+		lineParam_ = 1;
+		vLCDclear();
+		vLCDdrawBoard(lineParam_);
+
+		uint8_t num = 0;
+		punkt_[num++] = punkt1;
+		numPunkts_ = 1;
+
+		// дополнительные команды
+		sParam.txComBuf.clear();
+	}
+
+	snprintf_P(&vLCDbuf[0], 21, title);
+
+	uint8_t poz = 20;
+	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, numPunkts_);
+
+	poz = 40;
+	PGM_P p = punkt_[cursorLine_ - 1];
+	snprintf_P(&vLCDbuf[poz], 21, p);
+
+	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
+	poz = 80;
+	poz += snprintf_P(&vLCDbuf[poz], 11, fcRange);
+	if (p == punkt1) {
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
+	}
+
+	if (enterParam.isEnable()) {
+		// ввод нового значения параметра
+		eMENU_ENTER_PARAM stat = enterValue();
+
+		if (stat == MENU_ENTER_PARAM_READY) {
+			// новое значение введено, надо передать в БСП
+
+			if (p == punkt1) {
+				eGB_INTERFACE val =
+						static_cast<eGB_INTERFACE>(enterParam.getValueEnter());
+				sParam.glb.setInterface(val);
+			}
+			enterParam.setDisable();
+		}
+	} else {
+		// вывод надписи "Значение:" и переход к выводу самого значения
+		poz = 100;
+		poz += snprintf_P(&vLCDbuf[poz], 11, fcValue);
+		if (p == punkt1) {
+			uint8_t val = static_cast<uint8_t>(sParam.glb.getInterface());
+			snprintf_P(&vLCDbuf[poz], 11, fcInterface[val]);
+		}
+	}
+
+	switch (key_) {
+	case KEY_UP:
+		cursorLineUp();
+		break;
+	case KEY_DOWN:
+		cursorLineDown();
+		break;
+
+	case KEY_CANCEL:
+		lvlMenu = &clMenu::lvlSetup;
+		lvlCreate_ = true;
+		break;
+
+	case KEY_ENTER:
+		enterFunc = &clMenu::enterValue;
+		// а также настройка интерфейса связи
+		// остальные параметры только в "Выведен"
+		if (punkt_[cursorLine_ - 1] == punkt1) {
+			// интерфейс связи
+			enterParam.setEnable(MENU_ENTER_PARAM_LIST);
+			enterParam.setValueRange(GB_INTERFACE_MIN, GB_INTERFACE_MAX - 1);
+			enterParam.setValue(sParam.glb.getInterface());
+			enterParam.list = fcInterface[0];
+			enterParam.com = GB_COM_NO;
+		}
+		break;
 	default:
 		break;
 	}

@@ -49,7 +49,7 @@ low_level_init()
 	// PORTD.1 = SDA 	- альтер.
 	// PORTD.2 = RXD1	- альтер. вход +
 	// PORTD.3 = TXD1	- альтер. выход +
-	// PORTD.4 = MUX	- выход 0
+	// PORTD.4 = MUX	- выход 0 (переключение интерфейсов 0-USB, 1-485)
 	// PORTD.5 = LED	- выход 0
 	// PORTD.6 = KEY1	- вход +
 	// PORTD.7 = KEY2	- вход +

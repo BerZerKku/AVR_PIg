@@ -59,6 +59,11 @@ clProtocolPcS protPCs(uBufUartPc, BUFF_SIZE_PC, &menu.sParam);
 /// Класс стандартного протокола работающего с БСП
 clProtocolBspS protBSPs(uBufUartBsp, BUFF_SIZE_BSP, &menu.sParam);
 
+static bool uartRead();
+static bool uartWrite();
+static void setInterfaceUSB(eGB_INTERFACE val);
+
+
 /**	Работа с принятыми данными по UART
  * 	@param Нет
  * 	@return False - в случае 5-и неполученных сообщений от БСП подряд
@@ -162,6 +167,18 @@ static bool uartWrite() {
 	return true;
 }
 
+/**	Установка интерфейса связи с АВАНТом.
+ * 	@param val Текущий интерфейс
+ * 	@return Нет
+ */
+static void setInterfaceUSB(eGB_INTERFACE val) {
+	if (val == GB_INTERFACE_USB) {
+		PORTD &= ~(1 << PD4);
+	} else if (val == GB_INTERFACE_RS485) {
+		PORTD |= (1 << PD4);
+	}
+}
+
 /**	main.c
  * 	@param Нет
  * 	@return Нет
@@ -172,10 +189,17 @@ main(void) {
 	uint8_t cnt_lcd = 0;
 	uint8_t cnt_1s = 0;
 	uint8_t cnt_wdt = 0;
+	sEeprom eeprom;
+
+
 
 	// установка пароля по умолчанию
 	// проводится до включения прерываний, чтобы ничего не мешало
-	menu.sParam.password.init(eeprom_read_word((uint16_t*) EEPROM_PASSWORD));
+	// menu.sParam.password.init(eeprom_read_word((uint16_t*) EEPROM_PASSWORD));
+	eeprom_read_block(&eeprom, (sEeprom*) EEPROM_PASSWORD, sizeof(eeprom));
+	menu.sParam.password.init(eeprom.password);
+	menu.sParam.glb.setInterface(eeprom.interface);
+	setInterfaceUSB(menu.sParam.glb.getInterface());
 
 	sei();
 
@@ -202,16 +226,6 @@ main(void) {
 			menu.setConnectionBsp(connect);
 
 			cnt_wdt++;
-			// задачи выполняемые раз в 1с
-			if (++cnt_1s >= 10) {
-				cnt_1s = 0;
-
-				uint16_t password = menu.sParam.password.get();
-				eeprom_update_word((uint16_t*) EEPROM_PASSWORD, password);
-			}
-
-			cnt_wdt++;
-
 			// обновление экрана
 			// где 100 - время рабочего цикла
 			if (++cnt_lcd >= (MENU_TIME_CYLCE / TIME_CYLCE)) {
@@ -223,10 +237,27 @@ main(void) {
 			// отправка сообщений в БСП/ПК
 			uartWrite();
 
+			cnt_wdt++;
+			// задачи выполняемые раз в 1с
+			if (++cnt_1s >= 10) {
+				cnt_1s = 0;
+
+				//uint16_t password = menu.sParam.password.get();
+				//eeprom_update_word((uint16_t*) EEPROM_PASSWORD, password);
+				eeprom.password = menu.sParam.password.get();
+				eeprom.interface = menu.sParam.glb.getInterface();
+				eeprom_update_block(&eeprom, (sEeprom*) EEPROM_PASSWORD,
+						sizeof(eeprom));
+			}
+
 			// сброс wdt, если все шаги цикла были пройдены
 			if (cnt_wdt == 4)
 				wdt_reset();
 			cnt_wdt = 0;
+
+			// установка интерфейса связи с АВАНТом
+			// выполняется всегда, без проверки было изменение или нет
+			setInterfaceUSB(menu.sParam.glb.getInterface());
 		}
 	}
 }

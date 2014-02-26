@@ -404,6 +404,7 @@ private:
 	void lvlTest();
 	void lvlTest1();
 	void lvlTest2();
+	void lvlSetupInterface();
 
 	// ввод параметра
 	eMENU_ENTER_PARAM enterValue();
