@@ -16,15 +16,12 @@
 // в состояние по-умолчанию
 #define MAX_CYCLE_TO_REST_SOST 10
 
-enum ePRTS_ACTION
-{
-	PRTS_READ_COM,
-	PRTS_WRITE_COM
+enum ePRTS_ACTION {
+	PRTS_READ_COM, PRTS_WRITE_COM
 };
 
 // состояния протокола
-enum ePRTS_STATUS
-{
+enum ePRTS_STATUS {
 	PRTS_STATUS_NO = 0,		// состояние неопределенное (в т.ч. ошибочное)
 	PRTS_STATUS_READ,		// идет считывание сообщения
 	PRTS_STATUS_READ_OK,	// соообщение считано полностью, но КС не проверена
@@ -33,8 +30,7 @@ enum ePRTS_STATUS
 };
 
 // номера байт данных в протоколе
-enum ePRTS_DATA_BYTE_NAME
-{
+enum ePRTS_DATA_BYTE_NAME {
 	COM = 2,
 	NUM = 3,
 	B1 = 4,
@@ -55,11 +51,10 @@ enum ePRTS_DATA_BYTE_NAME
 	B16
 };
 
-class clProtocolS
-{
+class clProtocolS {
 
 public:
-	clProtocolS	(uint8_t *buf, uint8_t size, stGBparam *sParam);
+	clProtocolS(uint8_t *buf, uint8_t size, stGBparam *sParam);
 //	uint8_t addCom	(uint8_t com, ePRTS_ACTION act);
 //	bool getData	(stMNUparam *param);
 
@@ -73,37 +68,61 @@ public:
 	uint8_t trCom();
 
 	/// Запуск работы данного протокола
-	void setEnable(ePRTS_STATUS stat) { enable_ = true; stat_= statDef_= stat; }
+	void setEnable(ePRTS_STATUS stat) {
+		enable_ = true;
+		stat_ = statDef_ = stat;
+		cnt_ = 0;
+		cntCycle_ = 0;
+	}
 
 	/// Остановка работы данного протокола
-	void setDisable() { enable_ = false; }
+	void setDisable() {
+		enable_ = false;
+	}
 
 	/// Проверка текущего состояния протокола
-	bool isEnable() const { return enable_; }
+	bool isEnable() const {
+		return enable_;
+	}
 
 	/// Возращает размер буфера данных
-	uint8_t getBufSize() const { return size_; }
+	uint8_t getBufSize() const {
+		return size_;
+	}
 
 	/// Текущая команда в буфере
-	uint8_t getCurrentCom() const { return buf[2]; }
+	uint8_t getCurrentCom() const {
+		return buf[2];
+	}
 
 	/// Текущее кол-во байт в посылке
-	uint8_t getCurrentLen() const { return maxLen_; }
+	uint8_t getCurrentLen() const {
+		return maxLen_;
+	}
 
 	/// Текущее кол-во принятых байт данных (по протоколу)
-	uint8_t getCurrentCnt() const { return cnt_; }
+	uint8_t getCurrentCnt() const {
+		return cnt_;
+	}
 
 	/// Текущий статус работы протокола
-	ePRTS_STATUS getCurrentStatus() const { return stat_; }
+	ePRTS_STATUS getCurrentStatus() const {
+		return stat_;
+	}
 
 	/// Смена текущего статуса работы протокола
-	void setCurrentStatus(ePRTS_STATUS stat) { stat_ = stat; }
+	void setCurrentStatus(ePRTS_STATUS stat) {
+		stat_ = stat;
+	}
 
 	/// Копирование посылки из другого буфера
 	bool copyCommandFrom(uint8_t * const bufSource);
 
 	/// Обработка принятого сообщения. В случае неудачи возвращает False.
-	virtual bool getData() { stat_ = statDef_; return false; }
+	virtual bool getData() {
+		stat_ = statDef_;
+		return false;
+	}
 
 	/// Проверка текущего состояния
 	void checkStat();
@@ -111,14 +130,12 @@ public:
 	/// Проверка принятого байта на соответствие протоколу
 	/// возвращает false в случае ошибки
 	/// !! Помещается в прерывание по приему
-	bool checkByte(uint8_t byte)
-	{
+	bool checkByte(uint8_t byte) {
 		uint8_t cnt = this->cnt_;
 
 		buf[cnt] = byte;
 
-		switch(cnt)
-		{
+		switch (cnt) {
 		case 0:
 			if (byte == 0x55)
 				cnt++;
@@ -130,18 +147,15 @@ public:
 			cnt++;
 			break;
 		case 3:
-			if (byte < (size_ - 5))
-			{
+			if (byte < (size_ - 5)) {
 				cnt++;
 				maxLen_ = byte + 5;
-			}
-			else
+			} else
 				cnt = 0;
 			break;
 		default:
 			cnt++;
-			if (cnt >= maxLen_)
-			{
+			if (cnt >= maxLen_) {
 				stat_ = PRTS_STATUS_READ_OK;
 			}
 			break;
@@ -183,13 +197,13 @@ protected:
 	// уже должны лежать в буфере)
 	uint8_t addCom();
 	// Подготовка к отправке команды без данных (заполнение буфера)
-	uint8_t addCom	(uint8_t com);
+	uint8_t addCom(uint8_t com);
 	// Подготовка к отправке команды с 1 байтом данных (заполнение буфера)
-	uint8_t addCom	(uint8_t com, uint8_t byte);
+	uint8_t addCom(uint8_t com, uint8_t byte);
 	// Подготовка к отправке команды с 2 байтами данных (заполнение буфера)
 	uint8_t addCom(uint8_t com, uint8_t byte1, uint8_t byte2);
 	// Подготовка к отправке команды с данными (заполнение буфера)
-	uint8_t addCom	(uint8_t com, uint8_t size, uint8_t buf[]);
+	uint8_t addCom(uint8_t com, uint8_t size, uint8_t buf[]);
 
 	// Проверка принятой контрольной суммы
 	bool checkCRC() const;
@@ -197,6 +211,5 @@ protected:
 	// вычисление контрольной суммы содержимого буфера
 	uint8_t getCRC() const;
 };
-
 
 #endif /* PROTOCOLS_H_ */

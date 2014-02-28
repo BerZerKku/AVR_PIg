@@ -165,11 +165,52 @@ static char fcPvzueParity[GB_PVZUE_PARITY_MAX + 1][STRING_LENGHT] PROGMEM = {
 
 };
 
-static char fcInterface[GB_INTERFACE_MAX +1][STRING_LENGHT] PROGMEM = {
+static char fcInterface[GB_INTERFACE_MAX + 1][STRING_LENGHT] PROGMEM = {
 //	 	 1234567890
 		"USB",		//
 		"RS485",	//
 		"ошибка"	//
+};
+
+static char fcBaudRate[UART_BAUD_RATE_MAX + 1][STRING_LENGHT] PROGMEM = {
+//		 1234567890
+		"1200",		//
+		"2400",		//
+		"4800",		//
+		"9600",		//
+		"19200",	//
+		"38400",	//
+		"57600",	//
+		"ошибка"	//
+};
+
+static char fcDataBits[UART_DATA_BITS_MAX + 1][STRING_LENGHT] PROGMEM = {
+//		 1234567890
+		"8",		//
+		"ошибка"	//
+};
+
+static char fcParity[UART_PARITY_MAX + 1][STRING_LENGHT] PROGMEM = {
+//		 1234567890
+		"нет",		//
+		"чет",		//
+		"нечет",	//
+#ifdef UART_PARITY_MARK
+		"Маркер",
+#endif
+#ifdef UART_PARITY_SPACE
+		"Пробел",
+#endif
+		"ошибка"
+};
+
+static char fcStopBits[UART_STOP_BITS_MAX + 1][STRING_LENGHT] PROGMEM = {
+//		 1234567890
+		"1",		//
+#ifdef UART_STOP_BITS_ONEPONTFIVE
+		"1.5",		//
+#endif
+		"2",		//
 };
 
 // состояния устройств
