@@ -433,7 +433,14 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 			stat = sParam_->glb.setAcInDec(buf[B1]);
 
 			// в ПВЗУ-Е это набор параметров
+			stat = sParam_->glb.setPvzueProtocol((eGB_PVZUE_PROTOCOL) buf[B1]);
+			stat |= sParam_->glb.setPvzueParity((eGB_PVZUE_PARITY) buf[B2]);
+			stat |= sParam_->glb.setPvzueFail(buf[B3]);
+			stat |= sParam_->glb.setPvzueNoiseTH(buf[B4]);
+			stat |= sParam_->glb.setPvzueNoiseLvl(buf[B5]);
+			stat |= sParam_->glb.setPvzueTypeAC((eGB_PVZUE_TYPE_AC) buf[B6]);
 		} else {
+			// в ОПТИКе это "Время перезапуска"
 			stat = sParam_->glb.setTimeRerun(buf[B1]);
 		}
 	} else if (com == GB_COM_GET_FREQ) {

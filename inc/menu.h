@@ -20,7 +20,7 @@
 #define TIME_TO_REINIT_LCD (10000 / MENU_TIME_CYLCE)
 
 /// максимальное кол-во пунктов в меню
-#define MAX_NUM_PUNKTS 15
+#define MAX_NUM_PUNKTS 20
 
 /// максимальное кол-во отображаемых на экране параметров
 #define MAX_NUM_MEAS_PARAM 6
@@ -38,8 +38,7 @@
 #define TIME_TEST_EXIT (1000 / MENU_TIME_CYLCE)
 
 /// Измеряемые параметры
-enum eMENU_MEAS_PARAM
-{
+enum eMENU_MEAS_PARAM {
 	MENU_MEAS_PARAM_NO,
 	MENU_MEAS_PARAM_DATE,
 	MENU_MEAS_PARAM_TIME,
@@ -58,8 +57,7 @@ enum eMENU_MEAS_PARAM
 };
 
 /// Режим работы функции ввода параметров
-enum eMENU_ENTER_PARAM
-{
+enum eMENU_ENTER_PARAM {
 	MENU_ENTER_PARAM_NO,		// отмена изменения параметра
 	MENU_ENTER_PARAM_INT,		// изменение параметра, целое значение
 	MENU_ENTER_PARAM_LIST,		// изменение параметра, выбор из списка
@@ -68,30 +66,26 @@ enum eMENU_ENTER_PARAM
 	MENU_ENTER_PASSWORD,		// ввод пароля
 	MENU_ENTER_PASSWORD_NEW,	// ввод нового пароля
 	MENU_ENTER_PASSWORD_READY,	// введен верный пароль
-	MENU_ENTER_PASSWORD_N_READY,// новый пароль введен корректно
+	MENU_ENTER_PASSWORD_N_READY,	// новый пароль введен корректно
 	MENU_ENTER_PARAM_READY,		// необходимо изменить параметр
 	MENU_ENTER_PARAM_MESSAGE,	// вывод сообщения на экран при вводе параметра
 };
 
 // структура параметров для ввода значений
-class TEnterParam
-{
+class TEnterParam {
 public:
-	TEnterParam()
-	{
+	TEnterParam() {
 		setDisable();
 	}
-
 
 	/**	Проверка текущего статуса работы с параметром.
 	 * 	@param Нет
 	 * 	@return True - если идет ввод нового значения, иначе False.
 	 */
-	bool isEnable()
-	{
+	bool isEnable() {
 		// проверка текущего статуса на достоверное значение
-		if ( (status_ <  MENU_ENTER_PARAM_NO) ||
-				(status_ > MENU_ENTER_PARAM_MESSAGE) )
+		if ((status_ < MENU_ENTER_PARAM_NO)
+				|| (status_ > MENU_ENTER_PARAM_MESSAGE))
 			status_ = MENU_ENTER_PARAM_NO;
 		return (status_ != MENU_ENTER_PARAM_NO);
 	}
@@ -99,19 +93,14 @@ public:
 	// начало работы, передается способ ввода переменной
 	// если ввод из списка, автоматически дискретность и делитель равны 1
 	// для пароля автоматически выставляются диапазон ввода и начальное значение
-	void setEnable(eMENU_ENTER_PARAM s=MENU_ENTER_PARAM_INT)
-	{
-		if ((s>=MENU_ENTER_PARAM_INT) && (s<=MENU_ENTER_PASSWORD_NEW))
-		{
-			if ( (s == MENU_ENTER_PARAM_LIST) ||
-					(s == MENU_ENTER_PARAM_LIST_2) )
-			{
+	void setEnable(eMENU_ENTER_PARAM s = MENU_ENTER_PARAM_INT) {
+		if ((s >= MENU_ENTER_PARAM_INT) && (s <= MENU_ENTER_PASSWORD_NEW)) {
+			if ((s == MENU_ENTER_PARAM_LIST)
+					|| (s == MENU_ENTER_PARAM_LIST_2)) {
 				disc_ = 1;
 				fract_ = 1;
-			}
-			else if ( (s == MENU_ENTER_PASSWORD) ||
-					(s == MENU_ENTER_PASSWORD_NEW) )
-			{
+			} else if ((s == MENU_ENTER_PASSWORD)
+					|| (s == MENU_ENTER_PASSWORD_NEW)) {
 				val_ = 0;
 				min_ = 0;
 				max_ = 9999;
@@ -124,69 +113,66 @@ public:
 	 * 	@param Нет
 	 * 	@return Нет
 	 */
-	void setDisable()
-	{
+	void setDisable() {
 		status_ = MENU_ENTER_PARAM_NO;
 		cnt_ = TIME_MESSAGE;
 		com = GB_COM_NO;
 	}
 
 	// диапазон значений
-	void setValueRange(uint16_t min, uint16_t max)
-	{
+	void setValueRange(uint16_t min, uint16_t max) {
 		uint8_t num = 0;
 		max_ = max;
 		min_ = min;
 		// нахождение максимального кол-ва символов при вводе
-		while (max > 0)
-		{
+		while (max > 0) {
 			num++;
 			max /= 10;
 		}
 		numSymbols_ = num;
 	}
-	uint16_t getValueMin() const { return min_; }
-	uint16_t getValueMax() const { return max_; }
+	uint16_t getValueMin() const {
+		return min_;
+	}
+	uint16_t getValueMax() const {
+		return max_;
+	}
 
 	// кол-во вводимых символов
-	uint16_t getValueNumSymbols() const { return numSymbols_; }
+	uint16_t getValueNumSymbols() const {
+		return numSymbols_;
+	}
 
 	// установка текущего значения, диапазон значений должен быть задан до !
-	void setValue(uint16_t val)
-	{
-		if ( (val < min_) || (val > max_) )
+	void setValue(uint16_t val) {
+		if ((val < min_) || (val > max_))
 			val = min_;
 		val_ = val;
 	}
 
 	// возвращает текущее значение
-	uint16_t getValue() const { return val_; }
+	uint16_t getValue() const {
+		return val_;
+	}
 
 	// возвращает введеное значение с учетом дискретности и делителя
-	uint8_t getValueEnter() const
-	{
+	uint8_t getValueEnter() const {
 		return ((val_ / disc_) * disc_) / fract_;
 	}
 
 	// увеличение текущего значения
-	uint16_t incValue()
-	{
+	uint16_t incValue() {
 
-		if ( (status_ == MENU_ENTER_PARAM_INT) ||
-				(status_ == MENU_ENTER_PARAM_U_COR) )
-		{
+		if ((status_ == MENU_ENTER_PARAM_INT)
+				|| (status_ == MENU_ENTER_PARAM_U_COR)) {
 			// увеличение значения
 			val_ = (val_ <= (max_ - disc_)) ? val_ + disc_ : min_;
-		}
-		else if ( (status_ == MENU_ENTER_PARAM_LIST) ||
-				(status_ == MENU_ENTER_PARAM_LIST_2) )
-		{
+		} else if ((status_ == MENU_ENTER_PARAM_LIST)
+				|| (status_ == MENU_ENTER_PARAM_LIST_2)) {
 			// в списке порядок обратный (уменьшение индекса массива)
 			val_ = (val_ > min_) ? val_ - 1 : max_;
-		}
-		else if ( (status_ == MENU_ENTER_PASSWORD) ||
-				(status_ == MENU_ENTER_PASSWORD_NEW) )
-		{
+		} else if ((status_ == MENU_ENTER_PASSWORD)
+				|| (status_ == MENU_ENTER_PASSWORD_NEW)) {
 			uint16_t t = 0;
 
 			// находится разряд заданный дискретностью
@@ -202,55 +188,61 @@ public:
 		return val_;
 	}
 	// уменьшение текущего значения
-	uint16_t decValue()
-	{
+	uint16_t decValue() {
 		eMENU_ENTER_PARAM s = status_;
-		if ( (status_ == MENU_ENTER_PARAM_INT) ||
-				(status_ == MENU_ENTER_PARAM_U_COR) )
-		{
+		if ((status_ == MENU_ENTER_PARAM_INT)
+				|| (status_ == MENU_ENTER_PARAM_U_COR)) {
 			// уменьшение значние
 			val_ = (val_ >= (min_ + disc_)) ? val_ - disc_ : max_;
-		}
-		else if ( (s == MENU_ENTER_PARAM_LIST) ||
-				(s == MENU_ENTER_PARAM_LIST_2) )
-		{
+		} else if ((s == MENU_ENTER_PARAM_LIST)
+				|| (s == MENU_ENTER_PARAM_LIST_2)) {
 			// в списке порядок обратный (увеличие индекса массива)
 			val_ = (val_ < max_) ? val_ + 1 : min_;
-		}
-		else if ( (s == MENU_ENTER_PASSWORD) ||
-				(s == MENU_ENTER_PASSWORD_NEW) )
-		{
+		} else if ((s == MENU_ENTER_PASSWORD)
+				|| (s == MENU_ENTER_PASSWORD_NEW)) {
 
 		}
 		return val_;
 	}
 
 	// запись/считывание дополнительного байта
-	void setDopValue(uint16_t byte) { dopValue_ = byte; }
-	uint16_t getDopValue() const { return dopValue_; }
+	void setDopValue(uint16_t byte) {
+		dopValue_ = byte;
+	}
+	uint16_t getDopValue() const {
+		return dopValue_;
+	}
 
 	// запись/считывание дискретности
-	void setDisc(uint16_t disc) { disc_ = disc; }
-	uint16_t getDisc() const { return disc_; }
+	void setDisc(uint16_t disc) {
+		disc_ = disc;
+	}
+	uint16_t getDisc() const {
+		return disc_;
+	}
 
 	// запись/считывание делителя
-	void setFract(uint8_t fract) { fract_ = fract; }
-	uint8_t getFract() const { return fract_; }
+	void setFract(uint8_t fract) {
+		fract_ = fract;
+	}
+	uint8_t getFract() const {
+		return fract_;
+	}
 
 	// вывод сообщения на экран
 	// по умолчанию работает для функции ввода параметра
-	void printMessage()
-	{
+	void printMessage() {
 		status_ = MENU_ENTER_PARAM_MESSAGE;
 		cnt_ = 0;
 	}
 
 	// считывание текущиего статуса
-	eMENU_ENTER_PARAM getStatus() const { return status_; }
+	eMENU_ENTER_PARAM getStatus() const {
+		return status_;
+	}
 
 	// установка флага окончания ввода параметра
-	void setEnterValueReady(eMENU_ENTER_PARAM status = MENU_ENTER_PARAM_READY)
-	{
+	void setEnterValueReady(eMENU_ENTER_PARAM status = MENU_ENTER_PARAM_READY) {
 		status_ = status;
 	}
 
@@ -292,9 +284,97 @@ private:
 	eMENU_ENTER_PARAM status_;
 };
 
+/// Структура пункта меню
+class TMenuPunkt {
+public:
+	/**	Конструктор.
+	 */
+	TMenuPunkt() {
+		clear();
+
+		for (uint_fast8_t i = 0; i < MAX_NUM_PUNKTS; i++)
+			com_[i] = GB_COM_NO;
+	}
+
+	/**	Добавление пункта меню.
+	 * 	@param name Имя пункта.
+	 * 	@param com Команда для запроса из БСП. По умолчанию - нет.
+	 * 	@retval True В случае успешного добавления.
+	 * 	@retval False В случае ошибки добавления. Например, переполнен массив.
+	 */
+	bool add(PGM_P name, eGB_COM com=GB_COM_NO) {
+		bool stat = false;
+		if (cnt_ < MAX_NUM_PUNKTS) {
+			name_[cnt_] = name;
+			com_[cnt_] = com;
+			cnt_++;
+			stat = true;
+		}
+		return stat;
+	}
+
+	/** Очистка текущего списка пунктов меню.
+	 */
+	void clear() {
+		cnt_ = 0;
+	}
+
+	/** Замена указанного номера пункта меню.
+	 * 	@param name Имя пунка.
+	 * 	@param com Команда для запроса из БСП.
+	 * 	@param num Номер пункта.
+	 * 	@retval True В случае успешного добавления.
+	 * 	@retval False В случае ошибки добавления. Например, не верный номер.
+	 */
+	bool change(PGM_P name, eGB_COM com, uint8_t num) {
+		bool stat = false;
+		if (num < cnt_) {
+			name_[num] = name;
+			com_[num] = com;
+			stat = true;
+		}
+		return stat;
+	}
+
+	/** Возвращает название укзанного пункта меню.
+	 *	@param num	Номер пункта.
+	 * 	@return Название пункта.
+	 */
+	PGM_P getName(uint8_t num) {
+		if (num >= cnt_)
+			num = 0;
+		return name_[num];
+	}
+
+	/** Возвращает команду указанного пункта меню.
+	 * 	@param num Номер пункта.
+	 * 	@return Команда для запроса из БСП.
+	 */
+	eGB_COM getCom(uint8_t num) {
+		if (num >= cnt_)
+			num = 0;
+		return com_[num];
+	}
+
+	/** Возвращает текущее кол-во пункто меню.
+	 * 	@return Текущее кол-во пунктов меню.
+	 * 	@retval 0 - Пусто.
+	 */
+	uint8_t getVolume() {
+		return cnt_;
+	}
+
+private:
+	/// текущее кол-во пунктов
+			uint8_t cnt_;
+	/// указатель на имя пункта
+			PGM_P name_[MAX_NUM_PUNKTS];
+	/// команда для запроса из БСП, необходимая для данного пункта меню
+			eGB_COM com_[MAX_NUM_PUNKTS];
+		};
+
 // класс меню
-class clMenu
-{
+class clMenu {
 public:
 	clMenu();
 
@@ -310,10 +390,14 @@ public:
 	eGB_COM getTxCommand();
 
 	/// Возвращает текущее состояние связи с БСП
-	bool isConnectionBsp() const { return connectionBsp_; }
+	bool isConnectionBsp() const {
+		return connectionBsp_;
+	}
 
 	/// Установка флага наличия связи с БСП, True - есть
-	void setConnectionBsp(bool f) { connectionBsp_ = f; }
+	void setConnectionBsp(bool f) {
+		connectionBsp_ = f;
+	}
 
 	// структура параметров
 	stGBparam sParam;
@@ -350,13 +434,16 @@ private:
 	uint8_t delay_;
 
 	// измеряемые параметры
-	eMENU_MEAS_PARAM measParam[MAX_NUM_MEAS_PARAM*2];
+	eMENU_MEAS_PARAM measParam[MAX_NUM_MEAS_PARAM * 2];
+
+	// текущие пункты меню
+	TMenuPunkt Punkts_;
 
 	// кол-во пунктов в текущем меню
-	uint8_t numPunkts_;
+//	uint8_t numPunkts_;
 
 	// пункты в текущем меню
-	PGM_P punkt_[MAX_NUM_PUNKTS];
+//	PGM_P punkt_[MAX_NUM_PUNKTS];
 
 	// параметры для ввода новых значений
 	TEnterParam enterParam;
@@ -368,10 +455,14 @@ private:
 	void clearLine(uint8_t line);
 
 	// вывод сообщения на экран
-	void printMessage() { delay_ = 0; }
+	void printMessage() {
+		delay_ = 0;
+	}
 
 	// возвращает true - в случае необходимости вывода сообщения
-	bool isMessage() const { return (delay_ < TIME_MESSAGE); }
+	bool isMessage() const {
+		return (delay_ < TIME_MESSAGE);
+	}
 
 	// вывод на экран измеряемого параметра
 	void printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par);
@@ -412,15 +503,14 @@ private:
 	eMENU_ENTER_PARAM enterPassword();
 
 	// перемещение курсора вверх
-	void cursorLineUp()
-	{
-		cursorLine_ = (cursorLine_ > 1) ? cursorLine_ - 1 : numPunkts_;
-	};
+	void cursorLineUp() {
+		cursorLine_ = (cursorLine_ > 1) ? cursorLine_ - 1 : Punkts_.getVolume();
+	}
+	;
 
 	// пермещение курсора вниз
-	void cursorLineDown()
-	{
-		cursorLine_ = (cursorLine_ < numPunkts_) ? cursorLine_ + 1 : 1;
+	void cursorLineDown() {
+		cursorLine_ = (cursorLine_ < Punkts_.getVolume()) ? cursorLine_ + 1 : 1;
 	}
 
 	// вывод на экран текущих пунктов меню и курсора
@@ -430,10 +520,10 @@ private:
 	uint8_t getNumError(uint16_t val);
 
 	// текущая функция ввода
-	eMENU_ENTER_PARAM (clMenu:: *enterFunc) ();
+	eMENU_ENTER_PARAM (clMenu::*enterFunc)();
 
 	// текущий уровень меню
-	void (clMenu:: *lvlMenu) ();
+	void (clMenu::*lvlMenu)();
 };
 
 #endif /* MENU_H_ */

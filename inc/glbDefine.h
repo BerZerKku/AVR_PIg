@@ -53,10 +53,10 @@
 #define MAX_NUM_WARNINGS 16
 
 /// максимальное кол-во команд в первом буфере
-#define MAX_NUM_COM_BUF2 15
+#define MAX_NUM_COM_BUF1 5
 
 /// максимальное кол-во команд во втором буфере
-#define MAX_NUM_COM_BUF1 5
+#define MAX_NUM_COM_BUF2 5
 
 /// максимальное кол-во сигналов в тестах
 #define MAX_NUM_TEST_SIGNAL 40
@@ -2548,7 +2548,7 @@ public:
 	bool addCom1(eGB_COM com, int8_t num = -1) {
 		bool stat = false;
 		if (numCom1_ < MAX_NUM_COM_BUF1) {
-			if (num > 0) {
+			if (num >= 0) {
 				if (num > numCom1_)
 					numCom1_ = num;
 				com1_[num] = com;
@@ -2667,7 +2667,6 @@ private:
 	uint8_t cnt2_;
 	// данные на передачу
 	uint8_t byte_[6];
-	//
 };
 
 class TJournalEntry {
