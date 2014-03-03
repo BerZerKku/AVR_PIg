@@ -415,7 +415,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 		if (re)
 			sParam_->device = false;
 
-		stat = true;
+		stat = re;
 	} else if (com == GB_COM_GET_TIME_SINCHR) {
 		stat = sParam_->glb.setTimeSinchr(buf[B1]);
 	} else if (com == GB_COM_GET_DEVICE_NUM) {

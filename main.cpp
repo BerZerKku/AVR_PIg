@@ -63,7 +63,6 @@ static bool uartRead();
 static bool uartWrite();
 static void setInterface(eGB_INTERFACE val);
 
-
 /**	Работа с принятыми данными по UART
  * 	@param Нет
  * 	@return False - в случае 5-и неполученных сообщений от БСП подряд
@@ -187,7 +186,7 @@ static void setInterface(eGB_INTERFACE val) {
  * 	@retval True, если настройки отличаются.
  * 	@retval False, если настройки совпадают.
  */
-bool isUartPcReinit(sEeprom *current, SUartData *newparam) {
+bool isUartPcReinit(sEeprom *current, TUartData *newparam) {
 	bool stat = false;
 
 	if (current->interface != newparam->Interface.get()) {
@@ -213,8 +212,6 @@ bool isUartPcReinit(sEeprom *current, SUartData *newparam) {
 
 	return stat;
 }
-
-
 
 /**	main.c
  * 	@param Нет
@@ -242,12 +239,6 @@ main(void) {
 	// выбор интерфейса связи
 	setInterface(menu.sParam.Uart.Interface.get());
 
-	sei();
-
-	// настройка ЖКИ
-	vLCDinit();
-	vLCDclear();
-
 	// запуск последовательного порта для связи с БСП
 	// все настройки фиксированы
 	uartBSP.open(UART_BAUD_RATE_4800, UART_DATA_BITS_8, UART_PARITY_NONE,
@@ -255,15 +246,19 @@ main(void) {
 	protBSPs.setEnable(PRTS_STATUS_NO);
 
 	// запуск последовательного порта для связи с ПК/Локальной сети.
-	SUartData *uart = &menu.sParam.Uart;
+	TUartData *uart = &menu.sParam.Uart;
 	uartPC.open(uart->BaudRate.get(), uart->DataBits.get(), uart->Parity.get(),
 			uart->StopBits.get());
 	protPCs.setEnable(PRTS_STATUS_READ);
 
+	sei();
+
+	// настройка ЖКИ
+	vLCDinit();
+	vLCDclear();
+
 	// зададим тип аппарата
 	// menu.setTypeDevice(AVANT_NO);
-
-	sDebug.byte1 = sizeof(sEeprom);
 
 	while (1) {
 		if (b100ms) {
@@ -301,13 +296,13 @@ main(void) {
 				// , а новые настройки подготавливаются к записи в ЕЕПРОМ
 				if (isUartPcReinit(&eeprom, &menu.sParam.Uart)) {
 					uartPC.close();
-					SUartData *uart = &menu.sParam.Uart;
+					TUartData *uart = &menu.sParam.Uart;
 
 					// если идет связь с ПК, то настройки фиксированные
 					// если идет связь по Лок.сети, то настройки пользователя
 					switch (uart->Interface.get()) {
 					case GB_INTERFACE_USB:
-						uartBSP.open(UART_BAUD_RATE_19200, UART_DATA_BITS_8,
+						uartPC.open(UART_BAUD_RATE_19200, UART_DATA_BITS_8,
 								UART_PARITY_NONE, UART_STOP_BITS_TWO);
 						protPCs.setEnable(PRTS_STATUS_READ);
 						break;
@@ -353,7 +348,7 @@ ISR(TIMER0_COMP_vect) {
 }
 
 ///	Прерывание по совпадению А Таймер1. Срабатывает раз в 10 мс.
- ISR(TIMER1_COMPA_vect) {
+ISR(TIMER1_COMPA_vect) {
 	static uint_fast8_t cnt = 0;
 
 	// обработчик клавиатуры вызываем раз в 10мс
@@ -383,7 +378,7 @@ ISR(USART1_TX_vect) {
 ISR(USART1_RX_vect) {
 	volatile uint8_t tmp;
 
-	if ((UCSR1A & ((1 << FE)|(1 << DOR)|(1 << UPE))) == 0) {
+	if ((UCSR1A & ((1 << FE) | (1 << DOR) | (1 << UPE))) == 0) {
 		tmp = UDR1;
 		// обработчик протокола "Стандартный"
 		if (protPCs.isEnable()) {
@@ -398,8 +393,6 @@ ISR(USART1_RX_vect) {
 		uartPC.clrCnt();
 		protPCs.setCurrentStatus(PRTS_STATUS_NO);
 	}
-
-	sDebug.byte5 = UCSR1A;
 }
 
 ///	Прерывание по опустошению передающего буфера UART0

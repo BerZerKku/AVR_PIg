@@ -920,14 +920,14 @@ void clMenu::lvlStart() {
 		// время измеряемые параметры (в ВЧ)
 		sParam.txComBuf.addCom2(GB_COM_GET_TIME);
 		if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
-			sParam.txComBuf.addCom1(GB_COM_GET_MEAS);
+			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 
 		// буфер 2
 		// неисправности
 		// в Р400м + АК
 		sParam.txComBuf.addCom1(GB_COM_GET_FAULT);
 		if (sParam.typeDevice == AVANT_R400M)
-			sParam.txComBuf.addCom2(GB_COM_DEF_GET_TYPE_AC);
+			sParam.txComBuf.addCom1(GB_COM_DEF_GET_TYPE_AC);
 	}
 
 	// вывод на экран измеряемых параметров

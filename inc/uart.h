@@ -87,8 +87,8 @@ public:
 	void isrTX() {
 		cnt_ = 0;
 		numTrByte_ = 0;
-		*ucsrb_ |= (1 << RXCIE1);
-		*ucsrb_ &= ~(1 << TXCIE1);
+		*ucsrb_ |= (1 << RXCIE);
+		*ucsrb_ &= ~(1 << TXCIE);
 
 	}
 

@@ -135,10 +135,6 @@ bool TUart::open(eUART_BAUD_RATE baud, eUART_DATA_BITS databits,
 	// разрешение работы передатчика/приемника и прервания по приему
 	*ucsrb_ |= (1 << TXEN1) | (1 << RXEN1) | (1 << RXCIE1);
 
-	sDebug.byte1 = ucsra;
-	sDebug.byte2 = ucsrb;
-	sDebug.byte3 = ucsrc;
-
 	return sost;
 }
 
@@ -148,7 +144,7 @@ void TUart::close() {
 }
 
 bool TUart::isOpen() const {
-	return (*ucsrb_ && ((1 << TXEN1) | (1 << RXEN1) | (1 << RXCIE1)));
+	return (*ucsrb_ && ((1 << TXEN1) | (1 << RXEN1)));
 }
 
 /*	Отправка байта данных
@@ -185,6 +181,7 @@ uint8_t TUart::trData(uint8_t size) {
 		*ucsrb_ |= (1 << UDRIE1) | (1 << TXCIE1);
 	} else
 		numTrByte_ = 0;
+
 
 	return numTrByte_;
 }

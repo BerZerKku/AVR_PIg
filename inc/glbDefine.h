@@ -3140,7 +3140,7 @@ private:
 };
 
 /// структура параметров работы с последовательным портом
-struct SUartData {
+class TUartData {
 public:
 	/// »нтерфейс св€зи
 	TInterface Interface;
@@ -3176,7 +3176,7 @@ struct stGBparam {
 	TDeviceGlb glb;
 
 	// параметры дл€ работы с последовательным портом
-	SUartData Uart;
+	TUartData Uart;
 
 	// буфер команд
 	TTxCom txComBuf;
