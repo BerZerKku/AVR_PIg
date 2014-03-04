@@ -44,7 +44,7 @@
 #define BIN_TO_BCD(val) (((val / 10) << 4) + (val % 10))
 
 /// максимально возможное кол-во состояний устройств
-#define MAX_NUM_DEVICE_STATE 12
+#define MAX_NUM_DEVICE_STATE 13
 
 /// максимальное кол-во неисправностей для любого устройства
 #define MAX_NUM_FAULTS 16
@@ -377,12 +377,13 @@ enum eGB_PVZUE_PARITY {
 
 /// Режимы работы
 enum eGB_REGIME {
-	GB_REGIME_MIN = 0, GB_REGIME_DISABLED = 0,	// выведен
+	GB_REGIME_MIN = 0, 				//
+	GB_REGIME_DISABLED = 0,			// выведен
 	GB_REGIME_READY,				// готов
 	GB_REGIME_ENABLED,				// введен
 	GB_REGIME_TALK,					// речь
-	GB_REGIME_TEST_1,				// тест 1
-	GB_REGIME_TEST_2,				// тест 2
+	GB_REGIME_TEST_1,				// тест ПРД
+	GB_REGIME_TEST_2,				// тест ПРМ
 	GB_REGIME_MAX,
 };
 
@@ -3007,8 +3008,7 @@ public:
 			signal = getCurrentSignalK400(s);
 		} else if (type == AVANT_RZSK) {
 			signal = getCurrentSignalRZSK(s);
-		} else if (type == AVANT_R400M)
-		{
+		} else if (type == AVANT_R400M) {
 			signal = getCurrentSignalR400M(s);
 		}
 		currentSignal_ = signal;

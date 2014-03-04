@@ -56,8 +56,8 @@ static const char fcRegime[GB_REGIME_MAX + 1][8] PROGMEM = {
 		"Готов",	//
 		"Введен",	//
 		"Речь",		//
-		"Тест1",	//
-		"Тест2",	//
+		"Тест",		//
+		"Тест",		//
 		"ошибка"	//
 };
 
@@ -229,7 +229,8 @@ static const char fcDefSost07[] PROGMEM =	"Нал.пуск";
 static const char fcDefSost08[] PROGMEM = 	"Уд.пуск";
 static const char fcDefSost09[] PROGMEM =	"Нет РЗ";
 static const char fcDefSost10[] PROGMEM =	"Речь";
-static const char fcDefSost11[] PROGMEM =	"Тест";
+static const char fcDefSost11[] PROGMEM =	"ПРД";
+static const char fcDefSost12[] PROGMEM =	"ПРМ";
 // состояния Приемника
 static const char fcPrmSost00[] PROGMEM = 	"Исходн.";
 static const char fcPrmSost01[] PROGMEM = 	"ПРМ КЧ%01u";
@@ -242,7 +243,8 @@ static const char fcPrmSost07[] PROGMEM = 	"БЛК КМ%02u";
 static const char fcPrmSost08[] PROGMEM = 	"?0x08?";
 static const char fcPrmSost09[] PROGMEM = 	"?0x09?";
 static const char fcPrmSost10[] PROGMEM = 	"Речь";
-static const char fcPrmSost11[] PROGMEM =	"Тест";
+static const char fcPrmSost11[] PROGMEM =	"ПРД";
+static const char fcPrmSost12[] PROGMEM =	"ПРМ";
 // состояния Передатчика
 static const char fcPrdSost00[] PROGMEM = 	"Исходн.";
 static const char fcPrdSost01[] PROGMEM =	"ПРД КЧ%01u";
@@ -255,7 +257,8 @@ static const char fcPrdSost07[] PROGMEM = 	"?0x07?";
 static const char fcPrdSost08[] PROGMEM = 	"?0x08?";
 static const char fcPrdSost09[] PROGMEM =	"Систем.";
 static const char fcPrdSost10[] PROGMEM =	"Речь";
-static const char fcPrdSost11[] PROGMEM =	"Тест";
+static const char fcPrdSost11[] PROGMEM =	"ПРД";
+static const char fcPrdSost12[] PROGMEM =	"ПРМ";
 
 // надписи для неиспользуемых в текущем аппарате кодов
 static const char fcUnknownFault[]		PROGMEM = "Неисправность";
