@@ -382,12 +382,12 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 			// т.е. если там 90, то это 0.9В.
 			sParam_->measParam.setVoltageOut(buf[B6], (buf[B7] / 10));
 			sParam_->measParam.setVoltageDef(buf[B8]);
-			// B9 отведен под Uз второй линии
+			sParam_->measParam.setVoltageDef2(buf[B9]);
 			sParam_->measParam.setVoltageCf(buf[B10]);
-			// B11 байт отведен под Uk второй линии
+			sParam_->measParam.setVoltageCf2(buf[B11]);
 			sParam_->measParam.setVoltageNoise(buf[B12]);
 			// B13 байт отведен под кэффициент переполнения входа АЦП
-			// B14, B15 байты отведены под вероятность пропуска команд
+			sParam_->measParam.setPulseWidth(TO_INT16(buf[B14], buf[B15]));
 			stat = true;
 		}
 	} else if (com == GB_COM_GET_VERS) {

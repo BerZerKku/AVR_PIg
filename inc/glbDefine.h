@@ -2422,11 +2422,14 @@ class TMeasuredParameters {
 public:
 	TMeasuredParameters() {
 		voltDef_ = 0;
+		voltDef2_ = 0;
 		voltCf_ = 0;
+		voltCf2_ = 0;
 		voltNoise_ = 0;
 		voltOut_ = 0;
 		curOut_ = 0;
 		resistOut_ = 0;
+		pulseWidth_ = 0;
 	}
 
 	// запас по защите
@@ -2440,7 +2443,19 @@ public:
 			stat = true;
 		}
 		return stat;
+	}
 
+	// запас по защите второй
+	int8_t getVoltageDef2() const {
+		return voltDef2_;
+	}
+	bool setVoltageDef2(int8_t voltDef) {
+		bool stat = false;
+		if ((voltDef > -100) && (voltDef < 100)) {
+			voltDef2_ = voltDef;
+			stat = true;
+		}
+		return stat;
 	}
 
 	// запас по КЧ
@@ -2454,7 +2469,19 @@ public:
 			stat = true;
 		}
 		return stat;
+	}
 
+	// запас по КЧ кторой
+	int8_t getVoltageCf2() const {
+		return voltCf2_;
+	}
+	bool setVoltageCf2(int8_t voltCf) {
+		bool stat = false;
+		if ((voltCf > -100) && (voltCf < 100)) {
+			voltCf2_ = voltCf;
+			stat = true;
+		}
+		return stat;
 	}
 
 	// напряжение выхода
@@ -2514,11 +2541,28 @@ public:
 		}
 		return stat;
 	}
+
+	// длительность импульсов ВЧ блокировки на выходе применика
+	uint16_t getPulseWidth() const {
+		return pulseWidth_;
+	}
+	bool setPulseWidth(uint16_t val) {
+		bool stat = false;
+		if (val <= 360) {
+			pulseWidth_ = val;
+			stat = true;
+		}
+	}
+
 private:
 	// запас по защите (-99 .. 99)дБ
 	int8_t voltDef_;
+	// запас по защите второго канала (-99..99)дБ
+	int8_t voltDef2_;
 	// запас по КЧ (-99 .. 99)дБ
 	int8_t voltCf_;
+	// запас по КЧ второго канала (-99..99)дБ
+	int8_t voltCf2_;
 	// уровень шумов (-99 .. 99)дБ
 	int8_t voltNoise_;
 	// выходное напряжение умноженное на 10 (0 .. 999)В
@@ -2527,6 +2571,8 @@ private:
 	uint16_t curOut_;
 	// выходное сопротивление (0 .. 999)Ом
 	uint16_t resistOut_;
+	// длительность импульсов ВЧ блокировки на выходе применика (0..360)°
+	uint16_t pulseWidth_;
 };
 
 // класс для передачи команд

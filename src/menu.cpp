@@ -192,15 +192,13 @@ bool clMenu::setDeviceK400() {
 	// первый столбец параметров
 	measParam[0] = MENU_MEAS_PARAM_TIME; // дата <-> время
 	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
-	measParam[2] = measParam[2 + MAX_NUM_MEAS_PARAM] =
-			MENU_MEAS_PARAM_UOUT;
-	measParam[4] = measParam[4 + MAX_NUM_MEAS_PARAM] =
-			MENU_MEAS_PARAM_IOUT;
+	measParam[2] = measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UOUT;
+	measParam[4] = measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_IOUT;
+
 	// второй столбец параметров
-	measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] =
-			MENU_MEAS_PARAM_UC;
-	measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] =
-			MENU_MEAS_PARAM_UN;
+	measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
+	measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
+
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -390,7 +388,7 @@ bool clMenu::setDeviceR400M() {
 	// второй столбец параметров
 	measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UZ;
 	measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
-	measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
+	measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_SD;
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -772,6 +770,10 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 					sParam.measParam.getVoltageNoise());
 			break;
 		default:
+
+		case MENU_MEAS_PARAM_SD:
+			snprintf_P(&vLCDbuf[poz], 11, fcSd,
+					sParam.measParam.getPulseWidth());
 			// ничего не делаем
 			break;
 		}

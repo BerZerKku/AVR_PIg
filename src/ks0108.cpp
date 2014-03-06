@@ -312,8 +312,8 @@ static void vLCDdrawSymb(uint16_t poz, uint8_t val) {
 		val = 0;
 	else if (val < 0x80)
 		val -= 0x20;
-	else if (val >= 0xC0)
-		val -= 0x60;
+	else if (val >= 0xB0)
+		val -= 0x50;
 	else
 		val = 0;
 

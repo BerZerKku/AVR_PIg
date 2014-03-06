@@ -25,6 +25,7 @@ static const char fcUcf2[] 	PROGMEM	= "Uê2=%02däÁ";
 static const char fcUn[] 	PROGMEM	= "Uø=%02däÁ";
 static const char fcUn1[] 	PROGMEM	= "Uø1=%02däÁ";
 static const char fcUn2[] 	PROGMEM	= "Uø2=%02däÁ";
+static const char fcSd[]	PROGMEM = "Sä=%02d°";
 static const char fcDate[] 	PROGMEM = "%02u.%02u.%02u";
 static const char fcTime[] 	PROGMEM = "%02u:%02u:%02u";
 
