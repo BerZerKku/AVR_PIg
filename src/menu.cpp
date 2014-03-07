@@ -129,8 +129,11 @@ void clMenu::main(void) {
 		cntInitLcd = 0;
 	}
 
+	// настройка аппарата, если произошла смена:
+	// кол-ва аппаратов в линии
+	// типа совместимости (Р400м)
 	if (!sParam.device)
-		setDevice();
+		setDevice(sParam.typeDevice);
 
 	// Считаем код с клавиатуры
 	// Если нажата любая кнопка - включится кратковременная подсветка
@@ -387,7 +390,13 @@ bool clMenu::setDeviceR400M() {
 
 	// второй столбец параметров
 	measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UZ;
-	measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
+	if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3)
+	{
+		measParam[3] =  MENU_MEAS_PARAM_UC1;
+		measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC2;
+	}
+	else
+		measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
 	measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_SD;
 
 	// заполнение массива общих неисправностей
@@ -640,6 +649,8 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 
 	// "сброс" флага необходимости проверки типа аппарата
 	sParam.device = true;
+	// обнавление текущего уровня меню
+	lvlCreate_ = true;
 
 	return status;
 }
@@ -716,14 +727,14 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 					sParam.measParam.getVoltageDef());
 			break;
 
-			// TODO ВСЕ для Uз1 и Uз2 нужны свои параметры
+			// в 3-х концевой может быть Uz1 == Uz, Uz2
 		case MENU_MEAS_PARAM_UZ1:
 			snprintf_P(&vLCDbuf[poz], 11, fcUz1,
 					sParam.measParam.getVoltageDef());
 			break;
 		case MENU_MEAS_PARAM_UZ2:
 			snprintf_P(&vLCDbuf[poz], 11, fcUz2,
-					sParam.measParam.getVoltageDef());
+					sParam.measParam.getVoltageDef2());
 			break;
 
 		case MENU_MEAS_PARAM_UC:
@@ -731,14 +742,14 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 					sParam.measParam.getVoltageCf());
 			break;
 
-			// TODO ВСЕ для Uк1 и Uк2 нужны свои параметры
+			// в 3-х концевой может быть Uk1 == Uk, Uk2
 		case MENU_MEAS_PARAM_UC1:
 			snprintf_P(&vLCDbuf[poz], 11, fcUcf1,
 					sParam.measParam.getVoltageCf());
 			break;
 		case MENU_MEAS_PARAM_UC2:
 			snprintf_P(&vLCDbuf[poz], 11, fcUcf2,
-					sParam.measParam.getVoltageCf());
+					sParam.measParam.getVoltageCf2());
 			break;
 		case MENU_MEAS_PARAM_UOUT:
 			snprintf_P(&vLCDbuf[poz], 11, fcUout,
@@ -931,8 +942,8 @@ void clMenu::lvlStart() {
 		vLCDdrawBoard(lineParam_);
 
 		sParam.txComBuf.clear();
-		// дополнительные команды
 		// буфер 1
+		// дополнительные команды
 		// время измеряемые параметры (в ВЧ)
 		sParam.txComBuf.addCom2(GB_COM_GET_TIME);
 		if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
@@ -940,10 +951,11 @@ void clMenu::lvlStart() {
 
 		// буфер 2
 		// неисправности
-		// в Р400м + АК
+		// в Р400м + АК + кол-во аппаратов в линии
 		sParam.txComBuf.addCom1(GB_COM_GET_FAULT);
 		if (sParam.typeDevice == AVANT_R400M)
 			sParam.txComBuf.addCom1(GB_COM_DEF_GET_TYPE_AC);
+		sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
 	}
 
 	// вывод на экран измеряемых параметров
@@ -1048,7 +1060,7 @@ void clMenu::lvlStart() {
 		default:
 			break;
 		}
-	} else {
+	} else if (sParam.typeDevice == AVANT_K400) {
 		switch (key_) {
 		case KEY_ENTER:
 			lvlMenu = &clMenu::lvlFirst;
@@ -1715,11 +1727,6 @@ void clMenu::lvlControl() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// сброс флага смены совместимости
-		sParam.glb.isCompatibilityRefresh();
-		// сброс флага смены кол-ва аппаратов
-		sParam.glb.isNumDevicesRefresh();
-
 		uint8_t num = 0;
 		if (device == AVANT_R400M) {
 			eGB_NUM_DEVICES numDevices = sParam.def.getNumDevices();
@@ -1818,20 +1825,8 @@ void clMenu::lvlControl() {
 		}
 	}
 
-
-
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	// в Р400М меню управление зависит от кол-ва аппаратов в линии
-	// и типа совместимости
-	// поэтому при их изменении обновим уровень меню
-	if (device == AVANT_R400M) {
-		if (sParam.glb.isCompatibilityRefresh())
-			lvlCreate_ = true;
-
-		if (sParam.glb.isNumDevicesRefresh())
-			lvlCreate_ = true;
-	}
 
 	// в РЗСК/Р400м
 	if ((device == AVANT_R400M) || (device == AVANT_RZSK)) {
@@ -2286,9 +2281,6 @@ void clMenu::lvlSetupParamDef() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// сброс флага изменения совместимости
-		sParam.glb.isCompatibilityRefresh();
-
 		// заполнение массивов параметров и команд
 		eGB_TYPE_DEVICE type = sParam.typeDevice;
 		sParam.txComBuf.clear();
@@ -2303,10 +2295,11 @@ void clMenu::lvlSetupParamDef() {
 			Punkts_.add(punkt7, GB_COM_DEF_GET_RZ_DEC);
 			Punkts_.add(punkt8, GB_COM_DEF_GET_PRM_TYPE);
 		} else if (type == AVANT_R400M) {
-			eGB_COMPATIBILITY t = sParam.glb.getCompatibility();
-
-			// добавляется опрос совместимости, для переформирования меню
+			eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
+			// для переформирования меню добавляются команды опроса:
+			// совместимости и кол-ва аппаратов в линии
 			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
+			sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
 
 			Punkts_.add(punkt1, GB_COM_DEF_GET_DEF_TYPE);
 			Punkts_.add(punkt2, GB_COM_DEF_GET_LINE_TYPE);
@@ -2314,7 +2307,7 @@ void clMenu::lvlSetupParamDef() {
 			Punkts_.add(punkt4, GB_COM_DEF_GET_OVERLAP);
 			Punkts_.add(punkt5, GB_COM_DEF_GET_DELAY);
 			Punkts_.add(punkt7, GB_COM_DEF_GET_RZ_DEC);
-			if (t == GB_COMPATIBILITY_AVANT) {
+			if (comp == GB_COMPATIBILITY_AVANT) {
 				// Снижение уровня АК есть только в совместимости АВАНТ
 				Punkts_.add(punkt9, GB_COM_DEF_GET_PRM_TYPE);
 			}
@@ -2326,10 +2319,6 @@ void clMenu::lvlSetupParamDef() {
 	// подмена команды, на команду текущего уровня меню.
 	sParam.txComBuf.addCom1(Punkts_.getCom(cursorLine_ - 1), 0);
 
-	// обновление уровня, при наличии смены совместимости
-	if (sParam.glb.isCompatibilityRefresh())
-		lvlCreate_ = true;
-
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -2339,6 +2328,13 @@ void clMenu::lvlSetupParamDef() {
 
 	poz = 40;
 	snprintf_P(&vLCDbuf[poz], 21, name);
+
+	poz = 60;
+	if (name == punkt5) {
+		if ((sParam.glb.getNumDevices() == GB_NUM_DEVICES_3)
+				&& (sParam.glb.getCompatibility() == GB_COMPATIBILITY_AVANT))
+			snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_, 2);
+	}
 
 	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
 	poz = 80;
@@ -2388,7 +2384,9 @@ void clMenu::lvlSetupParamDef() {
 			} else if (name == punkt4) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if (name == punkt5) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
+				if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3)
+					sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
 			} else if (name == punkt6) {
 				// !!! TODO РЗСК
 			} else if (name == punkt7) {
@@ -2422,7 +2420,8 @@ void clMenu::lvlSetupParamDef() {
 		} else if (name == punkt4) {
 			snprintf(&vLCDbuf[poz], 11, "%dград", sParam.def.getOverlap());
 		} else if (name == punkt5) {
-			snprintf(&vLCDbuf[poz], 11, "%dград", sParam.def.getDelay());
+			uint8_t val = sParam.def.getDelay(curCom_);
+			snprintf(&vLCDbuf[poz], 11, "%dград", val);
 		} else if (name == punkt6) {
 			snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.def.getRzThreshold());
 		} else if (name == punkt7) {
@@ -2440,10 +2439,18 @@ void clMenu::lvlSetupParamDef() {
 	}
 	switch (key_) {
 	case KEY_UP:
+		curCom_ = 1;
 		cursorLineUp();
 		break;
 	case KEY_DOWN:
+		curCom_ = 1;
 		cursorLineDown();
+		break;
+	case KEY_LEFT:
+		curCom_ = curCom_ <= 1 ? sParam.glb.getNumDevices() : curCom_ - 1;
+		break;
+	case KEY_RIGHT:
+		curCom_ = curCom_ >= sParam.glb.getNumDevices() ? 1 : curCom_ + 1;
 		break;
 
 	case KEY_CANCEL:
@@ -2489,7 +2496,8 @@ void clMenu::lvlSetupParamDef() {
 			} else if (name == punkt5) {
 				EnterParam.setEnable();
 				EnterParam.setValueRange(DEF_DELAY_MIN, DEF_DELAY_MAX);
-				EnterParam.setValue(sParam.def.getDelay());
+				EnterParam.setValue(sParam.def.getDelay(curCom_));
+				EnterParam.setDopValue(curCom_);
 				EnterParam.setDisc(DEF_DELAY_DISC);
 				EnterParam.setFract(DEF_DELAY_FRACT);
 				EnterParam.com = GB_COM_DEF_SET_DELAY;
@@ -2956,7 +2964,6 @@ void clMenu::lvlSetupParamGlb() {
 		// заполнение массивов параметров и команд
 		eGB_TYPE_DEVICE type = sParam.typeDevice;
 		sParam.txComBuf.clear();
-		sParam.glb.isCompatibilityRefresh();
 		Punkts_.clear();
 		if (type == AVANT_K400) {
 			Punkts_.add(punkt1, GB_COM_GET_TIME_SINCHR);
@@ -2989,10 +2996,11 @@ void clMenu::lvlSetupParamGlb() {
 		} else if (type == AVANT_R400M) {
 			eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
 
-			// TODO Р400м Если ананлизировать команды с ПК, то не надо
-			// опрашиваем совместимость
-			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
+			// для переформирования меню добавляются команды опроса:
+			// совместимости и кол-ва аппаратов в линии
 			// измеряемые параметры для коррекции
+			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
+			sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 
 			// в совместимостях отличия минимальные
@@ -3024,10 +3032,6 @@ void clMenu::lvlSetupParamGlb() {
 
 	// подмена команды, на команду текущего уровня меню.
 	sParam.txComBuf.addCom1(Punkts_.getCom(cursorLine_ - 1), 0);
-
-	// обновление уровня, при наличии смены совместимости
-	if (sParam.glb.isCompatibilityRefresh())
-		lvlCreate_ = true;
 
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
 

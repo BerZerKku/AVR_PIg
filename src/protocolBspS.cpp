@@ -117,11 +117,14 @@ bool clProtocolBspS::getDefCommand(eGB_COM com) {
 	} else if (com == GB_COM_DEF_GET_LINE_TYPE) {
 		// TODO ВСЕ разобраться где должно быть кол-во аппаратов в glb или def
 		stat = sParam_->def.setNumDevices((eGB_NUM_DEVICES) buf[B1]);
-		stat |= sParam_->glb.setNumDevices((eGB_NUM_DEVICES) buf[B1]);
+		uint8_t act = sParam_->glb.setNumDevices((eGB_NUM_DEVICES) buf[B1]);
+		if (act & GB_ACT_NEW)
+			sParam_->device = false;
 	} else if (com == GB_COM_DEF_GET_T_NO_MAN) {
 		stat = sParam_->def.setTimeNoMan(buf[B1]);
 	} else if (com == GB_COM_DEF_GET_DELAY) {
-		stat = sParam_->def.setDelay(buf[B1]);
+		stat = sParam_->def.setDelay(1, buf[B1]);
+		stat = sParam_->def.setDelay(2, buf[B2]);
 	} else if (com == GB_COM_DEF_GET_OVERLAP) {
 		stat = sParam_->def.setOverlap(buf[B1]);
 	} else if (com == GB_COM_DEF_GET_RZ_DEC) {
@@ -429,16 +432,20 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 		stat = true;
 	} else if (com == GB_COM_GET_TIME_RERUN) {
 		if (sParam_->typeDevice == AVANT_R400M) {
-			// в ПВЗЛ это Снижение ответа АК
-			stat = sParam_->glb.setAcInDec(buf[B1]);
-
-			// в ПВЗУ-Е это набор параметров
-			stat = sParam_->glb.setPvzueProtocol((eGB_PVZUE_PROTOCOL) buf[B1]);
-			stat |= sParam_->glb.setPvzueParity((eGB_PVZUE_PARITY) buf[B2]);
-			stat |= sParam_->glb.setPvzueFail(buf[B3]);
-			stat |= sParam_->glb.setPvzueNoiseTH(buf[B4]);
-			stat |= sParam_->glb.setPvzueNoiseLvl(buf[B5]);
-			stat |= sParam_->glb.setPvzueTypeAC((eGB_PVZUE_TYPE_AC) buf[B6]);
+			eGB_COMPATIBILITY comp = sParam_->glb.getCompatibility();
+			if (comp == GB_COMPATIBILITY_PVZL) {
+				// в Р400м ПВЗЛ это Снижение ответа АК
+				stat = sParam_->glb.setAcInDec(buf[B1]);
+			} else if (comp == GB_COMPATIBILITY_PVZUE) {
+				// в Р400м ПВЗУ-Е это набор параметров
+				TDeviceGlb *glb = &sParam_->glb;
+				stat = glb->setPvzueProtocol((eGB_PVZUE_PROTOCOL) buf[B1]);
+				stat |= glb->setPvzueParity((eGB_PVZUE_PARITY) buf[B2]);
+				stat |= glb->setPvzueFail(buf[B3]);
+				stat |= glb->setPvzueNoiseTH(buf[B4]);
+				stat |= glb->setPvzueNoiseLvl(buf[B5]);
+				stat |= glb->setPvzueTypeAC((eGB_PVZUE_TYPE_AC) buf[B6]);
+			}
 		} else {
 			// в ОПТИКе это "Время перезапуска"
 			stat = sParam_->glb.setTimeRerun(buf[B1]);
@@ -455,9 +462,12 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 		}
 	} else if (com == GB_COM_GET_COM_PRD_KEEP) {
 		if (sParam_->typeDevice == AVANT_R400M) {
-			// ! в Р400 это Своместимость (тип удаленного аппарата)
-			eGB_COMPATIBILITY t = (eGB_COMPATIBILITY) buf[B1];
-			stat = sParam_->glb.setCompatibility(t);
+			// в Р400м это Своместимость (тип удаленного аппарата)
+			uint8_t act = GB_ACT_NO;
+			act = sParam_->glb.setCompatibility((eGB_COMPATIBILITY) buf[B1]);
+			// в случае записи нового значения, сбросим флаг конфигурации
+			if (act & GB_ACT_NEW)
+				sParam_->device = false;
 		} else {
 			stat = sParam_->glb.setComPrdKeep(buf[B1]);
 		}
@@ -517,19 +527,25 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 uint8_t clProtocolBspS::sendModifDefCommand(eGB_COM com) {
 	uint8_t num = 0;
 
-	// по умолчанию передается один байт
-
-	// GB_COM_DEF_SET_DEF_TYPE
-	// GB_COM_DEF_SET_LINE_TYPE
-	// GB_COM_DEF_SET_T_NO_MAN
-	// GB_COM_DEF_SET_DELAY
-	// GB_COM_DEF_SET_OVERLAP
-	// GB_COM_DEF_SET_RZ_DEC
-	// GB_COM_DEF_SET_TYPE_AC
-	// GB_COM_SET_PRM_TYPE
-	// GB_COM_DEF_SET_FREQ_PRD
-	// GB_COM_DEF_SET_RZ_THRESH
-	num = addCom(com, sParam_->txComBuf.getInt8());
+	if (com == GB_COM_DEF_SET_DELAY) {
+		// Р400м трех-концевая версия может быть два параметра
+		// но будем передавать два байта всегда
+		num = addCom(com, sParam_->txComBuf.getInt8(0),
+				sParam_->txComBuf.getInt8(1));
+	} else {
+		// по умолчанию передается один байт
+		// GB_COM_DEF_SET_DEF_TYPE
+		// GB_COM_DEF_SET_LINE_TYPE
+		// GB_COM_DEF_SET_T_NO_MAN
+		// GB_COM_DEF_SET_OVERLAP
+		// GB_COM_DEF_SET_RZ_DEC
+		// GB_COM_DEF_SET_TYPE_AC
+		// GB_COM_SET_PRM_TYPE
+		// GB_COM_DEF_SET_FREQ_PRD
+		// GB_COM_DEF_SET_RZ_THRESH
+		if (num == 0)
+			num = addCom(com, sParam_->txComBuf.getInt8());
+	}
 
 	return num;
 }

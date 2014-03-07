@@ -307,6 +307,7 @@ enum eGB_TYPE_LINE {
 };
 
 /// Кол-во аппаратов в линии
+// 	Учесть что 1 и 2 используются для параметров в 3-х концевой. Не менять !!!
 enum eGB_NUM_DEVICES {
 	GB_NUM_DEVICES_MIN = 1,
 	GB_NUM_DEVICES_2 = 1,
@@ -634,6 +635,14 @@ enum eUART_STOP_BITS {
 //	UART_STOP_BITS_ONEPONTFIVE,	//
 	UART_STOP_BITS_TWO,			//
 	UART_STOP_BITS_MAX			//
+};
+
+///
+enum eGB_ACT {
+	GB_ACT_NO 		= 0,		// значение по умолчанию
+	GB_ACT_OLD		= 0x01,		// новое значение совпадает с предыдущим
+	GB_ACT_NEW		= 0x02,		// установлено новое значение
+	GB_ACT_ERROR	= 0x04		// ошибочное значение
 };
 
 struct sEeprom {
@@ -1192,8 +1201,6 @@ public:
 		freq_ = GLB_FREQ_MIN_F;
 		uOutNom_ = GLB_U_OUT_NOM_MIN_F;
 		netAdr_ = GLB_NET_ADR_MIN_F;
-		compRefresh_ = true;
-		numDevicesRefresh_ = true;
 		acInDec_ = GLB_AC_IN_DEC_MIN_F;
 		pvzueProtocol_ = GB_PVZUE_PROTOCOL_MAX;
 		pvzueParity_ = GB_PVZUE_PARITY_MAX;
@@ -1215,29 +1222,23 @@ public:
 	uint8_t getMaxNumDevices() const {
 		return (numDevices_ == GB_NUM_DEVICES_2) ? 2 : 3;
 	}
-	bool setNumDevices(eGB_NUM_DEVICES numDevices) {
-		bool stat = false;
-		eGB_NUM_DEVICES tmp = numDevices_;
-		if (numDevices >= GB_NUM_DEVICES_MIN) {
-			if (numDevices < GB_NUM_DEVICES_MAX) {
-				numDevices_ = numDevices;
-				stat = true;
-			}
+
+	uint8_t setNumDevices(eGB_NUM_DEVICES val) {
+		uint8_t act = GB_ACT_NO;
+
+		if ((val < GB_NUM_DEVICES_MIN) || (val >= GB_NUM_DEVICES_MAX)) {
+			val = GB_NUM_DEVICES_MAX;
+			act = GB_ACT_ERROR;
 		}
-		// установка ошибочного значения
-		if (!stat)
-			numDevices_ = GB_NUM_DEVICES_MAX;
 
-		// флаг наличия изменения совместимости
-		numDevicesRefresh_ = (tmp != numDevices_);
-		return stat;
-	}
+		if (numDevices_ == val) {
+			act |= GB_ACT_OLD;
+		} else {
+			numDevices_ = val;
+			act |= GB_ACT_NEW;
+		}
 
-	bool isNumDevicesRefresh() {
-		// возвращает true в случае если произошла смена кол-ва аппаратов
-		bool val = numDevicesRefresh_;
-		numDevicesRefresh_ = false;
-		return val;
+		return act;
 	}
 
 	// тип линии (вч/оптика и т.д.)
@@ -1277,32 +1278,25 @@ public:
 
 	// совместимость (тип удаленного аппарата)
 	// в Р400М только авант или ПВЗЛ
-	bool setCompatibility(eGB_COMPATIBILITY val) {
-		bool stat = false;
+	uint8_t setCompatibility(eGB_COMPATIBILITY val) {
+		uint8_t act = GB_ACT_NO;
 
-		eGB_COMPATIBILITY tmp = compatibility_;
-		if (val >= GB_COMPATIBILITY_MIN) {
-			if (val < GB_COMPATIBILITY_MAX) {
-				compatibility_ = val;
-				stat = true;
-			}
+		if ((val < GB_COMPATIBILITY_MIN) || (val >= GB_COMPATIBILITY_MAX)) {
+			val = GB_COMPATIBILITY_MAX;
+			act = GB_ACT_ERROR;
 		}
-		// утсановка ошибочного значения
-		if (!stat)
-			compatibility_ = GB_COMPATIBILITY_MAX;
 
-		// флаг наличия изменения совместимости
-		compRefresh_ = (tmp != compatibility_);
-		return stat;
+		if (compatibility_ == val) {
+			act |= GB_ACT_OLD;
+		} else {
+			compatibility_ = val;
+			act |= GB_ACT_NEW;
+		}
+
+		return act;
 	}
 	eGB_COMPATIBILITY getCompatibility() const {
 		return compatibility_;
-	}
-	bool isCompatibilityRefresh() {
-		// возвращает true в случае если произошла смена совместимости
-		bool val = compRefresh_;
-		compRefresh_ = false;
-		return val;
 	}
 
 	// синхронизация часов
@@ -1333,7 +1327,6 @@ public:
 		}
 		return stat;
 	}
-
 	uint8_t getDeviceNum() const {
 		return (deviceNum_ * GLB_DEV_NUM_FRACT);
 	}
@@ -1660,9 +1653,6 @@ private:
 	// кол-во аппаратов в линии 2 или 3
 	eGB_NUM_DEVICES numDevices_;
 
-	// флаг смены кол-ва аппаратов в линии
-	bool numDevicesRefresh_;
-
 	// тип линии
 	eGB_TYPE_LINE typeLine_;
 
@@ -1674,9 +1664,6 @@ private:
 
 	// совместимость
 	eGB_COMPATIBILITY compatibility_;
-
-	// флаг смены совместимости
-	bool compRefresh_;
 
 	// синхронизация часов
 	bool timeSinchr_;
@@ -1747,7 +1734,8 @@ public:
 		numDevices_ = GB_NUM_DEVICES_MAX;
 		timeNoMan_ = DEF_T_NO_MAN_MIN_F;
 		overlap_ = DEF_OVERLAP_MIN_F;
-		delay_ = DEF_DELAY_MIN_F;
+		delay_[0] = DEF_DELAY_MIN_F;
+		delay_[1] = DEF_DELAY_MIN_F;
 		rzThreshold_ = DEF_RZ_THRESH_MIN_F;
 		rzDec_ = DEF_RZ_DEC_MIN_F;
 		prmType_ = DEF_PRM_TYPE_MIN;
@@ -1779,7 +1767,7 @@ public:
 		return defType_;
 	}
 
-	// тип линии
+	// тип линии (кол-во аппаратов в линии)
 	bool setNumDevices(eGB_NUM_DEVICES val) {
 		bool stat = false;
 		if (val >= GB_NUM_DEVICES_MIN) {
@@ -1834,22 +1822,45 @@ public:
 		return (overlap_ * DEF_OVERLAP_FRACT);
 	}
 
-	// компенсация задержки на линии
-	bool setDelay(uint8_t val) {
+	/** Установка значения "Компенсация задержки на линии".
+	 * 	В 3-х концевой два параметра, в 2-х концевой один.
+	 * 	@param num 	Номер параметра.
+	 * 	@arg 1	Первый.
+	 * 	@arg 2	Второй (только в 3-х концевой).
+	 * 	@arg Other Записывается значение первого параметра.
+	 * 	@param val Значение параметра.
+	 * 	@retval True Параметр успешно записан.
+	 * 	@retval False Ошибка записи.
+	 */
+	bool setDelay(uint8_t num, uint8_t val) {
 		bool stat = false;
 		val = (val / DEF_DELAY_DISC_F) * DEF_DELAY_DISC_F;
+
+		if ((num < 1) || (num > 2))
+			num = 1;
 
 		// записано в таком виде т.к. иначе портится автоформат в Eclipse
 		if (val >= DEF_DELAY_MIN_F) {
 			if (val <= DEF_DELAY_MAX_F) {
-				delay_ = val;
+				delay_[num] = val;
 				stat = true;
 			}
 		}
 		return stat;
 	}
-	uint8_t getDelay() const {
-		return (delay_ * DEF_DELAY_FRACT);
+
+	/**	Считывание значения "Компенсация задержки на линии".
+	 * 	В 3-х концевой два параметра, в 2-х концевой один.
+	 * 	@param num 	Номер параметра.
+	 * 	@arg 1	Первый.
+	 * 	@arg 2	Второй (только в 3-х концевой).
+	 * 	@arg Other Возвращается значение первого параметра.
+	 * 	@return Значени параметра.
+	 */
+	uint8_t getDelay(uint8_t num) const {
+		if ((num < 1) || (num > 2))
+			num = 1;
+		return (delay_[num] * DEF_DELAY_FRACT);
 	}
 
 	// порог предуреждения по РЗ
@@ -2019,7 +2030,7 @@ private:
 	uint8_t overlap_;
 
 	// компенсация задержки в линии
-	uint8_t delay_;
+	uint8_t delay_[];
 
 	// порог предупреждения по РЗ
 	uint8_t rzThreshold_;
@@ -2552,6 +2563,7 @@ public:
 			pulseWidth_ = val;
 			stat = true;
 		}
+		return stat;
 	}
 
 private:
