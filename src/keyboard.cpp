@@ -9,30 +9,103 @@
 #include "../inc/keyboard.h"
 #include "../inc/debug.h"
 
+// коды кнопок
+// 1R1C - Номер строки (1..3) и стоблца (1..3)
+// F - дополнительная функция
+enum eBUT
+{
+	// коды кнопок, одиночное нажатие
+	BUT_NO = 0x00,
+	BUT_1R1C,
+	BUT_1R2C,
+	BUT_1R3C,
+	BUT_2R1C,
+	BUT_2R2C,
+	BUT_2R3C,
+	BUT_3R1C,
+	BUT_3R2C,
+	BUT_3R3C,
+
+	// коды кнопок, при нажатой кнопке ФУНКЦИЯ
+	BUT_F = 0x80,
+	BUT_F_1R1C,
+	BUT_F_1R2C,
+	BUT_F_1R3C,
+	BUT_F_2R1C,
+	BUT_F_2R2C,
+	BUT_F_2R3C,
+	BUT_F_3R1C,
+	BUT_F_3R2C,
+	BUT_F_3R3C
+};
+
+/// Массив кнопок Р400м
+static const eKEY fcKeyR400M[18] = { 					//
+		//		основные функции
+		KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
+		KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
+		KEY_EMPTY, 		KEY_DOWN, 		KEY_CANCEL,		//
+		//		дополнительные функции
+		KEY_EMPTY,		KEY_CALL,		KEY_PUSK_UD,	//
+		KEY_AC_PUSK, 	KEY_EMPTY,		KEY_AC_PUSK_UD,	//
+		KEY_AC_RESET,	KEY_AC_REGIME,	KEY_PUSK_NALAD	//
+};
+
+/// Массив кнопок К400
+static const eKEY fcKeyK400[18] = { 					//
+		//		основные функции
+		KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
+		KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
+		KEY_CANCEL, 	KEY_DOWN, 		KEY_EMPTY,		//
+		//		дополнительные функции
+		KEY_EMPTY,		KEY_EMPTY,		KEY_RESET_IND,	//
+		KEY_PUSK, 		KEY_EMPTY,		KEY_EMPTY,		//
+		KEY_EMPTY,		KEY_EMPTY,		KEY_RESET		//
+};
+
+/// Массив кнопок РЗСК
+static const eKEY fcKeyRZSK[18] = { 					//
+		//		основные функции
+		KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
+		KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
+		KEY_EMPTY, 		KEY_DOWN, 		KEY_CANCEL,		//
+		//		дополнительные функции
+		KEY_EMPTY,		KEY_CALL,		KEY_PUSK_UD,	//
+		KEY_PUSK, 		KEY_EMPTY,		KEY_PUSK_NALAD,	//
+		KEY_RESET_IND,	KEY_EMPTY,		KEY_EMPTY		//
+};
+
 /// код нажатой кнопки
-static eKEY keyPressed;
+static eBUT keyPressed;
 
 /**	Возвращает значение нажатой кнопки
  * 	@param Нет
  * 	@return eKEY Код нажатой кнопки
  */
-eKEY
-eKEYget(eGB_TYPE_DEVICE type)
-{
-	eKEY key_tmp = keyPressed;
+eKEY eKEYget(eGB_TYPE_DEVICE type) {
+	uint_fast8_t but = keyPressed;
+	eKEY key = KEY_NO;
 
-	if (type == AVANT_R400M)
-	{
-		if (key_tmp == KEY_CANCEL)
-			key_tmp = KEY_NO;
-		else if (key_tmp == KEY_RESET)
-			key_tmp = KEY_CANCEL;
+	if ((but >= BUT_1R1C) && (but <= BUT_3R3C)) {
+		but = 1 + (but - BUT_1R1C);
+	} else if ((but >= BUT_F_1R1C) && (but <= BUT_F_3R3C)) {
+		but = 10 + (but - BUT_F_1R1C);
+	} else
+		but = 0;
+
+	if (but != 0) {
+		but -= 1;
+		if (type == AVANT_K400)
+			key = fcKeyK400[but];
+		else if (type == AVANT_R400M)
+			key = fcKeyR400M[but];
+		else if (type == AVANT_RZSK)
+			key = fcKeyRZSK[but];
 	}
 
-	keyPressed = KEY_NO;
-	return key_tmp;
+	keyPressed = BUT_NO;
+	return key;
 }
-
 
 /**	Функция определения нажатой кнопки
  *	Вызывать надо раз в 10мс
@@ -42,47 +115,40 @@ eKEYget(eGB_TYPE_DEVICE type)
  * 	@param Нет
  * 	@return Нет
  */
-void
-vKEYmain(void)
-{
+void vKEYmain(void) {
 	static uint_fast8_t delay = TIME_DELAY;	// счетчик антидребезга
-	static uint_fast8_t keyPrev = KEY_NO;	// предыдущее значение кнопки
+	static uint_fast8_t keyPrev = BUT_NO;	// предыдущее значение кнопки
 	uint_fast8_t tmp;						// временная переменная
-	uint_fast8_t tmpKey = KEY_NO;			// временная переменная
+	uint_fast8_t tmpKey = BUT_NO;			// временная переменная
 
-	tmp = (~PIND) & 0xC0;
+	tmp = (~PIND ) & 0xC0;
 	// сначала проверим нажатие кнопки "Функция"
 	if (tmp & 0x80)
-		tmpKey = KEY_FUNC;
+		tmpKey = BUT_F;
 
 	// сканируем клавиатуру, до определения первой нажатой кнопки
 	if (tmp & 0x40)
-		tmpKey |= KEY_CANCEL;
-	else
-	{
-		tmp = (~PING) & 0x03;
-		if (tmp)
-		{
+		tmpKey |= BUT_3R1C;
+	else {
+		tmp = (~PING ) & 0x03;
+		if (tmp) {
 			if (tmp & 0x01)
-				tmpKey |= KEY_LEFT;
+				tmpKey |= BUT_2R1C;
 			else if (tmp & 0x02)
-				tmpKey |= KEY_UP;
-		}
-		else
-		{
-			tmp = ~(PINC) & 0x1F;
-			if (tmp)
-			{
+				tmpKey |= BUT_1R2C;
+		} else {
+			tmp = ~(PINC ) & 0x1F;
+			if (tmp) {
 				if (tmp & 0x01)
-					tmpKey |= KEY_RESET_IND;
+					tmpKey |= BUT_1R3C;
 				else if (tmp & 0x02)
-					tmpKey |= KEY_ENTER;
+					tmpKey |= BUT_2R2C;
 				else if (tmp & 0x04)
-					tmpKey |= KEY_RIGHT;
+					tmpKey |= BUT_2R3C;
 				else if (tmp & 0x08)
-					tmpKey |= KEY_DOWN;
+					tmpKey |= BUT_3R2C;
 				else if (tmp & 0x10)
-					tmpKey |= KEY_RESET;
+					tmpKey |= BUT_3R3C;
 			}
 		}
 	}
@@ -92,37 +158,24 @@ vKEYmain(void)
 	// Если кнопки не нажаты, антидребезг не считается
 	// Если кнопка удерживается длительное время,
 	// срабатывание определяется с периодом TIME_DELAY_REPEAT
-	if (tmpKey != keyPrev)
-	{
+	if (tmpKey != keyPrev) {
 		keyPrev = tmpKey;
-		tmpKey = KEY_NO;
+		tmpKey = BUT_NO;
 		delay = TIME_DELAY;
-	}
-	else
-	{
-		if (delay > 0)
-		{
-			if (tmpKey != KEY_NO)
-			{
-				tmpKey = KEY_NO;
+	} else {
+		if (delay > 0) {
+			if (tmpKey != BUT_NO) {
+				tmpKey = BUT_NO;
 				delay--;
 			}
-		}
-		else
-		{
+		} else {
 			delay = TIME_DELAY_REPEAT;
 		}
 	}
 
 	// Если предыдущее нажатие уже обработано, вернем новое нажатие
 	// Нажатие одной кнопки функция - игнорируется
-	if (keyPressed == KEY_NO)
-		keyPressed = (eKEY) tmpKey;
+	if (keyPressed == BUT_NO)
+		keyPressed = (eBUT) tmpKey;
 }
-
-
-
-
-
-
 

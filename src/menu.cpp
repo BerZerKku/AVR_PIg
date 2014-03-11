@@ -139,7 +139,7 @@ void clMenu::main(void) {
 	// Если нажата любая кнопка - включится кратковременная подсветка
 	eKEY tmp = eKEYget(sParam.typeDevice);
 	if (tmp != KEY_NO) {
-		if (tmp == KEY_FUNC)
+		if (tmp == KEY_EMPTY)
 			tmp = KEY_NO;
 		key_ = tmp;
 
@@ -1009,82 +1009,67 @@ void clMenu::lvlStart() {
 		poz += 20;
 	}
 
-	eGB_TYPE_DEVICE type = sParam.typeDevice;
-	if (sParam.typeDevice == AVANT_R400M) {
-		switch (key_) {
-		case KEY_ENTER:
-			lvlMenu = &clMenu::lvlFirst;
-			lvlCreate_ = true;
-			break;
+	switch (key_) {
+	case KEY_ENTER:
+		lvlMenu = &clMenu::lvlFirst;
+		lvlCreate_ = true;
+		break;
 
-		case KEY_FUNC_CALL:
-			sParam.txComBuf.setInt8(GB_CONTROL_CALL);
+	case KEY_CALL:
+		sParam.txComBuf.setInt8(GB_CONTROL_CALL);
+		sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+		break;
+
+	case KEY_PUSK_UD:
+		sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
+		sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+		break;
+
+	case KEY_AC_PUSK_UD:
+		sParam.txComBuf.setInt8(GB_CONTROL_PUSK_AC_UD);
+		sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+		break;
+
+	case KEY_PUSK_NALAD:
+		if (sParam.def.status.getState() == 7) {
+			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_OFF);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			break;
-
-		case KEY_FUNC_PUSK_PRD:
-			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
+		} else {
+			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_ON);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			break;
-
-		case KEY_FUNC_PUSK_AC_UD:
-			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_AC_UD);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			break;
-
-		case KEY_FUNC_PUSK_NALAD:
-			if (sParam.def.status.getState() == 7) {
-				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_OFF);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else {
-				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_ON);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			}
-			break;
-
-		case KEY_FUNC_RESET_AC:
-			sParam.txComBuf.setInt8(GB_CONTROL_RESET_AC);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			break;
-
-		case KEY_FUNC_AC_PUSK:
-			sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
-			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-			break;
-
-		case KEY_FUNC_REG_AC:
-			sParam.txComBuf.setInt8(GB_CONTROL_REG_AC);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			break;
-
-		default:
-			break;
 		}
-	} else if (sParam.typeDevice == AVANT_K400) {
-		switch (key_) {
-		case KEY_ENTER:
-			lvlMenu = &clMenu::lvlFirst;
-			lvlCreate_ = true;
-			break;
+		break;
 
-		case KEY_FUNC_RES_IND:
-			if ((type == AVANT_K400) || (type == AVANT_RZSK))
-				sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
-			break;
+	case KEY_AC_RESET:
+		sParam.txComBuf.setInt8(GB_CONTROL_RESET_AC);
+		sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+		break;
 
-		case KEY_FUNC_ENTER:
-			if ((type == AVANT_K400) || (type == AVANT_RZSK))
-				sParam.txComBuf.addFastCom(GB_COM_PRM_ENTER);
-			break;
+	case KEY_AC_PUSK:
+		sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
+		sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+		break;
 
-		case KEY_FUNC_RESET:
-			sParam.txComBuf.setInt8(GB_CONTROL_RESET_SELF);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			break;
+	case KEY_AC_REGIME:
+		sParam.txComBuf.setInt8(GB_CONTROL_REG_AC);
+		sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+		break;
 
-		default:
-			break;
-		}
+	case KEY_RESET_IND:
+		sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
+		break;
+
+	case KEY_PUSK:
+		sParam.txComBuf.addFastCom(GB_COM_PRM_ENTER);
+		break;
+
+	case KEY_RESET:
+		sParam.txComBuf.setInt8(GB_CONTROL_RESET_SELF);
+		sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+		break;
+
+	default:
+		break;
 	}
 }
 
