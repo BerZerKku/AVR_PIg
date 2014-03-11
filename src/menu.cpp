@@ -1712,12 +1712,10 @@ void clMenu::lvlControl() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		uint8_t num = 0;
+		Punkts_.clear();
 		if (device == AVANT_R400M) {
 			eGB_NUM_DEVICES numDevices = sParam.def.getNumDevices();
 			eGB_COMPATIBILITY compatibility = sParam.glb.getCompatibility();
-
-			Punkts_.clear();
 			// первым всегда идет пуск наладочный
 			Punkts_.add(punkt07);
 			// сброс своего есть во всех аппаратах и совместимостях
