@@ -104,7 +104,6 @@ clMenu::clMenu() {
 #endif
 }
 
-
 void clMenu::main(void) {
 
 	static const char fcNoConnectBsp[] PROGMEM = " Нет связи с БСП!!! ";
@@ -202,7 +201,6 @@ bool clMenu::setDeviceK400() {
 	measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
 	measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
 
-
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
 	sParam.glb.status.faultText[1] = fcGlbFault0002;
@@ -277,18 +275,13 @@ bool clMenu::setDeviceRZSK() {
 	// первый столбец параметров
 	measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
 	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
-	measParam[2] = measParam[2 + MAX_NUM_MEAS_PARAM] =
-			MENU_MEAS_PARAM_UOUT;
-	measParam[4] = measParam[4 + MAX_NUM_MEAS_PARAM] =
-			MENU_MEAS_PARAM_IOUT;
+	measParam[2] = measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UOUT;
+	measParam[4] = measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_IOUT;
 
 	// второй столбец параметров
-	measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] =
-			MENU_MEAS_PARAM_UZ;
-	measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] =
-			MENU_MEAS_PARAM_UC;
-	measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] =
-			MENU_MEAS_PARAM_UN;
+	measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UZ;
+	measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
+	measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -390,12 +383,10 @@ bool clMenu::setDeviceR400M() {
 
 	// второй столбец параметров
 	measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UZ;
-	if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3)
-	{
-		measParam[3] =  MENU_MEAS_PARAM_UC1;
+	if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
+		measParam[3] = MENU_MEAS_PARAM_UC1;
 		measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC2;
-	}
-	else
+	} else
 		measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
 	measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_SD;
 
@@ -463,10 +454,8 @@ bool clMenu::setDeviceOPTIC() {
 
 	// TODO ОПТИКА
 	// дополнить список измеряемых параметров, если есть ?!
-	measParam[0] = measParam[0 + MAX_NUM_MEAS_PARAM] =
-			MENU_MEAS_PARAM_TIME;
-	measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] =
-			MENU_MEAS_PARAM_DATE;
+	measParam[0] = measParam[0 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TIME;
+	measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -654,7 +643,6 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 
 	return status;
 }
-
 
 eGB_COM clMenu::getTxCommand() {
 	static uint8_t cnt = 0;
@@ -1790,6 +1778,7 @@ void clMenu::lvlControl() {
 		} else if (sParam.typeDevice == AVANT_RZSK) {
 			Punkts_.add(punkt07);
 			Punkts_.add(punkt03);
+			Punkts_.add(punkt02);
 			Punkts_.add(punkt05);
 		} else if (sParam.typeDevice == AVANT_K400) {
 			Punkts_.add(punkt03);
@@ -1809,7 +1798,6 @@ void clMenu::lvlControl() {
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
-
 
 	// в РЗСК/Р400м
 	if ((device == AVANT_R400M) || (device == AVANT_RZSK)) {
@@ -1836,53 +1824,34 @@ void clMenu::lvlControl() {
 		break;
 
 	case KEY_ENTER: {
-		if (name == punkt02)
-		{
+		if (name == punkt02) {
 			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-		else if (name == punkt03)
-		{
+		} else if (name == punkt03) {
 			sParam.txComBuf.setInt8(GB_CONTROL_RESET_SELF);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-		else if (name == punkt04)
-		{
+		} else if (name == punkt04) {
 			sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-		else if (name == punkt05)
-		{
+		} else if (name == punkt05) {
 			sParam.txComBuf.setInt8(GB_CONTROL_CALL);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-		else if (name == punkt06)
-		{
+		} else if (name == punkt06) {
 			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_ON);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-		else if (name == punkt07)
-		{
+		} else if (name == punkt07) {
 			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_OFF);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-		else if (name == punkt11)
-		{
+		} else if (name == punkt11) {
 			sParam.txComBuf.setInt8(GB_CONTROL_RESET_AC);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-		else if (name == punkt12)
-		{
+		} else if (name == punkt12) {
 			sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
 			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-		}
-		else if (name == punkt13)
-		{
+		} else if (name == punkt13) {
 			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_AC_UD);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-		else if (name == punkt14)
-		{
+		} else if (name == punkt14) {
 			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 		}
@@ -1891,18 +1860,13 @@ void clMenu::lvlControl() {
 //			sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_FAST);
 //			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
 //		}
-		else if (name == punkt16)
-		{
+		else if (name == punkt16) {
 			sParam.txComBuf.setInt8(GB_TYPE_AC_FAST);
 			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-		}
-		else if (name == punkt17)
-		{
+		} else if (name == punkt17) {
 			sParam.txComBuf.setInt8(GB_TYPE_AC_OFF);
 			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-		}
-		else if (name == punkt19)
-		{
+		} else if (name == punkt19) {
 			sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_NORM);
 			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
 		}
@@ -1914,49 +1878,40 @@ void clMenu::lvlControl() {
 		else if (name == punkt22) {
 			sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-		else if (name == punkt23) {
+		} else if (name == punkt23) {
 			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-		else if (name == punkt24) {
+		} else if (name == punkt24) {
 			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_2);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-		else if (name == punkt25) {
+		} else if (name == punkt25) {
 			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_3);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-		else if (name == punkt26) {
+		} else if (name == punkt26) {
 			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_ALL);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-		else if (name == punkt27) {
+		} else if (name == punkt27) {
 			sParam.txComBuf.setInt8(GB_CONTROL_MAN_1);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-		else if (name == punkt28) {
+		} else if (name == punkt28) {
 			sParam.txComBuf.setInt8(GB_CONTROL_MAN_2);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-		else if (name == punkt29) {
+		} else if (name == punkt29) {
 			sParam.txComBuf.setInt8(GB_CONTROL_MAN_3);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-		else if (name == punkt30) {
+		} else if (name == punkt30) {
 			sParam.txComBuf.setInt8(GB_CONTROL_MAN_ALL);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-		else if (name == punkt31) {
+		} else if (name == punkt31) {
 			sParam.txComBuf.setInt8(GB_TYPE_AC_OFF);
 			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
 		}
 	}
-	break;
+		break;
 
 	default:
-	break;
-}
+		break;
+	}
 
 }
 
@@ -2033,8 +1988,7 @@ void clMenu::lvlSetup() {
 		if (name == punkt1) {
 			lvlMenu = &clMenu::lvlRegime;
 			lvlCreate_ = true;
-		}
-		else if (name == punkt2) {
+		} else if (name == punkt2) {
 			lvlMenu = &clMenu::lvlSetupDT;
 			lvlCreate_ = true;
 		} else if (name == punkt3) {
@@ -2049,11 +2003,11 @@ void clMenu::lvlSetup() {
 			lvlCreate_ = true;
 		}
 	}
-	break;
+		break;
 
 	default:
-	break;
-}
+		break;
+	}
 }
 
 void clMenu::lvlRegime() {
@@ -2240,7 +2194,7 @@ void clMenu::lvlSetupParam() {
  * 	@return Нет
  */
 void clMenu::lvlSetupParamDef() {
-	static char title[] PROGMEM = "Параметры\\Защиты";
+	static char title[] PROGMEM = "Параметры\\Защита";
 	static char punkt1[] PROGMEM = "Тип защиты";
 	static char punkt2[] PROGMEM = "Тип линии";
 	static char punkt3[] PROGMEM = "Доп. время без ман.";
@@ -2330,8 +2284,9 @@ void clMenu::lvlSetupParamDef() {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, DEF_T_NO_MAN_MIN,
 				DEF_T_NO_MAN_MAX, "час");
 	} else if (name == punkt4) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, DEF_OVERLAP_MIN,
-				DEF_OVERLAP_MAX, "град");
+		uint8_t min = (sParam.typeDevice == AVANT_R400M) ?
+				DEF_OVERLAP_MIN2 : DEF_OVERLAP_MIN;
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, min, DEF_OVERLAP_MAX, "град");
 	} else if (name == punkt5) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, DEF_DELAY_MIN, DEF_DELAY_MAX,
 				"град");
@@ -2471,7 +2426,11 @@ void clMenu::lvlSetupParamDef() {
 				EnterParam.com = GB_COM_DEF_SET_T_NO_MAN;
 			} else if (name == punkt4) {
 				EnterParam.setEnable();
-				EnterParam.setValueRange(DEF_OVERLAP_MIN, DEF_OVERLAP_MAX);
+				if (sParam.typeDevice == AVANT_R400M) {
+					EnterParam.setValueRange(DEF_OVERLAP_MIN2, DEF_OVERLAP_MAX);
+				} else {
+					EnterParam.setValueRange(DEF_OVERLAP_MIN, DEF_OVERLAP_MAX);
+				}
 				EnterParam.setValue(sParam.def.getOverlap());
 				EnterParam.setDisc(DEF_OVERLAP_DISC);
 				EnterParam.setFract(DEF_OVERLAP_FRACT);
@@ -2485,9 +2444,9 @@ void clMenu::lvlSetupParamDef() {
 				EnterParam.setFract(DEF_DELAY_FRACT);
 				EnterParam.com = GB_COM_DEF_SET_DELAY;
 			} else if (name == punkt6) {
-				// !!! РЗСК надо сделать
+				// TODO РЗСК надо сделать
 			} else if (name == punkt7) {
-				// !!! Р400 в 3-х концевой 2 разных
+				// TODO Р400 в 3-х концевой 2 разных
 				EnterParam.setEnable();
 				EnterParam.setValueRange(DEF_RZ_DEC_MIN, DEF_RZ_DEC_MAX);
 				EnterParam.setValue(sParam.def.getRzDec());
@@ -2495,7 +2454,7 @@ void clMenu::lvlSetupParamDef() {
 				EnterParam.setFract(DEF_RZ_DEC_FRACT);
 				EnterParam.com = GB_COM_DEF_SET_RZ_DEC;
 			} else if (name == punkt8) {
-				// !!! РЗСК надо сделать
+				// TODO РЗСК надо сделать
 			} else if (name == punkt9) {
 				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
 				EnterParam.setValueRange(0, 1);
@@ -2552,12 +2511,12 @@ void clMenu::lvlSetupParamPrm() {
 		sParam.txComBuf.clear();
 		Punkts_.clear();
 		if (type == AVANT_K400) {
-			Punkts_.add(punkt1, GB_COM_PRM_GET_BLOCK_COM);
-			Punkts_.add(punkt2, GB_COM_PRM_GET_TIME_ON);
+			Punkts_.add(punkt1, GB_COM_PRM_GET_TIME_ON);
+			Punkts_.add(punkt2, GB_COM_PRM_GET_BLOCK_COM);
 			Punkts_.add(punkt3, GB_COM_PRM_GET_TIME_OFF);
 		} else if (type == AVANT_RZSK) {
-			Punkts_.add(punkt1, GB_COM_PRM_GET_BLOCK_COM);
-			Punkts_.add(punkt2, GB_COM_PRM_GET_TIME_ON);
+			Punkts_.add(punkt1, GB_COM_PRM_GET_TIME_ON);
+			Punkts_.add(punkt2, GB_COM_PRM_GET_BLOCK_COM);
 			Punkts_.add(punkt3, GB_COM_PRM_GET_TIME_OFF);
 		}
 	}
@@ -2912,6 +2871,7 @@ void clMenu::lvlSetupParamGlb() {
 	static char punkt2[] PROGMEM = "Номер аппарата";
 	static char punkt3[] PROGMEM = "Контроль вых.сигнала";
 	static char punkt4[] PROGMEM = "Порог предупреждения";
+	static char punkt4rzsk[] PROGMEM = "Порог предупр. по КЧ";
 	static char punkt5[] PROGMEM = "Время перезапуска";
 	static char punkt6[] PROGMEM = "Удерж. реле ком. ПРД";
 	static char punkt7[] PROGMEM = "Удерж. реле ком. ПРМ";
@@ -2959,20 +2919,17 @@ void clMenu::lvlSetupParamGlb() {
 			Punkts_.add(punkt8, GB_COM_GET_CF_THRESHOLD);
 			Punkts_.add(punkt9, GB_COM_GET_NET_ADR);
 			Punkts_.add(punkt11, GB_COM_GET_FREQ);
-			Punkts_.add(punkt24, GB_COM_GET_COM_PRD_KEEP);	// TODO К400 команда "Совместимость"
+			Punkts_.add(punkt24, GB_COM_GET_COM_PRD_KEEP);// TODO К400 команда "Совместимость"
 			Punkts_.add(punkt15, GB_COM_GET_COR_U_I);
 			Punkts_.add(punkt16, GB_COM_GET_COR_U_I);
 		} else if (type == AVANT_RZSK) {
-			Punkts_.add(punkt1, GB_COM_GET_TIME_SINCHR);
-			Punkts_.add(punkt2, GB_COM_GET_DEVICE_NUM);
 			Punkts_.add(punkt3, GB_COM_GET_OUT_CHECK);
-			Punkts_.add(punkt4, GB_COM_GET_CF_THRESHOLD);
+			Punkts_.add(punkt4rzsk, GB_COM_GET_CF_THRESHOLD);
 			Punkts_.add(punkt5, GB_COM_GET_TIME_RERUN);
 			Punkts_.add(punkt6, GB_COM_GET_COM_PRD_KEEP);
 			Punkts_.add(punkt7, GB_COM_GET_COM_PRM_KEEP);
 			Punkts_.add(punkt8, GB_COM_GET_CF_THRESHOLD);
 			Punkts_.add(punkt9, GB_COM_GET_NET_ADR);
-			Punkts_.add(punkt11, GB_COM_GET_FREQ);
 			Punkts_.add(punkt14, GB_COM_GET_FREQ);	// TODO РСЗК команда
 			Punkts_.add(punkt15, GB_COM_GET_COR_U_I);
 			Punkts_.add(punkt16, GB_COM_GET_COR_U_I);
@@ -2986,7 +2943,6 @@ void clMenu::lvlSetupParamGlb() {
 			sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 
-			// в совместимостях отличия минимальные
 			if (comp == GB_COMPATIBILITY_AVANT) {
 				Punkts_.add(punkt1, GB_COM_GET_TIME_SINCHR);
 			}
@@ -3036,7 +2992,7 @@ void clMenu::lvlSetupParamGlb() {
 				sParam.glb.getMaxNumDevices(), "");
 	} else if (name == punkt3) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
-	} else if (name == punkt4) {
+	} else if ((name == punkt4) || (name == punkt4rzsk)) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_CF_THRESH_MIN,
 				GLB_CF_THRESH_MAX, "дБ");
 	} else if (name == punkt5) {
@@ -3063,6 +3019,8 @@ void clMenu::lvlSetupParamGlb() {
 	} else if (name == punkt13) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_AC_IN_DEC_MIN,
 				GLB_AC_IN_DEC_MAX, "дБ");
+	} else if (name == punkt14) {
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
 	} else if (name == punkt15) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_COR_U_DEC_MIN / 10,
 				GLB_COR_U_DEC_MAX / 10, "В");
@@ -3102,7 +3060,7 @@ void clMenu::lvlSetupParamGlb() {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if (name == punkt3) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-			} else if (name == punkt4) {
+			} else if ((name == punkt4) || (name == punkt4rzsk)) {
 				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
 			} else if (name == punkt5) {
@@ -3128,6 +3086,8 @@ void clMenu::lvlSetupParamGlb() {
 			} else if (name == punkt13) {
 				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
+			} else if (name == punkt14) {
+				// TODO РЗСК "Тип детектора"
 			} else if (name == punkt15) {
 				// если текущее значение коррекции тока равно 0
 				// то передается сообщение с под.байтом равным 4
@@ -3199,7 +3159,7 @@ void clMenu::lvlSetupParamGlb() {
 		} else if (name == punkt3) {
 			uint8_t val = sParam.glb.getOutCheck() ? 1 : 0;
 			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
-		} else if (name == punkt4) {
+		} else if ((name == punkt4) || (name == punkt4rzsk)) {
 			snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.glb.getCfThreshold());
 		} else if (name == punkt5) {
 			snprintf(&vLCDbuf[poz], 11, "%dс", sParam.glb.getTimeRerun());
@@ -3222,6 +3182,8 @@ void clMenu::lvlSetupParamGlb() {
 			snprintf_P(&vLCDbuf[poz], 11, fcCompatibility[val]);
 		} else if (name == punkt13) {
 			snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.glb.getAcInDec());
+		} else if (name == punkt14) {
+			// TODO РЗСК "Тип детектора"
 		} else if (name == punkt15) {
 			int16_t val = sParam.glb.getCorU();
 			int8_t f = val % 10;
@@ -3319,7 +3281,7 @@ void clMenu::lvlSetupParamGlb() {
 			EnterParam.setValue(val);
 			EnterParam.list = fcOnOff[0];
 			EnterParam.com = GB_COM_SET_OUT_CHECK;
-		} else if (name == punkt4) {
+		} else if ((name == punkt4) || (name == punkt4rzsk)) {
 			EnterParam.setEnable();
 			EnterParam.setValueRange(GLB_CF_THRESH_MIN, GLB_CF_THRESH_MAX);
 			EnterParam.setValue(sParam.glb.getCfThreshold());
@@ -3393,6 +3355,8 @@ void clMenu::lvlSetupParamGlb() {
 			EnterParam.setFract(GLB_AC_IN_DEC_FRACT);
 			EnterParam.setDopValue(1);
 			EnterParam.com = GB_COM_SET_TIME_RERUN;
+		} else if (name == punkt14) {
+			// TODO РЗСК "Тип детектора"
 		} else if (name == punkt17) {
 			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
 			EnterParam.setValueRange(GB_PVZUE_PROTOCOL_MIN,
@@ -3651,7 +3615,7 @@ void clMenu::lvlSetupInterface() {
 					lvlCreate_ = true;
 				}
 			} else if (name == punkt2) {
-				// TODO
+				// TODO ВСЕ
 			} else if (name == punkt3) {
 				uint8_t val = EnterParam.getValueEnter();
 				sParam.Uart.BaudRate.set(static_cast<eUART_BAUD_RATE>(val));
@@ -3675,7 +3639,7 @@ void clMenu::lvlSetupInterface() {
 			uint8_t val = static_cast<uint8_t>(sParam.Uart.Interface.get());
 			snprintf_P(&vLCDbuf[poz], 11, fcInterface[val]);
 		} else if (name == punkt2) {
-			// TODO
+			// TODO ВСЕ Протокол для ЛС
 		} else if (name == punkt3) {
 			uint8_t val = static_cast<uint8_t>(sParam.Uart.BaudRate.get());
 			snprintf_P(&vLCDbuf[poz], 11, fcBaudRate[val]);
@@ -3716,7 +3680,7 @@ void clMenu::lvlSetupInterface() {
 			EnterParam.list = fcInterface[0];
 			EnterParam.com = GB_COM_NO;
 		} else if (name == punkt2) {
-			//TODO
+			//TODO ВСЕ Протокол для ЛС
 		} else if (name == punkt3) {
 			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
 			EnterParam.setValueRange(UART_BAUD_RATE_MIN,

@@ -75,7 +75,8 @@
 #define DEF_T_NO_MAN_MAX_F	(DEF_T_NO_MAN_MAX / DEF_T_NO_MAN_FRACT)
 #define DEF_T_NO_MAN_DISC_F	(DEF_T_NO_MAN_DISC / DEF_T_NO_MAN_FRACT)
 /// перекрытие импульсов
-#define DEF_OVERLAP_MIN		18	// !!! ВОзможно отличается в разных аппаратах, в Р400 - 18
+#define DEF_OVERLAP_MIN		0
+#define DEF_OVERLAP_MIN2	18	// минимум в Р400м
 #define DEF_OVERLAP_MAX		54
 #define DEF_OVERLAP_DISC	2
 #define DEF_OVERLAP_FRACT	1
@@ -342,12 +343,12 @@ enum eGB_TYPE_AC {
 
 /// Частоты ПРМ и ПРД в ПВЗЛ
 enum eGB_PVZL_FREQ {
-	GB_PVZL_FREQ_MIN = 0,
-	GB_PVZL_FREQ_M500 = 0,
-	GB_PVZL_FREQ_M250 = 1,
-	GB_PVZL_FREQ_0 = 2,
-	GB_PVZL_FREQ_P250 = 3,
-	GB_PVZL_FREQ_P500 = 4,
+	GB_PVZL_FREQ_MIN 	= 0,
+	GB_PVZL_FREQ_M1000 	= 0,
+	GB_PVZL_FREQ_M500 	= 1,
+	GB_PVZL_FREQ_0 		= 2,
+	GB_PVZL_FREQ_P500 	= 3,
+	GB_PVZL_FREQ_P1000 	= 4,
 	GB_PVZL_FREQ_MAX
 };
 
