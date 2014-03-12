@@ -184,7 +184,8 @@ bool clProtocolBspS::getDefCommand(eGB_COM com) {
 
 /**	Обработка принятой команды Приемника.
  * 	@param com	Код команды
- * 	@return True - в случае успешной обработки, False - в случае ошибки.
+ * 	@retval True - в случае успешной обработки
+ * 	@retval False - в случае ошибки.
  */
 bool clProtocolBspS::getPrmCommand(eGB_COM com) {
 	bool stat = false;
