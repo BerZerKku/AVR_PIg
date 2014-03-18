@@ -42,7 +42,7 @@ clMenu::clMenu() {
 	// связи с БСП еще нет
 	connectionBsp_ = false;
 
-	// заполним массивы состояний работы для всех устройств
+	// заполним массивы сост1ояний работы для всех устройств
 	// массив должен быть заполнен полностью и последним всегда должно
 	// быть fcUnknownSost
 	sParam.def.status.stateText[0] = fcDefSost00;
@@ -350,19 +350,6 @@ bool clMenu::setDeviceRZSK() {
 	// 12-15 нет
 	// заполнение массива предупреждений передатчика
 	// 0-15 нет
-
-	sParam.test.clear();
-	sParam.test.addSignalToList(GB_SIGNAL_CF);
-	sParam.test.addSignalToList(GB_SIGNAL_CF_NO_RZ);
-	sParam.test.addSignalToList(GB_SIGNAL_CF_RZ);
-	sParam.test.addSignalToList(GB_SIGNAL_COM1);
-	sParam.test.addSignalToList(GB_SIGNAL_COM2);
-	sParam.test.addSignalToList(GB_SIGNAL_COM3);
-	sParam.test.addSignalToList(GB_SIGNAL_COM4);
-	sParam.test.addSignalToList(GB_SIGNAL_COM1_RZ);
-	sParam.test.addSignalToList(GB_SIGNAL_COM2_RZ);
-	sParam.test.addSignalToList(GB_SIGNAL_COM3_RZ);
-	sParam.test.addSignalToList(GB_SIGNAL_COM4_RZ);
 
 	return true;
 }
@@ -1159,7 +1146,9 @@ void clMenu::lvlInfo() {
 		vLCDdrawBoard(lineParam_);
 
 		// доплнительные команды
+		// обновляется версия прошивок (на случай перепрошивки)
 		sParam.txComBuf.clear();
+		sParam.txComBuf.addCom2(GB_COM_GET_VERS);
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -1277,10 +1266,14 @@ void clMenu::lvlJournalEvent() {
 		sParam.jrnEntry.clear();
 		sParam.jrnEntry.setCurrentDevice(GB_DEVICE_GLB);
 		uint16_t t = 0;
-		if (sParam.typeDevice == AVANT_K400)
+		eGB_TYPE_DEVICE device = sParam.typeDevice;
+		if (device == AVANT_K400) {
 			t = GLB_JRN_EVENT_K400_MAX;
-		else if (sParam.typeDevice == AVANT_R400M)
+		} else if (device == AVANT_R400M) {
 			t = GLB_JRN_EVENT_R400_MSK_MAX;
+		} else if (device == AVANT_RZSK) {
+			t = GLB_JRN_EVENT_RZSK_MAX;
+		}
 		sParam.jrnEntry.setMaxNumJrnEntries(t);
 
 		// доплнительные команды
@@ -1331,6 +1324,7 @@ void clMenu::lvlJournalEvent() {
 		// вывод события
 		uint8_t event = sParam.jrnEntry.getEventType();
 
+		// TODO РЗСК Список событий для журнала Событий.
 		if (sParam.typeDevice == AVANT_R400M) {
 			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventR400_MSK[event], event);
 		} else
@@ -1381,8 +1375,12 @@ void clMenu::lvlJournalDef() {
 		sParam.jrnEntry.clear();
 		sParam.jrnEntry.setCurrentDevice(GB_DEVICE_DEF);
 		uint16_t t = 0;
-		if (sParam.typeDevice == AVANT_R400M)
+		eGB_TYPE_DEVICE device = sParam.typeDevice;
+		if (device == AVANT_R400M) {
 			t = GLB_JRN_DEF_R400_MSK_MAX;
+		} else if (device == AVANT_RZSK) {
+			t = GLB_JRN_DEF_RZSK_MAX;
+		}
 		sParam.jrnEntry.setMaxNumJrnEntries(t);
 
 		// доплнительные команды
@@ -1482,8 +1480,14 @@ void clMenu::lvlJournalPrm() {
 		// установка текущего журнала и максимального кол-во записей в нем
 		sParam.jrnEntry.clear();
 		sParam.jrnEntry.setCurrentDevice(GB_DEVICE_PRM);
-		if (sParam.typeDevice == AVANT_K400)
-			sParam.jrnEntry.setMaxNumJrnEntries(GLB_JRN_PRM_K400_MAX);
+		uint16_t t = 0;
+		eGB_TYPE_DEVICE device = sParam.typeDevice;
+		if (device == AVANT_K400) {
+			t = GLB_JRN_PRM_K400_MAX;
+		} else if (device == AVANT_RZSK) {
+			t = GLB_JRN_PRM_RZSK_MAX;
+		}
+		sParam.jrnEntry.setMaxNumJrnEntries(t);
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
@@ -1575,8 +1579,14 @@ void clMenu::lvlJournalPrd() {
 		// установка текущего журнала и максимального кол-во записей в нем
 		sParam.jrnEntry.clear();
 		sParam.jrnEntry.setCurrentDevice(GB_DEVICE_PRD);
-		if (sParam.typeDevice == AVANT_K400)
-			sParam.jrnEntry.setMaxNumJrnEntries(GLB_JRN_PRD_K400_MAX);
+		uint16_t t = 0;
+		eGB_TYPE_DEVICE device = sParam.typeDevice;
+		if (device == AVANT_K400) {
+			t = GLB_JRN_PRD_K400_MAX;
+		} else if (device == AVANT_RZSK) {
+			t = GLB_JRN_PRD_RZSK_MAX;
+		}
+		sParam.jrnEntry.setMaxNumJrnEntries(t);
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
@@ -1778,6 +1788,7 @@ void clMenu::lvlControl() {
 		} else if (sParam.typeDevice == AVANT_RZSK) {
 			Punkts_.add(punkt07);
 			Punkts_.add(punkt03);
+			Punkts_.add(punkt04);
 			Punkts_.add(punkt02);
 			Punkts_.add(punkt05);
 		} else if (sParam.typeDevice == AVANT_K400) {
@@ -1786,7 +1797,6 @@ void clMenu::lvlControl() {
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
-		// TODO Р400м Если анализировать команды переданные с ПК, то не надо
 		if (sParam.typeDevice == AVANT_R400M) {
 			// совместимость
 			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
@@ -2222,6 +2232,11 @@ void clMenu::lvlSetupParamDef() {
 		eGB_TYPE_DEVICE type = sParam.typeDevice;
 		sParam.txComBuf.clear();
 		Punkts_.clear();
+
+		// для переформирования меню добавляется команда опроса:
+		// кол-ва аппаратов в линии
+		sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
+
 		if (type == AVANT_RZSK) {
 			Punkts_.add(punkt1, GB_COM_DEF_GET_DEF_TYPE);
 			Punkts_.add(punkt2, GB_COM_DEF_GET_LINE_TYPE);
@@ -2233,10 +2248,9 @@ void clMenu::lvlSetupParamDef() {
 			Punkts_.add(punkt8, GB_COM_DEF_GET_PRM_TYPE);
 		} else if (type == AVANT_R400M) {
 			eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
-			// для переформирования меню добавляются команды опроса:
-			// совместимости и кол-ва аппаратов в линии
+			// для переформирования меню добавляется команда опроса:
+			// совместимости
 			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
-			sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
 
 			Punkts_.add(punkt1, GB_COM_DEF_GET_DEF_TYPE);
 			Punkts_.add(punkt2, GB_COM_DEF_GET_LINE_TYPE);
@@ -2260,12 +2274,15 @@ void clMenu::lvlSetupParamDef() {
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
+	// номер текущего параметра и их количество
 	uint8_t poz = 20;
 	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, Punkts_.getVolume());
 
+	// название параметра
 	poz = 40;
 	snprintf_P(&vLCDbuf[poz], 21, name);
 
+	// отображение доп.номера, для однотипных параметров
 	poz = 60;
 	if (name == punkt5) {
 		if ((sParam.glb.getNumDevices() == GB_NUM_DEVICES_3)
@@ -2273,7 +2290,7 @@ void clMenu::lvlSetupParamDef() {
 			snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_, 2);
 	}
 
-	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
+	//  диапазон значений параметра
 	poz = 80;
 	poz += snprintf_P(&vLCDbuf[poz], 11, fcRange);
 	if (name == punkt1) {
@@ -2312,7 +2329,6 @@ void clMenu::lvlSetupParamDef() {
 
 		if (stat == MENU_ENTER_PARAM_READY) {
 			// новое значение введено, надо передать в БСП
-
 			if (name == punkt1) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if (name == punkt2) {
@@ -2323,14 +2339,13 @@ void clMenu::lvlSetupParamDef() {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if (name == punkt5) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
-				if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3)
-					sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
+				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
 			} else if (name == punkt6) {
-				// !!! TODO РЗСК
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if (name == punkt7) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if (name == punkt8) {
-				// !!! TODO РЗСК
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if (name == punkt9) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if (name == punkt10) {
@@ -2375,6 +2390,7 @@ void clMenu::lvlSetupParamDef() {
 			snprintf_P(&vLCDbuf[poz], 11, fcPvzlFreq[sParam.def.getFreqPrm()]);
 		}
 	}
+
 	switch (key_) {
 	case KEY_UP:
 		curCom_ = 1;
@@ -2444,7 +2460,12 @@ void clMenu::lvlSetupParamDef() {
 				EnterParam.setFract(DEF_DELAY_FRACT);
 				EnterParam.com = GB_COM_DEF_SET_DELAY;
 			} else if (name == punkt6) {
-				// TODO РЗСК надо сделать
+				EnterParam.setEnable();
+				EnterParam.setValueRange(DEF_RZ_THRESH_MIN, DEF_RZ_THRESH_MAX);
+				EnterParam.setValue(sParam.def.getRzDec());
+				EnterParam.setDisc( DEF_RZ_THRESH_DISC);
+				EnterParam.setFract(DEF_RZ_THRESH_FRACT);
+				EnterParam.com = GB_COM_DEF_SET_RZ_THRESH;
 			} else if (name == punkt7) {
 				// TODO Р400 в 3-х концевой 2 разных
 				EnterParam.setEnable();
@@ -2454,14 +2475,18 @@ void clMenu::lvlSetupParamDef() {
 				EnterParam.setFract(DEF_RZ_DEC_FRACT);
 				EnterParam.com = GB_COM_DEF_SET_RZ_DEC;
 			} else if (name == punkt8) {
-				// TODO РЗСК надо сделать
+				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
+				EnterParam.setValueRange(DEF_PRM_TYPE_MIN, DEF_PRM_TYPE_MAX -1);
+				EnterParam.setValue(sParam.def.getPrmType());
+				EnterParam.list = fcPrmType[0];
+				EnterParam.com = GB_COM_DEF_SET_PRM_TYPE;
 			} else if (name == punkt9) {
 				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
 				EnterParam.setValueRange(0, 1);
 				uint8_t val = sParam.def.getAcDec() ? 1 : 0;
 				EnterParam.setValue(val);
 				EnterParam.list = fcOnOff[0];
-				EnterParam.com = GB_COM_SET_PRM_TYPE;
+				EnterParam.com = GB_COM_DEF_SET_PRM_TYPE;
 			} else if (name == punkt10) {
 				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
 				EnterParam.setValueRange(GB_PVZL_FREQ_MIN,
@@ -2693,7 +2718,7 @@ void clMenu::lvlSetupParamPrd() {
 		}
 	}
 
-	// подмена команды, на команду текущего уровня меню.
+	// подмена команды, на команду текущего параметра
 	sParam.txComBuf.addCom1(Punkts_.getCom(cursorLine_ - 1), 0);
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -3615,7 +3640,7 @@ void clMenu::lvlSetupInterface() {
 					lvlCreate_ = true;
 				}
 			} else if (name == punkt2) {
-				// TODO ВСЕ
+				// TODO ВСЕ протокол для ЛС
 			} else if (name == punkt3) {
 				uint8_t val = EnterParam.getValueEnter();
 				sParam.Uart.BaudRate.set(static_cast<eUART_BAUD_RATE>(val));
@@ -3786,8 +3811,9 @@ void clMenu::lvlTest() {
 	case KEY_ENTER:
 		if (name == punkt1) {
 			if ((reg == GB_REGIME_DISABLED) || (reg == GB_REGIME_TEST_2)) {
+				//
 				sParam.txComBuf.setInt8(0, 0);
-				sParam.txComBuf.setInt8(0, 1);
+				sParam.txComBuf.setInt8(0, 0);
 				sParam.txComBuf.addFastCom(GB_COM_SET_REG_TEST_1);
 				lvlMenu = &clMenu::lvlTest1;
 				lvlCreate_ = true;
@@ -3846,11 +3872,24 @@ void clMenu::lvlTest1() {
 		sParam.txComBuf.addCom2(GB_COM_GET_TEST);	// сигналы
 
 		// сигналы для тестов
-		if (sParam.typeDevice == AVANT_R400M) {
-			sParam.test.clear();
+		eGB_TYPE_DEVICE device = sParam.typeDevice;
+		sParam.test.clear();
+		if (device == AVANT_R400M) {
+
 			sParam.test.addSignalToList(GB_SIGNAL_RZ);
 			if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_AVANT)
 				sParam.test.addSignalToList(GB_SIGNAL_CF);
+		} else if (device == AVANT_RZSK) {
+			sParam.test.addSignalToList(GB_SIGNAL_CF_NO_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_CF_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_COM1);
+			sParam.test.addSignalToList(GB_SIGNAL_COM2);
+			sParam.test.addSignalToList(GB_SIGNAL_COM3);
+			sParam.test.addSignalToList(GB_SIGNAL_COM4);
+			sParam.test.addSignalToList(GB_SIGNAL_COM1_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_COM2_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_COM3_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_COM4_RZ);
 		}
 	}
 
@@ -3872,22 +3911,19 @@ void clMenu::lvlTest1() {
 			uint8_t cf = 0;
 
 			sParam.test.getBytes(cf, rz, (eGB_TEST_SIGNAL) sig);
-			// TODO РЗСК может быть два сигнала КЧ и РЗ одновременно
-			// первый байт - номер группы (1 - кч, 2 - рз)
-			// второй байт - номер сигнала (0 - выкл.)
-			if (rz > 0) {
-				sParam.txComBuf.setInt8(2, 0);
-				sParam.txComBuf.setInt8(rz, 1);
-			} else if (cf > 0) {
-				sParam.txComBuf.setInt8(1, 0);
-				sParam.txComBuf.setInt8(cf, 1);
-			} else {
-				// иначе запишим 0, чтобы ничего не отработалось
-				sParam.txComBuf.setInt8(0, 0);
-				sParam.txComBuf.setInt8(0, 1);
-			}
-
+			// т.к. у нас для установки сигналов есть две разные группы
+			// для каждой из которых требуется отправка своей команды
+			// добавим в буфере команду для каждой из групп
+			// !!! при передаче команды надо проверять данные в буфере
+			// КЧ
+			sParam.txComBuf.setInt8(1, 0);				// группа КЧ
+			sParam.txComBuf.setInt8(cf, 1);				// текущий сигнал КЧ
 			sParam.txComBuf.addFastCom(EnterParam.com);
+			// РЗ
+			sParam.txComBuf.setInt8(2, 2);				// группа РЗ
+			sParam.txComBuf.setInt8(rz, 3);				// текущий сигнал РЗ
+			sParam.txComBuf.addFastCom(EnterParam.com);
+
 			EnterParam.setDisable();
 		}
 	} else {

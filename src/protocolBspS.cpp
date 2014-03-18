@@ -75,9 +75,22 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 		if (com == GB_COM_SET_CONTROL)
 			num = addCom(com, sParam_->txComBuf.getInt8());
 		else if (com == GB_COM_SET_REG_TEST_1) {
-			uint8_t b1 = sParam_->txComBuf.getInt8(0);
-			uint8_t b2 = sParam_->txComBuf.getInt8(1);
-			num = addCom(com, b1, b2);
+			// есть две возможные ситуации:
+			// отсылается команда включения Тестов
+			// 		при этом передается 0 байт данных
+			// отсылаются команды установки сигналов в тесте
+			// 		тут последовательно передаются две команды
+			// 		сначала команда для КЧ
+			// 		а при следующем заходе  для РЗ
+			if (sParam_->txComBuf.getInt8(0) == 1) {
+				num = addCom(com, 1, sParam_->txComBuf.getInt8(1));		// КЧ
+				sParam_->txComBuf.setInt8(0, 0);
+			} else if (sParam_->txComBuf.getInt8(2) == 2) {
+				num = addCom(com, 2, sParam_->txComBuf.getInt8(3));		// РЗ
+				sParam_->txComBuf.setInt8(2, 0);
+			} else {
+				num = addCom(com);										// вкл.
+			}
 		} else {
 			// GB_COM_PRM_ENTER
 			// GB_COM_SET_REG_DISABLED
@@ -395,31 +408,32 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 			stat = true;
 		}
 	} else if (com == GB_COM_GET_VERS) {
-		bool re = false;
+		uint8_t act = GB_ACT_NO;
 		// данные о типе аппарата
-		re |= sParam_->def.status.setEnable(buf[B1] == 1);
-		re |= sParam_->prm.setNumCom(buf[B2] * 4);
+		act |= sParam_->def.status.setEnable(buf[B1] == 1);
+		act |= sParam_->prm.setNumCom(buf[B2] * 4);
 		// buf[B3] - прм2
-		re |= sParam_->prd.setNumCom(buf[B4] * 4);
+		act |= sParam_->prd.setNumCom(buf[B4] * 4);
 		// кол-во аппаратов в линии
-		// TODO ВСЕ разобраться где оно должно быть в glb или def
-		// и значение == кол-ву аппаратов, а раньше было на 1 меньше
-		re |= sParam_->glb.setNumDevices((eGB_NUM_DEVICES) (buf[B5] - 1));
-		re |= sParam_->def.setNumDevices((eGB_NUM_DEVICES) (buf[B5] - 1));
+		// в def хранится значение параметра
+		// все действия с меню производятся относительно значения в glb.
+		// !!! и значение == кол-ву аппаратов, а раньше было на 1 меньше
+		act |= sParam_->glb.setNumDevices((eGB_NUM_DEVICES) (buf[B5] - 1));
+		sParam_->def.setNumDevices((eGB_NUM_DEVICES) (buf[B5] - 1));
 		// тип линии (вч, оптика, ...)
-		re |= sParam_->glb.setTypeLine((eGB_TYPE_LINE) buf[B6]);
+		act |= sParam_->glb.setTypeLine((eGB_TYPE_LINE) buf[B6]);
 		// версия прошивки АТмега БСП
 		sParam_->glb.setVersBsp(TO_INT16(buf[B7], buf[B8]));
 		// версия прошивки DSP БСП
 		sParam_->glb.setVersDsp(TO_INT16(buf[B9], buf[B10]));
 		// совместимость, только в Р400м
-		re |= sParam_->glb.setCompatibility((eGB_COMPATIBILITY) buf[B11]);
+		act |= sParam_->glb.setCompatibility((eGB_COMPATIBILITY) buf[B11]);
 
-		// "установим" флаг необходимости настройки типа аппарата
-		if (re)
+		// проверим необходимость обновления типа аппарата
+		if (act & GB_ACT_NEW)
 			sParam_->device = false;
 
-		stat = re;
+		stat = ((act & GB_ACT_ERROR) != GB_ACT_ERROR);
 	} else if (com == GB_COM_GET_TIME_SINCHR) {
 		stat = sParam_->glb.setTimeSinchr(buf[B1]);
 	} else if (com == GB_COM_GET_DEVICE_NUM) {
@@ -448,7 +462,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 				stat |= glb->setPvzueTypeAC((eGB_PVZUE_TYPE_AC) buf[B6]);
 			}
 		} else {
-			// в ОПТИКе это "Время перезапуска"
+			// в командной аппаратуре "Время перезапуска"
 			stat = sParam_->glb.setTimeRerun(buf[B1]);
 		}
 	} else if (com == GB_COM_GET_FREQ) {
@@ -527,25 +541,17 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
  */
 uint8_t clProtocolBspS::sendModifDefCommand(eGB_COM com) {
 	uint8_t num = 0;
+	uint8_t b1 = sParam_->txComBuf.getInt8(0);
+	uint8_t b2 = sParam_->txComBuf.getInt8(1);
 
 	if (com == GB_COM_DEF_SET_DELAY) {
-		// Р400м трех-концевая версия может быть два параметра
+		// Р400м трех-концевая версия может быть два параметра,
+		// а в двух концевой только один
 		// но будем передавать два байта всегда
-		num = addCom(com, sParam_->txComBuf.getInt8(0),
-				sParam_->txComBuf.getInt8(1));
+		num = addCom(com, b1, b2);
 	} else {
 		// по умолчанию передается один байт
-		// GB_COM_DEF_SET_DEF_TYPE
-		// GB_COM_DEF_SET_LINE_TYPE
-		// GB_COM_DEF_SET_T_NO_MAN
-		// GB_COM_DEF_SET_OVERLAP
-		// GB_COM_DEF_SET_RZ_DEC
-		// GB_COM_DEF_SET_TYPE_AC
-		// GB_COM_SET_PRM_TYPE
-		// GB_COM_DEF_SET_FREQ_PRD
-		// GB_COM_DEF_SET_RZ_THRESH
-		if (num == 0)
-			num = addCom(com, sParam_->txComBuf.getInt8());
+		num = addCom(com, b1);
 	}
 
 	return num;
@@ -557,17 +563,20 @@ uint8_t clProtocolBspS::sendModifDefCommand(eGB_COM com) {
  */
 uint8_t clProtocolBspS::sendModifPrmCommand(eGB_COM com) {
 	uint8_t num = 0;
+	uint8_t b1 = sParam_->txComBuf.getInt8(0);
+	uint8_t b2 = sParam_->txComBuf.getInt8(1);
 
 	if (com == GB_COM_PRM_SET_TIME_ON) {
-		num = addCom(com, sParam_->txComBuf.getInt8());
+
 	} else if (com == GB_COM_PRM_SET_TIME_OFF) {
-		num = addCom(com, sParam_->txComBuf.getInt8(0),
-				sParam_->txComBuf.getInt8(1));
+		num = addCom(com, b1, b2);
 	} else if (com == GB_COM_PRM_SET_BLOCK_COM) {
-		num = addCom(com, sParam_->txComBuf.getInt8(0),
-				sParam_->txComBuf.getInt8(1));
+		num = addCom(com, b1, b2);
 	} else if (com == GB_COM_PRM_RES_IND) {
 		num = addCom(com);
+	} else {
+		// по умолчанию передается один байт
+		num = addCom(com, b1);
 	}
 
 	return num;
@@ -579,19 +588,16 @@ uint8_t clProtocolBspS::sendModifPrmCommand(eGB_COM com) {
  */
 uint8_t clProtocolBspS::sendModifPrdCommand(eGB_COM com) {
 	uint8_t num = 0;
+	uint8_t b1 = sParam_->txComBuf.getInt8(0);
+	uint8_t b2 = sParam_->txComBuf.getInt8(1);
 
-	// По умолчанию передается один байт
 	if (com == GB_COM_PRD_SET_BLOCK_COM) {
-		num = addCom(com, sParam_->txComBuf.getInt8(0),
-				sParam_->txComBuf.getInt8(1));
+		num = addCom(com, b1, b2);
 	} else if (com == GB_COM_PRD_SET_LONG_COM) {
-		num = addCom(com, sParam_->txComBuf.getInt8(0),
-				sParam_->txComBuf.getInt8(1));
+		num = addCom(com, b1, b2);
 	} else {
-		// GB_COM_PRD_SET_TIME_ON
-		// GB_COM_PRD_SET_DURATION
-		// GB_COM_PRD_SET_TEST_COM
-		num = addCom(com, sParam_->txComBuf.getInt8());
+		// по умолчанию передается один байт
+		num = addCom(com, b1);
 	}
 
 	return num;
@@ -603,31 +609,25 @@ uint8_t clProtocolBspS::sendModifPrdCommand(eGB_COM com) {
  */
 uint8_t clProtocolBspS::sendModifGlbCommand(eGB_COM com) {
 	uint8_t num = 0;
+	uint8_t b1 = sParam_->txComBuf.getInt8(0);
+	uint8_t b2 = sParam_->txComBuf.getInt8(1);
 
-	// по умолчанию передается один байт
 	if (com == GB_COM_SET_TIME) {
 		num = addCom(com, 6, sParam_->txComBuf.getBuferAddress());
 	} else if (com == GB_COM_SET_TIME_RERUN) {
 		if (sParam_->typeDevice == AVANT_R400M) {
-			num = addCom(com, sParam_->txComBuf.getInt8(0),
-					sParam_->txComBuf.getInt8(1));
+			num = addCom(com, b1, b2);
 		} else
-			num = addCom(com, sParam_->txComBuf.getInt8());
+			num = addCom(com, b1);
 	} else if (com == GB_COM_SET_CF_THRESHOLD) {
-		num = addCom(com, sParam_->txComBuf.getInt8(0),
-				sParam_->txComBuf.getInt8(1));
+		num = addCom(com, b1, b2);
 	} else if (com == GB_COM_SET_FREQ) {
-		num = addCom(com, sParam_->txComBuf.getInt8(0),
-				sParam_->txComBuf.getInt8(1));
+		num = addCom(com, b1, b2);
 	} else if (com == GB_COM_SET_COR_U_I) {
 		num = addCom(com, 3, sParam_->txComBuf.getBuferAddress());
 	} else {
-		// GB_COM_SET_TIME_SINCHR
-		// GB_COM_SET_COM_PRM_KEEP
-		// GB_COM_SET_DEVICE_NUM
-		// GB_COM_SET_OUT_CHECK
-		// GB_COM_SET_NET_ADR
-		num = addCom(com, sParam_->txComBuf.getInt8());
+		// по умолчанию передается один байт
+		num = addCom(com, b1);
 	}
 
 	return num;

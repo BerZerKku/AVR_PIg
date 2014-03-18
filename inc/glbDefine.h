@@ -52,6 +52,10 @@
 /// максимальное кол-во предупреждений для любого устройства
 #define MAX_NUM_WARNINGS 16
 
+///	максимальное кол-во быстрых команды
+// на данный момент надо только для ТЕСТов РЗСК, т.к. там посылаются 2 команды
+#define MAX_NUM_FAST_COM 2
+
 /// максимальное кол-во команд в первом буфере
 #define MAX_NUM_COM_BUF1 5
 
@@ -110,7 +114,7 @@
 /// тип приемника
 #define DEF_PRM_TYPE_MIN	0
 #define DEF_PRM_TYPE_MAX	3
-/// тип приемника
+
 /// ПРМ
 /// время включения
 #define PRM_TIME_ON_MIN		0
@@ -261,16 +265,24 @@
 /// кол-во записей в журнале событый
 #define GLB_JRN_EVENT_K400_MAX 512
 #define GLB_JRN_EVENT_R400_MSK_MAX 512
+// TODO РЗСК Узнать максимальное кол-во записей в журналах
+#define GLB_JRN_EVENT_RZSK_MAX 256
 
 /// кол-во записей в журнале защиты
 #define GLB_JRN_DEF_K400_MAX 0
 #define GLB_JRN_DEF_R400_MSK_MAX 1024
+// TODO РЗСК Узнать максимальное кол-во записей в журналах
+#define GLB_JRN_DEF_RZSK_MAX 256
 
 /// кол-во записей в журнале приемника
 #define GLB_JRN_PRM_K400_MAX 512
+// TODO РЗСК Узнать максимальное кол-во записей в журналах
+#define GLB_JRN_PRM_RZSK_MAX 256
 
 /// кол-во записей в журнале передатчика
 #define GLB_JRN_PRD_K400_MAX 512
+// TODO РЗСК Узнать максимальное кол-во записей в журналах
+#define GLB_JRN_PRD_RZSK_MAX 256
 
 /// максимально возможное кол-во записей в одном архиве
 #define GLB_JRN_MAX 1024
@@ -422,25 +434,25 @@ enum eGB_COM {
 	GB_COM_PRD_GET_BLOCK_COM = 0x24,	// +
 	GB_COM_PRD_GET_LONG_COM = 0x25,		// +
 	GB_COM_PRD_GET_TEST_COM = 0x26,		// +
-	GB_COM_GET_SOST = 0x30,				//
-	GB_COM_GET_FAULT = 0x31,			//
-	GB_COM_GET_TIME = 0x32,				//
-	GB_COM_GET_COR_U_I = 0x33,			// TODO ОПТИКА это Резервирование
+	GB_COM_GET_SOST = 0x30,				// +
+	GB_COM_GET_FAULT = 0x31,			// +
+	GB_COM_GET_TIME = 0x32,				// +
+	GB_COM_GET_COR_U_I = 0x33,			// + TODO ОПТИКА это Резервирование
 	GB_COM_GET_MEAS = 0x34,				// +
-	GB_COM_GET_TIME_SINCHR = 0x35,		//
-	GB_COM_GET_COM_PRM_KEEP = 0x36, 	// ! в Р400М это Uвых номинальное
-	GB_COM_GET_COM_PRD_KEEP = 0x37,		// ! в Р400М это тип удаленного аппарата
-	GB_COM_GET_NET_ADR = 0x38,			//
-	GB_COM_GET_TIME_RERUN = 0x39,		// ! в Р400М это параметры для совместимостей
-	GB_COM_GET_FREQ = 0x3A,				//
-	GB_COM_GET_DEVICE_NUM = 0x3B,		//
-	GB_COM_GET_CF_THRESHOLD = 0x3C,		// ! порог предупреждения и загрубления
-	GB_COM_GET_OUT_CHECK = 0x3D,		//
+	GB_COM_GET_TIME_SINCHR = 0x35,		// +
+	GB_COM_GET_COM_PRM_KEEP = 0x36, 	// + ! в Р400М это Uвых номинальное
+	GB_COM_GET_COM_PRD_KEEP = 0x37,		// + ! в Р400М это тип удаленного аппарата
+	GB_COM_GET_NET_ADR = 0x38,			// +
+	GB_COM_GET_TIME_RERUN = 0x39,		// + ! в Р400М это параметры для совместимостей
+	GB_COM_GET_FREQ = 0x3A,				// +
+	GB_COM_GET_DEVICE_NUM = 0x3B,		// +
+	GB_COM_GET_CF_THRESHOLD = 0x3C,		// + ! порог предупреждения и загрубления
+	GB_COM_GET_OUT_CHECK = 0x3D,		// +
 	GB_COM_GET_TEST = 0x3E,				// +
 	GB_COM_GET_VERS = 0x3F,				// +
-	GB_COM_PRM_ENTER = 0x51,			//
-	GB_COM_SET_REG_DISABLED = 0x70,		//
-	GB_COM_SET_REG_ENABLED = 0x71,		//
+	GB_COM_PRM_ENTER = 0x51,			// +
+	GB_COM_SET_REG_DISABLED = 0x70,		// +
+	GB_COM_SET_REG_ENABLED = 0x71,		// +
 	GB_COM_SET_CONTROL = 0x72,			// +
 	GB_COM_SET_PASSWORD = 0x73,			// + ! только с ПК
 	GB_COM_GET_PASSWORD = 0x74,			// + ! только с ПК
@@ -452,7 +464,7 @@ enum eGB_COM {
 	GB_COM_DEF_SET_DELAY = 0x84,		// +
 	GB_COM_DEF_SET_OVERLAP = 0x85,		// +
 	GB_COM_DEF_SET_RZ_DEC = 0x86,		// +
-	GB_COM_SET_PRM_TYPE = 0x87,			// + ! в Р400М это снижение уровня АК
+	GB_COM_DEF_SET_PRM_TYPE = 0x87,		// + ! в Р400М это снижение уровня АК
 	GB_COM_DEF_SET_FREQ_PRD = 0x88,		// +
 	GB_COM_DEF_SET_RZ_THRESH = 0x89,	// + ! в Р400М это частота ПРМ
 	GB_COM_DEF_SET_TYPE_AC = 0x8A,		// +
@@ -466,17 +478,17 @@ enum eGB_COM {
 	GB_COM_PRD_SET_LONG_COM = 0xA5,		// +
 	GB_COM_PRD_SET_TEST_COM = 0xA6,		// +
 	GB_COM_PRD_RES_IND = 0xAA,			// +
-	GB_COM_SET_TIME = 0xB2,				//
-	GB_COM_SET_COR_U_I = 0xB3,			// TODO ОПТИКА это Резервирование
-	GB_COM_SET_TIME_SINCHR = 0xB5,		//
-	GB_COM_SET_COM_PRM_KEEP = 0xB6, 	// ! в Р400М это Uвых номинальное
-	GB_COM_SET_COM_PRD_KEEP = 0xB7, 	// ! в Р400М это тип удаленного аппарата
-	GB_COM_SET_NET_ADR = 0xB8,			//
-	GB_COM_SET_TIME_RERUN = 0xB9,		//
-	GB_COM_SET_FREQ = 0xBA,				//
-	GB_COM_SET_DEVICE_NUM = 0xBB,		//
-	GB_COM_SET_CF_THRESHOLD = 0xBC,		//
-	GB_COM_SET_OUT_CHECK = 0xBD,		//
+	GB_COM_SET_TIME = 0xB2,				// +
+	GB_COM_SET_COR_U_I = 0xB3,			// + TODO ОПТИКА это Резервирование
+	GB_COM_SET_TIME_SINCHR = 0xB5,		// +
+	GB_COM_SET_COM_PRM_KEEP = 0xB6, 	// + ! в Р400М это Uвых номинальное
+	GB_COM_SET_COM_PRD_KEEP = 0xB7, 	// + ! в Р400М это тип удаленного аппарата
+	GB_COM_SET_NET_ADR = 0xB8,			// +
+	GB_COM_SET_TIME_RERUN = 0xB9,		// +
+	GB_COM_SET_FREQ = 0xBA,				// +
+	GB_COM_SET_DEVICE_NUM = 0xBB,		// +
+	GB_COM_SET_CF_THRESHOLD = 0xBC,		// +
+	GB_COM_SET_OUT_CHECK = 0xBD,		// +
 	GB_COM_DEF_GET_JRN_CNT = 0xC1,		//
 	GB_COM_DEF_GET_JRN_ENTRY = 0xC2,	//
 	GB_COM_DEF_JRN_CLR = 0xCA,			// ! стирание журнала ЗАЩ, только с ПК
@@ -543,7 +555,7 @@ enum eGB_STATE_COM {
 
 /// сигналы в тест1 и тест2
 enum eGB_TEST_SIGNAL {
-	GB_SIGNAL_NO = 0, 				//
+	GB_SIGNAL_OFF = 0, 				//
 	GB_SIGNAL_CF,					// РЗСК / Р400М
 	GB_SIGNAL_CF1,
 	GB_SIGNAL_CF2,
@@ -558,7 +570,7 @@ enum eGB_TEST_SIGNAL {
 	GB_SIGNAL_COM4_RZ,				// РЗСК
 	GB_SIGNAL_COM1,					// сигналы команд должны идти
 	GB_SIGNAL_COM2,					// подряд для заполнения К400
-	GB_SIGNAL_COM3,
+	GB_SIGNAL_COM3,					// vvvvvvvvvvvvvvvvvvvvvvvvvv
 	GB_SIGNAL_COM4,
 	GB_SIGNAL_COM5,
 	GB_SIGNAL_COM6,
@@ -585,9 +597,9 @@ enum eGB_TEST_SIGNAL {
 	GB_SIGNAL_COM27,
 	GB_SIGNAL_COM28,
 	GB_SIGNAL_COM29,
-	GB_SIGNAL_COM30,
-	GB_SIGNAL_COM31,
-	GB_SIGNAL_COM32,
+	GB_SIGNAL_COM30,				// ^^^^^^^^^^^^^^^^^^^^^^^^^^
+	GB_SIGNAL_COM31,				// сигналы команд должны идти
+	GB_SIGNAL_COM32,				// подряд для заполнения К400
 	GB_SIGNAL_CF_RZ_R400M,
 	GB_SIGNAL_MAX
 };
@@ -1121,13 +1133,17 @@ public:
 
 	// работа с флагом наличия устройства
 	// возвращает true если новое значение отличается от текущего
-	bool setEnable(bool enable) {
-		bool stat = false;
-		if (enable_ != enable) {
-			enable_ = enable;
-			stat = true;
+	bool setEnable(bool val) {
+		uint8_t act = GB_ACT_NO;
+
+		if (enable_ == val) {
+			act |= GB_ACT_OLD;
+		} else {
+			enable_ = val;
+			act |= GB_ACT_NEW;
 		}
-		return stat;
+
+		return act;
 	}
 	bool isEnable() const {
 		return enable_;
@@ -1218,14 +1234,25 @@ public:
 
 	TDeviceStatus status;
 
-	// кол-во аппаратов в линии
-	eGB_NUM_DEVICES getNumDevices() const {
-		return numDevices_;
-	}
+	/**	Возвращает максимальное кол-во аппаратов в линии.
+	 * 	@retval 2 В случае 2-х концевой версии
+	 * 	@retval 3 Во всех остальных случаях.
+	 */
 	uint8_t getMaxNumDevices() const {
 		return (numDevices_ == GB_NUM_DEVICES_2) ? 2 : 3;
 	}
 
+	/**	Возвращает кол-во аппаратов в линии (2-х, 3-х концевая).
+		 * 	@return Кол-во аппаратов в линии.
+		 */
+		eGB_NUM_DEVICES getNumDevices() const {
+			return numDevices_;
+		}
+
+	/** Установка кол-ва аппаратов в линии (2-х, 3-х концевая.).
+	 * 	@param val Кол-во аппаратов в линии.
+	 * 	@return Статус установки (eGB_ACT - побитные значения).
+	 */
 	uint8_t setNumDevices(eGB_NUM_DEVICES val) {
 		uint8_t act = GB_ACT_NO;
 
@@ -1244,23 +1271,33 @@ public:
 		return act;
 	}
 
-	// тип линии (вч/оптика и т.д.)
+	/**	Возвращает текущий тип линии (вч/оптика и т.д.).
+	 * 	@return Тип линии.
+	 */
 	eGB_TYPE_LINE getTypeLine() const {
 		return typeLine_;
 	}
-	bool setTypeLine(eGB_TYPE_LINE typeLine) {
-		bool stat = false;
 
-		if (typeLine >= GB_TYPE_LINE_MIN) {
-			if (typeLine < GB_TYPE_LINE_MAX) {
-				typeLine_ = typeLine;
-				stat = true;
-			}
+	/** Установка типа линии (вч/оптика и т.д.).
+	 * 	@param val Тип линии.
+	 * 	@return Статус установки (eGB_ACT - побитные значения).
+	 */
+	uint8_t setTypeLine(eGB_TYPE_LINE val) {
+		uint8_t act = GB_ACT_NO;
+
+		if ((val < GB_TYPE_LINE_MIN) || (val >= GB_TYPE_LINE_MAX)) {
+			val = GB_TYPE_LINE_MAX;
+			act = GB_ACT_ERROR;
 		}
-		// установка ошибочного значения
-		if (!stat)
-			typeLine_ = GB_TYPE_LINE_MAX;
-		return stat;
+
+		if (typeLine_ == val) {
+			act |= GB_ACT_OLD;
+		} else {
+			typeLine_ = val;
+			act |= GB_ACT_NEW;
+		}
+
+		return act;
 	}
 
 	// версия прошивки AtMega BSP
@@ -1279,8 +1316,10 @@ public:
 		return versDsp_;
 	}
 
-	// совместимость (тип удаленного аппарата)
-	// в Р400М только авант или ПВЗЛ
+	/**	Установка совместимости (тип удаленного аппарата).
+	 * 	@param val Совместимость.
+	 * 	@return Статус установки (eGB_ACT - побитные значения).
+	 */
 	uint8_t setCompatibility(eGB_COMPATIBILITY val) {
 		uint8_t act = GB_ACT_NO;
 
@@ -1298,6 +1337,10 @@ public:
 
 		return act;
 	}
+
+	/**	Возвращает текущую совместимость.
+	 * 	@return Совместимость.
+	 */
 	eGB_COMPATIBILITY getCompatibility() const {
 		return compatibility_;
 	}
@@ -2088,17 +2131,30 @@ public:
 
 	TDeviceStatus status;
 
-	// установка кол-ва команд в ПРМ, если оно равно 0 или больше 32
-	// возвращает true если новое значение отличается от предыдущего, а также
-	// устанавливает флаг enable
-	bool setNumCom(uint8_t numCom) {
-		bool stat = false;
-		if ((numCom <= MAX_NUM_COM_PRM) && (numCom_ != numCom)) {
-			numCom_ = numCom;
-			this->status.setEnable(numCom != 0);
-			stat = true;
+	/**	Установка текущего кол-ва команд в ПРМ.
+	 * 	Если новое значение выходит за диапазон допустимых значений, устанавли
+	 * 	вается 0. Далее если команд нет, ПРМ отключается. Иначе включается.
+	 * 	@param val Количество команд на ПРМ.
+	 * 	@return Статус установки (eGB_ACT - побитные значения).
+	 */
+	bool setNumCom(uint8_t val) {
+		uint8_t act = GB_ACT_NO;
+
+		if (val > MAX_NUM_COM_PRM) {
+			val = 0;
+			act = GB_ACT_ERROR;
 		}
-		return stat;
+
+		if (numCom_ == val) {
+			act |= GB_ACT_OLD;
+		} else {
+			numCom_ = val;
+			// если кол-во команд не равно 0, то включается ПРМ
+			this->status.setEnable(val != 0);
+			act |= GB_ACT_NEW;
+		}
+
+		return act;
 	}
 	uint8_t getNumCom() const {
 		return numCom_;
@@ -2248,17 +2304,30 @@ public:
 
 	TDeviceStatus status;
 
-	// установка кол-ва команд в ПРМ, если оно равно 0 или больше 32
-	// возвращает true если новое значение отличается от предыдущего, а также
-	// устанавливает флаг enable
-	bool setNumCom(uint8_t numCom) {
-		bool stat = false;
-		if ((numCom <= MAX_NUM_COM_PRD) && (numCom_ != numCom)) {
-			numCom_ = numCom;
-			this->status.setEnable(numCom != 0);
-			stat = true;
+	/**	Установка текущего кол-ва команд в ПРД.
+	 * 	Если новое значение выходит за диапазон допустимых значений, устанавли
+	 * 	вается 0. Далее если команд нет, ПРД отключается. Иначе включается.
+	 * 	@param val Количество команд на ПРД.
+	 * 	@return Статус установки (eGB_ACT - побитные значения).
+	 */
+	uint8_t setNumCom(uint8_t val) {
+		uint8_t act = GB_ACT_NO;
+
+		if (val > MAX_NUM_COM_PRD) {
+			val = 0;
+			act = GB_ACT_ERROR;
 		}
-		return stat;
+
+		if (numCom_ == val) {
+			act |= GB_ACT_OLD;
+		} else {
+			numCom_ = val;
+			// если кол-во команд не равно 0, то включается ПРМ
+			this->status.setEnable(val != 0);
+			act |= GB_ACT_NEW;
+		}
+
+		return act;
 	}
 	uint8_t getNumCom() const {
 		return numCom_;
@@ -2601,12 +2670,19 @@ public:
 	void clear() {
 		numCom1_ = numCom2_ = 0;
 		cnt1_ = cnt2_ = 0;
-		comFast_ = GB_COM_NO;
+		for(uint_fast8_t i = 0; i < MAX_NUM_FAST_COM; i++)
+			comFast_[i] = GB_COM_NO;
 		com1_[0] = com2_[0] = GB_COM_NO;
 	}
 
-	// добавление команды в первый буфер
-	// если num = 0, то заменяется первая команда
+	/** Запись команды в буфер 1.
+	 * 	Если num > 0 то происходит замена имеющейся команды в буфере,
+	 * 	если num < 0 команда добавляется.
+	 * 	@param com Код команды.
+	 * 	@param num Индекс элемента в буфере.
+	 * 	@retval True - в случае успешной записи.
+	 * 	@retval False - если не удалось поместить команду в буфер.
+	 */
 	bool addCom1(eGB_COM com, int8_t num = -1) {
 		bool stat = false;
 		if (numCom1_ < MAX_NUM_COM_BUF1) {
@@ -2622,14 +2698,21 @@ public:
 		}
 		return stat;
 	}
-	// последовательная выдача имеющихся в первом буфере команд
+
+	/** Последовательная выдача имеющихся в буфере 1 команд (по кругу).
+	 * 	@return Код текущей команды.
+	 */
 	eGB_COM getCom1() {
 		if (cnt1_ >= numCom1_)
 			cnt1_ = 0;
 		return com1_[cnt1_++];
 	}
 
-	// добавление команды во второй буфер буфер
+	/** Запись команды в буфер 2.
+	 * 	@param com Код команды.
+	 * 	@retval True - в случае успешной записи.
+	 * 	@retval False - если не удалось поместить команду в буфер.
+	 */
 	bool addCom2(eGB_COM com) {
 		bool stat = false;
 		if (numCom2_ < MAX_NUM_COM_BUF2) {
@@ -2639,82 +2722,114 @@ public:
 		return stat;
 	}
 
-	// последовательная выдача имеющихся во втором буфере команд
+	/** Последовательная выдача имеющихся в буфере 2 команд (по кругу).
+	 * 	@return Код текущей команды.
+	 */
 	eGB_COM getCom2() {
 		if (cnt2_ >= numCom2_)
 			cnt2_ = 0;
 		return com2_[cnt2_++];
 	}
 
-	// добавление срочной команда (например изменение параметра)
+	/**	Запись срочной команды в конец очереди.
+	 * 	@param com Код срочной команды
+	 */
 	void addFastCom(eGB_COM com) {
-		comFast_ = com;
+		for(uint_fast8_t i = 0; i < MAX_NUM_FAST_COM; i++) {
+			if (comFast_[i] == GB_COM_NO) {
+				comFast_[i] = com;
+			}
+		}
 	}
 
-	// считывание срочной команды
+	/**	Считывание срочной команды из начала очереди.
+	 * 	@return Код срочной команды.
+	 */
 	eGB_COM getFastCom() {
-		eGB_COM com = GB_COM_NO;
-		if (comFast_ != GB_COM_NO) {
-			com = comFast_;
-			comFast_ = GB_COM_NO;
+		eGB_COM com = comFast_[0];
+		// проверим, была ли команда в буфере
+		if (com != GB_COM_NO) {
+			// размер буфера команд достаточно мал
+			// просто свдинем весь буфер на одну позицию влево,
+			// а последнюю команду "обнулим"
+			for(uint_fast8_t i = 1; i < MAX_NUM_FAST_COM; i++) {
+				comFast_[i - 1] = comFast_[i];
+			}
+			comFast_[MAX_NUM_FAST_COM - 1] = GB_COM_NO;
 		}
 		return com;
 	}
 
-	// запись\считывание одного байта на передачу
-	// byte байт данных
-	// num номер байта в буфере
+	/**	Запись байт данных в буфер.
+	 * 	@param byte	Байт данных.
+	 * 	@param num Индекс элемента массива.
+	 */
 	void setInt8(uint8_t byte, uint8_t num = 0) {
 		if (num < 6)
-			byte_[num] = byte;
+			buf_[num] = byte;
 	}
+
+	/** Считывание байта данных.
+	 * 	@param num Индекс элемента массива.
+	 * 	@return Байт данных.
+	 */
 	uint8_t getInt8(uint8_t num = 0) const {
 		uint8_t byte = 0;
 		if (num < 6)
-			byte = byte_[num];
+			byte = buf_[num];
 		return byte;
 	}
 
-	// запись\считывание переменной типа INT
-	// хранится в byte_[1]
+	/**	Запись 2-х байтного числа (uint16_t) в буфер.
+	 * 	В буфере данные записываются в 1 и 2 элемент массива uint8_t.
+	 * 	@param val Данные.
+	 */
 	void setInt16(uint16_t val) {
-		*((uint16_t *) (byte_ + 1)) = val;
+		*((uint16_t *) (buf_ + 1)) = val;
 	}
+
+	/** Считывание 2-х абйтного числа (uint16_t) из буфера.
+	 * 	Данные хранятся в 1 и 2 элементах массива uint8_t.
+	 * 	@return Данные.
+	 */
 	uint16_t getInt16() const {
-		return *((uint16_t *) (byte_ + 1));
+		return *((uint16_t *) (buf_ + 1));
 	}
 
-	// запись нескольких байт данных
-	// source - указатель на массив данных
-	// num - кол-во копируемых байт данных
-	void copyToBufer(uint8_t *source, uint8_t num) {
-		for (uint_fast8_t i = 0; i < num; i++) {
-			// учет размера буфера
-			if (i >= 6)
-				break;
-			byte_[i] = *source++;
+//	// запись нескольких байт данных
+//	// source - указатель на массив данных
+//	// num - кол-во копируемых байт данных
+//	void copyToBufer(uint8_t *source, uint8_t num) {
+//		for (uint_fast8_t i = 0; i < num; i++) {
+//			// учет размера буфера
+//			if (i >= 6)
+//				break;
+//			byte_[i] = *source++;
+//
+//		}
+//	}
+//	// считывание нескольких байт данных
+//	// destination- указатель на массив данных
+//	// num - кол-во копируемых байт данных
+//	void copyFromBufer(uint8_t *destination, uint8_t num) const {
+//		for (uint_fast8_t i = 0; i < num; i++) {
+//			// учет размера буфера
+//			if (i >= 6)
+//				break;
+//			*destination++ = byte_[i];
+//		}
+//	}
 
-		}
-	}
-	// считывание нескольких байт данных
-	// destination- указатель на массив данных
-	// num - кол-во копируемых байт данных
-	void copyFromBufer(uint8_t *destination, uint8_t num) const {
-		for (uint_fast8_t i = 0; i < num; i++) {
-			// учет размера буфера
-			if (i >= 6)
-				break;
-			*destination++ = byte_[i];
-		}
-	}
-	// возвразает указатель на буфер данных
+	/**	Возвращает указатель на буфер данных.
+	 * 	@return Указатель на буфер данных.
+	 */
 	uint8_t* getBuferAddress() {
-		return byte_;
+		return buf_;
 	}
 
 private:
 	// срочная команда (на изменение)
-	eGB_COM comFast_;
+	eGB_COM comFast_[MAX_NUM_FAST_COM];
 	// первый буфер команд
 	eGB_COM com1_[MAX_NUM_COM_BUF1];
 	// кол-во команд в первом буфере
@@ -2727,8 +2842,8 @@ private:
 	uint8_t numCom2_;
 	// номер текущей команды во втором буфере
 	uint8_t cnt2_;
-	// данные на передачу
-	uint8_t byte_[6];
+	// буфер данных
+	uint8_t buf_[6];
 };
 
 class TJournalEntry {
@@ -3013,9 +3128,9 @@ public:
 	// очистка списка сигналов
 	void clear() {
 		for(uint_fast8_t i = 0; i < MAX_NUM_TEST_SIGNAL; i++)
-			signalList[i] = GB_SIGNAL_NO;
+			signalList[i] = GB_SIGNAL_OFF;
 		num_ = 1;
-		currentSignal_ = GB_SIGNAL_NO;
+		currentSignal_ = GB_SIGNAL_OFF;
 	}
 
 	bool addSignalToList(eGB_TEST_SIGNAL signal) {
@@ -3108,7 +3223,7 @@ private:
 
 	// добавление сигнала в список для К400
 	eGB_TEST_SIGNAL getCurrentSignalK400(uint8_t *s) {
-		eGB_TEST_SIGNAL signal = GB_SIGNAL_NO;
+		eGB_TEST_SIGNAL signal = GB_SIGNAL_OFF;
 
 		uint8_t t = *s;
 		// сначала проверяется наличие КЧ1-КЧ2
@@ -3148,28 +3263,37 @@ private:
 		return signal;
 	}
 
-	// добавление сигнала в список для РЗСК
+	/** Добавление сигнала в список для РЗСК.
+	 * 	бит: 7		6		5		4		3		2		1		0		;
+	 * 	b1 : 0 		0 		0 		0 		[рз2] 	[рз1] 	[кч2] 	[кч1]	;
+	 * 	b2 : [ком8] [ком7]	[ком6] 	[ком5] 	[ком4] 	[ком3] 	[ком2] 	[ком1]	;
+	 * 	Установленный бит означает наличие данного сигнала на передачу		.
+	 * 	рз1 + кч1 = кч без блок			;
+	 * 	рз2 + кч1 = кч с блок			;
+	 * 	рз1 + комN = команда без блок 	;
+	 * 	рз2 + комN = команда с блок		.
+	 * 	@param *s Указатель на массив данных.
+	 * 	@return Текущий тестовый сигнал.
+	 */
 	eGB_TEST_SIGNAL getCurrentSignalRZSK(uint8_t *s) {
-		eGB_TEST_SIGNAL signal = GB_SIGNAL_NO;
+		eGB_TEST_SIGNAL signal = GB_SIGNAL_OFF;
 
 		uint8_t t = *s;
-		if ((t & 0x11) == 0x11)
+		if ((t & 0x05) == 0x05)
 			signal = GB_SIGNAL_CF_NO_RZ;
-		else if ((t & 0x12) == 0x12)
+		else if ((t & 0x09) == 0x09)
 			signal = GB_SIGNAL_CF_RZ;
 		else {
 			if (t & 0x10) {
 				t = getSetBit((*(++s)) & 0x0F);
-				if (t == 0)
-					signal = GB_SIGNAL_CF;
-				else {
-					t = t + GB_SIGNAL_COM1 - 1;
+				if (t != 0) {
+					t = (t - 1) + GB_SIGNAL_COM1;
 					signal = (eGB_TEST_SIGNAL) t;
 				}
 			} else if (t & 0x20) {
 				t = getSetBit((*(++s)) & 0x0F);
-				if (t) {
-					t = t + GB_SIGNAL_COM1_RZ - 1;
+				if (t != 0) {
+					t = (t - 1) + GB_SIGNAL_COM1_RZ;
 					signal = (eGB_TEST_SIGNAL) t;
 				}
 			}
@@ -3179,7 +3303,7 @@ private:
 
 	// добавление сигнала в список для Р400м
 	eGB_TEST_SIGNAL getCurrentSignalR400M(uint8_t *s) {
-		eGB_TEST_SIGNAL signal = GB_SIGNAL_NO;
+		eGB_TEST_SIGNAL signal = GB_SIGNAL_OFF;
 
 		// TODO Р400М 3-х концевая вывод сигналов теста
 		// подумать как выводить при наличии РЗ + КЧ1, КЧ2 и т.д.
