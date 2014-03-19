@@ -26,7 +26,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0103
+#define VERS 0x0104
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -564,6 +564,10 @@ enum eGB_TEST_SIGNAL {
 	GB_SIGNAL_CF_NO_RZ,				// РЗСК
 	GB_SIGNAL_CF_RZ,				// РЗСК
 	GB_SIGNAL_RZ,
+	GB_SIGNAL_COM1_NO_RZ,			// РЗСК
+	GB_SIGNAL_COM2_NO_RZ,			// РЗСК
+	GB_SIGNAL_COM3_NO_RZ,			// РЗСК
+	GB_SIGNAL_COM4_NO_RZ,			// РЗСК
 	GB_SIGNAL_COM1_RZ,				// РЗСК
 	GB_SIGNAL_COM2_RZ,				// РЗСК
 	GB_SIGNAL_COM3_RZ,				// РЗСК
@@ -3143,6 +3147,12 @@ public:
 	}
 
 	// записывает в cf, rz значения КЧ и РЗ, соответственно, для передачи в БСП
+	/**	Преобразование тестового сигнала в значения для передачи в БСП.
+	 * 	@param [out] cf	Код сигнала КЧ/Команды.
+	 * 	@param [out] rz	Код сигнала РЗ.
+	 *	@param sig Тестовый сигнал.
+	 *
+	 */
 	void getBytes(uint8_t &cf, uint8_t &rz, eGB_TEST_SIGNAL sig) {
 		if ((sig >= GB_SIGNAL_COM1) && (sig <= GB_SIGNAL_COM32)) {
 			rz = 0;
@@ -3161,7 +3171,10 @@ public:
 			cf = 0;
 		} else if ((sig >= GB_SIGNAL_COM1_RZ) && (sig <= GB_SIGNAL_COM4_RZ)) {
 			rz = 2;
-			cf = 4 + sig - GB_SIGNAL_COM1_RZ;
+			cf = 3 + sig - GB_SIGNAL_COM1_RZ; // 3 - кол-во кч ?!
+		} else if ((sig>=GB_SIGNAL_COM1_NO_RZ)&&(sig<=GB_SIGNAL_COM4_NO_RZ)) {
+			rz = 1;
+			cf = 3 + sig - GB_SIGNAL_COM1_NO_RZ; // 3 - кол-во кч ?!
 		} else if (sig == GB_SIGNAL_CF) {
 			rz = 0;
 			cf = 1;
@@ -3267,7 +3280,8 @@ private:
 	 * 	бит: 7		6		5		4		3		2		1		0		;
 	 * 	b1 : 0 		0 		0 		0 		[рз2] 	[рз1] 	[кч2] 	[кч1]	;
 	 * 	b2 : [ком8] [ком7]	[ком6] 	[ком5] 	[ком4] 	[ком3] 	[ком2] 	[ком1]	;
-	 * 	Установленный бит означает наличие данного сигнала на передачу		.
+	 * 	Установленный бит означает наличие данного сигнала на передачу.
+	 * 	Если есть сигнал РЗ, но нет ни команд ни КЧ. Считаем что КЧ есть!
 	 * 	рз1 + кч1 = кч без блок			;
 	 * 	рз2 + кч1 = кч с блок			;
 	 * 	рз1 + комN = команда без блок 	;
@@ -3284,17 +3298,23 @@ private:
 		else if ((t & 0x09) == 0x09)
 			signal = GB_SIGNAL_CF_RZ;
 		else {
-			if (t & 0x10) {
+			if (t & 0x04) {
 				t = getSetBit((*(++s)) & 0x0F);
 				if (t != 0) {
-					t = (t - 1) + GB_SIGNAL_COM1;
+					t = (t - 1) + GB_SIGNAL_COM1_NO_RZ;
 					signal = (eGB_TEST_SIGNAL) t;
+				} else {
+					// сигнал РЗ есть, а команд и кч нет -> считаем что КЧ есть
+					signal = GB_SIGNAL_CF_NO_RZ;
 				}
-			} else if (t & 0x20) {
+			} else if (t & 0x08) {
 				t = getSetBit((*(++s)) & 0x0F);
 				if (t != 0) {
 					t = (t - 1) + GB_SIGNAL_COM1_RZ;
 					signal = (eGB_TEST_SIGNAL) t;
+				} else {
+					// сигнал РЗ есть, а команд и кч нет -> считаем что КЧ есть
+					signal = GB_SIGNAL_CF_RZ;
 				}
 			}
 		}

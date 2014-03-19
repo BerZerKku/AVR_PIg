@@ -3882,10 +3882,10 @@ void clMenu::lvlTest1() {
 		} else if (device == AVANT_RZSK) {
 			sParam.test.addSignalToList(GB_SIGNAL_CF_NO_RZ);
 			sParam.test.addSignalToList(GB_SIGNAL_CF_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_COM1);
-			sParam.test.addSignalToList(GB_SIGNAL_COM2);
-			sParam.test.addSignalToList(GB_SIGNAL_COM3);
-			sParam.test.addSignalToList(GB_SIGNAL_COM4);
+			sParam.test.addSignalToList(GB_SIGNAL_COM1_NO_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_COM2_NO_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_COM3_NO_RZ);
+			sParam.test.addSignalToList(GB_SIGNAL_COM4_NO_RZ);
 			sParam.test.addSignalToList(GB_SIGNAL_COM1_RZ);
 			sParam.test.addSignalToList(GB_SIGNAL_COM2_RZ);
 			sParam.test.addSignalToList(GB_SIGNAL_COM3_RZ);
