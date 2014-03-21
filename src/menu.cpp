@@ -2093,7 +2093,6 @@ void clMenu::lvlRegime() {
 
 	switch (key_) {
 	case KEY_CANCEL:
-		sParam.txComBuf.addFastCom(GB_COM_SET_REG_DISABLED);
 		lvlMenu = &clMenu::lvlSetup;
 		lvlCreate_ = true;
 		break;

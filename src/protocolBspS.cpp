@@ -128,7 +128,6 @@ bool clProtocolBspS::getDefCommand(eGB_COM com) {
 	if (com == GB_COM_DEF_GET_DEF_TYPE) {
 		stat = sParam_->def.setDefType(buf[B1]);
 	} else if (com == GB_COM_DEF_GET_LINE_TYPE) {
-		// TODO ВСЕ разобраться где должно быть кол-во аппаратов в glb или def
 		stat = sParam_->def.setNumDevices((eGB_NUM_DEVICES) buf[B1]);
 		uint8_t act = sParam_->glb.setNumDevices((eGB_NUM_DEVICES) buf[B1]);
 		if (act & GB_ACT_NEW)
