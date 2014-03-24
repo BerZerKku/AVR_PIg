@@ -2943,7 +2943,7 @@ void clMenu::lvlSetupParamGlb() {
 			Punkts_.add(punkt8, GB_COM_GET_CF_THRESHOLD);
 			Punkts_.add(punkt9, GB_COM_GET_NET_ADR);
 			Punkts_.add(punkt11, GB_COM_GET_FREQ);
-			Punkts_.add(punkt24, GB_COM_GET_COM_PRD_KEEP);// TODO К400 команда "Совместимость"
+			Punkts_.add(punkt24, GB_COM_GET_COM_PRD_KEEP);	// TODO К400 команда "Совместимость"
 			Punkts_.add(punkt15, GB_COM_GET_COR_U_I);
 			Punkts_.add(punkt16, GB_COM_GET_COR_U_I);
 		} else if (type == AVANT_RZSK) {
@@ -2954,7 +2954,7 @@ void clMenu::lvlSetupParamGlb() {
 			Punkts_.add(punkt7, GB_COM_GET_COM_PRM_KEEP);
 			Punkts_.add(punkt8, GB_COM_GET_CF_THRESHOLD);
 			Punkts_.add(punkt9, GB_COM_GET_NET_ADR);
-			Punkts_.add(punkt14, GB_COM_GET_FREQ);	// TODO РСЗК команда
+			Punkts_.add(punkt14, GB_COM_GET_TIME_SINCHR);
 			Punkts_.add(punkt15, GB_COM_GET_COR_U_I);
 			Punkts_.add(punkt16, GB_COM_GET_COR_U_I);
 		} else if (type == AVANT_R400M) {
@@ -3044,7 +3044,8 @@ void clMenu::lvlSetupParamGlb() {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_AC_IN_DEC_MIN,
 				GLB_AC_IN_DEC_MAX, "дБ");
 	} else if (name == punkt14) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_DETECTOR_MIN,
+				GLB_DETECTOR_MAX, "");
 	} else if (name == punkt15) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_COR_U_DEC_MIN / 10,
 				GLB_COR_U_DEC_MAX / 10, "В");
@@ -3079,7 +3080,8 @@ void clMenu::lvlSetupParamGlb() {
 			// новое значение введено, надо передать в БСП
 
 			if (name == punkt1) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
+				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
 			} else if (name == punkt2) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if (name == punkt3) {
@@ -3111,7 +3113,8 @@ void clMenu::lvlSetupParamGlb() {
 				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
 			} else if (name == punkt14) {
-				// TODO РЗСК "Тип детектора"
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
+				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
 			} else if (name == punkt15) {
 				// если текущее значение коррекции тока равно 0
 				// то передается сообщение с под.байтом равным 4
@@ -3196,18 +3199,18 @@ void clMenu::lvlSetupParamGlb() {
 		} else if (name == punkt8) {
 			snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.glb.getInDecrease());
 		} else if (name == punkt9) {
-			snprintf(&vLCDbuf[poz], 11, "%d", sParam.glb.getNetAddress());
+			snprintf(&vLCDbuf[poz], 11, "%u", sParam.glb.getNetAddress());
 		} else if (name == punkt10) {
-			snprintf(&vLCDbuf[poz], 11, "%dВ", sParam.glb.getUoutNom());
+			snprintf(&vLCDbuf[poz], 11, "%uВ", sParam.glb.getUoutNom());
 		} else if (name == punkt11) {
-			snprintf(&vLCDbuf[poz], 11, "%dкГц", sParam.glb.getFreq());
+			snprintf(&vLCDbuf[poz], 11, "%uкГц", sParam.glb.getFreq());
 		} else if (name == punkt12) {
 			uint8_t val = static_cast<uint8_t>(sParam.glb.getCompatibility());
 			snprintf_P(&vLCDbuf[poz], 11, fcCompatibility[val]);
 		} else if (name == punkt13) {
 			snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.glb.getAcInDec());
 		} else if (name == punkt14) {
-			// TODO РЗСК "Тип детектора"
+			snprintf(&vLCDbuf[poz], 11, "%u", sParam.glb.getDetector());
 		} else if (name == punkt15) {
 			int16_t val = sParam.glb.getCorU();
 			int8_t f = val % 10;
@@ -3289,6 +3292,7 @@ void clMenu::lvlSetupParamGlb() {
 			uint8_t val = sParam.glb.getTimeSinchr() ? 1 : 0;
 			EnterParam.setValue(val);
 			EnterParam.list = fcOnOff[0];
+			EnterParam.setDopValue(1);
 			EnterParam.com = GB_COM_SET_TIME_SINCHR;
 		} else if (name == punkt2) {
 			EnterParam.setEnable();
@@ -3380,7 +3384,13 @@ void clMenu::lvlSetupParamGlb() {
 			EnterParam.setDopValue(1);
 			EnterParam.com = GB_COM_SET_TIME_RERUN;
 		} else if (name == punkt14) {
-			// TODO РЗСК "Тип детектора"
+			EnterParam.setEnable();
+			EnterParam.setValueRange(GLB_DETECTOR_MIN, GLB_DETECTOR_MAX);
+			EnterParam.setValue(sParam.glb.getDetector());
+			EnterParam.setDisc(GLB_DETECTOR_DISC);
+			EnterParam.setFract(GLB_DETECTOR_FRACT);
+			EnterParam.setDopValue(2);
+			EnterParam.com = GB_COM_SET_TIME_SINCHR;
 		} else if (name == punkt17) {
 			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
 			EnterParam.setValueRange(GB_PVZUE_PROTOCOL_MIN,

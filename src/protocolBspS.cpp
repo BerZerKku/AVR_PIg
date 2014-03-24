@@ -102,7 +102,6 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 	} else if (mask == GB_COM_MASK_GROUP_READ_PARAM) {
 		// команды опроса параметров
 		// по умолчанию отправляется только код команды
-
 		if (com == GB_COM_GET_MEAS)
 			num = addCom(com, 0);
 		else
@@ -435,6 +434,9 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 		stat = ((act & GB_ACT_ERROR) != GB_ACT_ERROR);
 	} else if (com == GB_COM_GET_TIME_SINCHR) {
 		stat = sParam_->glb.setTimeSinchr(buf[B1]);
+		if (sParam_->typeDevice == AVANT_RZSK) {
+			stat |= sParam_->glb.setDetector(buf[B2]);
+		}
 	} else if (com == GB_COM_GET_DEVICE_NUM) {
 		stat = sParam_->glb.setDeviceNum(buf[B1]);
 	} else if (com == GB_COM_GET_OUT_CHECK) {
@@ -624,6 +626,12 @@ uint8_t clProtocolBspS::sendModifGlbCommand(eGB_COM com) {
 		num = addCom(com, b1, b2);
 	} else if (com == GB_COM_SET_COR_U_I) {
 		num = addCom(com, 3, sParam_->txComBuf.getBuferAddress());
+	} else if (com == GB_COM_SET_TIME_SINCHR) {
+		if (sParam_->typeDevice == AVANT_RZSK) {
+			num = addCom(com, b1, b2);
+		} else {
+			num = addCom(com, b1);
+		}
 	} else {
 		// по умолчанию передается один байт
 		num = addCom(com, b1);

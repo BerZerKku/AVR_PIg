@@ -207,6 +207,14 @@
 #define GLB_FREQ_MIN_F		(GLB_FREQ_MIN / GLB_FREQ_FRACT)
 #define GLB_FREQ_MAX_F		(GLB_FREQ_MAX / GLB_FREQ_FRACT)
 #define GLB_FREQ_DISC_F 	(GLB_FREQ_DISC / GLB_FREQ_FRACT)
+// тип детектора
+#define GLB_DETECTOR_MIN	1
+#define GLB_DETECTOR_MAX	3
+#define GLB_DETECTOR_DISC	1
+#define GLB_DETECTOR_FRACT	1
+#define GLB_DETECTOR_MIN_F	(GLB_DETECTOR_MIN / GLB_DETECTOR_FRACT)
+#define GLB_DETECTOR_MAX_F	(GLB_DETECTOR_MAX / GLB_DETECTOR_FRACT)
+#define GLB_DETECTOR_DISC_F (GLB_DETECTOR_DISC / GLB_DETECTOR_FRACT)
 // снижение ответа АК (ПВЗЛ)
 #define GLB_AC_IN_DEC_MIN	0
 #define GLB_AC_IN_DEC_MAX	20
@@ -1231,6 +1239,7 @@ public:
 		pvzueNoiseTH_ = GLB_PVZUE_N_TH_MIN_F;
 		pvzueNoiseLvl_ = GLB_PVZUE_N_LVL_MIN_F;
 		pvzueTypeAC_ = GB_PVZUE_TYPE_AC_MAX;
+		detector_ = GLB_DETECTOR_MIN_F;
 		corI_ = GLB_COR_I_DEC_MIN_F;
 		corU_ = GLB_COR_U_DEC_MIN_F;
 
@@ -1663,6 +1672,31 @@ public:
 		return pvzueTypeAC_;
 	}
 
+	/** Установка параметра Тип детектора.
+	 * 	@param val Тип детектора.
+	 * 	@retval True - в случае успешной остановки.
+	 * 	@retval False - если установка нового значения не удалась.
+	 */
+	bool setDetector(uint8_t val) {
+		bool stat = false;
+		val = (val / GLB_DETECTOR_DISC_F) * GLB_DETECTOR_DISC_F;
+
+		if (val >= GLB_DETECTOR_MIN_F) {
+			if (val <= GLB_DETECTOR_MAX_F) {
+				detector_ = val;
+				stat = true;
+			}
+		}
+		return stat;
+	}
+
+	/** Возвращает значение Типа детектора.
+	 * 	@return Тип детектора.
+	 */
+	uint8_t getDetector() const {
+		return detector_;
+	}
+
 	// коррекция тока
 	bool setCorI(int16_t val) {
 		bool stat = false;
@@ -1768,6 +1802,9 @@ private:
 
 	// Тип автоконтроля (ПВЗУ-Е)
 	eGB_PVZUE_TYPE_AC pvzueTypeAC_;
+
+	// Тип детектора
+	uint8_t detector_;
 
 	// Коррекция тока
 	int16_t corI_;
