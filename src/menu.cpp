@@ -2947,6 +2947,7 @@ void clMenu::lvlSetupParamGlb() {
 			Punkts_.add(punkt15, GB_COM_GET_COR_U_I);
 			Punkts_.add(punkt16, GB_COM_GET_COR_U_I);
 		} else if (type == AVANT_RZSK) {
+			Punkts_.add(punkt1, GB_COM_GET_TIME_SINCHR);
 			Punkts_.add(punkt3, GB_COM_GET_OUT_CHECK);
 			Punkts_.add(punkt4rzsk, GB_COM_GET_CF_THRESHOLD);
 			Punkts_.add(punkt5, GB_COM_GET_TIME_RERUN);
@@ -3078,7 +3079,6 @@ void clMenu::lvlSetupParamGlb() {
 
 		if (stat == MENU_ENTER_PARAM_READY) {
 			// новое значение введено, надо передать в БСП
-
 			if (name == punkt1) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
 				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);

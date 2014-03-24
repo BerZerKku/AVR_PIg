@@ -128,9 +128,8 @@ static bool uartRead() {
 	return stat;
 }
 
-/**	Передача данных по UART
- * 	@param Нет
- * 	@return True - всегда
+/**	Передача данных по UART.
+ * 	@retval True - всегда.
  */
 static bool uartWrite() {
 	// Перед передачей проверим статус протокола на залипание.
