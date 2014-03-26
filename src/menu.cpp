@@ -221,8 +221,7 @@ bool clMenu::setDeviceK400() {
 	// отключение ЗАЩИТЫ
 	sParam.def.status.setEnable(false);
 
-	// включение ПРИЕМНИКА
-	sParam.prm.status.setEnable(true);
+	// ПРИЕМНИК
 	// заполнение массива неисправностей приемника
 	sParam.prm.status.faultText[0] = fcPrmFault0001rzsk;
 	sParam.prm.status.faultText[1] = fcPrmFault0002rzsk;
@@ -237,9 +236,8 @@ bool clMenu::setDeviceK400() {
 	sParam.prm.status.warningText[0] = fcPrmWarning01rzsk;
 	// 1-15 нет
 
-	// включение ПЕРЕДАТЧИКА
+	// ПЕРЕДАТЧИК
 	// заполнение массива неисправностей передатчика
-	sParam.prd.status.setEnable(true);
 	sParam.prd.status.faultText[0] = fcPrdFault0001rzsk;
 	sParam.prd.status.faultText[1] = fcPrdFault0002rzsk;
 	// 2-7 нет
@@ -250,16 +248,6 @@ bool clMenu::setDeviceK400() {
 	// 12-15 нет
 	// заполнение массива предупреждений передатчика
 	// 0-15 нет
-
-	sParam.test.clear();
-	sParam.test.addSignalToList(GB_SIGNAL_CF1);
-	sParam.test.addSignalToList(GB_SIGNAL_CF2);
-	uint8_t num_com = sParam.prd.getNumCom();
-	for (uint_fast8_t i = 0; i < num_com; i++) {
-		eGB_TEST_SIGNAL signal =
-				(eGB_TEST_SIGNAL) ((uint8_t) GB_SIGNAL_COM1 + i);
-		sParam.test.addSignalToList(signal);
-	}
 
 	return true;
 }
@@ -301,8 +289,7 @@ bool clMenu::setDeviceRZSK() {
 	sParam.glb.status.warningText[10] = fcGlbWarning01;
 	// 11-15 нет
 
-	// включение ЗАЩИТЫ
-	sParam.def.status.setEnable(true);
+	// ЗАЩИТА
 	// заполнение массива неисправностей защиты
 	sParam.def.status.faultText[0] = fcDefFault0001;
 	sParam.def.status.faultText[1] = fcDefFault0002;
@@ -321,8 +308,7 @@ bool clMenu::setDeviceRZSK() {
 	sParam.def.status.warningText[1] = fcDefWarning02;
 	// 2-15 нет
 
-	// включение ПРИЕМНИКА
-	sParam.prm.status.setEnable(true);
+	// ПРИЕМНИК
 	// заполнение массива неисправностей защиты
 	sParam.prm.status.faultText[0] = fcPrmFault0001rzsk;
 	sParam.prm.status.faultText[1] = fcPrmFault0002rzsk;
@@ -337,8 +323,7 @@ bool clMenu::setDeviceRZSK() {
 	sParam.prm.status.warningText[0] = fcPrmWarning01rzsk;
 	// 1-15 нет
 
-	// включение ПЕРЕДАТЧИКА
-	sParam.prd.status.setEnable(true);
+	// ПЕРЕДАТЧИК
 	// заполнение массива неисправностей передатчика
 	sParam.prd.status.faultText[0] = fcPrdFault0001rzsk;
 	sParam.prd.status.faultText[1] = fcPrdFault0002rzsk;
@@ -398,8 +383,7 @@ bool clMenu::setDeviceR400M() {
 	sParam.glb.status.warningText[0] = fcGlbWarning01;
 	// 1-15 - нет
 
-	// включение ЗАЩИТЫ
-	sParam.def.status.setEnable(true);
+	// ЗАЩИТА
 	// заполнение массива неисправностей защиты
 	sParam.def.status.faultText[0] = fcDefFault0001;
 	sParam.def.status.faultText[1] = fcDefFault0002;
@@ -435,9 +419,9 @@ bool clMenu::setDeviceR400M() {
 /**	Выполнение настроек для ОПТИКИ.
  * 	@retval True - всегда.
  */
-bool clMenu::setDeviceOPTIC() {
+bool clMenu::setDeviceOPTO() {
 
-	sParam.typeDevice = AVANT_OPTIC;
+	sParam.typeDevice = AVANT_OPTO;
 
 	// TODO ОПТИКА
 	// дополнить список измеряемых параметров, если есть ?!
@@ -457,8 +441,7 @@ bool clMenu::setDeviceOPTIC() {
 	sParam.glb.status.warningText[0] = fcGlbWarning01;
 	// 1-15 нет
 
-	// включение ЗАЩИТЫ
-	sParam.def.status.setEnable(true);
+	// ЗАЩИТА
 	// заполнение массива неисправностей защиты
 	sParam.def.status.faultText[0] = fcDefFault0001;
 	sParam.def.status.faultText[1] = fcDefFault0002;
@@ -478,9 +461,8 @@ bool clMenu::setDeviceOPTIC() {
 	sParam.def.status.warningText[1] = fcDefWarning02;
 	// 2-15 нет
 
-	// включение ПРИЕМНИКА
-	sParam.prm.status.setEnable(true);
-	// заполнение массива неисправностей защиты
+	// ПРИЕМНИК
+	// заполнение массива неисправностей приемника
 	sParam.prm.status.faultText[0] = fcPrmFault0001rzsk;
 	sParam.prm.status.faultText[1] = fcPrmFault0002rzsk;
 	sParam.prm.status.faultText[2] = fcPrmFault0004rzsk;
@@ -494,8 +476,7 @@ bool clMenu::setDeviceOPTIC() {
 	sParam.prm.status.warningText[0] = fcPrmWarning01rzsko;
 	// 1-15 нет
 
-	// включение ПЕРЕДАТЧИКА
-	sParam.prd.status.setEnable(true);
+	// ПЕРЕДАТЧИК
 	// заполнение массива неисправностей передатчика
 	sParam.prd.status.faultText[0] = fcPrdFault0001rzsk;
 	sParam.prd.status.faultText[1] = fcPrdFault0002rzsk;
@@ -557,6 +538,8 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 					device = AVANT_K400;
 				}
 			}
+		} else if (sParam.glb.getTypeLine() == GB_TYPE_LINE_OPTO) {
+			device = AVANT_OPTO;
 		}
 
 		// если текущее устройство совпадает с новым, то ничего не делаем
@@ -601,8 +584,8 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 			status = setDeviceRZSK();
 		} else if (device == AVANT_R400M) {
 			status = setDeviceR400M();
-		} else if (device == AVANT_OPTIC) {
-			status = setDeviceOPTIC();
+		} else if (device == AVANT_OPTO) {
+			status = setDeviceOPTO();
 		}
 	}
 
@@ -673,200 +656,6 @@ void clMenu::clearLine(uint8_t line) {
 		for (uint_fast8_t i = 0; i < 20; i++)
 			vLCDbuf[line++] = ' ';
 	}
-}
-
-/**	Вывод в указанном месте отображаемого параметра.
- * 	В одной строке выводятся два параметра.
- * 	@param poz Текущая позиция
- * 	@arg 0..eMENU_MEAS_PARAM, 0 первая строка слева, 5 - третья справа
- * 	@param par Отображаемый параметр
- * 	@return Нет
- */
-void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
-	// смещение в буфере
-	if (poz < MAX_NUM_MEAS_PARAM) {
-		// 10 - кол-во символов отведенное на экране под 1 параметр
-		poz = (poz * 10) + 1;
-
-		switch (par) {
-		case MENU_MEAS_PARAM_DATE:
-			snprintf_P(&vLCDbuf[poz], 11, fcDate, sParam.dataTime.getDay(),
-					sParam.dataTime.getMonth(), sParam.dataTime.getYear());
-			break;
-		case MENU_MEAS_PARAM_TIME:
-			snprintf_P(&vLCDbuf[poz], 11, fcTime, sParam.dataTime.getHour(),
-					sParam.dataTime.getMinute(), sParam.dataTime.getSecond());
-			break;
-		case MENU_MEAS_PARAM_UZ:
-			snprintf_P(&vLCDbuf[poz], 11, fcUz,
-					sParam.measParam.getVoltageDef());
-			break;
-
-			// в 3-х концевой может быть Uz1 == Uz, Uz2
-		case MENU_MEAS_PARAM_UZ1:
-			snprintf_P(&vLCDbuf[poz], 11, fcUz1,
-					sParam.measParam.getVoltageDef());
-			break;
-		case MENU_MEAS_PARAM_UZ2:
-			snprintf_P(&vLCDbuf[poz], 11, fcUz2,
-					sParam.measParam.getVoltageDef2());
-			break;
-
-		case MENU_MEAS_PARAM_UC:
-			snprintf_P(&vLCDbuf[poz], 11, fcUcf,
-					sParam.measParam.getVoltageCf());
-			break;
-
-			// в 3-х концевой может быть Uk1 == Uk, Uk2
-		case MENU_MEAS_PARAM_UC1:
-			snprintf_P(&vLCDbuf[poz], 11, fcUcf1,
-					sParam.measParam.getVoltageCf());
-			break;
-		case MENU_MEAS_PARAM_UC2:
-			snprintf_P(&vLCDbuf[poz], 11, fcUcf2,
-					sParam.measParam.getVoltageCf2());
-			break;
-		case MENU_MEAS_PARAM_UOUT:
-			snprintf_P(&vLCDbuf[poz], 11, fcUout,
-					sParam.measParam.getVoltageOutInt(),
-					sParam.measParam.getVoltageOutFract());
-			break;
-
-		case MENU_MEAS_PARAM_IOUT:
-			snprintf_P(&vLCDbuf[poz], 11, fcIout,
-					sParam.measParam.getCurrentOut());
-			break;
-		case MENU_MEAS_PARAM_ROUT:
-			snprintf_P(&vLCDbuf[poz], 11, fcRout,
-					sParam.measParam.getResistOut());
-			break;
-
-		case MENU_MEAS_PARAM_UN:
-			snprintf_P(&vLCDbuf[poz], 11, fcUn,
-					sParam.measParam.getVoltageNoise());
-			break;
-
-			// TODO ВСЕ для Uш1 и Uш2 нужны свои параметры
-		case MENU_MEAS_PARAM_UN1:
-			snprintf_P(&vLCDbuf[poz], 11, fcUn1,
-					sParam.measParam.getVoltageNoise());
-			break;
-		case MENU_MEAS_PARAM_UN2:
-			snprintf_P(&vLCDbuf[poz], 11, fcUn2,
-					sParam.measParam.getVoltageNoise());
-			break;
-		default:
-
-		case MENU_MEAS_PARAM_SD:
-			snprintf_P(&vLCDbuf[poz], 11, fcSd,
-					sParam.measParam.getPulseWidth());
-			// ничего не делаем
-			break;
-		}
-	}
-}
-
-/**	Вывод на экран текущего состояния устройства.
- * 	Если есть общие неисправности - выводится поочередно расшифровка самой
- * 	приоритетной и код (даже если одна).
- * 	Далее проверяется наличие неисправности устройства и если есть, выводится
- * 	по тому же алгоритму.
- * 	Если есть общее предупреждение - выводится почередно состояние и расшифровка
- * 	данного предупреждения. Если предупреждений несколько, выводится только код.
- * 	Далее проверяется наличие предупреждения для устройства и если есть,
- * 	выодится по тому же алгоритму.
- * 	Если небыло никаких неисправностей/предупреждений, то выводится текущее
- * 	состояние и режим работы устройства.
- * 	@param poz Начальная позиция в буфере данных ЖКИ
- * 	@param device Данные для текущего устройства
- *	@return Нет
- */
-void clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device) {
-	PGM_P *text;
-	uint_fast8_t x = 0;
-	uint_fast16_t y = 0;
-
-	snprintf_P(&vLCDbuf[poz], 4, device->name);
-	poz += 3;
-	snprintf(&vLCDbuf[poz], 2, ":");
-	poz += 1;
-
-	if (sParam.glb.status.getNumFaults() != 0)
-	{
-		if (blink_)
-		{
-			text = sParam.glb.status.faultText;
-			x = sParam.glb.status.getFault();
-			snprintf_P(&vLCDbuf[poz], 17, text[x]);
-		}
-		else
-		{
-			y = sParam.glb.status.getFaults();
-			snprintf_P(&vLCDbuf[poz], 17, fcFaults, 'g', y);
-		}
-	}
-	else if (device->getNumFaults() != 0)
-	{
-		if (blink_)
-		{
-			text = device->faultText;
-			x = device->getFault();
-			snprintf_P(&vLCDbuf[poz], 17, text[x]);
-		}
-		else
-		{
-			y = device->getFaults();
-			snprintf_P(&vLCDbuf[poz], 17, fcFaults, 'l', y);
-		}
-	}
-	else if ( (sParam.glb.status.getNumWarnings() != 0) && (blink_) )
-	{
-		if (sParam.glb.status.getNumWarnings() == 1)
-		{
-			text = sParam.glb.status.warningText;
-			x = sParam.glb.status.getWarning();
-			snprintf_P(&vLCDbuf[poz], 17, text[x]);
-		}
-		else
-		{
-			y = sParam.glb.status.getWarnings();
-			snprintf_P(&vLCDbuf[poz], 17, fcWarnings, 'g', y);
-		}
-	}
-	else if ( (device->getNumWarnings()!= 0) && (blink_) )
-	{
-		if (device->getNumWarnings() == 1)
-		{
-			text = device->warningText;
-			x = device->getWarning();
-			snprintf_P(&vLCDbuf[poz], 17, text[x]);
-		}
-		else
-		{
-			y = device->getWarnings();
-			snprintf_P(&vLCDbuf[poz], 17, fcWarnings, 'g', y);
-		}
-	}
-	else
-	{
-		text = device->stateText;
-		poz += 1 + snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
-		snprintf_P(&vLCDbuf[poz], 9,
-				text[device->getState()], device->getDopByte());
-	}
-}
-
-/**	Вывод в пунтке меню "Режим" текущего режима устройств
- * 	@param poz Начальная позиция в буфере данных ЖКИ
- * 	@param device Данные для текущего устройства
- *	@return Нет
- */
-void clMenu::printDevicesRegime(uint8_t poz, TDeviceStatus *device) {
-	snprintf_P(&vLCDbuf[poz], 4, device->name);
-	poz += 3;
-	snprintf(&vLCDbuf[poz], 2, ":");
-	poz += 1;
-	poz += 1 + snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
 }
 
 /** Уровень "Ошибочный тип аппарата"
@@ -996,46 +785,62 @@ void clMenu::lvlStart() {
 		break;
 
 	case KEY_PUSK_UD:
-		sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
-		sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		break;
-
-	case KEY_AC_PUSK_UD:
-		sParam.txComBuf.setInt8(GB_CONTROL_PUSK_AC_UD);
-		sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		break;
-
-	case KEY_PUSK_NALAD:
-		if (sParam.def.status.getState() == 7) {
-			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_OFF);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else {
-			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_ON);
+		if (sParam.def.status.isEnable()) {
+			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 		}
 		break;
 
+	case KEY_AC_PUSK_UD:
+		if (sParam.def.status.isEnable()) {
+			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_AC_UD);
+			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+		}
+		break;
+
+	case KEY_PUSK_NALAD:
+		if (sParam.def.status.isEnable()) {
+			if (sParam.def.status.getState() == 7) {
+				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_OFF);
+				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			} else {
+				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_ON);
+				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			}
+		}
+		break;
+
 	case KEY_AC_RESET:
-		sParam.txComBuf.setInt8(GB_CONTROL_RESET_AC);
-		sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+		if (sParam.def.status.isEnable()) {
+			sParam.txComBuf.setInt8(GB_CONTROL_RESET_AC);
+			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+		}
 		break;
 
 	case KEY_AC_PUSK:
-		sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
-		sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+		if (sParam.def.status.isEnable()) {
+			sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
+			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+		}
 		break;
 
 	case KEY_AC_REGIME:
-		sParam.txComBuf.setInt8(GB_CONTROL_REG_AC);
-		sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+		if (sParam.def.status.isEnable()) {
+			sParam.txComBuf.setInt8(GB_CONTROL_REG_AC);
+			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+		}
 		break;
 
 	case KEY_RESET_IND:
-		sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
+		if (sParam.prd.status.isEnable() || sParam.prm.status.isEnable()) {
+			sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
+		}
 		break;
 
 	case KEY_PUSK:
-		sParam.txComBuf.addFastCom(GB_COM_PRM_ENTER);
+		if (sParam.prm.status.isEnable()) {
+			sParam.txComBuf.addFastCom(GB_COM_PRM_ENTER);
+		}
 		break;
 
 	case KEY_RESET:
@@ -1194,17 +999,18 @@ void clMenu::lvlJournal() {
 		sParam.txComBuf.clear();
 
 		// активация необходимых пунктов меню и соответствующих им команд
-		// по умолчанию только журнал событий
 		Punkts_.clear();
 		Punkts_.add(punkt1);
-		if (type == AVANT_R400M) {
+
+		if (sParam.def.status.isEnable()) {
 			Punkts_.add(punkt2);
-		} else if (type == AVANT_RZSK) {
-			Punkts_.add(punkt2);
+		}
+
+		if (sParam.prm.status.isEnable()) {
 			Punkts_.add(punkt3);
-			Punkts_.add(punkt4);
-		} else if (type == AVANT_K400) {
-			Punkts_.add(punkt3);
+		}
+
+		if (sParam.prd.status.isEnable()) {
 			Punkts_.add(punkt4);
 		}
 	}
@@ -1273,6 +1079,8 @@ void clMenu::lvlJournalEvent() {
 			t = GLB_JRN_EVENT_R400_MSK_MAX;
 		} else if (device == AVANT_RZSK) {
 			t = GLB_JRN_EVENT_RZSK_MAX;
+		} else if (device == AVANT_OPTO) {
+			t = GLB_JRN_EVENT_OPTO_MAX;
 		}
 		sParam.jrnEntry.setMaxNumJrnEntries(t);
 
@@ -1325,10 +1133,17 @@ void clMenu::lvlJournalEvent() {
 		uint8_t event = sParam.jrnEntry.getEventType();
 
 		// TODO РЗСК Список событий для журнала Событий.
-		if (sParam.typeDevice == AVANT_R400M) {
+		eGB_TYPE_DEVICE device = sParam.typeDevice;
+		if (device == AVANT_R400M) {
 			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventR400_MSK[event], event);
-		} else
+		} else if (device == AVANT_K400) {
 			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event], event);
+		} else if (device == AVANT_RZSK) {
+			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event], event);
+		} else if (device == AVANT_OPTO) {
+			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventOPTO[event], event);
+		}
+
 	}
 
 	switch (key_) {
@@ -1380,6 +1195,8 @@ void clMenu::lvlJournalDef() {
 			t = GLB_JRN_DEF_R400_MSK_MAX;
 		} else if (device == AVANT_RZSK) {
 			t = GLB_JRN_DEF_RZSK_MAX;
+		} else if (device == AVANT_OPTO) {
+			t = GLB_JRN_DEF_OPTO_MAX;
 		}
 		sParam.jrnEntry.setMaxNumJrnEntries(t);
 
@@ -1486,6 +1303,8 @@ void clMenu::lvlJournalPrm() {
 			t = GLB_JRN_PRM_K400_MAX;
 		} else if (device == AVANT_RZSK) {
 			t = GLB_JRN_PRM_RZSK_MAX;
+		} else if (device == AVANT_OPTO) {
+			t = GLB_JRN_PRM_OPTO_MAX;
 		}
 		sParam.jrnEntry.setMaxNumJrnEntries(t);
 
@@ -1585,6 +1404,8 @@ void clMenu::lvlJournalPrd() {
 			t = GLB_JRN_PRD_K400_MAX;
 		} else if (device == AVANT_RZSK) {
 			t = GLB_JRN_PRD_RZSK_MAX;
+		} else if (device == AVANT_OPTO) {
+			t = GLB_JRN_PRD_OPTO_MAX;
 		}
 		sParam.jrnEntry.setMaxNumJrnEntries(t);
 
@@ -1785,13 +1606,15 @@ void clMenu::lvlControl() {
 			}
 			// Вызов есть во всех совместимостях
 			Punkts_.add(punkt05);
-		} else if (sParam.typeDevice == AVANT_RZSK) {
+		} else if (device == AVANT_RZSK) {
 			Punkts_.add(punkt07);
 			Punkts_.add(punkt03);
 			Punkts_.add(punkt04);
 			Punkts_.add(punkt02);
 			Punkts_.add(punkt05);
-		} else if (sParam.typeDevice == AVANT_K400) {
+		} else if (device == AVANT_K400) {
+			Punkts_.add(punkt03);
+		} else if (device == AVANT_OPTO) {
 			Punkts_.add(punkt03);
 		}
 
@@ -2141,20 +1964,18 @@ void clMenu::lvlSetupParam() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
+		// настройка меню, в зависимости от текущего устройства
 		Punkts_.clear();
-		if (sParam.typeDevice == AVANT_R400M) {
+		if (sParam.def.status.isEnable()) {
 			Punkts_.add(punkt1);
-			Punkts_.add(punkt4);
-		} else if (sParam.typeDevice == AVANT_RZSK) {
-			Punkts_.add(punkt1);
-			Punkts_.add(punkt2);
-			Punkts_.add(punkt3);
-			Punkts_.add(punkt4);
-		} else if (sParam.typeDevice == AVANT_K400) {
-			Punkts_.add(punkt2);
-			Punkts_.add(punkt3);
-			Punkts_.add(punkt4);
 		}
+		if (sParam.prm.status.isEnable()) {
+			Punkts_.add(punkt2);
+		}
+		if (sParam.prd.status.isEnable()) {
+			Punkts_.add(punkt3);
+		}
+		Punkts_.add(punkt4);
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
@@ -2209,7 +2030,7 @@ void clMenu::lvlSetupParamDef() {
 	static char punkt3[] PROGMEM = "Доп. время без ман.";
 	static char punkt4[] PROGMEM = "Перекрытие импульсов";
 	static char punkt5[] PROGMEM = "Компенсация задержки";
-	static char punkt6[] PROGMEM = "Порог предупр по РЗ";
+	static char punkt6[] PROGMEM = "Порог предупр. по РЗ";
 	static char punkt7[] PROGMEM = "Загрубление чувствит";
 	static char punkt8[] PROGMEM = "Тип приемника";
 	static char punkt9[] PROGMEM = "Снижение уровня АК";
@@ -2531,14 +2352,18 @@ void clMenu::lvlSetupParamPrm() {
 		vLCDdrawBoard(lineParam_);
 
 		// заполнение массивов параметров и команд
-		eGB_TYPE_DEVICE type = sParam.typeDevice;
+		eGB_TYPE_DEVICE device = sParam.typeDevice;
 		sParam.txComBuf.clear();
 		Punkts_.clear();
-		if (type == AVANT_K400) {
+		if (device == AVANT_K400) {
 			Punkts_.add(punkt1, GB_COM_PRM_GET_TIME_ON);
 			Punkts_.add(punkt2, GB_COM_PRM_GET_BLOCK_COM);
 			Punkts_.add(punkt3, GB_COM_PRM_GET_TIME_OFF);
-		} else if (type == AVANT_RZSK) {
+		} else if (device == AVANT_RZSK) {
+			Punkts_.add(punkt1, GB_COM_PRM_GET_TIME_ON);
+			Punkts_.add(punkt2, GB_COM_PRM_GET_BLOCK_COM);
+			Punkts_.add(punkt3, GB_COM_PRM_GET_TIME_OFF);
+		} else if (device == AVANT_OPTO) {
 			Punkts_.add(punkt1, GB_COM_PRM_GET_TIME_ON);
 			Punkts_.add(punkt2, GB_COM_PRM_GET_BLOCK_COM);
 			Punkts_.add(punkt3, GB_COM_PRM_GET_TIME_OFF);
@@ -2684,7 +2509,8 @@ void clMenu::lvlSetupParamPrm() {
 void clMenu::lvlSetupParamPrd() {
 	static char title[] PROGMEM = "Параметры\\Передатчик";
 	static char punkt1[] PROGMEM = "Задержка срабат. ПРД";
-	static char punkt2[] PROGMEM = "Длительность команды";
+	static char punkt2[] PROGMEM = "Длительность команды";	// ВЧ
+	static char punkt2o[] PROGMEM= "Длительность команды";	// Оптика
 	static char punkt3[] PROGMEM = "Тестовая команда";
 	static char punkt4[] PROGMEM = "Следящие команды";
 	static char punkt5[] PROGMEM = "Блокиров. команды";
@@ -2700,18 +2526,23 @@ void clMenu::lvlSetupParamPrd() {
 		vLCDdrawBoard(lineParam_);
 
 		// заполнение массивов параметров и команд
-		eGB_TYPE_DEVICE type = sParam.typeDevice;
+		eGB_TYPE_DEVICE device = sParam.typeDevice;
 		sParam.txComBuf.clear();
 		Punkts_.clear();
-		if (type == AVANT_K400) {
+		if (device == AVANT_K400) {
 			Punkts_.add(punkt1, GB_COM_PRD_GET_TIME_ON);
 			Punkts_.add(punkt2, GB_COM_PRD_GET_DURATION);
 			Punkts_.add(punkt3, GB_COM_PRD_GET_TEST_COM);
 			Punkts_.add(punkt4, GB_COM_PRD_GET_LONG_COM);
 			Punkts_.add(punkt5, GB_COM_PRD_GET_BLOCK_COM);
-		} else if (type == AVANT_RZSK) {
+		} else if (device == AVANT_RZSK) {
 			Punkts_.add(punkt1, GB_COM_PRD_GET_TIME_ON);
 			Punkts_.add(punkt2, GB_COM_PRD_GET_DURATION);
+			Punkts_.add(punkt4, GB_COM_PRD_GET_LONG_COM);
+			Punkts_.add(punkt5, GB_COM_PRD_GET_BLOCK_COM);
+		} else if (device == AVANT_OPTO) {
+			Punkts_.add(punkt1, GB_COM_PRD_GET_TIME_ON);
+			Punkts_.add(punkt2o, GB_COM_PRD_GET_DURATION);
 			Punkts_.add(punkt4, GB_COM_PRD_GET_LONG_COM);
 			Punkts_.add(punkt5, GB_COM_PRD_GET_BLOCK_COM);
 		}
@@ -2743,8 +2574,11 @@ void clMenu::lvlSetupParamPrd() {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, PRD_TIME_ON_MIN,
 				PRD_TIME_ON_MAX, "мс");
 	} else if (name == punkt2) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, PRD_DURATION_MIN,
-				PRD_DURATION_MAX, "мс");
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, PRD_DURAT_L_MIN,
+				PRD_DURAT_L_MAX, "мс");
+	} else if (name == punkt2o) {
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, PRD_DURAT_O_MIN,
+				PRD_DURAT_O_MAX, "мс");
 	} else if (name == punkt3) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
 	} else if (name == punkt4) {
@@ -2762,7 +2596,7 @@ void clMenu::lvlSetupParamPrd() {
 
 			if (name == punkt1) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-			} else if (name == punkt2) {
+			} else if ((name == punkt2) || (name == punkt2o)) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if (name == punkt3) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
@@ -2790,14 +2624,15 @@ void clMenu::lvlSetupParamPrd() {
 			EnterParam.setDisable();
 		}
 	} else {
-
 		// вывод надписи "Значение:" и переход к выводу самого значения
 		poz = 100;
 		poz += snprintf_P(&vLCDbuf[poz], 11, fcValue);
 		if (name == punkt1) {
 			snprintf(&vLCDbuf[poz], 11, "%dмс", sParam.prd.getTimeOn());
 		} else if (name == punkt2) {
-			snprintf(&vLCDbuf[poz], 11, "%dмс", sParam.prd.getDuration());
+			snprintf(&vLCDbuf[poz], 11, "%dмс", sParam.prd.getDurationL());
+		} else if (name == punkt2o) {
+			snprintf(&vLCDbuf[poz], 11, "%dмс", sParam.prd.getDurationO());
 		} else if (name == punkt3) {
 			uint8_t val = sParam.prd.getTestCom() ? 1 : 0;
 			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
@@ -2848,10 +2683,17 @@ void clMenu::lvlSetupParamPrd() {
 				EnterParam.com = GB_COM_PRD_SET_TIME_ON;
 			} else if (name == punkt2) {
 				EnterParam.setEnable();
-				EnterParam.setValueRange(PRD_DURATION_MIN, PRD_DURATION_MAX);
-				EnterParam.setValue(sParam.prd.getDuration());
-				EnterParam.setDisc(PRD_DURATION_DISC);
-				EnterParam.setFract(PRD_DURATION_FRACT);
+				EnterParam.setValueRange(PRD_DURAT_L_MIN, PRD_DURAT_L_MAX);
+				EnterParam.setValue(sParam.prd.getDurationL());
+				EnterParam.setDisc(PRD_DURAT_L_DISC);
+				EnterParam.setFract(PRD_DURAT_L_FRACT);
+				EnterParam.com = GB_COM_PRD_SET_DURATION;
+			} else if (name == punkt2o) {
+				EnterParam.setEnable();
+				EnterParam.setValueRange(PRD_DURAT_O_MIN, PRD_DURAT_O_MAX);
+				EnterParam.setValue(sParam.prd.getDurationO());
+				EnterParam.setDisc(PRD_DURAT_O_DISC);
+				EnterParam.setFract(PRD_DURAT_O_FRACT);
 				EnterParam.com = GB_COM_PRD_SET_DURATION;
 			} else if (name == punkt3) {
 				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
@@ -2891,31 +2733,32 @@ void clMenu::lvlSetupParamPrd() {
  */
 void clMenu::lvlSetupParamGlb() {
 	static char title[] PROGMEM = "Параметры\\Общие";
-	static char punkt1[] PROGMEM = "Синхронизация часов";
-	static char punkt2[] PROGMEM = "Номер аппарата";
-	static char punkt3[] PROGMEM = "Контроль вых.сигнала";
-	static char punkt4[] PROGMEM = "Порог предупреждения";
-	static char punkt4rzsk[] PROGMEM = "Порог предупр. по КЧ";
-	static char punkt5[] PROGMEM = "Время перезапуска";
-	static char punkt6[] PROGMEM = "Удерж. реле ком. ПРД";
-	static char punkt7[] PROGMEM = "Удерж. реле ком. ПРМ";
-	static char punkt8[] PROGMEM = "Загрубл. чувств. ПРМ";
-	static char punkt9[] PROGMEM = "Сетевой адрес";
-	static char punkt10[] PROGMEM = "Uвых номинальное";
-	static char punkt11[] PROGMEM = "Частота";
-	static char punkt12[] PROGMEM = "Совместимость";		// защита
-	static char punkt13[] PROGMEM = "Снижение ответа АК";
-	static char punkt14[] PROGMEM = "Тип детектора";
-	static char punkt15[] PROGMEM = "Коррекция напряжения";
-	static char punkt16[] PROGMEM = "Коррекция тока";
-	static char punkt17[] PROGMEM = "Протокол обмена";
-	static char punkt18[] PROGMEM = "Признак четности";
-	static char punkt19[] PROGMEM = "Допустимые провалы";
-	static char punkt20[] PROGMEM = "Порог по помехе";
-	static char punkt21[] PROGMEM = "Допустимая помеха";
-	static char punkt22[] PROGMEM = "Тип автоконтроля";
-	static char punkt23[] PROGMEM = "Резервирование";		// TODO ОПТИКА
-	static char punkt24[] PROGMEM = "Совместимость";		// TODO K400
+	//								   12345678901234567890
+	static char punkt1[] PROGMEM 	= "Синхронизация часов";
+	static char punkt2[] PROGMEM 	= "Номер аппарата";
+	static char punkt3[] PROGMEM 	= "Контроль вых.сигнала";
+	static char punkt4[] PROGMEM 	= "Порог предупреждения";
+	static char punkt4rzsk[] PROGMEM= "Порог предупр. по КЧ";
+	static char punkt5[] PROGMEM 	= "Время перезапуска";
+	static char punkt6[] PROGMEM 	= "Удерж. реле ком. ПРД";
+	static char punkt7[] PROGMEM 	= "Удерж. реле ком. ПРМ";
+	static char punkt8[] PROGMEM 	= "Уменьшение усил.ПРМ";
+	static char punkt9[] PROGMEM 	= "Сетевой адрес";
+	static char punkt10[] PROGMEM 	= "Uвых номинальное";
+	static char punkt11[] PROGMEM 	= "Частота";
+	static char punkt12[] PROGMEM 	= "Совместимость";		// защита
+	static char punkt13[] PROGMEM 	= "Снижение ответа АК";
+	static char punkt14[] PROGMEM 	= "Тип детектора";
+	static char punkt15[] PROGMEM 	= "Коррекция напряжения";
+	static char punkt16[] PROGMEM 	= "Коррекция тока";
+	static char punkt17[] PROGMEM 	= "Протокол обмена";
+	static char punkt18[] PROGMEM 	= "Признак четности";
+	static char punkt19[] PROGMEM 	= "Допустимые провалы";
+	static char punkt20[] PROGMEM 	= "Порог по помехе";
+	static char punkt21[] PROGMEM 	= "Допустимая помеха";
+	static char punkt22[] PROGMEM 	= "Тип автоконтроля";
+	static char punkt23[] PROGMEM 	= "Резервирование";
+	static char punkt24[] PROGMEM 	= "Совместимость";		// TODO K400
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -2935,17 +2778,27 @@ void clMenu::lvlSetupParamGlb() {
 		if (type == AVANT_K400) {
 			Punkts_.add(punkt1, GB_COM_GET_TIME_SINCHR);
 			Punkts_.add(punkt2, GB_COM_GET_DEVICE_NUM);
-			Punkts_.add(punkt3, GB_COM_GET_OUT_CHECK);
-			Punkts_.add(punkt4, GB_COM_GET_CF_THRESHOLD);
-			Punkts_.add(punkt5, GB_COM_GET_TIME_RERUN);
-			Punkts_.add(punkt6, GB_COM_GET_COM_PRD_KEEP);
-			Punkts_.add(punkt7, GB_COM_GET_COM_PRM_KEEP);
-			Punkts_.add(punkt8, GB_COM_GET_CF_THRESHOLD);
+			if (sParam.prd.status.isEnable()) {
+				Punkts_.add(punkt3, GB_COM_GET_OUT_CHECK);
+			}
+			if (sParam.prm.status.isEnable()) {
+				Punkts_.add(punkt4, GB_COM_GET_CF_THRESHOLD);
+				Punkts_.add(punkt5, GB_COM_GET_TIME_RERUN);
+			}
+			if (sParam.prd.status.isEnable()) {
+				Punkts_.add(punkt6, GB_COM_GET_COM_PRD_KEEP);
+			}
+			if (sParam.prm.status.isEnable()) {
+				Punkts_.add(punkt7, GB_COM_GET_COM_PRM_KEEP);
+				Punkts_.add(punkt8, GB_COM_GET_CF_THRESHOLD);
+			}
 			Punkts_.add(punkt9, GB_COM_GET_NET_ADR);
 			Punkts_.add(punkt11, GB_COM_GET_FREQ);
 			Punkts_.add(punkt24, GB_COM_GET_COM_PRD_KEEP);	// TODO К400 команда "Совместимость"
-			Punkts_.add(punkt15, GB_COM_GET_COR_U_I);
-			Punkts_.add(punkt16, GB_COM_GET_COR_U_I);
+			if (sParam.prd.status.isEnable()) {
+				Punkts_.add(punkt15, GB_COM_GET_COR_U_I);
+				Punkts_.add(punkt16, GB_COM_GET_COR_U_I);
+			}
 		} else if (type == AVANT_RZSK) {
 			Punkts_.add(punkt1, GB_COM_GET_TIME_SINCHR);
 			Punkts_.add(punkt3, GB_COM_GET_OUT_CHECK);
@@ -2991,6 +2844,20 @@ void clMenu::lvlSetupParamGlb() {
 				Punkts_.add(punkt21, GB_COM_GET_TIME_RERUN);
 				Punkts_.add(punkt22, GB_COM_GET_TIME_RERUN);
 			}
+		} else if (type == AVANT_OPTO) {
+			Punkts_.add(punkt1, GB_COM_GET_TIME_SINCHR);
+			Punkts_.add(punkt9, GB_COM_GET_NET_ADR);
+			Punkts_.add(punkt2, GB_COM_GET_DEVICE_NUM);
+			if (sParam.prm.status.isEnable()) {
+				Punkts_.add(punkt5, GB_COM_GET_TIME_RERUN);
+			}
+			if (sParam.prd.status.isEnable()) {
+				Punkts_.add(punkt6, GB_COM_GET_COM_PRD_KEEP);
+			}
+			if (sParam.prm.status.isEnable()) {
+				Punkts_.add(punkt7, GB_COM_GET_COM_PRM_KEEP);
+			}
+			Punkts_.add(punkt23, GB_COM_GET_COR_U_I);
 		}
 	}
 
@@ -3068,7 +2935,7 @@ void clMenu::lvlSetupParamGlb() {
 	} else if (name == punkt22) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
 	} else if (name == punkt23) {
-		// TODO ОПТИКА диапазон для параметра "резервирование"
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
 	} else if (name == punkt24) {
 		// TODO K400 диапазон для параметра "Совместимость"
 	}
@@ -3167,7 +3034,8 @@ void clMenu::lvlSetupParamGlb() {
 				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
 			} else if (name == punkt23) {
-				// TODO ОПТИКА команда на передачу для "резервирование"
+				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
 			} else if (name == punkt24) {
 				// TODO K400 команда на передачу для параметра "Совместимость"
 			}
@@ -3238,7 +3106,8 @@ void clMenu::lvlSetupParamGlb() {
 			uint8_t val = sParam.glb.getPvzueTypeAC();
 			snprintf_P(&vLCDbuf[poz], 11, fcPvzueTypeAC[val]);
 		} else if (name == punkt23) {
-			// TODO ОПТИКА вывод параметра "резервирование"
+			uint8_t val = sParam.glb.getBackup() ? 1 : 0;
+			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
 		} else if (name == punkt24) {
 			// TODO K400 вывод параметра "Совместимость"
 		}
@@ -3440,7 +3309,13 @@ void clMenu::lvlSetupParamGlb() {
 			EnterParam.setDopValue(6);
 			EnterParam.com = GB_COM_SET_TIME_RERUN;
 		} else if (name == punkt23) {
-			// TODO ОПТИКА ввод параметра с клавиатуры "резервирование"
+			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
+			EnterParam.setValueRange(0, 1);
+			uint8_t val = sParam.glb.getBackup() ? 1 : 0;
+			EnterParam.setValue(val);
+			EnterParam.list = fcOnOff[0];
+			EnterParam.setDopValue(1);
+			EnterParam.com = GB_COM_SET_COR_U_I;
 		} else if (name == punkt24) {
 			// TODO K400 ввод параметра с клавиатуры "Совместимость"
 		}
@@ -3754,9 +3629,14 @@ void clMenu::lvlSetupInterface() {
  * 	@return Нет
  */
 void clMenu::lvlTest() {
-	static char title[] PROGMEM = "Настройка\\Тесты";
-	static char punkt1[] PROGMEM = "%d. Тест передатчика";
-	static char punkt2[] PROGMEM = "%d. Тест приемника";
+	static char title[] PROGMEM 		= "Настройка\\Тесты";
+	static char punkt1[] PROGMEM 		= "%d. Тест передатчика";
+	static char punkt2[] PROGMEM 		= "%d. Тест приемника";
+	static char message[][21] PROGMEM 	= {
+		   //12345678901234567890
+			"    Перейдите в     ",		//
+			"   режим ВЫВЕДЕН    " 		//
+	};
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3789,12 +3669,6 @@ void clMenu::lvlTest() {
 
 	snprintf_P(&vLCDbuf[0], 20, title);
 	if (isMessage()) {
-		static char message[][21] PROGMEM = {
-		//		 12345678901234567890
-				"    Перейдите в     ",//
-				"   режим ВЫВЕДЕН    " 		//
-				};
-
 		for (uint_fast8_t i = lineParam_ + 1; i <= NUM_TEXT_LINES; i++)
 			clearLine(i);
 
@@ -3884,7 +3758,6 @@ void clMenu::lvlTest1() {
 		eGB_TYPE_DEVICE device = sParam.typeDevice;
 		sParam.test.clear();
 		if (device == AVANT_R400M) {
-
 			sParam.test.addSignalToList(GB_SIGNAL_RZ);
 			if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_AVANT)
 				sParam.test.addSignalToList(GB_SIGNAL_CF);
@@ -3899,6 +3772,23 @@ void clMenu::lvlTest1() {
 			sParam.test.addSignalToList(GB_SIGNAL_COM2_RZ);
 			sParam.test.addSignalToList(GB_SIGNAL_COM3_RZ);
 			sParam.test.addSignalToList(GB_SIGNAL_COM4_RZ);
+		} else if (device == AVANT_K400) {
+			sParam.test.addSignalToList(GB_SIGNAL_CF1);
+			sParam.test.addSignalToList(GB_SIGNAL_CF2);
+			uint8_t num_com = sParam.prd.getNumCom();
+			for (uint_fast8_t i = 0; i < num_com; i++) {
+				eGB_TEST_SIGNAL signal =
+						(eGB_TEST_SIGNAL) ((uint8_t) GB_SIGNAL_COM1 + i);
+				sParam.test.addSignalToList(signal);
+			}
+		} else if (device == AVANT_OPTO) {
+			sParam.test.addSignalToList(GB_SIGNAL_CF);
+			uint8_t num_com = sParam.prd.getNumCom();
+			for (uint_fast8_t i = 0; i < num_com; i++) {
+				eGB_TEST_SIGNAL signal =
+						(eGB_TEST_SIGNAL) ((uint8_t) GB_SIGNAL_COM1 + i);
+				sParam.test.addSignalToList(signal);
+			}
 		}
 	}
 
@@ -4241,6 +4131,204 @@ void clMenu::printPunkts() {
 		}
 	}
 }
+
+
+/**	Вывод в указанном месте отображаемого параметра.
+ * 	В одной строке выводятся два параметра.
+ * 	@param poz Текущая позиция
+ * 	@arg 0..eMENU_MEAS_PARAM, 0 первая строка слева, 5 - третья справа
+ * 	@param par Отображаемый параметр
+ * 	@return Нет
+ */
+void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
+	// смещение в буфере
+	if (poz < MAX_NUM_MEAS_PARAM) {
+		// 10 - кол-во символов отведенное на экране под 1 параметр
+		poz = (poz * 10) + 1;
+
+		switch (par) {
+		case MENU_MEAS_PARAM_DATE:
+			snprintf_P(&vLCDbuf[poz], 11, fcDate, sParam.dataTime.getDay(),
+					sParam.dataTime.getMonth(), sParam.dataTime.getYear());
+			break;
+		case MENU_MEAS_PARAM_TIME:
+			snprintf_P(&vLCDbuf[poz], 11, fcTime, sParam.dataTime.getHour(),
+					sParam.dataTime.getMinute(), sParam.dataTime.getSecond());
+			break;
+		case MENU_MEAS_PARAM_UZ:
+			snprintf_P(&vLCDbuf[poz], 11, fcUz,
+					sParam.measParam.getVoltageDef());
+			break;
+
+			// в 3-х концевой может быть Uz1 == Uz, Uz2
+		case MENU_MEAS_PARAM_UZ1:
+			snprintf_P(&vLCDbuf[poz], 11, fcUz1,
+					sParam.measParam.getVoltageDef());
+			break;
+		case MENU_MEAS_PARAM_UZ2:
+			snprintf_P(&vLCDbuf[poz], 11, fcUz2,
+					sParam.measParam.getVoltageDef2());
+			break;
+
+		case MENU_MEAS_PARAM_UC:
+			snprintf_P(&vLCDbuf[poz], 11, fcUcf,
+					sParam.measParam.getVoltageCf());
+			break;
+
+			// в 3-х концевой может быть Uk1 == Uk, Uk2
+		case MENU_MEAS_PARAM_UC1:
+			snprintf_P(&vLCDbuf[poz], 11, fcUcf1,
+					sParam.measParam.getVoltageCf());
+			break;
+		case MENU_MEAS_PARAM_UC2:
+			snprintf_P(&vLCDbuf[poz], 11, fcUcf2,
+					sParam.measParam.getVoltageCf2());
+			break;
+		case MENU_MEAS_PARAM_UOUT:
+			snprintf_P(&vLCDbuf[poz], 11, fcUout,
+					sParam.measParam.getVoltageOutInt(),
+					sParam.measParam.getVoltageOutFract());
+			break;
+
+		case MENU_MEAS_PARAM_IOUT:
+			snprintf_P(&vLCDbuf[poz], 11, fcIout,
+					sParam.measParam.getCurrentOut());
+			break;
+		case MENU_MEAS_PARAM_ROUT:
+			snprintf_P(&vLCDbuf[poz], 11, fcRout,
+					sParam.measParam.getResistOut());
+			break;
+
+		case MENU_MEAS_PARAM_UN:
+			snprintf_P(&vLCDbuf[poz], 11, fcUn,
+					sParam.measParam.getVoltageNoise());
+			break;
+
+			// TODO ВСЕ для Uш1 и Uш2 нужны свои параметры
+		case MENU_MEAS_PARAM_UN1:
+			snprintf_P(&vLCDbuf[poz], 11, fcUn1,
+					sParam.measParam.getVoltageNoise());
+			break;
+		case MENU_MEAS_PARAM_UN2:
+			snprintf_P(&vLCDbuf[poz], 11, fcUn2,
+					sParam.measParam.getVoltageNoise());
+			break;
+
+		case MENU_MEAS_PARAM_SD:
+			snprintf_P(&vLCDbuf[poz], 11, fcSd,
+					sParam.measParam.getPulseWidth());
+			// ничего не делаем
+			break;
+
+		default:
+			break;
+		}
+	}
+}
+
+/**	Вывод на экран текущего состояния устройства.
+ * 	Если есть общие неисправности - выводится поочередно расшифровка самой
+ * 	приоритетной и код (даже если одна).
+ * 	Далее проверяется наличие неисправности устройства и если есть, выводится
+ * 	по тому же алгоритму.
+ * 	Если есть общее предупреждение - выводится почередно состояние и расшифровка
+ * 	данного предупреждения. Если предупреждений несколько, выводится только код.
+ * 	Далее проверяется наличие предупреждения для устройства и если есть,
+ * 	выодится по тому же алгоритму.
+ * 	Если небыло никаких неисправностей/предупреждений, то выводится текущее
+ * 	состояние и режим работы устройства.
+ * 	@param poz Начальная позиция в буфере данных ЖКИ
+ * 	@param device Данные для текущего устройства
+ *	@return Нет
+ */
+void clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device) {
+	PGM_P *text;
+	uint_fast8_t x = 0;
+	uint_fast16_t y = 0;
+
+	snprintf_P(&vLCDbuf[poz], 4, device->name);
+	poz += 3;
+	snprintf(&vLCDbuf[poz], 2, ":");
+	poz += 1;
+
+	if (sParam.glb.status.getNumFaults() != 0)
+	{
+		if (blink_)
+		{
+			text = sParam.glb.status.faultText;
+			x = sParam.glb.status.getFault();
+			snprintf_P(&vLCDbuf[poz], 17, text[x]);
+		}
+		else
+		{
+			y = sParam.glb.status.getFaults();
+			snprintf_P(&vLCDbuf[poz], 17, fcFaults, 'g', y);
+		}
+	}
+	else if (device->getNumFaults() != 0)
+	{
+		if (blink_)
+		{
+			text = device->faultText;
+			x = device->getFault();
+			snprintf_P(&vLCDbuf[poz], 17, text[x]);
+		}
+		else
+		{
+			y = device->getFaults();
+			snprintf_P(&vLCDbuf[poz], 17, fcFaults, 'l', y);
+		}
+	}
+	else if ( (sParam.glb.status.getNumWarnings() != 0) && (blink_) )
+	{
+		if (sParam.glb.status.getNumWarnings() == 1)
+		{
+			text = sParam.glb.status.warningText;
+			x = sParam.glb.status.getWarning();
+			snprintf_P(&vLCDbuf[poz], 17, text[x]);
+		}
+		else
+		{
+			y = sParam.glb.status.getWarnings();
+			snprintf_P(&vLCDbuf[poz], 17, fcWarnings, 'g', y);
+		}
+	}
+	else if ( (device->getNumWarnings()!= 0) && (blink_) )
+	{
+		if (device->getNumWarnings() == 1)
+		{
+			text = device->warningText;
+			x = device->getWarning();
+			snprintf_P(&vLCDbuf[poz], 17, text[x]);
+		}
+		else
+		{
+			y = device->getWarnings();
+			snprintf_P(&vLCDbuf[poz], 17, fcWarnings, 'g', y);
+		}
+	}
+	else
+	{
+		text = device->stateText;
+		poz += 1 + snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
+		snprintf_P(&vLCDbuf[poz], 9,
+				text[device->getState()], device->getDopByte());
+	}
+}
+
+/**	Вывод в пунтке меню "Режим" текущего режима устройств
+ * 	@param poz Начальная позиция в буфере данных ЖКИ
+ * 	@param device Данные для текущего устройства
+ *	@return Нет
+ */
+void clMenu::printDevicesRegime(uint8_t poz, TDeviceStatus *device) {
+	snprintf_P(&vLCDbuf[poz], 4, device->name);
+	poz += 3;
+	snprintf(&vLCDbuf[poz], 2, ":");
+	poz += 1;
+	poz += 1 + snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
+}
+
 
 ///**	Возвращает кол-во ошибок в коде, т.е. кол-во установленных битов.
 // * 	@param Код ошибки

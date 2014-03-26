@@ -75,6 +75,18 @@ static const eKEY fcKeyRZSK[18] = { 					//
 		KEY_RESET_IND,	KEY_EMPTY,		KEY_EMPTY		//
 };
 
+/// Массив кнопок ОПТИКА
+static const eKEY fcKeyOPTO[18] = { 					//
+		//		основные функции
+		KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
+		KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
+		KEY_CANCEL, 	KEY_DOWN, 		KEY_EMPTY,		//
+		//		дополнительные функции
+		KEY_EMPTY,		KEY_EMPTY,		KEY_RESET_IND,	//
+		KEY_PUSK, 		KEY_EMPTY,		KEY_EMPTY,		//
+		KEY_EMPTY,		KEY_EMPTY,		KEY_RESET		//
+};
+
 /// код нажатой кнопки
 static eBUT keyPressed;
 
@@ -95,12 +107,16 @@ eKEY eKEYget(eGB_TYPE_DEVICE type) {
 
 	if (but != 0) {
 		but -= 1;
-		if (type == AVANT_K400)
+		if (type == AVANT_K400) {
 			key = fcKeyK400[but];
-		else if (type == AVANT_R400M)
+		} else if (type == AVANT_R400M) {
 			key = fcKeyR400M[but];
-		else if (type == AVANT_RZSK)
+		} else if (type == AVANT_RZSK) {
 			key = fcKeyRZSK[but];
+		} else if (type == AVANT_OPTO) {
+			key = fcKeyOPTO[but];
+		}
+
 	}
 
 	keyPressed = BUT_NO;

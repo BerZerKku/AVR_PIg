@@ -476,7 +476,7 @@ private:
 	bool setDeviceK400();
 	bool setDeviceRZSK();
 	bool setDeviceR400M();
-	bool setDeviceOPTIC();
+	bool setDeviceOPTO();
 
 	// очистка текстового буфера
 	void clearTextBuf();

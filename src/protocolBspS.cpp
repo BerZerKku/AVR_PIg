@@ -248,7 +248,11 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com) {
 	if (com == GB_COM_PRD_GET_TIME_ON) {
 		stat = sParam_->prd.setTimeOn(buf[B1]);
 	} else if (com == GB_COM_PRD_GET_DURATION) {
-		stat = sParam_->prd.setDuration(buf[B1]);
+		if (sParam_->glb.getTypeLine() == GB_TYPE_LINE_OPTO) {
+			stat = sParam_->prd.setDurationO(buf[B1]);
+		} else {
+			stat = sParam_->prd.setDurationL(buf[B1]);
+		}
 	} else if (com == GB_COM_PRD_GET_TEST_COM) {
 		stat = sParam_->prd.setTestCom(buf[B1]);
 	} else if (com == GB_COM_PRD_GET_BLOCK_COM) {
@@ -488,13 +492,13 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 			stat = sParam_->glb.setComPrdKeep(buf[B1]);
 		}
 	} else if (com == GB_COM_GET_NET_ADR) {
+
 		stat = sParam_->glb.setNetAddress(buf[B1]);
 	} else if (com == GB_COM_GET_COR_U_I) {
 		eGB_TYPE_DEVICE type = sParam_->typeDevice;
-
 		// в оптике это резервирование, иначе коррекция тока и напряжения
-		if (type == AVANT_OPTIC) {
-			// TODO ОПТИКА, параметр резервирование
+		if (type == AVANT_OPTO) {
+			stat = sParam_->glb.setBackup(buf[B1]);
 		} else {
 			int16_t val = 0;
 			int8_t i = buf[B1];

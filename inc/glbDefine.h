@@ -26,7 +26,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0104
+#define VERS 0x0105
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -134,7 +134,7 @@
 #define PRM_TIME_OFF_DISC_F	(PRM_TIME_OFF_DISC/ PRM_TIME_OFF_FRACT)
 /// ПРД
 /// время включения (задержка срабатывания дискретного входа)
-/// было от 0 до 10, изменено по требованию АГ
+/// было от 5 до 20, изменено по требованию АГ
 #define PRD_TIME_ON_MIN		5
 #define PRD_TIME_ON_MAX		20
 #define PRD_TIME_ON_DISC	1
@@ -142,14 +142,22 @@
 #define PRD_TIME_ON_MIN_F	(PRD_TIME_ON_MIN / PRM_TIME_ON_FRACT)
 #define PRD_TIME_ON_MAX_F	(PRD_TIME_ON_MAX / PRM_TIME_ON_FRACT)
 #define PRD_TIME_ON_DISC_F	(PRD_TIME_ON_DISC / PRM_TIME_ON_FRACT)
-/// длительность команды
-#define PRD_DURATION_MIN	20
-#define PRD_DURATION_MAX	100
-#define PRD_DURATION_DISC	1
-#define PRD_DURATION_FRACT	1
-#define PRD_DURATION_MIN_F	(PRD_DURATION_MIN / PRD_DURATION_FRACT)
-#define PRD_DURATION_MAX_F	(PRD_DURATION_MAX / PRD_DURATION_FRACT)
-#define PRD_DURATION_DISC_F	(PRD_DURATION_DISC / PRD_DURATION_FRACT)
+/// длительность команды для ВЧ
+#define PRD_DURAT_L_MIN		20
+#define PRD_DURAT_L_MAX		100
+#define PRD_DURAT_L_DISC	1
+#define PRD_DURAT_L_FRACT	1
+#define PRD_DURAT_L_MIN_F	(PRD_DURAT_L_MIN / PRD_DURAT_L_FRACT)
+#define PRD_DURAT_L_MAX_F	(PRD_DURAT_L_MAX / PRD_DURAT_L_FRACT)
+#define PRD_DURAT_L_DISC_F	(PRD_DURAT_L_DISC / PRD_DURAT_L_FRACT)
+/// длительность команды для ОПТИКИ
+#define PRD_DURAT_O_MIN		20
+#define PRD_DURAT_O_MAX		500
+#define PRD_DURAT_O_DISC	10
+#define PRD_DURAT_O_FRACT	10
+#define PRD_DURAT_O_MIN_F	(PRD_DURAT_O_MIN / PRD_DURAT_O_FRACT)
+#define PRD_DURAT_O_MAX_F	(PRD_DURAT_O_MAX / PRD_DURAT_O_FRACT)
+#define PRD_DURAT_O_DISC_F	(PRD_DURAT_O_DISC / PRD_DURAT_O_FRACT)
 /// ОБЩИЕ
 /// номер аппарата
 #define GLB_DEV_NUM_MIN		1
@@ -271,37 +279,38 @@
 #define MAX_JRN_EVENT_VALUE 33
 
 /// кол-во записей в журнале событый
-#define GLB_JRN_EVENT_K400_MAX 512
-#define GLB_JRN_EVENT_R400_MSK_MAX 512
-// TODO РЗСК Узнать максимальное кол-во записей в журналах
-#define GLB_JRN_EVENT_RZSK_MAX 256
+#define GLB_JRN_EVENT_K400_MAX 		512
+#define GLB_JRN_EVENT_R400_MSK_MAX 	512
+#define GLB_JRN_EVENT_RZSK_MAX 		256
+#define GLB_JRN_EVENT_OPTO_MAX 		256
 
 /// кол-во записей в журнале защиты
-#define GLB_JRN_DEF_K400_MAX 0
-#define GLB_JRN_DEF_R400_MSK_MAX 1024
-// TODO РЗСК Узнать максимальное кол-во записей в журналах
-#define GLB_JRN_DEF_RZSK_MAX 256
+#define GLB_JRN_DEF_K400_MAX 		0
+#define GLB_JRN_DEF_R400_MSK_MAX 	1024
+#define GLB_JRN_DEF_RZSK_MAX 		256
+#define GLB_JRN_DEF_OPTO_MAX 		2048
 
 /// кол-во записей в журнале приемника
-#define GLB_JRN_PRM_K400_MAX 512
-// TODO РЗСК Узнать максимальное кол-во записей в журналах
-#define GLB_JRN_PRM_RZSK_MAX 256
+#define GLB_JRN_PRM_K400_MAX 		512
+#define GLB_JRN_PRM_RZSK_MAX 		256
+#define GLB_JRN_PRM_OPTO_MAX		256
 
 /// кол-во записей в журнале передатчика
-#define GLB_JRN_PRD_K400_MAX 512
-// TODO РЗСК Узнать максимальное кол-во записей в журналах
-#define GLB_JRN_PRD_RZSK_MAX 256
+#define GLB_JRN_PRD_K400_MAX 		512
+#define GLB_JRN_PRD_RZSK_MAX 		256
+#define GLB_JRN_PRD_OPTO_MAX		256
 
 /// максимально возможное кол-во записей в одном архиве
-#define GLB_JRN_MAX 1024
+#define GLB_JRN_MAX 2048
 
 /// Тип аппарата
 enum eGB_TYPE_DEVICE {
 	AVANT_NO = 0,	// ошибочное значение
 	AVANT_R400M,	//
 	AVANT_RZSK,		//
-	AVANT_OPTIC,	//
-	AVANT_K400		//
+	AVANT_OPTO,		//
+	AVANT_K400,		//
+	AVANT_MAX
 
 // TODO ОПТИКА - у Женьки программа одна, так что можно не делить
 // подстравиваться только под наличие команд (и их кол-ва) и защиты.
@@ -322,7 +331,7 @@ enum eGB_DEVICE {
 enum eGB_TYPE_LINE {
 	GB_TYPE_LINE_MIN = 1,
 	GB_TYPE_LINE_UM = 1,
-	GB_TYPE_LINE_OPTIC = 2,
+	GB_TYPE_LINE_OPTO = 2,
 	GB_TYPE_LINE_E1 = 3,
 	GB_TYPE_LINE_MAX
 };
@@ -445,7 +454,7 @@ enum eGB_COM {
 	GB_COM_GET_SOST = 0x30,				// +
 	GB_COM_GET_FAULT = 0x31,			// +
 	GB_COM_GET_TIME = 0x32,				// +
-	GB_COM_GET_COR_U_I = 0x33,			// + TODO ОПТИКА это Резервирование
+	GB_COM_GET_COR_U_I = 0x33,			// + ! в ОПТИКЕ это Резервирование
 	GB_COM_GET_MEAS = 0x34,				// +
 	GB_COM_GET_TIME_SINCHR = 0x35,		// +
 	GB_COM_GET_COM_PRM_KEEP = 0x36, 	// + ! в Р400М это Uвых номинальное
@@ -1222,6 +1231,7 @@ public:
 		versDsp_ = 0;
 
 		timeSinchr_ = false;
+		backup_ = false;
 		deviceNum_ = GLB_DEV_NUM_MIN_F;
 		outCheck_ = false;
 		cfThreshold_ = GLB_CF_THRESH_MIN_F;
@@ -1370,6 +1380,27 @@ public:
 	}
 	bool getTimeSinchr() const {
 		return timeSinchr_;
+	}
+
+	/** Установка параметра Резервирование.
+	 * 	@param val Резервирование
+	 * 	@retval True - в случае успешной остановки.
+	 * 	@retval False - если установка нового значения не удалась.
+	 */
+	bool setBackup(uint8_t val) {
+		bool stat = false;
+		if (val <= 1) {
+			backup_ = (bool) val;
+			stat = true;
+		}
+		return stat;
+	}
+
+	/** Возвращает значение параметра Резервирование.
+	 * 	@return Резервирование.
+	 */
+	bool getBackup() const {
+		return backup_;
 	}
 
 	// номер аппарата
@@ -1751,6 +1782,9 @@ private:
 
 	// синхронизация часов
 	bool timeSinchr_;
+
+	// резервирование
+	bool backup_;
 
 	// номер аппарата
 	uint8_t deviceNum_;
@@ -2335,7 +2369,8 @@ public:
 			blockCom_[i] = false;
 			longCom_[i] = false;
 		}
-		duration_ = PRD_DURATION_MIN_F;
+		durationL_ = PRD_DURAT_L_MIN_F;
+		durationO_ = PRD_DURAT_O_MIN_F;
 		testCom_ = false;
 
 		numJrnEntry_ = 0;
@@ -2462,22 +2497,54 @@ public:
 		return testCom_;
 	}
 
-	// время включения команды
-	bool setDuration(uint8_t val) {
+	/**	Установка параметра "Длительность команды" для ВЧ-линий.
+	 * 	@param val Длительность команды.
+	 * 	@retval True - в случае успешной остановки.
+	 * 	@retval False - если установка нового значения не удалась.
+	 */
+	bool setDurationL(uint8_t val) {
 		bool stat = false;
-		val = (val / PRD_DURATION_DISC_F) * PRD_DURATION_DISC_F;
 
-		// записано в таком виде т.к. иначе портится автоформат в Eclipse
-		if (val >= PRD_DURATION_MIN_F) {
-			if (val <= PRD_DURATION_MAX_F) {
-				duration_ = val;
+		val = (val / PRD_DURAT_L_DISC_F) * PRD_DURAT_L_DISC_F;
+		if (val >= PRD_DURAT_L_MIN_F) {
+			if (val <= PRD_DURAT_L_MAX_F) {
+				durationL_ = val;
 				stat = true;
 			}
 		}
 		return stat;
 	}
-	uint8_t getDuration() const {
-		return duration_ * PRD_TIME_ON_FRACT;
+
+	/**	Возвращает значение параметра "Длительность команды" для ВЧ-линий.
+	 * 	@return Длительность команды.
+	 */
+	uint16_t getDurationL() const {
+		return durationL_ * PRD_DURAT_L_FRACT;
+	}
+
+	/**	Установка параметра "Длительность команды" для ОПТИКИ.
+	 * 	@param val Длительность команды.
+	 * 	@retval True - в случае успешной остановки.
+	 * 	@retval False - если установка нового значения не удалась.
+	 */
+	bool setDurationO(uint8_t val) {
+		bool stat = false;
+
+		val = (val / PRD_DURAT_O_DISC_F) * PRD_DURAT_O_DISC_F;
+		if (val >= PRD_DURAT_O_MIN_F) {
+			if (val <= PRD_DURAT_O_MAX_F) {
+				durationL_ = val;
+				stat = true;
+			}
+		}
+		return stat;
+	}
+
+	/**	Возвращает значение параметра "Длительность команды" для ВЧ-линий.
+	 * 	@return Длительность команды.
+	 */
+	uint16_t getDurationO() const {
+		return durationL_ * PRD_DURAT_O_FRACT;
 	}
 
 	// количество записей в журнале
@@ -2527,8 +2594,11 @@ private:
 	// тестовая команда. true - вкл.
 	bool testCom_;
 
-	// длительность команды
-	uint8_t duration_;
+	// длительность команды для ВЧ линий
+	uint8_t durationL_;
+
+	// длительность команды для ОПТИКИ
+	uint8_t durationO_;
 
 	// кол-во записей в журнале
 	uint16_t numJrnEntry_;
@@ -3236,6 +3306,8 @@ public:
 			signal = getCurrentSignalRZSK(s);
 		} else if (type == AVANT_R400M) {
 			signal = getCurrentSignalR400M(s);
+		} else if (type == AVANT_OPTO) {
+			signal = getCurrentSignalOpto(s);
 		}
 		currentSignal_ = signal;
 	}
@@ -3366,16 +3438,40 @@ private:
 		// подумать как выводить при наличии РЗ + КЧ1, КЧ2 и т.д.
 
 		uint8_t t = *s;
-		if (t & 0x10)
-		{
+		if (t & 0x10) {
 			signal = GB_SIGNAL_RZ;
 
 			// выводится "КЧ и РЗ" при их одновременно наличии
 			if (t & 0x01)
 				signal = GB_SIGNAL_CF_RZ_R400M;
-		}
-		else if (t & 0x01)
+		} else if (t & 0x01)
 			signal = GB_SIGNAL_CF;
+
+		return signal;
+	}
+
+	/** Добавление сигнала в список для ОПТИКИ.
+	 * 	TODO ОПТИКА сигналы сделаны только для 8-и командного варианта.
+	 * 	бит: 7		6		5		4		3		2		1		0		;
+	 * 	b1 : x 		x 		x 		x 		x		x 		x 		[кч]	;
+	 * 	b2 : [ком8] [ком7]	[ком6] 	[ком5] 	[ком4] 	[ком3] 	[ком2] 	[ком1]	;
+	 * 	Установленный бит означает наличие данного сигнала на передачу.
+	 * 	@param *s Указатель на массив данных.
+	 * 	@return Текущий тестовый сигнал.
+	 */
+	eGB_TEST_SIGNAL getCurrentSignalOpto(uint8_t *s) {
+		eGB_TEST_SIGNAL signal = GB_SIGNAL_OFF;
+
+		uint8_t t = *s;
+		if (t & 0x01) {
+			signal = GB_SIGNAL_CF;
+		} else {
+			t = getSetBit((*(++s)) & 0x0F);
+			if (t != 0) {
+				t = (t - 1) + GB_SIGNAL_COM1;
+				signal = (eGB_TEST_SIGNAL) t;
+			}
+		}
 
 		return signal;
 	}
