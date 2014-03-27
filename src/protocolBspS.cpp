@@ -201,38 +201,73 @@ bool clProtocolBspS::getDefCommand(eGB_COM com) {
 bool clProtocolBspS::getPrmCommand(eGB_COM com) {
 	bool stat = false;
 
-	if (com == GB_COM_PRM_GET_TIME_ON) {
+	switch(com) {
+	case GB_COM_PRM_GET_TIME_ON: {
 		stat = sParam_->prm.setTimeOn(buf[B1]);
-	} else if (com == GB_COM_PRM_GET_BLOCK_COM) {
+	}
+	break;
+
+	case GB_COM_PRM_GET_BLOCK_COM: {
 		sParam_->prm.setBlockCom8(0, buf[B1]);
 		sParam_->prm.setBlockCom8(1, buf[B2]);
 		sParam_->prm.setBlockCom8(2, buf[B3]);
 		sParam_->prm.setBlockCom8(3, buf[B4]);
 		stat = true;
-	} else if (com == GB_COM_PRM_GET_TIME_OFF) {
+	}
+	break;
+
+	case GB_COM_PRM_GET_TIME_OFF: {
 		stat = sParam_->prm.setTimeOff(&buf[B1]);
-	} else if (com == GB_COM_PRM_GET_JRN_CNT) {
+	}
+	break;
+
+	case GB_COM_PRM_GET_JRN_CNT: {
 		if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRM) {
 			uint16_t t = TO_INT16(buf[B2], buf[B1]);
 			stat = sParam_->jrnEntry.setNumJrnEntry(t);
 		}
-	} else if (com == GB_COM_PRM_GET_JRN_ENTRY) {
+	}
+	break;
+
+	case GB_COM_PRM_GET_JRN_ENTRY: {
 		if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRM) {
-			sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B16]));
-			sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B15]));
-			sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B14]));
-			// B13 - день недели
-			sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B12]));
-			sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B11]));
-			sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
-			uint16_t t = TO_INT16(buf[B9], buf[B8]);
-			sParam_->jrnEntry.dataTime.setMsSecond(t);
-			sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE) buf[B1]);
-			sParam_->jrnEntry.setNumCom(buf[B2]);
-			sParam_->jrnEntry.setEventType(buf[B3]);
-			sParam_->jrnEntry.setReady();
+			if (sParam_->typeDevice == AVANT_OPTO) {
+				// дата
+				sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B5]));
+				sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B6]));
+				sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B7]));
+				// время
+				sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B8]));
+				sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B9]));
+				sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
+				uint16_t t = TO_INT16(buf[B11], buf[B12]);
+				sParam_->jrnEntry.dataTime.setMsSecond(t);
+				//
+				sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B1]);
+				sParam_->jrnEntry.setReady();
+				stat = true;
+			} else {
+				sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B16]));
+				sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B15]));
+				sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B14]));
+				// B13 - день недели
+				sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B12]));
+				sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B11]));
+				sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
+				uint16_t t = TO_INT16(buf[B9], buf[B8]);
+				sParam_->jrnEntry.dataTime.setMsSecond(t);
+				sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE) buf[B1]);
+				sParam_->jrnEntry.setNumCom(buf[B2]);
+				sParam_->jrnEntry.setEventType(buf[B3]);
+				sParam_->jrnEntry.setReady();
+			}
 			stat = true;
 		}
+	}
+	break;
+
+	default:
+		break;
 	}
 
 	return stat;
@@ -245,50 +280,91 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com) {
 bool clProtocolBspS::getPrdCommand(eGB_COM com) {
 	bool stat = false;
 
-	if (com == GB_COM_PRD_GET_TIME_ON) {
+	switch (com) {
+	case GB_COM_PRD_GET_TIME_ON: {
 		stat = sParam_->prd.setTimeOn(buf[B1]);
-	} else if (com == GB_COM_PRD_GET_DURATION) {
+	}
+	break;
+
+	case GB_COM_PRD_GET_DURATION: {
 		if (sParam_->glb.getTypeLine() == GB_TYPE_LINE_OPTO) {
 			stat = sParam_->prd.setDurationO(buf[B1]);
 		} else {
 			stat = sParam_->prd.setDurationL(buf[B1]);
 		}
-	} else if (com == GB_COM_PRD_GET_TEST_COM) {
+	}
+	break;
+
+	case GB_COM_PRD_GET_TEST_COM: {
 		stat = sParam_->prd.setTestCom(buf[B1]);
-	} else if (com == GB_COM_PRD_GET_BLOCK_COM) {
+	}
+	break;
+
+	case GB_COM_PRD_GET_BLOCK_COM: {
 		sParam_->prd.setBlockCom8(0, buf[B1]);
 		sParam_->prd.setBlockCom8(1, buf[B2]);
 		sParam_->prd.setBlockCom8(2, buf[B3]);
 		sParam_->prd.setBlockCom8(3, buf[B4]);
 		stat = true;
-	} else if (com == GB_COM_PRD_GET_LONG_COM) {
+	}
+	break;
+
+	case GB_COM_PRD_GET_LONG_COM: {
 		sParam_->prd.setLongCom8(0, buf[B1]);
 		sParam_->prd.setLongCom8(1, buf[B2]);
 		sParam_->prd.setLongCom8(2, buf[B3]);
 		sParam_->prd.setLongCom8(3, buf[B4]);
 		stat = true;
-	} else if (com == GB_COM_PRD_GET_JRN_CNT) {
+	}
+	break;
+
+	case GB_COM_PRD_GET_JRN_CNT: {
 		if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRD) {
 			uint16_t t = TO_INT16(buf[B2], buf[B1]);
 			stat = sParam_->jrnEntry.setNumJrnEntry(t);
 		}
-	} else if (com == GB_COM_PRD_GET_JRN_ENTRY) {
+	}
+	break;
+
+	case GB_COM_PRD_GET_JRN_ENTRY: {
 		if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRD) {
-			sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B16]));
-			sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B15]));
-			sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B14]));
-			// B13 - день недели
-			sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B12]));
-			sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B11]));
-			sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
-			uint16_t t = TO_INT16(buf[B9], buf[B8]);
-			sParam_->jrnEntry.dataTime.setMsSecond(t);
-			sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE) buf[B1]);
-			sParam_->jrnEntry.setNumCom(buf[B2]);
-			sParam_->jrnEntry.setEventType(buf[B3]);
-			sParam_->jrnEntry.setReady();
-			stat = true;
+			if (sParam_->typeDevice == AVANT_OPTO) {
+				// дата
+				sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B5]));
+				sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B6]));
+				sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B7]));
+				// время
+				sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B8]));
+				sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B9]));
+				sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
+				uint16_t t = TO_INT16(buf[B11], buf[B12]);
+				sParam_->jrnEntry.dataTime.setMsSecond(t);
+				//
+				sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B1]);
+				sParam_->jrnEntry.setReady();
+				stat = true;
+			} else {
+				sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B16]));
+				sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B15]));
+				sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B14]));
+				// B13 - день недели
+				sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B12]));
+				sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B11]));
+				sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
+				uint16_t t = TO_INT16(buf[B9], buf[B8]);
+				sParam_->jrnEntry.dataTime.setMsSecond(t);
+				sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE) buf[B1]);
+				sParam_->jrnEntry.setNumCom(buf[B2]);
+				sParam_->jrnEntry.setEventType(buf[B3]);
+				sParam_->jrnEntry.setReady();
+				stat = true;
+			}
 		}
+	}
+	break;
+
+	default:
+		break;
 	}
 
 	return stat;
@@ -301,7 +377,8 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com) {
 bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 	bool stat = false;
 
-	if (com == GB_COM_GET_TIME) {
+	switch (com) {
+	case GB_COM_GET_TIME: {
 		sParam_->dataTime.setYear(BCD_TO_BIN(buf[B1]));
 		sParam_->dataTime.setMonth(BCD_TO_BIN(buf[B2]));
 		sParam_->dataTime.setDay(BCD_TO_BIN(buf[B3]));
@@ -309,8 +386,10 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 		sParam_->dataTime.setMinute(BCD_TO_BIN(buf[B5]));
 		sParam_->dataTime.setSecond(BCD_TO_BIN(buf[B6]));
 		stat = true;
-	} else if (com == GB_COM_GET_SOST) {
+	}
+	break;
 
+	case GB_COM_GET_SOST: {
 		sParam_->def.status.setRegime((eGB_REGIME) buf[B1]);
 		sParam_->def.status.setState(buf[B2]);
 		sParam_->def.status.setDopByte(buf[B3]);
@@ -323,36 +402,12 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 		sParam_->prd.status.setState(buf[B8]);
 		sParam_->prd.status.setDopByte(buf[B9]);
 
-		// если хоть одно из имеющихся устройств не в режиме ВЫВЕДЕН
-		// (GB_REGIME_DISABLED) общий режим будет равен GB_REGIME_MAX
-		//				eGB_REGIME reg = GB_REGIME_DISABLED;
-		//				if (sParam_->prd.status.isEnable())
-		//				{
-		//					if (sParam_->prd.status.getRegime() == GB_REGIME_ENABLED)
-		//						reg = GB_REGIME_ENABLED;
-		//				}
-		//				if (sParam_->prm.status.isEnable())
-		//				{
-		//					// в приемнике режим Готов, тоже считаем за Введен
-		//					if ((sParam_->prm.status.getRegime() == GB_REGIME_ENABLED)||
-		//						(sParam_->prm.status.getRegime() == GB_REGIME_READY))
-		//						reg = GB_REGIME_ENABLED;
-		//				}
-		//				if (sParam_->def.status.isEnable())
-		//				{
-		//					if (sParam_->def.status.getRegime() == GB_REGIME_ENABLED)
-		//						reg = GB_REGIME_ENABLED;
-		//				}
-		//				sParam_->glb.status.setRegime(reg);
-
 		eGB_REGIME reg = GB_REGIME_MAX;
 		eGB_REGIME regTmp = GB_REGIME_MAX;
-
 		// определение общего режима аппарата
 		// по умолчанию оно будет GB_REGIME_ENABLED
 		// другое состояние возможно, если все устройства аппарата
 		// имеют один и тот же режим
-
 		if (sParam_->prd.status.isEnable()) {
 			regTmp = sParam_->prd.status.getRegime();
 			if (reg == GB_REGIME_MAX)
@@ -379,7 +434,10 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 		sParam_->glb.status.setRegime(reg);
 
 		stat = true;
-	} else if (com == GB_COM_GET_FAULT) {
+	}
+	break;
+
+	case GB_COM_GET_FAULT: {
 		sParam_->def.status.setFault(TO_INT16(buf[B1], buf[B2]));
 		sParam_->def.status.setWarning(TO_INT16(buf[B3], buf[B4]));
 
@@ -392,7 +450,10 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 		sParam_->glb.status.setFault(TO_INT16(buf[B13], buf[B14]));
 		sParam_->glb.status.setWarning(TO_INT16(buf[B15],buf[B16]));
 		stat = true;
-	} else if (com == GB_COM_GET_MEAS) {
+	}
+	break;
+
+	case GB_COM_GET_MEAS: {
 		// обработаем посылку, если стоит флаг опроса всех параметров
 		if (buf[B1] == 0) {
 			sParam_->measParam.setResistOut(TO_INT16(buf[B2], buf[B3]));
@@ -409,7 +470,10 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 			sParam_->measParam.setPulseWidth(TO_INT16(buf[B14], buf[B15]));
 			stat = true;
 		}
-	} else if (com == GB_COM_GET_VERS) {
+	}
+	break;
+
+	case GB_COM_GET_VERS: {
 		uint8_t act = GB_ACT_NO;
 		// данные о типе аппарата
 		act |= sParam_->def.status.setEnable(buf[B1] == 1);
@@ -436,21 +500,36 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 			sParam_->device = false;
 
 		stat = ((act & GB_ACT_ERROR) != GB_ACT_ERROR);
-	} else if (com == GB_COM_GET_TIME_SINCHR) {
+	}
+	break;
+
+	case GB_COM_GET_TIME_SINCHR: {
 		stat = sParam_->glb.setTimeSinchr(buf[B1]);
 		if (sParam_->typeDevice == AVANT_RZSK) {
 			stat |= sParam_->glb.setDetector(buf[B2]);
 		}
-	} else if (com == GB_COM_GET_DEVICE_NUM) {
+	}
+	break;
+
+	case GB_COM_GET_DEVICE_NUM: {
 		stat = sParam_->glb.setDeviceNum(buf[B1]);
-	} else if (com == GB_COM_GET_OUT_CHECK) {
+	}
+	break;
+
+	case GB_COM_GET_OUT_CHECK: {
 		stat = sParam_->glb.setOutCheck(buf[B1]);
-	} else if (com == GB_COM_GET_CF_THRESHOLD) {
+	}
+	break;
+
+	case GB_COM_GET_CF_THRESHOLD: {
 		sParam_->glb.setCfThreshold(buf[B1]);
 		sParam_->glb.setInDecrease(buf[B2]);
 		// B3 - снижение входного сигнала для второго канала
 		stat = true;
-	} else if (com == GB_COM_GET_TIME_RERUN) {
+	}
+	break;
+
+	case GB_COM_GET_TIME_RERUN: {
 		if (sParam_->typeDevice == AVANT_R400M) {
 			eGB_COMPATIBILITY comp = sParam_->glb.getCompatibility();
 			if (comp == GB_COMPATIBILITY_PVZL) {
@@ -470,17 +549,26 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 			// в командной аппаратуре "Время перезапуска"
 			stat = sParam_->glb.setTimeRerun(buf[B1]);
 		}
-	} else if (com == GB_COM_GET_FREQ) {
+	}
+	break;
+
+	case GB_COM_GET_FREQ: {
 		uint16_t t = TO_INT16(buf[B1], buf[B2]);
 		stat = sParam_->glb.setFreq(t);
-	} else if (com == GB_COM_GET_COM_PRM_KEEP) {
+	}
+	break;
+
+	case GB_COM_GET_COM_PRM_KEEP: {
 		if (sParam_->typeDevice == AVANT_R400M) {
 			// ! в Р400 это Uвых номинальное
 			stat = sParam_->glb.setUoutNom(buf[B1]);
 		} else {
 			stat = sParam_->glb.setComPrmKeep(buf[B1]);
 		}
-	} else if (com == GB_COM_GET_COM_PRD_KEEP) {
+	}
+	break;
+
+	case GB_COM_GET_COM_PRD_KEEP: {
 		if (sParam_->typeDevice == AVANT_R400M) {
 			// в Р400м это Своместимость (тип удаленного аппарата)
 			uint8_t act = GB_ACT_NO;
@@ -491,10 +579,15 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 		} else {
 			stat = sParam_->glb.setComPrdKeep(buf[B1]);
 		}
-	} else if (com == GB_COM_GET_NET_ADR) {
+	}
+	break;
 
+	case GB_COM_GET_NET_ADR: {
 		stat = sParam_->glb.setNetAddress(buf[B1]);
-	} else if (com == GB_COM_GET_COR_U_I) {
+	}
+	break;
+
+	case GB_COM_GET_COR_U_I: {
 		eGB_TYPE_DEVICE type = sParam_->typeDevice;
 		// в оптике это резервирование, иначе коррекция тока и напряжения
 		if (type == AVANT_OPTO) {
@@ -509,32 +602,67 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 			val = static_cast<int16_t>(TO_INT16(buf[B3], buf[B4]));
 			stat |= sParam_->glb.setCorI(val);
 		}
-	} else if (com == GB_COM_GET_TEST) {
+	}
+	break;
+
+	case GB_COM_GET_TEST: {
 		eGB_TYPE_DEVICE type = sParam_->typeDevice;
 		sParam_->test.setCurrentSignal(&buf[B1], type);
-	} else if (com == GB_COM_GET_JRN_CNT) {
+	}
+	break;
+
+	case GB_COM_GET_JRN_CNT: {
 		if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_GLB) {
 			uint16_t t = TO_INT16(buf[B2], buf[B1]);
 			stat = sParam_->jrnEntry.setNumJrnEntry(t);
 		}
-	} else if (com == GB_COM_GET_JRN_ENTRY) {
+	}
+	break;
+
+	case GB_COM_GET_JRN_ENTRY: {
 		if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_GLB) {
-			sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B16]));
-			sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B15]));
-			sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B14]));
-			// B13 - день недели
-			sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B12]));
-			sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B11]));
-			sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
-			uint16_t t = TO_INT16(buf[B9], buf[B8]);
-			sParam_->jrnEntry.dataTime.setMsSecond(t);
-			// ! B1 - тип устройства, на данный момент игнорируется
-			// ! sParam_->journalEntry.setDevice((eGB_DEVICE) buf[B1]);
-			sParam_->jrnEntry.setEventType(buf[B2]);
-			sParam_->jrnEntry.setRegime((eGB_REGIME) buf[B3]);
-			sParam_->jrnEntry.setReady();
-			stat = true;
+			if (sParam_->typeDevice == AVANT_OPTO) {
+				// дата
+				sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B6]));
+				sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B7]));
+				sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B8]));
+				// время
+				sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B9]));
+				sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B10]));
+				sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B11]));
+				uint16_t t = TO_INT16(buf[B12], buf[B13]);
+				sParam_->jrnEntry.dataTime.setMsSecond(t);
+				//
+				sParam_->jrnEntry.setRegime((eGB_REGIME) buf[B1]);
+				sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B2]);
+				sParam_->jrnEntry.setReady();
+				stat = true;
+			} else {
+				// дата
+				sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B16]));
+				sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B15]));
+				sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B14]));
+				// B13 - день недели
+				// время
+				sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B12]));
+				sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B11]));
+				sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
+				uint16_t t = TO_INT16(buf[B9], buf[B8]);
+				sParam_->jrnEntry.dataTime.setMsSecond(t);
+				// ! B1 - тип устройства, на данный момент игнорируется
+				// ! sParam_->journalEntry.setDevice((eGB_DEVICE) buf[B1]);
+				sParam_->jrnEntry.setEventType(buf[B2]);
+				sParam_->jrnEntry.setRegime((eGB_REGIME) buf[B3]);
+				sParam_->jrnEntry.setReady();
+				stat = true;
+			}
 		}
+	}
+	break;
+
+	default:
+		break;
+
 	}
 
 	return stat;
@@ -571,9 +699,7 @@ uint8_t clProtocolBspS::sendModifPrmCommand(eGB_COM com) {
 	uint8_t b1 = sParam_->txComBuf.getInt8(0);
 	uint8_t b2 = sParam_->txComBuf.getInt8(1);
 
-	if (com == GB_COM_PRM_SET_TIME_ON) {
-
-	} else if (com == GB_COM_PRM_SET_TIME_OFF) {
+	if (com == GB_COM_PRM_SET_TIME_OFF) {
 		num = addCom(com, b1, b2);
 	} else if (com == GB_COM_PRM_SET_BLOCK_COM) {
 		num = addCom(com, b1, b2);
@@ -581,6 +707,7 @@ uint8_t clProtocolBspS::sendModifPrmCommand(eGB_COM com) {
 		num = addCom(com);
 	} else {
 		// по умолчанию передается один байт
+		// GB_COM_PRM_SET_TIME_ON
 		num = addCom(com, b1);
 	}
 

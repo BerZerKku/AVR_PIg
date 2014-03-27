@@ -364,6 +364,7 @@ static const char fcNumPunkt[] 			PROGMEM = "Параметр:%u Всего:%u";
 //	ЖУРНАЛ
 static const char fcJrnEmpty[] 			PROGMEM = "ЖУРНАЛ ПУСТ";
 static const char fcJrnNumEntries[] 	PROGMEM = "Запись %u / %u";
+static const char fcJrnNumEntriesOpto[]	PROGMEM = "Запись %u / %u (%u)";
 static const char fcRegimeJrn[]			PROGMEM = "Режим:";
 static const char fcStateJrn[] 			PROGMEM = "Состояние:";
 static const char fcNumComJrn[]			PROGMEM = "Команда: %u";
@@ -378,6 +379,8 @@ static const char fcJrnPrd[GB_STATE_COM_MAX + 1][21] PROGMEM = {
 		"Начало команды",		//
 		"Ошибочное значение"	//
 };
+static const char fcJrnPrdOptoComNo[] PROGMEM = "Команд нет";
+static const char fcJrnPrdOptoComYes[] PROGMEM = "Команда передается";
 
 /// записи журнала событий для К400 и РЗСК
 static char fcJrnEventK400[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {

@@ -423,8 +423,6 @@ bool clMenu::setDeviceOPTO() {
 
 	sParam.typeDevice = AVANT_OPTO;
 
-	// TODO ОПТИКА
-	// дополнить список измеряемых параметров, если есть ?!
 	measParam[0] = measParam[0 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TIME;
 	measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
 
@@ -488,21 +486,6 @@ bool clMenu::setDeviceOPTO() {
 	// 12-15 нет
 	// заполнение массива предупреждений передатчика
 	// 0-15 нет
-
-	// TODO ОПТИКА надо заполнить сигналы ТЕСТов
-	// с учетом текущего набора устройств
-	sParam.test.clear();
-	sParam.test.addSignalToList(GB_SIGNAL_CF);
-	sParam.test.addSignalToList(GB_SIGNAL_CF_NO_RZ);
-	sParam.test.addSignalToList(GB_SIGNAL_CF_RZ);
-	sParam.test.addSignalToList(GB_SIGNAL_COM1);
-	sParam.test.addSignalToList(GB_SIGNAL_COM2);
-	sParam.test.addSignalToList(GB_SIGNAL_COM3);
-	sParam.test.addSignalToList(GB_SIGNAL_COM4);
-	sParam.test.addSignalToList(GB_SIGNAL_COM1_RZ);
-	sParam.test.addSignalToList(GB_SIGNAL_COM2_RZ);
-	sParam.test.addSignalToList(GB_SIGNAL_COM3_RZ);
-	sParam.test.addSignalToList(GB_SIGNAL_COM4_RZ);
 
 	return true;
 }
@@ -1064,6 +1047,7 @@ void clMenu::lvlJournalEvent() {
 		lvlCreate_ = false;
 		cursorEnable_ = false;
 		lineParam_ = 1;
+		curCom_ = 1;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
@@ -1091,6 +1075,8 @@ void clMenu::lvlJournalEvent() {
 		sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 	}
 
+	eGB_TYPE_DEVICE device = sParam.typeDevice;
+
 	// номер текущей записи в архиве и максимальное кол-во записей
 	uint16_t cur_entry = sParam.jrnEntry.getCurrentEntry();
 	uint16_t num_entries = sParam.jrnEntry.getNumJrnEntries();
@@ -1099,8 +1085,15 @@ void clMenu::lvlJournalEvent() {
 	// вывод названия текущего пункта меню
 	snprintf_P(&vLCDbuf[poz], 21, title);
 	poz += 20;
+
 	// вывод номер текущей записи и их кол-ва
-	snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+	if (device == AVANT_OPTO) {
+		// в оптике дополнительно выводится кол-во событий в одной записи
+		snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntriesOpto, cur_entry,
+				num_entries, sParam.jrnEntry.getNumOpticsEntries());
+	} else {
+		snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+	}
 	poz += 20;
 
 	if (num_entries == 0) {
@@ -1129,10 +1122,20 @@ void clMenu::lvlJournalEvent() {
 				sParam.jrnEntry.dataTime.getSecond(),
 				sParam.jrnEntry.dataTime.getMsSecond());
 		poz += 20;
-		// вывод события
-		uint8_t event = sParam.jrnEntry.getEventType();
 
-		// TODO РЗСК Список событий для журнала Событий.
+		// вывод события
+		// в оптике в одной записи может быть много событий, поэтому
+		// считывается код события в записи
+		uint8_t event = 0;
+		if (device == AVANT_OPTO) {
+			// проверка текущего номера событий с кол-вом событий в записи
+			if (curCom_ > sParam.jrnEntry.getNumOpticsEntries())
+				curCom_ = 1;
+			event = sParam.jrnEntry.getOpticEntry(curCom_);
+		} else {
+			event = sParam.jrnEntry.getEventType();
+		}
+
 		eGB_TYPE_DEVICE device = sParam.typeDevice;
 		if (device == AVANT_R400M) {
 			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventR400_MSK[event], event);
@@ -1148,12 +1151,35 @@ void clMenu::lvlJournalEvent() {
 
 	switch (key_) {
 	case KEY_UP:
-		if (sParam.jrnEntry.setPreviousEntry())
+		if (sParam.jrnEntry.setPreviousEntry()) {
 			sParam.txComBuf.addFastCom(GB_COM_GET_JRN_ENTRY);
+			curCom_ = 1;
+		}
 		break;
 	case KEY_DOWN:
-		if (sParam.jrnEntry.setNextEntry())
+		if (sParam.jrnEntry.setNextEntry()) {
 			sParam.txComBuf.addFastCom(GB_COM_GET_JRN_ENTRY);
+			curCom_ = 1;
+		}
+		break;
+
+	case KEY_LEFT:
+		if (device == AVANT_OPTO) {
+			if (curCom_ > 1) {
+				curCom_--;
+			} else {
+				curCom_ = sParam.jrnEntry.getNumOpticsEntries();
+			}
+		}
+		break;
+	case KEY_RIGHT:
+		if (device == AVANT_OPTO) {
+			if (curCom_ < sParam.jrnEntry.getNumOpticsEntries()) {
+				curCom_++;
+			} else {
+				curCom_ = 1;
+			}
+		}
 		break;
 
 	case KEY_CANCEL:
@@ -1290,6 +1316,7 @@ void clMenu::lvlJournalPrm() {
 		lvlCreate_ = false;
 		cursorEnable_ = false;
 		lineParam_ = 1;
+		curCom_ = 1;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
@@ -1315,6 +1342,8 @@ void clMenu::lvlJournalPrm() {
 		sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 	}
 
+	eGB_TYPE_DEVICE device = sParam.typeDevice;
+
 	// номер текущей записи в архиве и максимальное кол-во записей
 	uint16_t cur_entry = sParam.jrnEntry.getCurrentEntry();
 	uint16_t num_entries = sParam.jrnEntry.getNumJrnEntries();
@@ -1324,7 +1353,13 @@ void clMenu::lvlJournalPrm() {
 	snprintf_P(&vLCDbuf[poz], 21, title);
 	poz += 20;
 	// вывод номер текущей записи и их кол-ва
-	snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+	if (device == AVANT_OPTO) {
+		// в оптике дополнительно выводится кол-во событий в одной записи
+		snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntriesOpto, cur_entry,
+				num_entries, sParam.jrnEntry.getNumOpticsEntries());
+	} else {
+		snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+	}
 	poz += 20;
 
 	if (num_entries == 0) {
@@ -1335,7 +1370,17 @@ void clMenu::lvlJournalPrm() {
 		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
 	} else {
 		// вывод номера команды
-		snprintf_P(&vLCDbuf[poz], 21, fcNumComJrn, sParam.jrnEntry.getNumCom());
+		uint8_t com = 0;
+		if (device == AVANT_OPTO) {
+			// в оптике в каждой записи каждый бит отвечает за свою команду
+			// если 1 - передается, 0 - нет.
+			if (curCom_ > sParam.jrnEntry.getNumOpticsEntries())
+				curCom_ = 1;
+			com = sParam.jrnEntry.getOpticEntry(curCom_);
+		} else {
+			com = sParam.jrnEntry.getNumCom();
+		}
+		snprintf_P(&vLCDbuf[poz], 21, fcNumComJrn, com);
 		poz += 20;
 		// вывод даты
 		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
@@ -1351,18 +1396,51 @@ void clMenu::lvlJournalPrm() {
 				sParam.jrnEntry.dataTime.getMsSecond());
 		poz += 20;
 		// вывод события
-		uint8_t event = sParam.jrnEntry.getEventType();
-		snprintf_P(&vLCDbuf[poz], 21, fcJrnPrd[event], event);
+		if (device == AVANT_OPTO) {
+			// в оптике если есть записи - то это наличие команды
+			// иначе - команд на передачу нет
+			if (com != 0) {
+				snprintf_P(&vLCDbuf[poz], 21, fcJrnPrdOptoComYes);
+			} else {
+				snprintf_P(&vLCDbuf[poz], 21, fcJrnPrdOptoComNo);
+			}
+		} else {
+			uint8_t event = sParam.jrnEntry.getEventType();
+			snprintf_P(&vLCDbuf[poz], 21, fcJrnPrd[event], event);
+		}
 	}
 
 	switch (key_) {
 	case KEY_UP:
-		if (sParam.jrnEntry.setPreviousEntry())
+		if (sParam.jrnEntry.setPreviousEntry()) {
 			sParam.txComBuf.addFastCom(GB_COM_PRM_GET_JRN_ENTRY);
+			curCom_ = 1;
+		}
 		break;
 	case KEY_DOWN:
-		if (sParam.jrnEntry.setNextEntry())
+		if (sParam.jrnEntry.setNextEntry()) {
 			sParam.txComBuf.addFastCom(GB_COM_PRM_GET_JRN_ENTRY);
+			curCom_ = 1;
+		}
+		break;
+
+	case KEY_LEFT:
+		if (device == AVANT_OPTO) {
+			if (curCom_ > 1) {
+				curCom_--;
+			} else {
+				curCom_ = sParam.jrnEntry.getNumOpticsEntries();
+			}
+		}
+		break;
+	case KEY_RIGHT:
+		if (device == AVANT_OPTO) {
+			if (curCom_ < sParam.jrnEntry.getNumOpticsEntries()) {
+				curCom_++;
+			} else {
+				curCom_ = 1;
+			}
+		}
 		break;
 
 	case KEY_CANCEL:
@@ -1391,6 +1469,7 @@ void clMenu::lvlJournalPrd() {
 		lvlCreate_ = false;
 		cursorEnable_ = false;
 		lineParam_ = 1;
+		curCom_ = 1;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
@@ -1416,6 +1495,8 @@ void clMenu::lvlJournalPrd() {
 		sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 	}
 
+	eGB_TYPE_DEVICE device = sParam.typeDevice;
+
 	// номер текущей записи в архиве и максимальное кол-во записей
 	uint16_t cur_entry = sParam.jrnEntry.getCurrentEntry();
 	uint16_t num_entries = sParam.jrnEntry.getNumJrnEntries();
@@ -1425,7 +1506,13 @@ void clMenu::lvlJournalPrd() {
 	snprintf_P(&vLCDbuf[poz], 21, title);
 	poz += 20;
 	// вывод номер текущей записи и их кол-ва
-	snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+	if (device == AVANT_OPTO) {
+		// в оптике дополнительно выводится кол-во событий в одной записи
+		snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntriesOpto, cur_entry,
+				num_entries, sParam.jrnEntry.getNumOpticsEntries());
+	} else {
+		snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+	}
 	poz += 20;
 
 	if (num_entries == 0) {
@@ -1436,8 +1523,18 @@ void clMenu::lvlJournalPrd() {
 		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
 	} else {
 		// вывод номера команды
-		snprintf_P(&vLCDbuf[poz], 21, fcNumComJrn, sParam.jrnEntry.getNumCom());
+		uint8_t com = 0;
+		if (device == AVANT_OPTO) {
+			// в оптике в одной записи может быть много команд
+			if (curCom_ > sParam.jrnEntry.getNumOpticsEntries())
+				curCom_ = 1;
+			com = sParam.jrnEntry.getOpticEntry(curCom_);
+		} else {
+			com = sParam.jrnEntry.getNumCom();
+		}
+		snprintf_P(&vLCDbuf[poz], 21, fcNumComJrn, com);
 		poz += 20;
+
 		// вывод даты
 		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
 				sParam.jrnEntry.dataTime.getDay(),
@@ -1452,18 +1549,51 @@ void clMenu::lvlJournalPrd() {
 				sParam.jrnEntry.dataTime.getMsSecond());
 		poz += 20;
 		// вывод события
-		uint8_t event = sParam.jrnEntry.getEventType();
-		snprintf_P(&vLCDbuf[poz], 21, fcJrnPrd[event], event);
+		if (device == AVANT_OPTO) {
+			// в оптике если есть записи - то это наличие команды
+			// иначе - команд на передачу нет
+			if (com != 0) {
+				snprintf_P(&vLCDbuf[poz], 21, fcJrnPrdOptoComYes);
+			} else {
+				snprintf_P(&vLCDbuf[poz], 21, fcJrnPrdOptoComNo);
+			}
+		} else {
+			uint8_t event = sParam.jrnEntry.getEventType();
+			snprintf_P(&vLCDbuf[poz], 21, fcJrnPrd[event], event);
+		}
 	}
 
 	switch (key_) {
 	case KEY_UP:
-		if (sParam.jrnEntry.setPreviousEntry())
+		if (sParam.jrnEntry.setPreviousEntry()) {
 			sParam.txComBuf.addFastCom(GB_COM_PRD_GET_JRN_ENTRY);
+			curCom_ = 1;
+		}
 		break;
 	case KEY_DOWN:
-		if (sParam.jrnEntry.setNextEntry())
+		if (sParam.jrnEntry.setNextEntry()) {
 			sParam.txComBuf.addFastCom(GB_COM_PRD_GET_JRN_ENTRY);
+			curCom_ = 1;
+		}
+		break;
+
+	case KEY_LEFT:
+		if (device == AVANT_OPTO) {
+			if (curCom_ > 1) {
+				curCom_--;
+			} else {
+				curCom_ = sParam.jrnEntry.getNumOpticsEntries();
+			}
+		}
+		break;
+	case KEY_RIGHT:
+		if (device == AVANT_OPTO) {
+			if (curCom_ < sParam.jrnEntry.getNumOpticsEntries()) {
+				curCom_++;
+			} else {
+				curCom_ = 1;
+			}
+		}
 		break;
 
 	case KEY_CANCEL:

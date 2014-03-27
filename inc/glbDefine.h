@@ -314,7 +314,7 @@ enum eGB_TYPE_DEVICE {
 
 // TODO ОПТИКА - у Женьки программа одна, так что можно не делить
 // подстравиваться только под наличие команд (и их кол-ва) и защиты.
-// на данный момент сделаны только неисправности/предупреждения
+// на данный момент сделаны только применик/передатчик 8 команд
 };
 
 /// Устройство
@@ -496,7 +496,7 @@ enum eGB_COM {
 	GB_COM_PRD_SET_TEST_COM = 0xA6,		// +
 	GB_COM_PRD_RES_IND = 0xAA,			// +
 	GB_COM_SET_TIME = 0xB2,				// +
-	GB_COM_SET_COR_U_I = 0xB3,			// + TODO ОПТИКА это Резервирование
+	GB_COM_SET_COR_U_I = 0xB3,			// +
 	GB_COM_SET_TIME_SINCHR = 0xB5,		// +
 	GB_COM_SET_COM_PRM_KEEP = 0xB6, 	// + ! в Р400М это Uвых номинальное
 	GB_COM_SET_COM_PRD_KEEP = 0xB7, 	// + ! в Р400М это тип удаленного аппарата
@@ -1258,11 +1258,11 @@ public:
 	TDeviceStatus status;
 
 	/**	Возвращает максимальное кол-во аппаратов в линии.
-	 * 	@retval 2 В случае 2-х концевой версии
-	 * 	@retval 3 Во всех остальных случаях.
+	 * 	@retval 3 В случае 3-х концевой версии
+	 * 	@retval 2 Во всех остальных случаях.
 	 */
 	uint8_t getMaxNumDevices() const {
-		return (numDevices_ == GB_NUM_DEVICES_2) ? 2 : 3;
+		return (numDevices_ == GB_NUM_DEVICES_3) ? 3 : 2;
 	}
 
 	/**	Возвращает кол-во аппаратов в линии (2-х, 3-х концевая).
@@ -3028,6 +3028,9 @@ public:
 		} else if (currentDevice_ == GB_DEVICE_PRD) {
 			min = GB_STATE_COM_MIN;
 			max = GB_STATE_COM_MAX;
+		} else if (currentDevice_ == GB_DEVICE_PRM) {
+			min = GB_STATE_COM_MIN;
+			max = GB_STATE_COM_MAX;
 		} else if (currentDevice_ == GB_DEVICE_DEF) {
 			min = 0;
 			max = MAX_NUM_DEVICE_STATE;
@@ -3043,6 +3046,68 @@ public:
 	}
 	uint8_t getEventType() const {
 		return eventType_;
+	}
+
+
+	/**	Установка записей для журналов ОПТИКИ.
+	 * 	Считываются 4 байта, старшим вперед.
+	 * 	Каждый установленный бит в них отвечает за свое событие.
+	 * 	@param buf Указатель на массив из 4 байт данных.
+	 * 	@retval True - всегда.
+	 */
+	bool setOpticEntry(uint8_t *buf) {
+		uint8_t num = 0;
+		uint8_t byte = 0;
+
+		// В каждом байте записи считается кол-во установленных битов
+		for(uint_fast8_t i = 0; i <= 3; i++) {
+			byte = *buf++;
+			opticEntry_[i] = byte;
+			for(uint_fast8_t j = 1; j > 0; j <<= 1) {
+				if (byte & j) {
+					num++;
+				}
+			}
+		}
+		numOpticEntries_ = num;
+
+		return true;
+	}
+
+	/** Возвращает кол-во активных событий в журнале ОПТИКИ.
+	 * 	Для журнала событий это кол-во событий, для команд - команд.
+	 * 	@return Кол-во активных собыйтив журнале ОПТИКИ
+	 */
+	uint8_t getNumOpticsEntries() const {
+		return numOpticEntries_;
+	}
+
+	/** Ищет и возвращает код события, исходя из номера события.
+	 * 	Т.е. если у нас в записи 5 активных событий, для каждого из них
+	 * 	можно получить код записи (например номер команды).
+	 * 	@param num Номер события, начиная с 1.
+	 * 	@return Код события (0 - в случае ошибки).
+	 */
+	uint8_t getOpticEntry(uint8_t num) {
+		uint8_t val = 0;
+		uint8_t byte = 0;
+
+		// проверка на допустимое значение
+		if ((num >= 1) && (num <= numOpticEntries_)) {
+			for(uint_fast8_t i = 0; i <= 3; i++) {
+				// перебор 4-х байт, начиная с младшего
+				byte = opticEntry_[3 - i];
+				for(uint_fast8_t j = 0; j < 8; j++) {
+					if (byte & (1 << j)) {
+						if (--num == 0) {
+							// номер установленного бита, от 1 до 32
+							val = 1 + ((i * 8) + j);
+						}
+					}
+				}
+			}
+		}
+		return val;
 	}
 
 	// режим
@@ -3208,6 +3273,12 @@ private:
 	bool signalPrm_;
 	bool signalPrd_;
 	bool signalOut_;
+
+	// буфер записи для журналов ОПТИКИ
+	uint8_t opticEntry_[4];
+
+	// кол-во событий в одной записи журнала ОПТИКИ
+	uint8_t numOpticEntries_;
 
 	// кол-во записей в журнале
 	uint16_t numJrnEntries_;
