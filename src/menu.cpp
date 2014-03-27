@@ -1746,6 +1746,7 @@ void clMenu::lvlControl() {
 			Punkts_.add(punkt03);
 		} else if (device == AVANT_OPTO) {
 			Punkts_.add(punkt03);
+			Punkts_.add(punkt04);
 		}
 
 		// доплнительные команды
