@@ -3537,13 +3537,12 @@ private:
 		if (t & 0x01) {
 			signal = GB_SIGNAL_CF;
 		} else {
-			t = getSetBit((*(++s)) & 0x0F);
+			t = getSetBit(*(++s));
 			if (t != 0) {
 				t = (t - 1) + GB_SIGNAL_COM1;
 				signal = (eGB_TEST_SIGNAL) t;
 			}
 		}
-
 		return signal;
 	}
 };

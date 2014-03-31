@@ -3867,17 +3867,19 @@ void clMenu::lvlTest1() {
 	static char title[] PROGMEM = "Тесты\\Передатчик";
 	static char punkt1[] PROGMEM = "Сигналы передатчика";
 	static uint8_t cnt = 0;		// счетчик до выхода при ошибочном режиме
+	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
 	if (lvlCreate_) {
-		lvlCreate_ = false;
 
+
+		lvlCreate_ = false;
 		cursorLine_ = 1;
 		cursorEnable_ = true;
+		// в оптике не надо выводить доп.параметры
+		lineParam_ = (device == AVANT_OPTO) ? 1 : 2;
 
-		lineParam_ = 2;
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
-
 		cnt = 0;
 
 		// дополнительные команды
@@ -3886,7 +3888,6 @@ void clMenu::lvlTest1() {
 		sParam.txComBuf.addCom2(GB_COM_GET_TEST);	// сигналы
 
 		// сигналы для тестов
-		eGB_TYPE_DEVICE device = sParam.typeDevice;
 		sParam.test.clear();
 		if (device == AVANT_R400M) {
 			sParam.test.addSignalToList(GB_SIGNAL_RZ);
@@ -3923,9 +3924,11 @@ void clMenu::lvlTest1() {
 		}
 	}
 
-	// вывод на экран измеряемых параметров
-	printMeasParam(2, MENU_MEAS_PARAM_UOUT);
-	printMeasParam(3, MENU_MEAS_PARAM_IOUT);
+	// вывод на экран измеряемых параметров, если это не оптика
+	if (device != AVANT_OPTO) {
+		printMeasParam(2, MENU_MEAS_PARAM_UOUT);
+		printMeasParam(3, MENU_MEAS_PARAM_IOUT);
+	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 	snprintf_P(&vLCDbuf[lineParam_ * 20], 21, punkt1);
@@ -3965,10 +3968,12 @@ void clMenu::lvlTest1() {
 
 	// выход из теста при несоответствии режима
 	if (sParam.glb.status.getRegime() != GB_REGIME_TEST_1) {
-		if (++cnt >= TIME_TEST_EXIT)
+		if (++cnt >= TIME_TEST_EXIT) {
 			key_ = KEY_CANCEL;
-	} else
+		}
+	} else {
 		cnt = 0;
+	}
 
 	switch (key_) {
 	case KEY_CANCEL:
@@ -4001,14 +4006,14 @@ void clMenu::lvlTest2() {
 	static char title[] PROGMEM = "Тесты\\Приемник";
 	static char punkt1[] PROGMEM = "Сигналы приемника";
 	static uint8_t cnt = 0;		// счетчик до выхода при ошибочном режиме
+	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 
 		cursorLine_ = 1;
 		cursorEnable_ = true;
-
-		lineParam_ = 2;
+		lineParam_ = (device == AVANT_OPTO) ? 1 : 2;
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 		cnt = 0;
@@ -4019,10 +4024,12 @@ void clMenu::lvlTest2() {
 		sParam.txComBuf.addCom2(GB_COM_GET_TEST);	// сигналы
 	}
 
-	// вывод на экран измеряемых параметров
+	// вывод на экран измеряемых параметров, если это не оптика
 	// TODO Р400м учесть что в 3-х концевой может быть 2Uk/2Uz
-	printMeasParam(2, MENU_MEAS_PARAM_UC);
-	printMeasParam(3, MENU_MEAS_PARAM_UZ);
+	if (device != AVANT_OPTO) {
+		printMeasParam(2, MENU_MEAS_PARAM_UC);
+		printMeasParam(3, MENU_MEAS_PARAM_UZ);
+	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 	snprintf_P(&vLCDbuf[lineParam_ * 20], 21, punkt1);
@@ -4033,10 +4040,12 @@ void clMenu::lvlTest2() {
 
 	// выход из теста при несооответствии режима
 	if (sParam.glb.status.getRegime() != GB_REGIME_TEST_2) {
-		if (++cnt >= TIME_TEST_EXIT)
+		if (++cnt >= TIME_TEST_EXIT) {
 			key_ = KEY_CANCEL;
-	} else
+		}
+	} else {
 		cnt = 0;
+	}
 
 	switch (key_) {
 	case KEY_CANCEL:
