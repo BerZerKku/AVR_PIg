@@ -72,9 +72,9 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 		// команды изменения Режимов Работы и работы с Тестами
 		// по умолчанию отправляется только код команды
 
-		if (com == GB_COM_SET_CONTROL)
+		if (com == GB_COM_SET_CONTROL) {
 			num = addCom(com, sParam_->txComBuf.getInt8());
-		else if (com == GB_COM_SET_REG_TEST_1) {
+		} else if (com == GB_COM_SET_REG_TEST_1) {
 			// есть две возможные ситуации:
 			// отсылается команда включения Тестов
 			// 		при этом передается 0 байт данных

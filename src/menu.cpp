@@ -146,8 +146,9 @@ void clMenu::main(void) {
 	}
 
 	// счетчик вывода сообщения
-	if (delay_ < TIME_MESSAGE)
+	if (delay_ < TIME_MESSAGE) {
 		delay_++;
+	}
 
 	// вывод в буфер содержимого текущего меню
 	// либо сообщения что тип аппарата не определен
@@ -438,6 +439,9 @@ bool clMenu::setDeviceOPTO() {
 	// заполнение массива общих предупреждений
 	sParam.glb.status.warningText[0] = fcGlbWarning01;
 	// 1-15 нет
+	sParam.glb.status.warningText[4] = fcGlbWarning10;
+	sParam.glb.status.warningText[5] = fcGlbWarning20;
+	sParam.glb.status.warningText[6] = fcGlbWarning40;
 
 	// ЗАЩИТА
 	// заполнение массива неисправностей защиты
@@ -978,7 +982,6 @@ void clMenu::lvlJournal() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		eGB_TYPE_DEVICE type = sParam.typeDevice;
 		sParam.txComBuf.clear();
 
 		// активация необходимых пунктов меню и соответствующих им команд

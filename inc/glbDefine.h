@@ -2849,6 +2849,7 @@ public:
 		for(uint_fast8_t i = 0; i < MAX_NUM_FAST_COM; i++) {
 			if (comFast_[i] == GB_COM_NO) {
 				comFast_[i] = com;
+				break;
 			}
 		}
 	}
