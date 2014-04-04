@@ -112,6 +112,8 @@ void clMenu::main(void) {
 	static uint8_t cntInitLcd = 0;
 	static uint8_t cntBlinkMeas = 0;
 	static uint8_t cntBlinkText = 0;
+	// предыдущее состояние флага наличия связи с БСП
+	static bool lastConnection = false;
 
 	if (++cntBlinkMeas >= TIME_MEAS_PARAM) {
 		blinkMeasParam_ = !blinkMeasParam_;
@@ -131,8 +133,9 @@ void clMenu::main(void) {
 	// настройка аппарата, если произошла смена:
 	// кол-ва аппаратов в линии
 	// типа совместимости (Р400м)
-	if (!sParam.device)
+	if (!sParam.device) {
 		setDevice(sParam.typeDevice);
+	}
 
 	// Считаем код с клавиатуры
 	// Если нажата любая кнопка - включится кратковременная подсветка
@@ -174,9 +177,20 @@ void clMenu::main(void) {
 #endif
 
 	// вывод сообщения в случае отсутствия связи с БСП
-	if (!isConnectionBsp() && (blink_)) {
-		snprintf_P(&vLCDbuf[0], 20, fcNoConnectBsp);
+	bool connection = isConnectionBsp();
+	if (!connection) {
+		if (blink_) {
+			// если связи нет, периодически вместо измеряемых параметров
+			// выводится предупреждающая надпись
+			snprintf_P(&vLCDbuf[0], 20, fcNoConnectBsp);
+		}
+	} else if (!lastConnection) {
+		// если связь с БСП только восстановилась
+		// дважды пошлем команду опроса версии
+		sParam.txComBuf.addFastCom(GB_COM_GET_VERS);
+		sParam.txComBuf.addFastCom(GB_COM_GET_VERS);
 	}
+	lastConnection = connection;
 
 	// преобразование строки символов в данные для вывода на экран
 	vLCDputchar(vLCDbuf, lineParam_);
@@ -531,9 +545,9 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 
 		// если текущее устройство совпадает с новым, то ничего не делаем
 		// иначе прыгаем на начальный уровень
-		if (device == sParam.typeDevice)
+		if (device == sParam.typeDevice) {
 			status = true;
-		else {
+		} else {
 			sParam.typeDevice = device;
 			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
@@ -748,7 +762,6 @@ void clMenu::lvlStart() {
 					}
 				}
 			}
-
 		}
 	}
 	if (sParam.prm.status.isEnable()) {
@@ -2974,7 +2987,7 @@ void clMenu::lvlSetupParamGlb() {
 			}
 			Punkts_.add(punkt9, GB_COM_GET_NET_ADR);
 			Punkts_.add(punkt11, GB_COM_GET_FREQ);
-			Punkts_.add(punkt24, GB_COM_GET_COM_PRD_KEEP);	// TODO К400 команда "Совместимость"
+//			Punkts_.add(punkt24, GB_COM_GET_COM_PRD_KEEP);	// TODO К400 команда "Совместимость"
 			if (sParam.prd.status.isEnable()) {
 				Punkts_.add(punkt15, GB_COM_GET_COR_U_I);
 				Punkts_.add(punkt16, GB_COM_GET_COR_U_I);
@@ -4185,10 +4198,10 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 		break;
 
 	case KEY_UP:
-		EnterParam.incValue();
+		EnterParam.incValue(timePressKey());
 		break;
 	case KEY_DOWN:
-		EnterParam.decValue();
+		EnterParam.decValue(timePressKey());
 		break;
 
 	case KEY_ENTER:

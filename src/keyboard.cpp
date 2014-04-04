@@ -89,6 +89,12 @@ static const eKEY fcKeyOPTO[18] = { 					//
 
 /// код нажатой кнопки
 static eBUT keyPressed;
+/// время нажатия на кнопку (0..10)
+static uint_fast8_t timePress = 0;
+
+//
+#define PRESS_TIME_STEP 5
+#define PRESS_TIME_MAX 10
 
 /**	Возвращает значение нажатой кнопки
  * 	@param Нет
@@ -116,11 +122,20 @@ eKEY eKEYget(eGB_TYPE_DEVICE type) {
 		} else if (type == AVANT_OPTO) {
 			key = fcKeyOPTO[but];
 		}
-
 	}
 
 	keyPressed = BUT_NO;
 	return key;
+}
+
+/**	Возвращает флаг длительного нажатия.
+ * 	После опроса, флаг обнуляется.
+ * 	@retval True - длительное нажатие кнопки.
+ * 	@retval False - НЕ длительное нажатие кнопки
+ *
+ */
+uint8_t timePressKey() {
+	return (timePress / PRESS_TIME_STEP);
 }
 
 /**	Функция определения нажатой кнопки
@@ -178,6 +193,7 @@ void vKEYmain(void) {
 		keyPrev = tmpKey;
 		tmpKey = BUT_NO;
 		delay = TIME_DELAY;
+		timePress = 0;
 	} else {
 		if (delay > 0) {
 			if (tmpKey != BUT_NO) {
@@ -186,6 +202,9 @@ void vKEYmain(void) {
 			}
 		} else {
 			delay = TIME_DELAY_REPEAT;
+			if (timePress < PRESS_TIME_MAX) {
+				timePress++;
+			}
 		}
 	}
 
