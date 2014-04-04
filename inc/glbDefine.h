@@ -26,7 +26,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0105
+#define VERS 0x0106
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -325,6 +325,19 @@ enum eGB_DEVICE {
 	GB_DEVICE_PRD,
 	GB_DEVICE_GLB,
 	GB_DEVICE_MAX
+};
+
+/// Микросхемы имеющие прошивку
+enum eGB_IC {
+	GB_IC_MIN = 0,
+	GB_IC_BSP_MCU = 0,
+	GB_IC_BSP_DSP,
+	GB_IC_PI_MCU,
+	GB_IC_BSK_PLIS_PRD1,
+	GB_IC_BSK_PLIS_PRD2,
+	GB_IC_BSK_PLIS_PRM1,
+	GB_IC_BSK_PLIS_PRM2,
+	GB_IC_MAX
 };
 
 /// Тип канала связи
@@ -1253,6 +1266,10 @@ public:
 		corI_ = GLB_COR_I_DEC_MIN_F;
 		corU_ = GLB_COR_U_DEC_MIN_F;
 
+		for(uint_fast8_t i = 0; i < GB_IC_MAX; i++) {
+			versProgIC_[i] = 0;
+		}
+
 	}
 
 	TDeviceStatus status;
@@ -1323,21 +1340,76 @@ public:
 		return act;
 	}
 
-	// версия прошивки AtMega BSP
-	void setVersBsp(uint16_t versBsp) {
-		versBsp_ = versBsp;
-	}
-	uint16_t getVersBsp() const {
-		return versBsp_;
+//	// версия прошивки AtMega BSP
+//	void setVersBsp(uint16_t versBsp) {
+//		versBsp_ = versBsp;
+//	}
+//	uint16_t getVersBsp() const {
+//		return versBsp_;
+//	}
+//
+//	//  версия прошивки DSP
+//	void setVersDsp(uint16_t versDsp) {
+//		versDsp_ = versDsp;
+//	}
+//	uint16_t getVersDsp() const {
+//		return versDsp_;
+//	}
+//
+//	// версия прошивки БСК ПРД1
+//	void setVersBskPrd1(uint8_t vers) {
+//		versBskPrd1_ = vers;
+//	}
+//	uint16_t getVersBskPrd1() const {
+//		return versBskPrd1_;
+//	}
+//
+//	// версия прошивки БСК ПРД2
+//	void setVersBskPrd2(uint8_t vers) {
+//		versBskPrd2_ = vers;
+//	}
+//	uint16_t getVersBskPrd2() const {
+//		return versBskPrd2_;
+//	}
+
+	/**	Запись версии прошивки для микросхем АВАНТа.
+	 * 	Данные хранятся в переменной int16_t.
+	 * 	Старший байт - версия прошивки. Младший - ревизия.
+	 * 	Например: 2.3, где 2 - версия, 3 - ревизия.
+	 * 	@param vers Версия прошивки.
+	 * 	@param ic	Микросхема.
+	 */
+	void setVersProgIC16(uint16_t vers, eGB_IC ic) {
+		if (ic < GB_IC_MAX) {
+			versProgIC_[ic] = vers;
+		}
 	}
 
-	//  версия прошивки DSP
-	void setVersDsp(uint16_t versDsp) {
-		versDsp_ = versDsp;
+	/**	Запись версии прошивки для микросхема АВАНТа.
+	  * Данные хранятся в переменной int16_t.
+	 * 	Старший байт - версия прошивки. Младший - ревизия.
+	 * 	Например: 2.3, где 2 - версия, 3 - ревизия.
+	 * 	@param vers Версия прошивки.
+	 * 	@param ic	Микросхема.
+	 */
+	void setVersProgIC8(uint8_t vers, eGB_IC ic) {
+		if (ic < GB_IC_MAX) {
+			uint8_t hi = vers >> 4;
+			uint8_t low = vers & 0x0F;
+			versProgIC_[ic] = TO_INT16(hi, low);
+		}
 	}
-	uint16_t getVersDsp() const {
-		return versDsp_;
+
+	/**	Возвращает версию прошивки для указанной микросхемы АВАНТа.
+	 * 	Старший байт int16_t - версия прошивки, младший - ревизия.
+	 * 	Например: 2.3, где 2 - версия, 3 - ревизия.
+	 * 	@return Версия прошивки микросхемы.
+	 * 	@retval 0 В случае ошибочного номера микросхемы.
+	 */
+	uint16_t getVersProgIC(eGB_IC ic) {
+		return ((ic < GB_IC_MAX) ? versProgIC_[ic] : 0);
 	}
+
 
 	/**	Установка совместимости (тип удаленного аппарата).
 	 * 	@param val Совместимость.
@@ -1765,6 +1837,9 @@ public:
 	}
 
 private:
+	// версии прошивок микросхем
+	uint16_t versProgIC_[GB_IC_MAX];
+
 	// кол-во аппаратов в линии 2 или 3
 	eGB_NUM_DEVICES numDevices_;
 

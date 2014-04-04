@@ -489,9 +489,15 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 		// тип линии (вч, оптика, ...)
 		act |= sParam_->glb.setTypeLine((eGB_TYPE_LINE) buf[B6]);
 		// версия прошивки АТмега БСП
-		sParam_->glb.setVersBsp(TO_INT16(buf[B7], buf[B8]));
-		// версия прошивки DSP БСП
-		sParam_->glb.setVersDsp(TO_INT16(buf[B9], buf[B10]));
+		TDeviceGlb *glb = &sParam_->glb;
+		glb->setVersProgIC16(TO_INT16(buf[B7], buf[B8]) , GB_IC_BSP_MCU);
+		glb->setVersProgIC16(TO_INT16(buf[B9], buf[B10]), GB_IC_BSP_DSP);
+		glb->setVersProgIC16(VERS, GB_IC_PI_MCU);
+		glb->setVersProgIC8(buf[B12], GB_IC_BSK_PLIS_PRD1);
+		glb->setVersProgIC8(buf[B13], GB_IC_BSK_PLIS_PRD2);
+		glb->setVersProgIC8(buf[B14], GB_IC_BSK_PLIS_PRM1);
+		glb->setVersProgIC8(buf[B15], GB_IC_BSK_PLIS_PRM2);
+
 		// совместимость, только в Р400м
 		act |= sParam_->glb.setCompatibility((eGB_COMPATIBILITY) buf[B11]);
 

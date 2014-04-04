@@ -62,6 +62,19 @@ static const char fcRegime[GB_REGIME_MAX + 1][8] PROGMEM = {
 		"ошибка"	//
 };
 
+// режимы устройств
+static const char fcIC[GB_IC_MAX + 1][9] PROGMEM = {
+//		 12345678
+		"БСП MCU ",	//
+		"БСП DSP ",	//
+		"ПИ  MCU ",	//
+		"БСК ПРД1",	//
+		"БСК ПРД2",	//
+		"БСК ПРМ1",	//
+		"БСК ПРМ2",	//
+		"ошибка"
+};
+
 // режимы устройств, для ввода с клавиатуры
 static const char fcRegimeEnter[GB_REGIME_ENTER_MAX][STRING_LENGHT] PROGMEM = {
 // 		 1234567890

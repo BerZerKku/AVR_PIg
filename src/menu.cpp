@@ -514,7 +514,7 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 						|| (sParam.prd.status.isEnable())) {
 					device = AVANT_RZSK;
 				} else {
-					uint16_t vers = sParam.glb.getVersBsp() & 0xF000;
+					uint16_t vers = sParam.glb.getVersProgIC(GB_IC_BSP_MCU);
 					if ((vers & 0xF000) == 0xF000) {
 						device = AVANT_R400M;
 					}
@@ -925,17 +925,35 @@ void clMenu::lvlFirst() {
  * 	@return Нет
  */
 void clMenu::lvlInfo() {
-	static char title[] PROGMEM = "Меню\\Информация";
-	static char bspMcu[] PROGMEM = "БСП MCU : %02X.%02x";
-	static char bspDsp[] PROGMEM = "БСП DSP : %02X.%02x";
-	static char piMcu[] PROGMEM = "ПИ  MCU : %02X.%02x";
+	static char title[]  PROGMEM = "Меню\\Информация";
+	static char versProg[] 	PROGMEM = "%S: %02X.%02X";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		lineParam_ = 1;
+		cursorLine_ = 0;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
+
+		Punkts_.clear();
+		Punkts_.add(GB_IC_BSP_MCU);
+		if (sParam.typeDevice != AVANT_OPTO) {
+			Punkts_.add(GB_IC_BSP_DSP);				// только в оптике нет DSP
+		}
+		Punkts_.add(GB_IC_PI_MCU);
+		if (sParam.prd.status.isEnable()) {
+			Punkts_.add(GB_IC_BSK_PLIS_PRD1);
+			if (sParam.prd.getNumCom() > 16) {
+				Punkts_.add(GB_IC_BSK_PLIS_PRD2);
+			}
+		}
+		if (sParam.prm.status.isEnable()) {
+			Punkts_.add(GB_IC_BSK_PLIS_PRM1);
+			if (sParam.prm.getNumCom() > 16) {
+				Punkts_.add(GB_IC_BSK_PLIS_PRM2);
+			}
+		}
 
 		// доплнительные команды
 		// обновляется версия прошивок (на случай перепрошивки)
@@ -945,13 +963,41 @@ void clMenu::lvlInfo() {
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	uint16_t vers = sParam.glb.getVersBsp();
-	snprintf_P(&vLCDbuf[20], 21, bspMcu, (uint8_t) (vers >> 8), (uint8_t) vers);
-	vers = sParam.glb.getVersDsp();
-	snprintf_P(&vLCDbuf[40], 21, bspDsp, (uint8_t) (vers >> 8), (uint8_t) vers);
-	snprintf_P(&vLCDbuf[60], 21, piMcu, (uint8_t) (VERS >> 8), (uint8_t) VERS);
+	uint8_t numLines = NUM_TEXT_LINES - lineParam_;
+	uint8_t cntPunkts = cursorLine_;
+	for (uint_fast8_t line = lineParam_; line < NUM_TEXT_LINES; line++) {
+		uint8_t  ic = Punkts_.getNumber(cntPunkts);
+		uint16_t vers = sParam.glb.getVersProgIC((eGB_IC) ic);
+		snprintf_P(	&vLCDbuf[20*line], 21, versProg,
+				fcIC[ic],
+				(uint8_t) (vers >> 8),
+				(uint8_t) vers);
+
+		if (++cntPunkts >= Punkts_.getMaxNumPunkts()) {
+				break;
+		}
+	}
+//	for(uint_fast8_t line = lineParam_; line < NUM_TEXT_LINES; line++) {
+//		uint8_t  ic = Punkts_.getNumber(i) + cursorLine_;
+//		uint16_t vers = sParam.glb.getVersProgIC((eGB_IC) ic);
+//		snprintf_P(	&vLCDbuf[20*(i+1)], 21, versProg,
+//					fcIC[ic],
+//					(uint8_t) (vers >> 8),
+//					(uint8_t) vers);
+//	}
 
 	switch (key_) {
+	case KEY_UP:
+		if (cursorLine_ > 0) {
+			cursorLine_--;
+		}
+		break;
+	case KEY_DOWN:
+		if ((cursorLine_ + numLines) < Punkts_.getMaxNumPunkts()) {
+			cursorLine_++;
+		}
+		break;
+
 	case KEY_CANCEL:
 		lvlMenu = &clMenu::lvlFirst;
 		lvlCreate_ = true;
@@ -2230,7 +2276,7 @@ void clMenu::lvlSetupParamDef() {
 
 	// номер текущего параметра и их количество
 	uint8_t poz = 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, Punkts_.getVolume());
+	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, Punkts_.getMaxNumPunkts());
 
 	// название параметра
 	poz = 40;
@@ -2510,7 +2556,7 @@ void clMenu::lvlSetupParamPrm() {
 	snprintf_P(&vLCDbuf[0], 21, title);
 
 	uint8_t poz = 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, Punkts_.getVolume());
+	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, Punkts_.getMaxNumPunkts());
 
 	poz = 40;
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
@@ -2688,7 +2734,7 @@ void clMenu::lvlSetupParamPrd() {
 	snprintf_P(&vLCDbuf[0], 21, title);
 
 	uint8_t poz = 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, Punkts_.getVolume());
+	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, Punkts_.getMaxNumPunkts());
 
 	poz = 40;
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
@@ -3003,7 +3049,7 @@ void clMenu::lvlSetupParamGlb() {
 	snprintf_P(&vLCDbuf[0], 21, title);
 
 	uint8_t poz = 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, Punkts_.getVolume());
+	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, Punkts_.getMaxNumPunkts());
 
 	poz = 40;
 	snprintf_P(&vLCDbuf[poz], 21, name);
@@ -3633,7 +3679,7 @@ void clMenu::lvlSetupInterface() {
 	snprintf_P(&vLCDbuf[0], 21, title);
 
 	uint8_t poz = 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, Punkts_.getVolume());
+	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, Punkts_.getMaxNumPunkts());
 
 	poz = 40;
 	snprintf_P(&vLCDbuf[poz], 21, name);
@@ -3795,7 +3841,7 @@ void clMenu::lvlTest() {
 		sParam.txComBuf.clear();
 		if (sParam.typeDevice == AVANT_R400M) {
 			// совместимость в Р400М
-			sParam.txComBuf.addCom1(GB_COM_SET_COM_PRD_KEEP);
+			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
 		}
 	}
 
@@ -4261,7 +4307,7 @@ void clMenu::printPunkts() {
 		snprintf_P(&vLCDbuf[20 * line], 21, Punkts_.getName(cntPunkts),
 				cntPunkts + 1);
 
-		if (++cntPunkts >= Punkts_.getVolume())
+		if (++cntPunkts >= Punkts_.getMaxNumPunkts())
 			break;
 	}
 

@@ -297,7 +297,7 @@ public:
 			com_[i] = GB_COM_NO;
 	}
 
-	/**	Добавление пункта меню.
+	/**	Добавление пункта меню, через указатель.
 	 * 	@param name Имя пункта.
 	 * 	@param com Команда для запроса из БСП. По умолчанию - нет.
 	 * 	@retval True В случае успешного добавления.
@@ -307,6 +307,23 @@ public:
 		bool stat = false;
 		if (cnt_ < MAX_NUM_PUNKTS) {
 			name_[cnt_] = name;
+			com_[cnt_] = com;
+			cnt_++;
+			stat = true;
+		}
+		return stat;
+	}
+
+	/**	Добавление пункта меню, через номер элемента массива.
+	 * 	@param num	Номер пункта (имя).
+	 * 	@param com Команда для запроса из БСП. По умолчанию - нет.
+	 * 	@retval True В случае успешного добавления.
+	 * 	@retval False В случае ошибки добавления. Например, переполнен массив.
+	 */
+	bool add(uint8_t name, eGB_COM com=GB_COM_NO) {
+		bool stat = false;
+		if (cnt_ < MAX_NUM_PUNKTS) {
+			number_[cnt_] = name;
 			com_[cnt_] = com;
 			cnt_++;
 			stat = true;
@@ -342,9 +359,18 @@ public:
 	 * 	@return Название пункта.
 	 */
 	PGM_P getName(uint8_t num) {
-		if (num >= cnt_)
-			num = 0;
-		return name_[num];
+//		if (num >= cnt_)
+//			num = 0;
+//		return name_[num];
+		return ((num < cnt_) ? name_[num] : 0);
+	}
+
+	/**	Возвращает номер эелемента массива с именем указанного пункта меню.
+	 *	@param num	Номер пункта.
+	 * 	@return Название пункта.
+	 */
+	uint8_t getNumber(uint8_t num) {
+		return ((num < cnt_) ? number_[num] : 0);
 	}
 
 	/** Возвращает команду указанного пункта меню.
@@ -361,18 +387,20 @@ public:
 	 * 	@return Текущее кол-во пунктов меню.
 	 * 	@retval 0 - Пусто.
 	 */
-	uint8_t getVolume() {
+	uint8_t getMaxNumPunkts() {
 		return cnt_;
 	}
 
 private:
 	/// текущее кол-во пунктов
-			uint8_t cnt_;
+	uint8_t cnt_;
 	/// указатель на имя пункта
-			PGM_P name_[MAX_NUM_PUNKTS];
+	PGM_P name_[MAX_NUM_PUNKTS];
+	/// номер пункта, используется с массивами
+	uint8_t number_[MAX_NUM_PUNKTS];
 	/// команда для запроса из БСП, необходимая для данного пункта меню
-			eGB_COM com_[MAX_NUM_PUNKTS];
-		};
+	eGB_COM com_[MAX_NUM_PUNKTS];
+};
 
 // класс меню
 class clMenu {
@@ -534,13 +562,12 @@ private:
 
 	// перемещение курсора вверх
 	void cursorLineUp() {
-		cursorLine_ = (cursorLine_ > 1) ? cursorLine_ - 1 : Punkts_.getVolume();
+		cursorLine_=(cursorLine_>1)? cursorLine_-1 : Punkts_.getMaxNumPunkts();
 	}
-	;
 
 	// пермещение курсора вниз
 	void cursorLineDown() {
-		cursorLine_ = (cursorLine_ < Punkts_.getVolume()) ? cursorLine_ + 1 : 1;
+		cursorLine_=(cursorLine_<Punkts_.getMaxNumPunkts())? cursorLine_+1 : 1;
 	}
 
 	// вывод на экран текущих пунктов меню и курсора
