@@ -27,6 +27,7 @@ enum eKEY {
 	KEY_RIGHT,		// ¬право
 	KEY_UP,			// ¬верх
 
+	KEY_MENU,		// ¬ход в ћеню
 	KEY_RESET,		// —брос
 	KEY_PUSK,		// ѕуск	(ввод приемника в работу)
 	KEY_PUSK_UD,	// ”дал. ѕуск ѕ–ƒ

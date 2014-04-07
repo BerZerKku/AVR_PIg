@@ -100,7 +100,6 @@ public:
 					|| (s == MENU_ENTER_PARAM_LIST_2)) {
 				disc_ = 1;
 				fract_ = 1;
-				velocity_ = 1;
 			} else if ((s == MENU_ENTER_PASSWORD)
 					|| (s == MENU_ENTER_PASSWORD_NEW)) {
 				val_ = 0;
@@ -307,9 +306,6 @@ private:
 
 	// дискретность
 	uint16_t disc_;
-
-	// скорость изменения параметра
-	uint16_t velocity_;
 
 	// делитель
 	uint8_t fract_;

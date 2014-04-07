@@ -47,7 +47,7 @@ static const eKEY fcKeyR400M[18] = { 					//
 		KEY_EMPTY, 		KEY_DOWN, 		KEY_CANCEL,		//
 		//		дополнительные функции
 		KEY_EMPTY,		KEY_CALL,		KEY_PUSK_UD,	//
-		KEY_AC_PUSK, 	KEY_EMPTY,		KEY_AC_PUSK_UD,	//
+		KEY_AC_PUSK, 	KEY_MENU,		KEY_AC_PUSK_UD,	//
 		KEY_AC_RESET,	KEY_AC_REGIME,	KEY_PUSK_NALAD	//
 };
 
@@ -59,7 +59,7 @@ static const eKEY fcKeyK400[18] = { 					//
 		KEY_CANCEL, 	KEY_DOWN, 		KEY_EMPTY,		//
 		//		дополнительные функции
 		KEY_EMPTY,		KEY_EMPTY,		KEY_RESET_IND,	//
-		KEY_PUSK, 		KEY_EMPTY,		KEY_EMPTY,		//
+		KEY_PUSK, 		KEY_MENU,		KEY_EMPTY,		//
 		KEY_EMPTY,		KEY_EMPTY,		KEY_RESET		//
 };
 
@@ -71,7 +71,7 @@ static const eKEY fcKeyRZSK[18] = { 					//
 		KEY_EMPTY, 		KEY_DOWN, 		KEY_CANCEL,		//
 		//		дополнительные функции
 		KEY_EMPTY,		KEY_CALL,		KEY_PUSK_UD,	//
-		KEY_PUSK, 		KEY_EMPTY,		KEY_PUSK_NALAD,	//
+		KEY_PUSK, 		KEY_MENU,		KEY_PUSK_NALAD,	//
 		KEY_RESET_IND,	KEY_EMPTY,		KEY_EMPTY		//
 };
 
@@ -83,7 +83,7 @@ static const eKEY fcKeyOPTO[18] = { 					//
 		KEY_CANCEL, 	KEY_DOWN, 		KEY_EMPTY,		//
 		//		дополнительные функции
 		KEY_EMPTY,		KEY_EMPTY,		KEY_RESET_IND,	//
-		KEY_PUSK, 		KEY_EMPTY,		KEY_EMPTY,		//
+		KEY_PUSK, 		KEY_MENU,		KEY_EMPTY,		//
 		KEY_EMPTY,		KEY_EMPTY,		KEY_RESET		//
 };
 

@@ -148,6 +148,11 @@ void clMenu::main(void) {
 		vLCDsetLed(LED_SWITCH);
 	}
 
+	// подсветка включена всегда, если режим не "Введен"
+	if (sParam.glb.status.getRegime() != GB_REGIME_ENABLED) {
+		vLCDsetLed(LED_SWITCH);
+	}
+
 	// счетчик вывода сообщения
 	if (delay_ < TIME_MESSAGE) {
 		delay_++;
@@ -452,10 +457,12 @@ bool clMenu::setDeviceOPTO() {
 	// 10-15 нет
 	// заполнение массива общих предупреждений
 	sParam.glb.status.warningText[0] = fcGlbWarning01;
-	// 1-15 нет
+	sParam.glb.status.warningText[1] = fcGlbWarning02;
+	// 2-3 нет
 	sParam.glb.status.warningText[4] = fcGlbWarning10;
 	sParam.glb.status.warningText[5] = fcGlbWarning20;
 	sParam.glb.status.warningText[6] = fcGlbWarning40;
+	// 7-15 нет
 
 	// ЗАЩИТА
 	// заполнение массива неисправностей защиты
@@ -774,7 +781,7 @@ void clMenu::lvlStart() {
 	}
 
 	switch (key_) {
-	case KEY_ENTER:
+	case KEY_MENU:
 		lvlMenu = &clMenu::lvlFirst;
 		lvlCreate_ = true;
 		break;
@@ -928,6 +935,11 @@ void clMenu::lvlFirst() {
 		lvlCreate_ = true;
 		break;
 
+	case KEY_MENU:
+		lvlMenu = &clMenu::lvlStart;
+		lvlCreate_ = true;
+		break;
+
 	default:
 		break;
 	}
@@ -1016,6 +1028,11 @@ void clMenu::lvlInfo() {
 		lvlCreate_ = true;
 		break;
 
+	case KEY_MENU:
+		lvlMenu = &clMenu::lvlStart;
+		lvlCreate_ = true;
+		break;
+
 	default:
 		break;
 	}
@@ -1077,6 +1094,11 @@ void clMenu::lvlJournal() {
 		lvlMenu = &clMenu::lvlFirst;
 		lvlCreate_ = true;
 		break;
+	case KEY_MENU:
+		lvlMenu = &clMenu::lvlStart;
+		lvlCreate_ = true;
+		break;
+
 	case KEY_ENTER:
 		if (name == punkt1) {
 			lvlMenu = &clMenu::lvlJournalEvent;
@@ -1248,6 +1270,10 @@ void clMenu::lvlJournalEvent() {
 		lvlMenu = &clMenu::lvlJournal;
 		lvlCreate_ = true;
 		break;
+	case KEY_MENU:
+		lvlMenu = &clMenu::lvlStart;
+		lvlCreate_ = true;
+		break;
 
 	default:
 		break;
@@ -1357,7 +1383,10 @@ void clMenu::lvlJournalDef() {
 		lvlMenu = &clMenu::lvlJournal;
 		lvlCreate_ = true;
 		break;
-
+	case KEY_MENU:
+		lvlMenu = &clMenu::lvlStart;
+		lvlCreate_ = true;
+		break;
 	default:
 		break;
 	}
@@ -1507,6 +1536,10 @@ void clMenu::lvlJournalPrm() {
 
 	case KEY_CANCEL:
 		lvlMenu = &clMenu::lvlJournal;
+		lvlCreate_ = true;
+		break;
+	case KEY_MENU:
+		lvlMenu = &clMenu::lvlStart;
 		lvlCreate_ = true;
 		break;
 
@@ -1660,6 +1693,10 @@ void clMenu::lvlJournalPrd() {
 
 	case KEY_CANCEL:
 		lvlMenu = &clMenu::lvlJournal;
+		lvlCreate_ = true;
+		break;
+	case KEY_MENU:
+		lvlMenu = &clMenu::lvlStart;
 		lvlCreate_ = true;
 		break;
 
@@ -1848,6 +1885,10 @@ void clMenu::lvlControl() {
 		lvlMenu = &clMenu::lvlFirst;
 		lvlCreate_ = true;
 		break;
+	case KEY_MENU:
+		lvlMenu = &clMenu::lvlStart;
+		lvlCreate_ = true;
+		break;
 
 	case KEY_ENTER: {
 		if (name == punkt02) {
@@ -2010,6 +2051,11 @@ void clMenu::lvlSetup() {
 		lvlMenu = &clMenu::lvlFirst;
 		lvlCreate_ = true;
 		break;
+	case KEY_MENU:
+		lvlMenu = &clMenu::lvlStart;
+		lvlCreate_ = true;
+		break;
+
 	case KEY_ENTER: {
 		if (name == punkt1) {
 			lvlMenu = &clMenu::lvlRegime;
@@ -2038,6 +2084,8 @@ void clMenu::lvlSetup() {
 
 void clMenu::lvlRegime() {
 	static char title[] PROGMEM = "Настройка\\Режим";
+	eGB_REGIME reg = sParam.glb.status.getRegime();
+
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		cursorLine_ = 1;
@@ -2069,70 +2117,105 @@ void clMenu::lvlRegime() {
 		poz += 20;
 	}
 
+	// Ввод нового значения параметра.
+	// Сначала выбирается требуемый режим работы.
+	// При попытке перейти в режим "Выведен" из "Введен" или "Готов",
+	// происходит запрос пароля. При ошибочном пароле выводится сообщение.
 	if (EnterParam.isEnable()) {
-		// ввод нового значения параметра
 		eMENU_ENTER_PARAM stat = EnterParam.getStatus();
+		eGB_REGIME_ENTER val = GB_REGIME_ENTER_MAX;
 
 		// выбор функции ввода : пароль или параметр
 		(this->*enterFunc)();
 
 		if (stat == MENU_ENTER_PARAM_READY) {
-			// новое значение введено, надо передать в БСП
+			// проверим пароль, если пытаемся перейти в режим "Выведен"
+			// из режимов "Введен" и "Готов"
+			val = (eGB_REGIME_ENTER) EnterParam.getValueEnter();
 
-			eGB_REGIME_ENTER val =
-					(eGB_REGIME_ENTER) EnterParam.getValueEnter();
+			if ((reg == GB_REGIME_ENABLED) || (reg == GB_REGIME_READY)) {
+				if (val == GB_REGIME_ENTER_DISABLED) {
+					enterFunc = &clMenu::enterPassword;
+					EnterParam.setEnable(MENU_ENTER_PASSWORD);
+					EnterParam.setDopValue(static_cast<uint16_t>(val));
+					val = GB_REGIME_ENTER_MAX;
+				}
+			}
+		}
+
+		if (stat == MENU_ENTER_PASSWORD_READY) {
+			// проверка введеного пароля
+			if (sParam.password.check(EnterParam.getValue())) {
+				val = static_cast<eGB_REGIME_ENTER>(EnterParam.getDopValue());
+			} else {
+				EnterParam.printMessage();
+			}
+		}
+
+		if (val != GB_REGIME_ENTER_MAX) {
 			eGB_COM com = GB_COM_NO;
 
 			if (val == GB_REGIME_ENTER_DISABLED)
 				com = GB_COM_SET_REG_DISABLED;
 			else if (val == GB_REGIME_ENTER_ENABLED)
 				com = GB_COM_SET_REG_ENABLED;
-
 			sParam.txComBuf.addFastCom(com);
 			EnterParam.setDisable();
-		} else if (stat == MENU_ENTER_PASSWORD_READY) {
-			// пароль введен верно
-			// переход к вводу режима работы (можно только вывести)
-			if (sParam.password.check(EnterParam.getValue())) {
-				enterFunc = &clMenu::enterValue;
-				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-				EnterParam.setValueRange(GB_REGIME_ENTER_DISABLED,
-						GB_REGIME_ENTER_DISABLED);
-				EnterParam.setValue(GB_REGIME_ENTER_DISABLED);
-				EnterParam.list = fcRegimeEnter[0];
-				EnterParam.com = GB_COM_NO;
-			} else {
-				EnterParam.printMessage();
-			}
 		}
 	}
 
 	switch (key_) {
-	case KEY_CANCEL:
-		lvlMenu = &clMenu::lvlSetup;
-		lvlCreate_ = true;
-		break;
+		case KEY_CANCEL:
+			lvlMenu = &clMenu::lvlSetup;
+			lvlCreate_ = true;
+			break;
+		case KEY_MENU:
+			lvlMenu = &clMenu::lvlStart;
+			lvlCreate_ = true;
+			break;
 
-	case KEY_ENTER:
-		if (sParam.glb.status.getRegime() == GB_REGIME_ENABLED) {
-			// если хоть одно из имеющихся устройств введено
-			// на изменение режима требуется пароль
-			enterFunc = &clMenu::enterPassword;
-			EnterParam.setEnable(MENU_ENTER_PASSWORD);
-		} else {
-			// доступны режимы введен/выведен
+		case KEY_ENTER: {
+			uint8_t min = GB_REGIME_ENTER_DISABLED;
+			uint8_t max = GB_REGIME_ENTER_DISABLED;
+			uint8_t val = GB_REGIME_ENTER_DISABLED;
+
+			// "Введен" 	-> "Выведен"
+			// "Выведен" 	-> "Введен"
+			// "Готов" 		-> "Введен"	 / "Выведен"
+			// остальные 	-> "Выведен" / "Введен"
 			enterFunc = &clMenu::enterValue;
 			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-			EnterParam.setValueRange(GB_REGIME_ENTER_DISABLED,
-					GB_REGIME_ENTER_ENABLED);
-			EnterParam.setValue(GB_REGIME_ENTER_ENABLED);
+			switch(reg) {
+				case GB_REGIME_ENABLED:
+					min = GB_REGIME_ENTER_DISABLED;
+					max = GB_REGIME_ENTER_DISABLED;
+					val = GB_REGIME_ENTER_DISABLED;
+					break;
+				case GB_REGIME_ENTER_DISABLED:
+					min = GB_REGIME_ENTER_ENABLED;
+					max = GB_REGIME_ENTER_ENABLED;
+					val = GB_REGIME_ENTER_ENABLED;
+					break;
+				case GB_REGIME_READY:
+					min = GB_REGIME_ENTER_DISABLED;
+					max = GB_REGIME_ENTER_ENABLED;
+					val = GB_REGIME_ENTER_ENABLED;
+					break;
+				default:
+					min = GB_REGIME_ENTER_DISABLED;
+					max = GB_REGIME_ENTER_ENABLED;
+					val = GB_REGIME_ENTER_DISABLED;
+					break;
+			}
+			EnterParam.setValueRange(min, max);
+			EnterParam.setValue(val);
 			EnterParam.list = fcRegimeEnter[0];
 			EnterParam.com = GB_COM_NO;
-
 		}
 		break;
 
-	default:
+		default: {
+		}
 		break;
 	}
 }
@@ -2191,6 +2274,11 @@ void clMenu::lvlSetupParam() {
 		lvlMenu = &clMenu::lvlSetup;
 		lvlCreate_ = true;
 		break;
+	case KEY_MENU:
+		lvlMenu = &clMenu::lvlStart;
+		lvlCreate_ = true;
+		break;
+
 	case KEY_ENTER:
 		if (name == punkt1) {
 			lvlMenu = &clMenu::lvlSetupParamDef;
@@ -2424,10 +2512,14 @@ void clMenu::lvlSetupParamDef() {
 		lvlMenu = &clMenu::lvlSetupParam;
 		lvlCreate_ = true;
 		break;
+	case KEY_MENU:
+		lvlMenu = &clMenu::lvlStart;
+		lvlCreate_ = true;
+		break;
 
 	case KEY_ENTER:
 		enterFunc = &clMenu::enterValue;
-		if (sParam.def.status.getRegime() == GB_REGIME_ENABLED) {
+		if (sParam.def.status.getRegime() != GB_REGIME_DISABLED) {
 			// если хоть одно из имеющихся устройств введено
 			// изменение параметров запрещено
 			EnterParam.printMessage();
@@ -2655,10 +2747,14 @@ void clMenu::lvlSetupParamPrm() {
 		lvlMenu = &clMenu::lvlSetupParam;
 		lvlCreate_ = true;
 		break;
+	case KEY_MENU:
+		lvlMenu = &clMenu::lvlStart;
+		lvlCreate_ = true;
+		break;
 
 	case KEY_ENTER:
 		enterFunc = &clMenu::enterValue;
-		if (sParam.glb.status.getRegime() == GB_REGIME_ENABLED) {
+		if (sParam.glb.status.getRegime() != GB_REGIME_DISABLED) {
 			// если хоть одно из имеющихся устройств введено
 			// изменение параметров запрещено
 			EnterParam.printMessage();
@@ -2858,10 +2954,14 @@ void clMenu::lvlSetupParamPrd() {
 		lvlMenu = &clMenu::lvlSetupParam;
 		lvlCreate_ = true;
 		break;
+	case KEY_MENU:
+		lvlMenu = &clMenu::lvlStart;
+		lvlCreate_ = true;
+		break;
 
 	case KEY_ENTER:
 		enterFunc = &clMenu::enterValue;
-		if (sParam.glb.status.getRegime() == GB_REGIME_ENABLED) {
+		if (sParam.glb.status.getRegime() != GB_REGIME_DISABLED) {
 			// если хоть одно из имеющихся устройств введено
 			// изменение параметров запрещено
 			EnterParam.printMessage();
@@ -3062,7 +3162,8 @@ void clMenu::lvlSetupParamGlb() {
 	snprintf_P(&vLCDbuf[0], 21, title);
 
 	uint8_t poz = 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, Punkts_.getMaxNumPunkts());
+	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt,
+			cursorLine_, Punkts_.getMaxNumPunkts());
 
 	poz = 40;
 	snprintf_P(&vLCDbuf[poz], 21, name);
@@ -3318,6 +3419,10 @@ void clMenu::lvlSetupParamGlb() {
 		lvlMenu = &clMenu::lvlSetupParam;
 		lvlCreate_ = true;
 		break;
+	case KEY_MENU:
+		lvlMenu = &clMenu::lvlStart;
+		lvlCreate_ = true;
+		break;
 
 	case KEY_ENTER:
 		enterFunc = &clMenu::enterValue;
@@ -3344,7 +3449,7 @@ void clMenu::lvlSetupParamGlb() {
 			EnterParam.setFract(GLB_AC_IN_DEC_FRACT);
 			EnterParam.setDopValue(2);
 			EnterParam.com = GB_COM_SET_COR_U_I;
-		} else if (sParam.glb.status.getRegime() == GB_REGIME_ENABLED) {
+		} else if (sParam.glb.status.getRegime() != GB_REGIME_DISABLED) {
 			// если хоть одно из имеющихся устройств введено
 			// изменение параметров запрещено
 			EnterParam.printMessage();
@@ -3634,6 +3739,10 @@ void clMenu::lvlSetupDT() {
 		lvlMenu = &clMenu::lvlSetup;
 		lvlCreate_ = true;
 		break;
+	case KEY_MENU:
+		lvlMenu = &clMenu::lvlStart;
+		lvlCreate_ = true;
+		break;
 
 	default:
 		break;
@@ -3769,6 +3878,10 @@ void clMenu::lvlSetupInterface() {
 		lvlMenu = &clMenu::lvlSetup;
 		lvlCreate_ = true;
 		break;
+	case KEY_MENU:
+		lvlMenu = &clMenu::lvlStart;
+		lvlCreate_ = true;
+		break;
 
 	case KEY_ENTER:
 		enterFunc = &clMenu::enterValue;
@@ -3884,6 +3997,11 @@ void clMenu::lvlTest() {
 		lvlMenu = &clMenu::lvlFirst;
 		lvlCreate_ = true;
 		break;
+	case KEY_MENU:
+		lvlMenu = &clMenu::lvlStart;
+		lvlCreate_ = true;
+		break;
+
 	case KEY_ENTER:
 		if (name == punkt1) {
 			if ((reg == GB_REGIME_DISABLED) || (reg == GB_REGIME_TEST_2)) {
@@ -4038,23 +4156,27 @@ void clMenu::lvlTest1() {
 	}
 
 	switch (key_) {
-	case KEY_CANCEL:
-		sParam.txComBuf.addFastCom(GB_COM_SET_REG_DISABLED);
-		lvlMenu = &clMenu::lvlTest;
-		lvlCreate_ = true;
-		break;
+		case KEY_CANCEL:
+			sParam.txComBuf.addFastCom(GB_COM_SET_REG_DISABLED);
+			lvlMenu = &clMenu::lvlTest;
+			lvlCreate_ = true;
+			break;
+		case KEY_MENU:
+			lvlMenu = &clMenu::lvlStart;
+			lvlCreate_ = true;
+			break;
 
-	case KEY_ENTER:
-		EnterParam.setValue(0);
-		EnterParam.setEnable(MENU_ENTER_PARAM_LIST_2);
-		EnterParam.setValueRange(0, sParam.test.getNumSignals() - 1);
-		EnterParam.listValue = sParam.test.signalList;
-		EnterParam.list = fcTest1K400[0];
-		EnterParam.com = GB_COM_SET_REG_TEST_1;
-		break;
+		case KEY_ENTER:
+			EnterParam.setValue(0);
+			EnterParam.setEnable(MENU_ENTER_PARAM_LIST_2);
+			EnterParam.setValueRange(0, sParam.test.getNumSignals() - 1);
+			EnterParam.listValue = sParam.test.signalList;
+			EnterParam.list = fcTest1K400[0];
+			EnterParam.com = GB_COM_SET_REG_TEST_1;
+			break;
 
-	default:
-		break;
+		default:
+			break;
 	}
 }
 
@@ -4110,14 +4232,18 @@ void clMenu::lvlTest2() {
 	}
 
 	switch (key_) {
-	case KEY_CANCEL:
-		sParam.txComBuf.addFastCom(GB_COM_SET_REG_DISABLED);
-		lvlMenu = &clMenu::lvlTest;
-		lvlCreate_ = true;
-		break;
+		case KEY_CANCEL:
+			sParam.txComBuf.addFastCom(GB_COM_SET_REG_DISABLED);
+			lvlMenu = &clMenu::lvlTest;
+			lvlCreate_ = true;
+			break;
+		case KEY_MENU:
+			lvlMenu = &clMenu::lvlStart;
+			lvlCreate_ = true;
+			break;
 
-	default:
-		break;
+		default:
+			break;
 	}
 }
 
