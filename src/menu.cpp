@@ -4212,7 +4212,10 @@ void clMenu::lvlTest2() {
 	// TODO Р400м учесть что в 3-х концевой может быть 2Uk/2Uz
 	if (device != AVANT_OPTO) {
 		printMeasParam(2, MENU_MEAS_PARAM_UC);
-		printMeasParam(3, MENU_MEAS_PARAM_UZ);
+
+		if (sParam.def.status.isEnable()) {
+			printMeasParam(3, MENU_MEAS_PARAM_UZ);
+		}
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
