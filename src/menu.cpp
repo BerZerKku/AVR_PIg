@@ -3071,6 +3071,8 @@ void clMenu::lvlSetupParamGlb() {
 		sParam.txComBuf.clear();
 		Punkts_.clear();
 		if (type == AVANT_K400) {
+			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
+
 			Punkts_.add(punkt1, GB_COM_GET_TIME_SINCHR);
 			Punkts_.add(punkt2, GB_COM_GET_DEVICE_NUM);
 			if (sParam.prd.status.isEnable()) {
@@ -3095,6 +3097,8 @@ void clMenu::lvlSetupParamGlb() {
 				Punkts_.add(punkt16, GB_COM_GET_COR_U_I);
 			}
 		} else if (type == AVANT_RZSK) {
+			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
+
 			Punkts_.add(punkt1, GB_COM_GET_TIME_SINCHR);
 			Punkts_.add(punkt3, GB_COM_GET_OUT_CHECK);
 			Punkts_.add(punkt4rzsk, GB_COM_GET_CF_THRESHOLD);
