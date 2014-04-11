@@ -1909,6 +1909,12 @@ void clMenu::lvlControl() {
 		} else if (name == punkt07) {
 			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_OFF);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+		} else if (name == punkt09) {
+			sParam.txComBuf.setInt8(GB_CONTROL_MAN_1);
+			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+		} else if (name == punkt10) {
+			sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
+			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
 		} else if (name == punkt11) {
 			sParam.txComBuf.setInt8(GB_CONTROL_RESET_AC);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
@@ -1933,16 +1939,19 @@ void clMenu::lvlControl() {
 		} else if (name == punkt17) {
 			sParam.txComBuf.setInt8(GB_TYPE_AC_OFF);
 			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+		} else if (name == punkt18) {
+			sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
+			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
 		} else if (name == punkt19) {
 			sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_NORM);
 			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-		}
-//		else if (p == punkt21)
-//		{
+		} else if (name == punkt20) {
+			sParam.txComBuf.setInt8(GB_TYPE_AC_CHECK);
+			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+//		} else if (p == punkt21) {
 //			sParam.txComBuf.setInt8(GB_TYPE_AC_CHECK);
 //			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-//		}
-		else if (name == punkt22) {
+		} else if (name == punkt22) {
 			sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 		} else if (name == punkt23) {
