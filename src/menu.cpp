@@ -2305,18 +2305,20 @@ void clMenu::lvlSetupParam() {
  * 	@return Нет
  */
 void clMenu::lvlSetupParamDef() {
-	static char title[] PROGMEM = "Параметры\\Защита";
-	static char punkt1[] PROGMEM = "Тип защиты";
-	static char punkt2[] PROGMEM = "Тип линии";
-	static char punkt3[] PROGMEM = "Доп. время без ман.";
-	static char punkt4[] PROGMEM = "Перекрытие импульсов";
-	static char punkt5[] PROGMEM = "Компенсация задержки";
-	static char punkt6[] PROGMEM = "Порог предупр. по РЗ";
-	static char punkt7[] PROGMEM = "Загрубление чувствит";
-	static char punkt8[] PROGMEM = "Тип приемника";
-	static char punkt9[] PROGMEM = "Снижение уровня АК";
+	//								 12345678901234567890
+	static char title[]   PROGMEM = "Параметры\\Защита";
+	static char punkt1[]  PROGMEM = "Тип защиты";
+	static char punkt2[]  PROGMEM = "Тип линии";
+	static char punkt3[]  PROGMEM = "Доп. время без ман.";
+	static char punkt4[]  PROGMEM = "Перекрытие импульсов";
+	static char punkt5[]  PROGMEM = "Компенсация задержки";
+	static char punkt6[]  PROGMEM = "Порог предупр. по РЗ";
+	static char punkt7[]  PROGMEM = "Загрубление чувствит";
+	static char punkt8[]  PROGMEM = "Тип приемника";
+	static char punkt9[]  PROGMEM = "Снижение уровня АК";
 	static char punkt10[] PROGMEM = "Частота ПРД";
 	static char punkt11[] PROGMEM = "Частота ПРМ";
+	static char punkt12[] PROGMEM = "Загрубл. чувств. РЗ";	// ==punkt7 для РЗСК
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -2345,7 +2347,7 @@ void clMenu::lvlSetupParamDef() {
 			Punkts_.add(punkt4, GB_COM_DEF_GET_OVERLAP);
 			Punkts_.add(punkt5, GB_COM_DEF_GET_DELAY);
 			Punkts_.add(punkt6, GB_COM_DEF_GET_RZ_THRESH);
-			Punkts_.add(punkt7, GB_COM_DEF_GET_RZ_DEC);
+			Punkts_.add(punkt12, GB_COM_DEF_GET_RZ_DEC);
 			Punkts_.add(punkt8, GB_COM_DEF_GET_PRM_TYPE);
 		} else if (type == AVANT_R400M) {
 			eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
@@ -2411,7 +2413,7 @@ void clMenu::lvlSetupParamDef() {
 	} else if (name == punkt6) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, DEF_RZ_THRESH_MIN,
 				DEF_RZ_THRESH_MAX, "дБ");
-	} else if (name == punkt7) {
+	} else if ((name == punkt7) || (name == punkt12)) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, DEF_RZ_DEC_MIN,
 				DEF_RZ_DEC_MAX, "дБ");
 	} else if (name == punkt8) {
@@ -2443,7 +2445,7 @@ void clMenu::lvlSetupParamDef() {
 				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
 			} else if (name == punkt6) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-			} else if (name == punkt7) {
+			} else if ((name == punkt7) || (name == punkt12)) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if (name == punkt8) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
@@ -2478,7 +2480,7 @@ void clMenu::lvlSetupParamDef() {
 			snprintf(&vLCDbuf[poz], 11, "%dград", val);
 		} else if (name == punkt6) {
 			snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.def.getRzThreshold());
-		} else if (name == punkt7) {
+		} else if ((name == punkt7) || (name == punkt12)) {
 			snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.def.getRzDec());
 		} else if (name == punkt8) {
 			snprintf_P(&vLCDbuf[poz], 11, fcPrmType[sParam.def.getPrmType()]);
@@ -2571,7 +2573,7 @@ void clMenu::lvlSetupParamDef() {
 				EnterParam.setDisc( DEF_RZ_THRESH_DISC);
 				EnterParam.setFract(DEF_RZ_THRESH_FRACT);
 				EnterParam.com = GB_COM_DEF_SET_RZ_THRESH;
-			} else if (name == punkt7) {
+			} else if ((name == punkt7) || (name == punkt12)) {
 				// TODO Р400 в 3-х концевой 2 разных
 				EnterParam.setEnable();
 				EnterParam.setValueRange(DEF_RZ_DEC_MIN, DEF_RZ_DEC_MAX);
@@ -3035,7 +3037,7 @@ void clMenu::lvlSetupParamGlb() {
 	static char punkt5[] PROGMEM 	= "Время перезапуска";
 	static char punkt6[] PROGMEM 	= "Удерж. реле ком. ПРД";
 	static char punkt7[] PROGMEM 	= "Удерж. реле ком. ПРМ";
-	static char punkt8[] PROGMEM 	= "Уменьшение усил.ПРМ";
+	static char punkt8[] PROGMEM 	= "Загрубл. чувств. ПРМ";
 	static char punkt9[] PROGMEM 	= "Сетевой адрес";
 	static char punkt10[] PROGMEM 	= "Uвых номинальное";
 	static char punkt11[] PROGMEM 	= "Частота";
