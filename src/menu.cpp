@@ -3674,9 +3674,41 @@ void clMenu::lvlSetupDT() {
 
 		if (stat == MENU_ENTER_PARAM_READY) {
 			// копирование введеного значение на свое место
-			sParam.txComBuf.setInt8(BIN_TO_BCD(EnterParam.getValueEnter()),
-					EnterParam.getDopValue());
-			sParam.txComBuf.addFastCom(EnterParam.com);
+//			sParam.txComBuf.setInt8(BIN_TO_BCD(EnterParam.getValueEnter()),
+//					EnterParam.getDopValue());
+			uint8_t t = EnterParam.getDopValue();
+			uint8_t val = EnterParam.getValueEnter();
+			if (t <= 2) {
+				// ввод даты
+				// подменим сохраненное врем€ на текущее
+				if (t == 0) {
+					// ввод года, проверим дату, т.к. может быть високосный
+					uint8_t month = BCD_TO_BIN(sParam.txComBuf.getInt8(1));
+					uint8_t day = BCD_TO_BIN(sParam.txComBuf.getInt8(2));
+					if (day > sParam.dataTime.getNumDaysInMonth(month, val)) {
+						sParam.txComBuf.setInt8(0x01, 2);
+					}
+				} else if (t == 1) {
+					// ввод мес€ца, проверим кол-во установленных дней
+					uint8_t day = BCD_TO_BIN(sParam.txComBuf.getInt8(2));
+					if (day > sParam.dataTime.getNumDaysInMonth(val)) {
+						sParam.txComBuf.setInt8(0x01, 2);
+					}
+				}
+				sParam.txComBuf.setInt8(BIN_TO_BCD(val), t);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getHour()), 3);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getMinute()), 4);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getSecond()), 5);
+				sParam.txComBuf.addFastCom(EnterParam.com);
+			} else if (t <= 5) {
+				// ввод времени
+				// подменим сохраненную дату на текущую
+				sParam.txComBuf.setInt8(BIN_TO_BCD(val), t);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getYear()), 0);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getMonth()), 1);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getDay()), 2);
+				sParam.txComBuf.addFastCom(EnterParam.com);
+			}
 			EnterParam.setDisable();
 		}
 	} else

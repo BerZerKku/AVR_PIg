@@ -953,17 +953,22 @@ public:
 	}
 
 	// возвращает кол-во дней в месяце
-	// если месяц не задан, возвращается для текущего
-	uint8_t getNumDaysInMonth(uint8_t month = 0) const {
+	// если месяц или год не заданы, возвращается для текущего
+	uint8_t getNumDaysInMonth(uint8_t month = 0, uint8_t year = 0) const {
 		uint8_t num = 0;
 
-		if (month == 0)
+		if (month == 0) {
 			month = month_;
+		}
+
+		if (year == 0) {
+			year = year_;
+		}
 
 		if ((month == 4) || (month == 6) || (month == 9) || (month == 11)) {
 			num = 30;
 		} else if (month == 2) {
-			num = ((year_ % 4) == 0) ? 29 : 28;
+			num = ((year % 4) == 0) ? 29 : 28;
 		} else if ((month != 0) && (month < 13)) {
 			num = 31;
 		}
