@@ -26,7 +26,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0108
+#define VERS 0x0109
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -3538,9 +3538,9 @@ private:
 	}
 
 	/** Добавление сигнала в список для РЗСК.
-	 * 	бит: 7		6		5		4		3		2		1		0		;
-	 * 	b1 : 0 		0 		0 		0 		[рз2] 	[рз1] 	[кч2] 	[кч1]	;
-	 * 	b2 : [ком8] [ком7]	[ком6] 	[ком5] 	[ком4] 	[ком3] 	[ком2] 	[ком1]	;
+	 * 	бит: 7	6	5	4	3		2		1		0		;
+	 * 	b1 : 0 	0 	0	0	[рз2] 	[рз1] 	[кч2] 	[кч1]	;
+	 * 	b2 : 0	0	0 	0 	[ком4] 	[ком3] 	[ком2] 	[ком1]	;
 	 * 	Установленный бит означает наличие данного сигнала на передачу.
 	 * 	Если есть сигнал РЗ, но нет ни команд ни КЧ. Считаем что КЧ есть!
 	 * 	рз1 + кч1 = кч без блок			;
@@ -3553,32 +3553,25 @@ private:
 	eGB_TEST_SIGNAL getCurrentSignalRZSK(uint8_t *s) {
 		eGB_TEST_SIGNAL signal = GB_SIGNAL_OFF;
 
-		uint8_t t = *s;
-		if ((t & 0x05) == 0x05)
-			signal = GB_SIGNAL_CF_NO_RZ;
-		else if ((t & 0x09) == 0x09)
-			signal = GB_SIGNAL_CF_RZ;
-		else {
-			if (t & 0x04) {
-				t = getSetBit((*(++s)) & 0x0F);
-				if (t != 0) {
-					t = (t - 1) + GB_SIGNAL_COM1_NO_RZ;
-					signal = (eGB_TEST_SIGNAL) t;
-				} else {
-					// сигнал РЗ есть, а команд и кч нет -> считаем что КЧ есть
-					signal = GB_SIGNAL_CF_NO_RZ;
-				}
-			} else if (t & 0x08) {
-				t = getSetBit((*(++s)) & 0x0F);
-				if (t != 0) {
-					t = (t - 1) + GB_SIGNAL_COM1_RZ;
-					signal = (eGB_TEST_SIGNAL) t;
-				} else {
-					// сигнал РЗ есть, а команд и кч нет -> считаем что КЧ есть
-					signal = GB_SIGNAL_CF_RZ;
-				}
+		uint8_t b1 = (*s) & 0x0F;
+		uint8_t b2 = (*(++s)) & 0x0F;
+
+		if (b2) {
+			b2 = getSetBit(b2) - 1;
+			if (b1 & 0x04) {
+				signal = (eGB_TEST_SIGNAL) (b2 + GB_SIGNAL_COM1_NO_RZ);
+			} else if (b1 & 0x08) {
+				signal = (eGB_TEST_SIGNAL) (b2 + GB_SIGNAL_COM1_RZ);
+			}
+		} else if (b1) {
+			// если есть РЗ, то есть и КЧ
+			if (b1 & 0x04) {
+				signal = GB_SIGNAL_CF_NO_RZ;
+			} else if (b1 & 0x08) {
+				signal = GB_SIGNAL_CF_RZ;
 			}
 		}
+
 		return signal;
 	}
 
