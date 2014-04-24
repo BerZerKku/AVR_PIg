@@ -613,6 +613,8 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 
 		case GB_COM_GET_TEST: {
 			eGB_TYPE_DEVICE type = sParam_->typeDevice;
+			// определеим макимальное кол-во
+
 			sParam_->test.setCurrentSignal(&buf[B1], type);
 		}
 		break;

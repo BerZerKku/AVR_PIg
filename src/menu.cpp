@@ -2583,7 +2583,7 @@ void clMenu::lvlSetupParamDef() {
 				EnterParam.setFract(DEF_RZ_THRESH_FRACT);
 				EnterParam.com = GB_COM_DEF_SET_RZ_THRESH;
 			} else if ((name == punkt7) || (name == punkt12)) {
-				// TODO Р400 в 3-х концевой 2 разных
+				// TODO Р400М в 3-х концевой 2 разных
 				EnterParam.setEnable();
 				EnterParam.setValueRange(DEF_RZ_DEC_MIN, DEF_RZ_DEC_MAX);
 				EnterParam.setValue(sParam.def.getRzDec());
@@ -3062,7 +3062,7 @@ void clMenu::lvlSetupParamGlb() {
 	static char punkt21[] PROGMEM 	= "Допустимая помеха";
 	static char punkt22[] PROGMEM 	= "Тип автоконтроля";
 	static char punkt23[] PROGMEM 	= "Резервирование";
-	static char punkt24[] PROGMEM 	= "Совместимость";		// TODO K400
+	static char punkt24[] PROGMEM 	= "Совместимость";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
