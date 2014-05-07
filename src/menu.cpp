@@ -1979,7 +1979,7 @@ void clMenu::lvlControl() {
 			sParam.txComBuf.setInt8(GB_CONTROL_MAN_ALL);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 		} else if (name == punkt31) {
-			sParam.txComBuf.setInt8(GB_TYPE_AC_OFF);
+			sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_NORM);
 			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
 		}
 	}
