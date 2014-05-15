@@ -589,6 +589,8 @@ enum eGB_TEST_SIGNAL {
 	GB_SIGNAL_CF4,
 	GB_SIGNAL_CF_NO_RZ,				// РЗСК
 	GB_SIGNAL_CF_RZ,				// РЗСК
+	GB_SIGNAL_CF2_NO_RZ,			// РЗСК
+	GB_SIGNAL_CF2_RZ,				// РЗСК
 	GB_SIGNAL_RZ,
 	GB_SIGNAL_COM1_NO_RZ,			// РЗСК
 	GB_SIGNAL_COM2_NO_RZ,			// РЗСК
@@ -3420,6 +3422,12 @@ public:
 		} else if (sig == GB_SIGNAL_CF_RZ) {
 			rz = 2;
 			cf = 1;
+		} else if (sig == GB_SIGNAL_CF2_NO_RZ) {
+			rz = 1;
+			cf = 2;
+		} else if (sig == GB_SIGNAL_CF2_RZ) {
+			rz = 2;
+			cf = 2;
 		} else if (sig == GB_SIGNAL_RZ) {
 			rz = 1;
 			cf = 0;
@@ -3560,11 +3568,13 @@ private:
 	 * 	b1 : 0 	0 	0	0	[рз2] 	[рз1] 	[кч2] 	[кч1]	;
 	 * 	b2 : 0	0	0 	0 	[ком4] 	[ком3] 	[ком2] 	[ком1]	;
 	 * 	Установленный бит означает наличие данного сигнала на передачу.
-	 * 	Если есть сигнал РЗ, но нет ни команд ни КЧ. Считаем что КЧ есть!
-	 * 	рз1 + кч1 = кч без блок			;
-	 * 	рз2 + кч1 = кч с блок			;
-	 * 	рз1 + комN = команда без блок 	;
-	 * 	рз2 + комN = команда с блок		.
+	 * 	Если есть сигнал РЗ, но нет ни команд ни КЧ. Считаем что КЧ1 есть!
+	 * 	рз1 + комN = команда без блок;
+	 * 	рз2 + комN = команда с блок;
+	 * 	рз1 + кч2  = кч2 без блок;
+	 * 	рз2 + кч2  = кч2 с блок;
+	 * 	рз1 + кч1  = кч без блок;
+	 * 	рз2 + кч1  = кч с блок.
 	 * 	@param *s Указатель на массив данных.
 	 * 	@return Текущий тестовый сигнал.
 	 */
@@ -3583,9 +3593,13 @@ private:
 			}
 		} else if (b1) {
 			// если есть РЗ, то есть и КЧ
-			if (b1 & 0x04) {
+			if ((b1 & 0x06) == 0x06) {
+				signal = GB_SIGNAL_CF2_NO_RZ;
+			} else if ((b1 & 0x0A) == 0x0A) {
+				signal = GB_SIGNAL_CF2_RZ;
+			} else if ((b1 & 0x05) == 0x05) {
 				signal = GB_SIGNAL_CF_NO_RZ;
-			} else if (b1 & 0x08) {
+			} else if ((b1 & 0x09) == 0x09)  {
 				signal = GB_SIGNAL_CF_RZ;
 			}
 		}

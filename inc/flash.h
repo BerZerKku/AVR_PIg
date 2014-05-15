@@ -521,8 +521,10 @@ static const char fcTest1K400[GB_SIGNAL_MAX + 1][STRING_LENGHT] PROGMEM = {
 		"КЧ2",			//
 		"КЧ3",			//
 		"КЧ4",			//
-		"КЧ без блк",	//	GB_SIGNAL_CF_NO_RZ
-		"КЧ с блок",	//	GB_SIGNAL_CF_RZ
+		"КЧ1",			//	GB_SIGNAL_CF_NO_RZ
+		"КЧ1 с блок",	//	GB_SIGNAL_CF_RZ
+		"КЧ2",			//	GB_SIGNAL_CF2_NO_RZ
+		"КЧ2 с блок",	//	GB_SIGNAL_CF2_RZ
 		"РЗ",			//
 		"Команда1",		//	GB_SIGNAL_COM1_NO_RZ
 		"Команда2",		//	GB_SIGNAL_COM2_NO_RZ
