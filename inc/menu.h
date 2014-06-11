@@ -10,6 +10,7 @@
 
 #include "keyboard.h"
 #include "glbDefine.h"
+#include "paramBsp.h"
 
 /// время одно цикла работы с меню, мс
 #define MENU_TIME_CYLCE 200

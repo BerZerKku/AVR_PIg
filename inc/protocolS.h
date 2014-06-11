@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include "glbDefine.h"
+#include "paramBsp.h"
 #include "debug.h"
 
 // кол-во циклов, после которого залипшее текущее состояние будет сброшено

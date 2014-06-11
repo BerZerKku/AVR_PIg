@@ -9,7 +9,7 @@
 #define PROTOCOLBSPS_H_
 
 #include "protocolS.h"
-#include "glbDefine.h"
+
 
 class clProtocolBspS : public clProtocolS
 {

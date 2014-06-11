@@ -6,6 +6,9 @@
  */
 #include "../inc/protocolBspS.h"
 
+#include "../inc/glbDefine.h"
+#include "../inc/paramBsp.h"
+
 clProtocolBspS::clProtocolBspS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
 clProtocolS(buf, size, sParam) {
 
@@ -221,6 +224,24 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com) {
 		}
 		break;
 
+		case GB_COM_PRM_GET_DR_STATE: {
+			stat = sParam_->prm.setStateDR(buf[B1]);
+		}
+		break;
+
+		case GB_COM_PRM_GET_DR_BLOCK: {
+			stat = sParam_->prm.setBlockComDR8(0, buf[B1]);
+			stat = (stat && sParam_->prm.setBlockComDR8(1, buf[B2]));
+			stat = (stat && sParam_->prm.setBlockComDR8(2, buf[B3]));
+			stat = (stat && sParam_->prm.setBlockComDR8(3, buf[B4]));
+		}
+		break;
+
+		case GB_COM_PRM_GET_DR_COM: {
+			stat = sParam_->prm.setComDR(&buf[B1]);
+		}
+		break;
+
 		case GB_COM_PRM_GET_JRN_CNT: {
 			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRM) {
 				uint16_t t = TO_INT16(buf[B2], buf[B1]);
@@ -315,6 +336,19 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com) {
 			sParam_->prd.setLongCom8(2, buf[B3]);
 			sParam_->prd.setLongCom8(3, buf[B4]);
 			stat = true;
+		}
+		break;
+
+		case GB_COM_PRD_GET_DR_STATE: {
+			stat = sParam_->prd.setStateDR(buf[B1]);
+		}
+		break;
+
+		case GB_COM_PRD_GET_DR_BLOCK: {
+			stat = sParam_->prd.setBlockComDR8(0, buf[B1]);
+			stat = (stat && sParam_->prd.setBlockComDR8(1, buf[B2]));
+			stat = (stat && sParam_->prd.setBlockComDR8(2, buf[B3]));
+			stat = (stat && sParam_->prd.setBlockComDR8(3, buf[B4]));
 		}
 		break;
 
@@ -713,6 +747,10 @@ uint8_t clProtocolBspS::sendModifPrmCommand(eGB_COM com) {
 		num = addCom(com, b1, b2);
 	} else if (com == GB_COM_PRM_RES_IND) {
 		num = addCom(com);
+	} else if (com == GB_COM_PRM_SET_DR_BLOCK) {
+		num = addCom(com, b1, b2);
+	} else if (com == GB_COM_PRM_SET_DR_COM) {
+		num = addCom(com, b1, b2);
 	} else {
 		// по умолчанию передается один байт
 		// GB_COM_PRM_SET_TIME_ON
@@ -734,6 +772,8 @@ uint8_t clProtocolBspS::sendModifPrdCommand(eGB_COM com) {
 	if (com == GB_COM_PRD_SET_BLOCK_COM) {
 		num = addCom(com, b1, b2);
 	} else if (com == GB_COM_PRD_SET_LONG_COM) {
+		num = addCom(com, b1, b2);
+	} else if (com == GB_COM_PRD_SET_DR_BLOCK) {
 		num = addCom(com, b1, b2);
 	} else {
 		// по умолчанию передается один байт

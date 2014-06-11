@@ -12,6 +12,7 @@
 #define UART_H_
 
 #include "glbDefine.h"
+#include "paramUart.h"
 
 /// порт
 enum eUART_PORT {

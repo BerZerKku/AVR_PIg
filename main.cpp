@@ -220,6 +220,7 @@ int __attribute__ ((OS_main))
 main(void) {
 	// параметры хранимые в ЕЕПРОМ
 	sEeprom eeprom;
+
 	// счетчик для обновления ЖКИ
 	uint8_t cnt_lcd = 0;
 	uint8_t cnt_1s = 0;
