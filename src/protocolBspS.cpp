@@ -390,6 +390,7 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com) {
 					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE) buf[B1]);
 					sParam_->jrnEntry.setNumCom(buf[B2]);
 					sParam_->jrnEntry.setEventType(buf[B3]);
+					sParam_->jrnEntry.setSourceCom((eGB_SOURCE_COM) buf[B4]);
 					sParam_->jrnEntry.setReady();
 					stat = true;
 				}

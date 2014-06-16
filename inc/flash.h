@@ -62,7 +62,7 @@ static const char fcRegime[GB_REGIME_MAX + 1][8] PROGMEM = {
 		"ошибка"	//
 };
 
-// режимы устройств
+// версии прошивок
 static const char fcIC[GB_IC_MAX + 1][9] PROGMEM = {
 //		 12345678
 		"БСП MCU ",	//
@@ -268,7 +268,7 @@ static const char fcPrdSost04[] PROGMEM =	"Неиспр.";
 static const char fcPrdSost05[] PROGMEM =	"П.неиспр";
 static const char fcPrdSost06[] PROGMEM =	"Ожидание";
 static const char fcPrdSost07[] PROGMEM = 	"?0x07?";
-static const char fcPrdSost08[] PROGMEM = 	"?0x08?";
+static const char fcPrdSost08[] PROGMEM = 	"ПРД ЦС%02u";
 static const char fcPrdSost09[] PROGMEM =	"Систем.";
 static const char fcPrdSost10[] PROGMEM =	"Речь";
 static const char fcPrdSost11[] PROGMEM =	"ПРД";
@@ -352,6 +352,8 @@ static const char fcPrmFault8000rzsk[] 	PROGMEM = "Прием блок. Ком";
 // предупреждения приемника
 static const char fcPrmWarning01rzsk[] 	PROGMEM = "Сниж. уровня ПРМ";
 static const char fcPrmWarning01rzsko[] PROGMEM = "Нет КЧ";
+static const char fcPrmWarning02k400[] 	PROGMEM = "Ошибка работы ЦС";
+static const char fcPrmWarning04k400[]	PROGMEM = "Вход RX ЦС пуст";
 
 // неисправности передатчика
 static const char fcPrdFault0001rzsk[] 	PROGMEM = "Нет блока БСК";
@@ -360,6 +362,10 @@ static const char fcPrdFault0100rzsk[] 	PROGMEM = "Неиспр.чт.команд";
 static const char fcPrdFault0200rzsk[] 	PROGMEM = "Неиспр.выкл.Тест";
 static const char fcPrdFault0400rzsk[] 	PROGMEM = "Неиспр.вкл. Тест";
 static const char fcPrdFault0800rzsk[] 	PROGMEM = "Неиспр.вход. КСК";
+
+// предупреждения передатчика
+static const char fcPrdWarning02k400[] 	PROGMEM = "Ошибка работы ЦС";
+static const char fcPrdWarning04k400[] 	PROGMEM = "Вход RX ЦС пуст";
 
 // параметры
 static const char fcEnterInt[]			PROGMEM = "Ввод: %f";
@@ -385,6 +391,13 @@ static const char fcDateJrn[]			PROGMEM = "Дата: %02u.%02u.%02u";
 static const char fcTimeJrn[]			PROGMEM = "Время: %02u:%02u:%02u.%03u";
 static const char fcJrnNotReady[]		PROGMEM = "СЧИТЫВАНИЕ ЗАПИСИ";
 static const char fcSignalDefJrn[]		PROGMEM = "П%dС%dМ%d ПД%dПМ%dВЫХ%d";
+
+/// Источник передаваемой комадны
+static const char fcJrnSourcePrd[GB_SOURCE_COM_MAX + 1][5] PROGMEM = {
+		"(ПА)",
+		"(ЦС)",
+		"(ОШ)"
+};
 
 /// записи журнала ПРД и ПРМ
 static const char fcJrnPrd[GB_STATE_COM_MAX + 1][21] PROGMEM = {

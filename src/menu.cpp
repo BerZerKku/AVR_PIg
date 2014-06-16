@@ -254,7 +254,9 @@ bool clMenu::setDeviceK400() {
 	// 12-15 нет
 	// заполнение массива предупреждений приемника
 	sParam.prm.status.warningText[0] = fcPrmWarning01rzsk;
-	// 1-15 нет
+	sParam.prm.status.warningText[1] = fcPrmWarning02k400;
+	sParam.prm.status.warningText[2] = fcPrmWarning04k400;
+	// 3-15 нет
 
 	// ПЕРЕДАТЧИК
 	// заполнение массива неисправностей передатчика
@@ -267,7 +269,10 @@ bool clMenu::setDeviceK400() {
 	sParam.prd.status.faultText[11] = fcPrdFault0800rzsk;
 	// 12-15 нет
 	// заполнение массива предупреждений передатчика
-	// 0-15 нет
+	// 0 нет
+	sParam.prd.status.warningText[1] = fcPrdWarning02k400;
+	sParam.prd.status.warningText[2] = fcPrdWarning04k400;
+	// 3-15 нет
 
 	return true;
 }
@@ -341,7 +346,9 @@ bool clMenu::setDeviceRZSK() {
 	// 12-15 нет
 	// заполнение массива предупреждений защиты
 	sParam.prm.status.warningText[0] = fcPrmWarning01rzsk;
-	// 1-15 нет
+	sParam.prm.status.warningText[1] = fcPrmWarning02k400;
+	sParam.prm.status.warningText[2] = fcPrmWarning04k400;
+	// 3-15 нет
 
 	// ПЕРЕДАТЧИК
 	// заполнение массива неисправностей передатчика
@@ -354,7 +361,10 @@ bool clMenu::setDeviceRZSK() {
 	sParam.prd.status.faultText[11] = fcPrdFault0800rzsk;
 	// 12-15 нет
 	// заполнение массива предупреждений передатчика
-	// 0-15 нет
+	// 0 нет
+	sParam.prd.status.warningText[1] = fcPrdWarning02k400;
+	sParam.prd.status.warningText[2] = fcPrdWarning04k400;
+	// 3-15 нет
 
 	return true;
 }
@@ -1613,6 +1623,7 @@ void clMenu::lvlJournalPrd() {
 	// вывод названия текущего пункта меню
 	snprintf_P(&vLCDbuf[poz], 21, title);
 	poz += 20;
+
 	// вывод номер текущей записи и их кол-ва
 	if (device == AVANT_OPTO) {
 		// в оптике дополнительно выводится кол-во событий в одной записи
@@ -1621,8 +1632,8 @@ void clMenu::lvlJournalPrd() {
 	} else {
 		snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
 	}
-	poz += 20;
 
+	poz += 20;
 	if (num_entries == 0) {
 		// вывод сообщения об отсутствии записей в журнале
 		snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
@@ -1630,6 +1641,7 @@ void clMenu::lvlJournalPrd() {
 		// ифнорация о текущей записи еще не получена
 		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
 	} else {
+
 		// вывод номера команды
 		uint8_t com = 0;
 		if (device == AVANT_OPTO) {
@@ -1640,9 +1652,15 @@ void clMenu::lvlJournalPrd() {
 		} else {
 			com = sParam.jrnEntry.getNumCom();
 		}
-		snprintf_P(&vLCDbuf[poz], 21, fcNumComJrn, com);
-		poz += 20;
+		uint8_t t = snprintf_P(&vLCDbuf[poz], 21, fcNumComJrn, com);
 
+		// для команднеой ВЧ-аппаратуры, выведем источник формирования команды
+		if ((device == AVANT_K400) || (device == AVANT_RZSK)) {
+			uint8_t s = sParam.jrnEntry.getSourceCom();
+			snprintf_P(&vLCDbuf[poz + t + 1], 5, fcJrnSourcePrd[s]);
+		}
+
+		poz += 20;
 		// вывод даты
 		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
 				sParam.jrnEntry.dataTime.getDay(),

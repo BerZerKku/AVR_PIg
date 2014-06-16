@@ -298,10 +298,17 @@ enum eGB_CONTROL {
 
 /// События журнала передатчика/приемника - конец и начало команды
 enum eGB_STATE_COM {
-	GB_STATE_COM_MIN = 0,			///< Минимальное значение
-	GB_STATE_COM_END = 0,			///< Окончание команды
+	GB_STATE_COM_MIN 	= 0,		///< Минимальное значение
+	GB_STATE_COM_END 	= 0,		///< Окончание команды
 	GB_STATE_COM_START,				///< Начало команды
 	GB_STATE_COM_MAX				///< Максимальное значение
+};
+
+/// Источник передаваемой команды
+enum eGB_SOURCE_COM {
+	GB_SOURCE_COM_DI 	= 0, 		///< Команда поступила с дискретного входа
+	GB_SOURCE_COM_DR	= 1,		///< Команда поступила с цифрового стыка
+	GB_SOURCE_COM_MAX				///< Ошибочное значение
 };
 
 /// сигналы в тест1 и тест2
@@ -1086,6 +1093,7 @@ public:
 		eventType_ = MAX_JRN_EVENT_VALUE - MIN_JRN_EVENT_VALUE + 1;
 		regime_ = GB_REGIME_MAX;
 		numCom_ = 0;
+		sourceCom_ = GB_SOURCE_COM_MAX;
 		signalPusk_ = false;
 		signalStop_ = false;
 		signalMan_ = false;
@@ -1202,6 +1210,7 @@ public:
 	/** Ищет и возвращает код события, исходя из номера события.
 	 * 	Т.е. если у нас в записи 5 активных событий, для каждого из них
 	 * 	можно получить код записи (например номер команды).
+	 *
 	 * 	@param num Номер события, начиная с 1.
 	 * 	@return Код события (0 - в случае ошибки).
 	 */
@@ -1284,6 +1293,42 @@ public:
 	}
 	uint8_t getNumCom() const {
 		return numCom_;
+	}
+
+	/** Установка источника передаваемой команды.
+	 *	В случае не корректного значения, в параметр будет записано значение
+	 *	\a GB_SOURCE_COM_MAX.
+	 *
+	 *	@see eGB_SOURCE_COM
+	 *	@param source Источник передаваемой команды.
+	 *	@return True - в случае корректного значения, False - иначе.
+	 */
+	bool setSourceCom(eGB_SOURCE_COM source) {
+		bool stat = false;
+
+		switch(source) {
+			case GB_SOURCE_COM_DI:
+			case GB_SOURCE_COM_DR:
+			case GB_SOURCE_COM_MAX: {
+				stat = true;
+			}
+			break;
+		}
+
+		if (!stat) {
+			source = GB_SOURCE_COM_MAX;
+		}
+
+		sourceCom_ = source;
+		return stat;
+	}
+
+	/** Считывание источника передаваемой команды.
+	 *
+	 *	@return Источник передаваемой команды.
+	 */
+	eGB_SOURCE_COM getSourceCom() const {
+		return sourceCom_;
 	}
 
 	// количество записей в журнале
@@ -1414,6 +1459,9 @@ private:
 
 	// номер команды в текущей записи
 	uint16_t numCom_;
+
+	// источник передаваемой команды
+	eGB_SOURCE_COM sourceCom_;
 
 	// флаг получения информации о текущей записи
 	bool ready_;
