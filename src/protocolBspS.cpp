@@ -352,6 +352,11 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com) {
 		}
 		break;
 
+		case GB_COM_PRD_GET_COM_A: {
+			stat = sParam_->prd.setNumComA(buf[B1]);
+		}
+		break;
+
 		case GB_COM_PRD_GET_JRN_CNT: {
 			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRD) {
 				uint16_t t = TO_INT16(buf[B2], buf[B1]);
@@ -501,7 +506,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 				sParam_->measParam.setVoltageCf(buf[B10]);
 				sParam_->measParam.setVoltageCf2(buf[B11]);
 				sParam_->measParam.setVoltageNoise(buf[B12]);
-				// B13 байт отведен под кэффициент переполнения входа АЦП
+				sParam_->measParam.setVoltageNoise2(buf[B12]);
 				sParam_->measParam.setPulseWidth(TO_INT16(buf[B14], buf[B15]));
 				stat = true;
 			}
@@ -564,8 +569,8 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 
 		case GB_COM_GET_CF_THRESHOLD: {
 			sParam_->glb.setCfThreshold(buf[B1]);
-			sParam_->glb.setInDecrease(buf[B2]);
-			// B3 - снижение входного сигнала для второго канала
+			sParam_->glb.setInDecrease(buf[B2], 1);
+			sParam_->glb.setInDecrease(buf[B3], 2);
 			stat = true;
 		}
 		break;

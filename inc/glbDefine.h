@@ -170,16 +170,17 @@ enum eGB_COM {
 	GB_COM_PRM_GET_TIME_ON 		= 0x11,	// +
 	GB_COM_PRM_GET_TIME_OFF 	= 0x13,	// +
 	GB_COM_PRM_GET_BLOCK_COM 	= 0x14,	// +
-	GB_COM_PRM_GET_DR_STATE 	= 0x17, // +-
-	GB_COM_PRM_GET_DR_BLOCK		= 0x18,	// +-
-	GB_COM_PRM_GET_DR_COM		= 0x19,	// +-
+	GB_COM_PRM_GET_DR_STATE 	= 0x17, // +
+	GB_COM_PRM_GET_DR_BLOCK		= 0x18,	// +
+	GB_COM_PRM_GET_DR_COM		= 0x19,	// +
 	GB_COM_PRD_GET_TIME_ON 		= 0x21,	// +
 	GB_COM_PRD_GET_DURATION 	= 0x22,	// +
 	GB_COM_PRD_GET_BLOCK_COM 	= 0x24,	// +
 	GB_COM_PRD_GET_LONG_COM 	= 0x25,	// +
 	GB_COM_PRD_GET_TEST_COM 	= 0x26,	// +
-	GB_COM_PRD_GET_DR_STATE 	= 0x27, // +-
-	GB_COM_PRD_GET_DR_BLOCK		= 0x28,	// +-
+	GB_COM_PRD_GET_DR_STATE 	= 0x27, // +
+	GB_COM_PRD_GET_DR_BLOCK		= 0x28,	// +
+	GB_COM_PRD_GET_COM_A		= 0x29,	// +
 	GB_COM_GET_SOST 			= 0x30,	// +
 	GB_COM_GET_FAULT 			= 0x31,	// +
 	GB_COM_GET_TIME 			= 0x32,	// +
@@ -228,6 +229,7 @@ enum eGB_COM {
 	GB_COM_PRD_SET_TEST_COM 	= 0xA6,	// +
 	GB_COM_PRD_SET_DR_STATE 	= 0xA7, // +
 	GB_COM_PRD_SET_DR_BLOCK		= 0xA8,	// +
+	GB_COM_PRD_SET_COM_A		= 0xA9,	// +
 	GB_COM_PRD_RES_IND 			= 0xAA,	// +
 	GB_COM_SET_TIME 			= 0xB2,	// +
 	GB_COM_SET_COR_U_I 			= 0xB3,	// +
@@ -742,6 +744,7 @@ public:
 		voltCf_ = 0;
 		voltCf2_ = 0;
 		voltNoise_ = 0;
+		voltNoise2_ = 0;
 		voltOut_ = 0;
 		curOut_ = 0;
 		resistOut_ = 0;
@@ -858,6 +861,19 @@ public:
 		return stat;
 	}
 
+	// уровень шума 2
+	int8_t getVoltageNoise2() const {
+		return voltNoise2_;
+	}
+	bool setVoltageNoise2(int8_t val) {
+		bool stat = false;
+		if ((val > -100) && (val < 100)) {
+			voltNoise2_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+
 	// длительность импульсов ВЧ блокировки на выходе применика
 	uint16_t getPulseWidth() const {
 		return pulseWidth_;
@@ -882,6 +898,8 @@ private:
 	int8_t voltCf2_;
 	// уровень шумов (-99 .. 99)дБ
 	int8_t voltNoise_;
+	// уровень шумов 2 (-99 .. 99)дБ
+	int8_t voltNoise2_;
 	// выходное напряжение умноженное на 10 (0 .. 999)В
 	uint16_t voltOut_;
 	// выходной ток (0 .. 999)мА

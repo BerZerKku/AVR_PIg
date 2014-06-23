@@ -191,7 +191,8 @@ public:
 		timeRerun_ = GLB_T_RERUN_MIN_F;
 		comPrdKeep_ = false;
 		comPrmKeep_ = false;
-		inDecrease_ = GLB_IN_DEC_MIN_F;
+		inDecrease_[0] = GLB_IN_DEC_MIN_F;
+		inDecrease_[1] = GLB_IN_DEC_MIN_F;
 		freq_ = GLB_FREQ_MIN_F;
 		uOutNom_ = GLB_U_OUT_NOM_MIN_F;
 		netAdr_ = GLB_NET_ADR_MIN_F;
@@ -510,23 +511,45 @@ public:
 		return comPrmKeep_;
 	}
 
-	// уменьшение усиления входного сигнала
-	bool setInDecrease(uint8_t val) {
+	/** Установка нового значения "Загрубление чувствительности ПРМ".
+	 * 	В 3-х концевой два параметра, в 2-х концевой о.дин
+	 * 	@param val Значение параметра.
+	 * 	@param num Номер параметра [1..2].
+	 * 	@arg 1	Первый.
+	 * 	@arg 2	Второй (только в 3-х концевой).
+	 * 	@arg Other Записывается значение первого параметра.
+	 * 	@retval True Параметр успешно записан.
+	 * 	@retval False Ошибка записи.
+	 */
+	bool setInDecrease(uint8_t val, uint8_t num) {
 		bool stat = false;
 		val = (val / GLB_IN_DEC_DISC_F) * GLB_IN_DEC_DISC_F;
 
 		// записано в таком виде т.к. иначе портится автоформат в Eclipse
 		if (val >= GLB_IN_DEC_MIN_F) {
 			if (val <= GLB_IN_DEC_MAX_F) {
-				inDecrease_ = val;
-				stat = true;
+				if ((num == 1) || (num == 2)) {
+					inDecrease_[num - 1] = val;
+					stat = true;
+				}
 			}
-
 		}
 		return stat;
 	}
-	uint8_t getInDecrease() const {
-		return (inDecrease_ * GLB_IN_DEC_FRACT);
+
+	/**	Возвращает значение загрубления чувствительности ПРМ для заданного
+	 * 	номера параметра.
+	 * 	В 3-х концевой два параметра, в 2-х концевой один.
+	 *	@param num Номер параметра.
+	 *	@arg 1	Первый.
+	 * 	@arg 2	Второй (только в 3-х концевой).
+	 * 	@arg Other Возвращается значение первого параметра.
+	 *	@return Значение параметра.
+	 */
+	uint8_t getInDecrease(uint8_t num) const {
+		if ((num < 1) || (num > 2))
+			num = 1;
+		return (inDecrease_[num - 1] * GLB_IN_DEC_FRACT);
 	}
 
 	// сетевой адрес
@@ -820,7 +843,7 @@ private:
 	bool comPrmKeep_;
 
 	// уменьшение усиления входного сигнала
-	uint8_t inDecrease_;
+	uint8_t inDecrease_[2];
 
 	// сетевой адрес
 	uint8_t netAdr_;

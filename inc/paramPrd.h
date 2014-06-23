@@ -36,6 +36,14 @@
 #define PRD_DURAT_O_MIN_F	(PRD_DURAT_O_MIN / PRD_DURAT_O_FRACT)
 #define PRD_DURAT_O_MAX_F	(PRD_DURAT_O_MAX / PRD_DURAT_O_FRACT)
 #define PRD_DURAT_O_DISC_F	(PRD_DURAT_O_DISC / PRD_DURAT_O_FRACT)
+/// длительность команды для ОПТИКИ
+#define PRD_COM_A_MIN		0
+#define PRD_COM_A_MAX		MAX_NUM_COM_PRD
+#define PRD_COM_A_DISC		1
+#define PRD_COM_A_FRACT		1
+#define PRD_COM_A_MIN_F		(PRD_COM_A_MIN / PRD_COM_A_FRACT)
+#define PRD_COM_A_MAX_F		(PRD_COM_A_MAX / PRD_COM_A_FRACT)
+#define PRD_COM_A_DISC_F	(PRD_COM_A_DISC / PRD_COM_A_FRACT)
 
 
 /// класс для параметров и настроек передатчика
@@ -54,6 +62,7 @@ public:
 		durationL_ = PRD_DURAT_L_MIN_F;
 		durationO_ = PRD_DURAT_O_MIN_F;
 		testCom_ = false;
+		numComA_ = PRD_COM_A_MIN_F;
 
 		numJrnEntry_ = 0;
 		maxNumJrnEntry_ = 0;
@@ -89,6 +98,33 @@ public:
 	}
 	uint8_t getNumCom() const {
 		return numCom_;
+	}
+
+	/**	Установка количества команд группы А
+	 * 	Если новое значение выходит за диапазон допустимых значений, устанавли
+	 * 	вается 0.
+	 * 	@param val Количество команд на ПРД.
+	 * 	@return True - в случае успешной остановки параметра. False - иначе.
+	 */
+	uint8_t setNumComA(uint8_t val) {
+		bool stat = false;
+
+		if (val >= PRD_COM_A_MIN_F) {
+			if (val <= PRD_COM_A_MAX_F) {
+				val = 0;
+				stat = true;
+			}
+		}
+		numComA_ = val;
+
+		return stat;
+	}
+
+	/**	Возвращает кол-во команд группы А.
+	 * 	@return Количество команд группы А.
+	 */
+	uint8_t getNumComA() const {
+		return numComA_;
 	}
 
 	// время включения команды
@@ -353,6 +389,9 @@ private:
 
 	// ЦС
 	bool stateDR_;
+
+	// команды группы А
+	uint8_t numComA_;
 
 	// блокированные команды, true - блокированная
 	uint8_t blockComDR_[MAX_NUM_COM_PRD / 8];

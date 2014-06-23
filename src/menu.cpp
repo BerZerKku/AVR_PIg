@@ -218,8 +218,19 @@ bool clMenu::setDeviceK400() {
 	measParam[4] = measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_IOUT;
 
 	// второй столбец параметров
-	measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
-	measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
+	if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
+		measParam[3] = MENU_MEAS_PARAM_UC1;
+		measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC2;
+	} else {
+		measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
+	}
+
+	if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
+		measParam[5] = MENU_MEAS_PARAM_UN1;
+		measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN2;
+	} else {
+		measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
+	}
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -388,8 +399,9 @@ bool clMenu::setDeviceR400M() {
 	if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
 		measParam[3] = MENU_MEAS_PARAM_UC1;
 		measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC2;
-	} else
+	} else {
 		measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
+	}
 	measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_SD;
 
 	// заполнение массива общих неисправностей
@@ -2898,7 +2910,7 @@ void clMenu::lvlSetupParamPrm() {
  * 	@return Нет
  */
 void clMenu::lvlSetupParamPrd() {
-	static char title[] PROGMEM = "Параметры\\Передатчик";
+	static char title[]  PROGMEM = "Параметры\\Передатчик";
 	static char punkt1[] PROGMEM = "Задержка срабат. ПРД";
 	static char punkt2[] PROGMEM = "Длительность команды";	// ВЧ
 	static char punkt2o[] PROGMEM= "Длительность команды";	// Оптика
@@ -2907,6 +2919,7 @@ void clMenu::lvlSetupParamPrd() {
 	static char punkt5[] PROGMEM = "Блокиров. команды";
 	static char punkt6[] PROGMEM = "Трансляция ЦС";
 	static char punkt7[] PROGMEM = "Блокиров. команды ЦС";
+	static char punkt8[] PROGMEM = "Количество команд А";
 
 
 	if (lvlCreate_) {
@@ -2929,6 +2942,7 @@ void clMenu::lvlSetupParamPrd() {
 			Punkts_.add(punkt3, GB_COM_PRD_GET_TEST_COM);
 			Punkts_.add(punkt4, GB_COM_PRD_GET_LONG_COM);
 			Punkts_.add(punkt5, GB_COM_PRD_GET_BLOCK_COM);
+			Punkts_.add(punkt8, GB_COM_PRD_GET_COM_A);
 			Punkts_.add(punkt6, GB_COM_PRD_GET_DR_STATE);
 			Punkts_.add(punkt7, GB_COM_PRD_GET_DR_BLOCK);
 		} else if (device == AVANT_RZSK) {
@@ -2985,6 +2999,9 @@ void clMenu::lvlSetupParamPrd() {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
 	} else if (name == punkt7) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
+	} else if (name == punkt8) {
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, PRD_COM_A_MIN,
+				PRD_COM_A_MAX, "");
 	}
 
 	if (EnterParam.isEnable()) {
@@ -3029,6 +3046,8 @@ void clMenu::lvlSetupParamPrd() {
 					val &= ~(1 << (pl % 8));
 				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
 				sParam.txComBuf.setInt8(val, 1);
+			} else if (name == punkt8) {
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			}
 			sParam.txComBuf.addFastCom(EnterParam.com);
 			EnterParam.setDisable();
@@ -3058,6 +3077,8 @@ void clMenu::lvlSetupParamPrd() {
 		} else if (name == punkt7) {
 			uint8_t val = sParam.prd.getBlockComDR(curCom_ - 1) ? 1 : 0;
 			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
+		} else if (name == punkt8) {
+			snprintf(&vLCDbuf[poz], 11, "%dмс", sParam.prd.getNumComA());
 		}
 	}
 
@@ -3153,6 +3174,13 @@ void clMenu::lvlSetupParamPrd() {
 				EnterParam.setDopValue(curCom_);
 				EnterParam.list = fcOnOff[0];
 				EnterParam.com = GB_COM_PRD_SET_DR_BLOCK;
+			} else if (name == punkt8) {
+				EnterParam.setEnable();
+				EnterParam.setValueRange(PRD_COM_A_MIN, PRD_COM_A_MAX);
+				EnterParam.setValue(sParam.prd.getNumComA());
+				EnterParam.setDisc(PRD_COM_A_DISC);
+				EnterParam.setFract(PRD_COM_A_FRACT);
+				EnterParam.com = GB_COM_PRD_SET_COM_A;
 			}
 		}
 		break;
@@ -3313,6 +3341,14 @@ void clMenu::lvlSetupParamGlb() {
 
 	poz = 40;
 	snprintf_P(&vLCDbuf[poz], 21, name);
+
+	// отображение доп.номера, для однотипных параметров
+	poz = 60;
+	if (name == punkt8) {
+		if ((sParam.glb.getNumDevices() == GB_NUM_DEVICES_3)
+				&& (sParam.typeDevice == AVANT_K400))
+			snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_, 2);
+	}
 
 	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
 	poz = 80;
@@ -3505,7 +3541,8 @@ void clMenu::lvlSetupParamGlb() {
 			uint8_t val = sParam.glb.getComPrmKeep() ? 1 : 0;
 			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
 		} else if (name == punkt8) {
-			snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.glb.getInDecrease());
+			uint8_t val = sParam.glb.getInDecrease(curCom_);
+			snprintf(&vLCDbuf[poz], 11, "%dдБ", val);
 		} else if (name == punkt9) {
 			snprintf(&vLCDbuf[poz], 11, "%u", sParam.glb.getNetAddress());
 		} else if (name == punkt10) {
@@ -3559,6 +3596,13 @@ void clMenu::lvlSetupParamGlb() {
 		break;
 	case KEY_DOWN:
 		cursorLineDown();
+		break;
+
+	case KEY_LEFT:
+		curCom_ = curCom_ <= 1 ? sParam.glb.getNumDevices() : curCom_ - 1;
+		break;
+	case KEY_RIGHT:
+		curCom_ = curCom_ >= sParam.glb.getNumDevices() ? 1 : curCom_ + 1;
 		break;
 
 	case KEY_CANCEL:
@@ -3654,10 +3698,10 @@ void clMenu::lvlSetupParamGlb() {
 		} else if (name == punkt8) {
 			EnterParam.setEnable();
 			EnterParam.setValueRange(GLB_IN_DEC_MIN, GLB_IN_DEC_MAX);
-			EnterParam.setValue(sParam.glb.getInDecrease());
+			EnterParam.setValue(sParam.glb.getInDecrease(curCom_));
 			EnterParam.setDisc(GLB_IN_DEC_DISC);
 			EnterParam.setFract(GLB_IN_DEC_FRACT);
-			EnterParam.setDopValue(2);
+			EnterParam.setDopValue(curCom_ + 1);
 			EnterParam.com = GB_COM_SET_CF_THRESHOLD;
 		} else if (name == punkt9) {
 			EnterParam.setEnable();
@@ -4715,14 +4759,13 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 					sParam.measParam.getVoltageNoise());
 			break;
 
-			// TODO ВСЕ для Uш1 и Uш2 нужны свои параметры
 		case MENU_MEAS_PARAM_UN1:
 			snprintf_P(&vLCDbuf[poz], 11, fcUn1,
 					sParam.measParam.getVoltageNoise());
 			break;
 		case MENU_MEAS_PARAM_UN2:
 			snprintf_P(&vLCDbuf[poz], 11, fcUn2,
-					sParam.measParam.getVoltageNoise());
+					sParam.measParam.getVoltageNoise2());
 			break;
 
 		case MENU_MEAS_PARAM_SD:
