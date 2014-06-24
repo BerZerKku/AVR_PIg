@@ -210,7 +210,6 @@ public:
 		for(uint_fast8_t i = 0; i < GB_IC_MAX; i++) {
 			versProgIC_[i] = 0;
 		}
-
 	}
 
 	TDeviceStatus status;
@@ -224,11 +223,11 @@ public:
 	}
 
 	/**	Возвращает кол-во аппаратов в линии (2-х, 3-х концевая).
-		 * 	@return Кол-во аппаратов в линии.
-		 */
-		eGB_NUM_DEVICES getNumDevices() const {
-			return numDevices_;
-		}
+	 * 	@return Кол-во аппаратов в линии.
+	 */
+	eGB_NUM_DEVICES getNumDevices() const {
+		return numDevices_;
+	}
 
 	/** Установка кол-ва аппаратов в линии (2-х, 3-х концевая.).
 	 * 	@param val Кол-во аппаратов в линии.

@@ -111,11 +111,10 @@ public:
 
 		if (val >= PRD_COM_A_MIN_F) {
 			if (val <= PRD_COM_A_MAX_F) {
-				val = 0;
+				numComA_ = val;
 				stat = true;
 			}
 		}
-		numComA_ = val;
 
 		return stat;
 	}

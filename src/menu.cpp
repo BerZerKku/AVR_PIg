@@ -3078,7 +3078,7 @@ void clMenu::lvlSetupParamPrd() {
 			uint8_t val = sParam.prd.getBlockComDR(curCom_ - 1) ? 1 : 0;
 			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
 		} else if (name == punkt8) {
-			snprintf(&vLCDbuf[poz], 11, "%dмс", sParam.prd.getNumComA());
+			snprintf(&vLCDbuf[poz], 11, "%d", sParam.prd.getNumComA());
 		}
 	}
 
@@ -3209,7 +3209,7 @@ void clMenu::lvlSetupParamGlb() {
 	static char punkt9[] PROGMEM 	= "Сетевой адрес";
 	static char punkt10[] PROGMEM 	= "Uвых номинальное";
 	static char punkt11[] PROGMEM 	= "Частота";
-	static char punkt12[] PROGMEM 	= "Совместимость";		// защита
+	static char punkt12[] PROGMEM 	= "Совместимость";			// защита
 	static char punkt13[] PROGMEM 	= "Снижение ответа АК";
 	static char punkt14[] PROGMEM 	= "Тип детектора";
 	static char punkt15[] PROGMEM 	= "Коррекция напряжения";
@@ -3222,6 +3222,7 @@ void clMenu::lvlSetupParamGlb() {
 	static char punkt22[] PROGMEM 	= "Тип автоконтроля";
 	static char punkt23[] PROGMEM 	= "Резервирование";
 	static char punkt24[] PROGMEM 	= "Совместимость";
+	static char punkt25[] PROGMEM 	= "Тип линии";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3264,6 +3265,7 @@ void clMenu::lvlSetupParamGlb() {
 				Punkts_.add(punkt15, GB_COM_GET_COR_U_I);
 				Punkts_.add(punkt16, GB_COM_GET_COR_U_I);
 			}
+			Punkts_.add(punkt25, GB_COM_DEF_GET_LINE_TYPE);
 		} else if (type == AVANT_RZSK) {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 
@@ -3414,6 +3416,8 @@ void clMenu::lvlSetupParamGlb() {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
 	} else if (name == punkt24) {
 		// TODO K400 диапазон для параметра "Совместимость"
+	} else if (name == punkt25) {
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
 	}
 
 	if (EnterParam.isEnable()) {
@@ -3514,6 +3518,8 @@ void clMenu::lvlSetupParamGlb() {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
 			} else if (name == punkt24) {
 				// TODO K400 команда на передачу для параметра "Совместимость"
+			} else if (name == punkt25) {
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			}
 			sParam.txComBuf.addFastCom(EnterParam.com);
 			EnterParam.setDisable();
@@ -3587,6 +3593,9 @@ void clMenu::lvlSetupParamGlb() {
 			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
 		} else if (name == punkt24) {
 			// TODO K400 вывод параметра "Совместимость"
+		} else if (name == punkt25) {
+			snprintf_P(&vLCDbuf[poz], 11,
+					fcNumDevices[sParam.def.getNumDevices()]);
 		}
 	}
 
@@ -3806,6 +3815,13 @@ void clMenu::lvlSetupParamGlb() {
 			EnterParam.com = GB_COM_SET_COR_U_I;
 		} else if (name == punkt24) {
 			// TODO K400 ввод параметра с клавиатуры "Совместимость"
+		} else if (name == punkt25) {
+			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
+			EnterParam.setValueRange(GB_NUM_DEVICES_MIN,
+					GB_NUM_DEVICES_MAX - 1);
+			EnterParam.setValue(sParam.def.getNumDevices());
+			EnterParam.list = fcNumDevices[0];
+			EnterParam.com = GB_COM_DEF_SET_LINE_TYPE;
 		}
 		break;
 	default:
