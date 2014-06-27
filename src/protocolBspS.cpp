@@ -184,7 +184,7 @@ bool clProtocolBspS::getDefCommand(eGB_COM com) {
 			sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
 			uint16_t t = TO_INT16(buf[B9], buf[B8]);
 			sParam_->jrnEntry.dataTime.setMsSecond(t);
-			sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE) buf[B1]);
+			sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
 			// sParam_->jrnEntry.setNumCom(buf[B2]);
 			sParam_->jrnEntry.setSignalDef((buf[B2] << 4) + (buf[B4] & 0x0F));
 			sParam_->jrnEntry.setEventType(buf[B3]);
@@ -277,7 +277,7 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com) {
 					sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
 					uint16_t t = TO_INT16(buf[B9], buf[B8]);
 					sParam_->jrnEntry.dataTime.setMsSecond(t);
-					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE) buf[B1]);
+					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
 					sParam_->jrnEntry.setNumCom(buf[B2]);
 					sParam_->jrnEntry.setEventType(buf[B3]);
 					sParam_->jrnEntry.setReady();
@@ -392,7 +392,7 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com) {
 					sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
 					uint16_t t = TO_INT16(buf[B9], buf[B8]);
 					sParam_->jrnEntry.dataTime.setMsSecond(t);
-					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE) buf[B1]);
+					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
 					sParam_->jrnEntry.setNumCom(buf[B2]);
 					sParam_->jrnEntry.setEventType(buf[B3]);
 					sParam_->jrnEntry.setSourceCom((eGB_SOURCE_COM) buf[B4]);
@@ -698,7 +698,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 					uint16_t t = TO_INT16(buf[B9], buf[B8]);
 					sParam_->jrnEntry.dataTime.setMsSecond(t);
 					// ! B1 - тип устройства, на данный момент игнорируется
-					// ! sParam_->journalEntry.setDevice((eGB_DEVICE) buf[B1]);
+					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
 					sParam_->jrnEntry.setEventType(buf[B2]);
 					sParam_->jrnEntry.setRegime((eGB_REGIME) buf[B3]);
 					sParam_->jrnEntry.setReady();

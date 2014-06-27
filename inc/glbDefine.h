@@ -92,6 +92,9 @@
 /// максимально возможное кол-во записей в одном архиве
 #define GLB_JRN_MAX 2048
 
+/// Максимальное знаачение доп.байта в архиве событий К400/РЗСК
+#define GLB_JRN_DOP_MAX 6
+
 /// Тип аппарата
 enum eGB_TYPE_DEVICE {
 	AVANT_NO = 0,	// ошибочное значение
@@ -110,6 +113,18 @@ enum eGB_DEVICE {
 	GB_DEVICE_PRD,
 	GB_DEVICE_GLB,
 	GB_DEVICE_MAX
+};
+
+/// Устройство в журнале событий К400
+enum eGB_DEVICE_K400 {
+	GB_DEVICE_K400_MIN = 0,
+	GB_DEVICE_K400_DEF = 0,
+	GB_DEVICE_K400_PRM1,
+	GB_DEVICE_K400_PRM2,
+	GB_DEVICE_K400_PRD,
+	GB_DEVICE_K400_GLB,
+	GB_DEVICE_K400_PRM1_PRM2,
+	GB_DEVICE_K400_MAX
 };
 
 /// Тип канала связи
@@ -1107,7 +1122,7 @@ public:
 
 	void clear() {
 		currentDevice_ = GB_DEVICE_MAX;
-		deviceJrn_ = GB_DEVICE_MAX;
+		deviceJrn_ = GB_DEVICE_K400_MAX;
 		eventType_ = MAX_JRN_EVENT_VALUE - MIN_JRN_EVENT_VALUE + 1;
 		regime_ = GB_REGIME_MAX;
 		numCom_ = 0;
@@ -1144,16 +1159,16 @@ public:
 	}
 
 	// запись\считывание устройства для которого сделана запись
-	bool setDeviceJrn(eGB_DEVICE device) {
+	bool setDeviceJrn(eGB_DEVICE_K400 device) {
 		bool stat = false;
-		if ((device >= GB_DEVICE_MIN) && (device < GB_DEVICE_MAX)) {
+		if ((device >= GB_DEVICE_K400_MIN) && (device < GB_DEVICE_K400_MAX)) {
 			deviceJrn_ = device;
 			stat = true;
 		} else
-			deviceJrn_ = GB_DEVICE_MAX;
+			deviceJrn_ = GB_DEVICE_K400_MAX;
 		return stat;
 	}
-	eGB_DEVICE getDeviceJrn() const {
+	eGB_DEVICE_K400 getDeviceJrn() const {
 		return deviceJrn_;
 	}
 
@@ -1438,7 +1453,7 @@ private:
 	eGB_DEVICE currentDevice_;
 
 	// устройство
-	eGB_DEVICE deviceJrn_;
+	eGB_DEVICE_K400 deviceJrn_;
 
 	// тип события
 	uint8_t eventType_;
@@ -1496,6 +1511,7 @@ public:
 			signalList[i] = GB_SIGNAL_OFF;
 		num_ = 1;
 		currentSignal_ = GB_SIGNAL_OFF;
+		currentSignal2_ = GB_SIGNAL_OFF;
 	}
 
 	bool addSignalToList(eGB_TEST_SIGNAL signal) {
@@ -1558,17 +1574,23 @@ public:
 	}
 
 	/** Определенеи текущего сигнала передаваемого / примнимаемого в Тестах.
+	 *
 	 * 	В Тесте приемника всегда принимается 6 байт данных.
 	 * 	В Тесте передатчика: в РЗСК/Р400м 3 байта, в К400/ОПТИКА 5 байт.
+	 *
+	 * 	В 3-х концевом варианте, кол-во байт данных удваивается.
+	 *
 	 * 	@param s Указатель на начало массива данных.
 	 * 	@param type Тип аппарата.
 	 * 	@param numBytes Максимальное количество команд.
 	 */
 	void setCurrentSignal(uint8_t *s, eGB_TYPE_DEVICE type) {
 		eGB_TEST_SIGNAL signal = GB_SIGNAL_MAX;
+		eGB_TEST_SIGNAL signal2 = GB_SIGNAL_MAX;
 
 		if (type == AVANT_K400) {
 			signal = getCurrentSignalK400(s);
+			signal2 = getCurrentSignalK400((s + 5));
 		} else if (type == AVANT_RZSK) {
 			signal = getCurrentSignalRZSK(s);
 		} else if (type == AVANT_R400M) {
@@ -1577,13 +1599,21 @@ public:
 			signal = getCurrentSignalOpto(s);
 		}
 		currentSignal_ = signal;
+		currentSignal2_ = signal2;
 	}
 
-	/** Возвращает текущий сигнал в Тесте.
+	/** Возвращает текущий сигнал в Тесте для первого приемника.
 	 * 	@return Текущий сигнал в Тесте.
 	 */
 	eGB_TEST_SIGNAL getCurrentSignal() const {
 		return currentSignal_;
+	}
+
+	/** Возвращает текущий сигнал в Тесте для второго приемника.
+	 * 	@return Текущий сигнал в Тесте.
+	 */
+	eGB_TEST_SIGNAL getCurrentSignal2() const {
+		return currentSignal2_;
 	}
 
 	// список сигналов
@@ -1595,6 +1625,9 @@ private:
 
 	// текущий сигнал
 	eGB_TEST_SIGNAL currentSignal_;
+
+	// текущий сигнал второго приемника
+	eGB_TEST_SIGNAL currentSignal2_;
 
 	// возвращает номер первого установленного бита 1..8, либо 0
 	// проверка начинается с 0-ого бита

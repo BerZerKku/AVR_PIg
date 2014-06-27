@@ -1288,9 +1288,15 @@ void clMenu::lvlJournalEvent() {
 		if (device == AVANT_R400M) {
 			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventR400_MSK[event], event);
 		} else if (device == AVANT_K400) {
-			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event], event);
+			if (event <= MAX_JRN_EVENT_VALUE) {
+				uint8_t device = (uint8_t) sParam.jrnEntry.getDeviceJrn();
+				snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event],
+						fcDevicesK400[device]);
+			} else {
+				snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event], event);
+			}
 		} else if (device == AVANT_RZSK) {
-			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event], event);
+			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventRZSK[event], event);
 		} else if (device == AVANT_OPTO) {
 			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventOPTO[event], event);
 		}
@@ -4456,8 +4462,11 @@ void clMenu::lvlTest1() {
  * 	@return Нет
  */
 void clMenu::lvlTest2() {
-	static char title[] PROGMEM = "Тесты\\Приемник";
-	static char punkt1[] PROGMEM = "Сигналы приемника";
+	static char title[] 	PROGMEM = "Тесты\\Приемник";
+	static char punkt1[] 	PROGMEM = "Сигналы приемника";
+	static char prm1[] 	PROGMEM = "ПРМ1: ";
+	static char prm2[]	PROGMEM = "ПРМ2: ";
+
 	static uint8_t cnt = 0;		// счетчик до выхода при ошибочном режиме
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
@@ -4519,8 +4528,21 @@ void clMenu::lvlTest2() {
 	snprintf_P(&vLCDbuf[lineParam_ * 20], 21, punkt1);
 
 	uint8_t poz = 100;
-	poz += snprintf_P(&vLCDbuf[poz], 21, fcValue);
-	snprintf_P(&vLCDbuf[poz], 11, fcTest1K400[sParam.test.getCurrentSignal()]);
+	if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+		poz = 80;
+		poz += snprintf_P(&vLCDbuf[poz], 11, prm1);
+		snprintf_P(&vLCDbuf[poz], 11,
+					fcTest1K400[sParam.test.getCurrentSignal()]);
+		poz = 100;
+		poz += snprintf_P(&vLCDbuf[poz], 11, prm2);
+		snprintf_P(&vLCDbuf[poz], 11,
+				fcTest1K400[sParam.test.getCurrentSignal2()]);
+	} else {
+		poz = 100;
+		poz += snprintf_P(&vLCDbuf[poz], 21, fcValue);
+		snprintf_P(&vLCDbuf[poz], 11,
+				fcTest1K400[sParam.test.getCurrentSignal()]);
+	}
 
 	// выход из теста при несооответствии режима
 	if (sParam.glb.status.getRegime() != GB_REGIME_TEST_2) {
