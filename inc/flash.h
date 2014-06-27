@@ -372,6 +372,7 @@ static const char fcEnterInt[]			PROGMEM = "Ввод: %f";
 static const char fcValue[] 			PROGMEM = "Значение: ";
 static const char fcRange[] 			PROGMEM = "Диапазон: ";
 static const char fcNumCom[] 			PROGMEM = "Номер команды: %u/%u";
+static const char fcNumPrm[]			PROGMEM = "Номер ПРМ: %u/%u";
 static const char fcRangeDec[] 			PROGMEM = "%d..%d%s";
 static const char fcRangeList[] 		PROGMEM = "список";
 static const char fcRangeOnOff[]		PROGMEM = "вкл./выкл.";

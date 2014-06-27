@@ -210,26 +210,55 @@ bool clMenu::setDeviceK400() {
 
 	sParam.typeDevice = AVANT_K400;
 
-	// TODO ВСЕ в 3-х концевой Uк1/2, Uш1/2
-	// первый столбец параметров
+	// дата и время выводятся во всех вариантах
 	measParam[0] = MENU_MEAS_PARAM_TIME; // дата <-> время
-	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
-	measParam[2] = measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UOUT;
-	measParam[4] = measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_IOUT;
+	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TIME;
+	measParam[1] = MENU_MEAS_PARAM_DATE;
+	measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
 
-	// второй столбец параметров
-	if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
-		measParam[3] = MENU_MEAS_PARAM_UC1;
-		measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC2;
+	if (!sParam.prd.status.isEnable()) {
+		// Если чистый приемник, не нужны U и I
+		// а в трех концевой при этом надо выводить Uк1, Uk2, Uш1, Uш2
+		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+			measParam[2] = MENU_MEAS_PARAM_UC1;
+			measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC1;
+			measParam[3] = MENU_MEAS_PARAM_UC2;
+			measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC2;
+			measParam[4] = MENU_MEAS_PARAM_UN1;
+			measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN1;
+			measParam[5] = MENU_MEAS_PARAM_UN2;
+			measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN2;
+		} else {
+			measParam[3] = MENU_MEAS_PARAM_UC;
+			measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
+			measParam[5] = MENU_MEAS_PARAM_UN;
+			measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
+		}
+	} else if (!sParam.prm.status.isEnable()) {
+		// Если чистый передатчик, не нужны Uk/Uш
+		measParam[2] = MENU_MEAS_PARAM_UOUT;
+		measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UOUT;
+		measParam[4] = MENU_MEAS_PARAM_IOUT;
+		measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_IOUT;
 	} else {
-		measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
-	}
+		// Если есть приемник и передатчик выводим U,I,Uk,Uш
+		// в 3-х концевой при этом выводятся Uк1/2, Uш1/2
+		measParam[2] = MENU_MEAS_PARAM_UOUT;
+		measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UOUT;
+		measParam[4] = MENU_MEAS_PARAM_IOUT;
+		measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_IOUT;
+		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+			measParam[3] = MENU_MEAS_PARAM_UC1;
+			measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC2;
+			measParam[5] = MENU_MEAS_PARAM_UN1;
+			measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN2;
+		} else {
+			measParam[3] = MENU_MEAS_PARAM_UC;
+			measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
+			measParam[5] = MENU_MEAS_PARAM_UN;
+			measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
 
-	if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
-		measParam[5] = MENU_MEAS_PARAM_UN1;
-		measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN2;
-	} else {
-		measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
+		}
 	}
 
 	// заполнение массива общих неисправностей
@@ -3349,7 +3378,7 @@ void clMenu::lvlSetupParamGlb() {
 	if (name == punkt8) {
 		if ((sParam.glb.getNumDevices() == GB_NUM_DEVICES_3)
 				&& (sParam.typeDevice == AVANT_K400))
-			snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_, 2);
+			snprintf_P(&vLCDbuf[poz], 21, fcNumPrm, curCom_, 2);
 	}
 
 	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
@@ -4437,24 +4466,52 @@ void clMenu::lvlTest2() {
 
 		cursorLine_ = 1;
 		cursorEnable_ = true;
-		lineParam_ = (device == AVANT_OPTO) ? 1 : 2;
+
+
+		if (device == AVANT_OPTO) {
+			// В оптике измеряемые параметры выводить не надо
+			lineParam_ = 1;
+		} else if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+			// В трех концевой линии 2 строки параметров
+			lineParam_ = 3;
+		} else {
+			// Иначе одна строка параметров
+			lineParam_ = 2;
+		}
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 		cnt = 0;
 
 		// дополнительные команды
 		sParam.txComBuf.clear();
-		sParam.txComBuf.addCom1(GB_COM_GET_MEAS);	// измерения
+		if (device != AVANT_OPTO) {
+			sParam.txComBuf.addCom1(GB_COM_GET_MEAS);	// измерения
+		}
 		sParam.txComBuf.addCom2(GB_COM_GET_TEST);	// сигналы
 	}
 
 	// вывод на экран измеряемых параметров, если это не оптика
 	// TODO Р400м учесть что в 3-х концевой может быть 2Uk/2Uz
 	if (device != AVANT_OPTO) {
-		printMeasParam(2, MENU_MEAS_PARAM_UC);
-
-		if (sParam.def.status.isEnable()) {
-			printMeasParam(3, MENU_MEAS_PARAM_UZ);
+		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+			if (sParam.def.status.isEnable()) {
+				printMeasParam(2, MENU_MEAS_PARAM_UC1);
+				printMeasParam(3, MENU_MEAS_PARAM_UZ1);
+				printMeasParam(4, MENU_MEAS_PARAM_UC2);
+				printMeasParam(5, MENU_MEAS_PARAM_UZ2);
+			} else {
+				printMeasParam(2, MENU_MEAS_PARAM_UC1);
+				printMeasParam(3, MENU_MEAS_PARAM_UN1);
+				printMeasParam(4, MENU_MEAS_PARAM_UC2);
+				printMeasParam(5, MENU_MEAS_PARAM_UN2);
+			}
+		} else {
+			printMeasParam(2, MENU_MEAS_PARAM_UC);
+			if (sParam.def.status.isEnable()) {
+				printMeasParam(3, MENU_MEAS_PARAM_UZ);
+			} else {
+				printMeasParam(3, MENU_MEAS_PARAM_UN);
+			}
 		}
 	}
 
@@ -4874,7 +4931,7 @@ void clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device) {
 		else
 		{
 			y = device->getWarnings();
-			snprintf_P(&vLCDbuf[poz], 17, fcWarnings, 'g', y);
+			snprintf_P(&vLCDbuf[poz], 17, fcWarnings, 'l', y);
 		}
 	}
 	else

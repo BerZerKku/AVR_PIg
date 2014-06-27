@@ -506,7 +506,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 				sParam_->measParam.setVoltageCf(buf[B10]);
 				sParam_->measParam.setVoltageCf2(buf[B11]);
 				sParam_->measParam.setVoltageNoise(buf[B12]);
-				sParam_->measParam.setVoltageNoise2(buf[B12]);
+				sParam_->measParam.setVoltageNoise2(buf[B13]);
 				sParam_->measParam.setPulseWidth(TO_INT16(buf[B14], buf[B15]));
 				stat = true;
 			}
