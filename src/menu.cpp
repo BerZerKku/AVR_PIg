@@ -324,7 +324,6 @@ bool clMenu::setDeviceRZSK() {
 
 	sParam.typeDevice = AVANT_RZSK;
 
-	// TODO ВСЕ в 3-х концевой Uк1/2, Uз1/2, Uш1/2
 	// первый столбец параметров
 	measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
 	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
@@ -332,9 +331,18 @@ bool clMenu::setDeviceRZSK() {
 	measParam[4] = measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_IOUT;
 
 	// второй столбец параметров
-	measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UZ;
-	measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
-	measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
+	if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+		measParam[1] = MENU_MEAS_PARAM_UZ1;
+		measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UZ2;
+		measParam[3] = MENU_MEAS_PARAM_UC1;
+		measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC2;
+		measParam[5] = MENU_MEAS_PARAM_UN1;
+		measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN2;
+	} else {
+		measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UZ;
+		measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
+		measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
+	}
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -416,7 +424,7 @@ bool clMenu::setDeviceR400M() {
 
 	sParam.typeDevice = AVANT_R400M;
 
-	// TODO ВСЕ в 3-х концевой Uk1/2
+	// TODO Р400М в 3-х концевой Uk1/2
 	// первый столбец параметров
 	measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
 	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
@@ -4500,7 +4508,7 @@ void clMenu::lvlTest2() {
 	}
 
 	// вывод на экран измеряемых параметров, если это не оптика
-	// TODO Р400м учесть что в 3-х концевой может быть 2Uk/2Uz
+	// TODO ВСЕ учесть что в 3-х концевой может быть 2Uk/2Uz/2Uш
 	if (device != AVANT_OPTO) {
 		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
 			if (sParam.def.status.isEnable()) {
@@ -4834,6 +4842,7 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 			snprintf_P(&vLCDbuf[poz], 11, fcUcf2,
 					sParam.measParam.getVoltageCf2());
 			break;
+
 		case MENU_MEAS_PARAM_UOUT:
 			snprintf_P(&vLCDbuf[poz], 11, fcUout,
 					sParam.measParam.getVoltageOutInt(),
@@ -4844,6 +4853,7 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 			snprintf_P(&vLCDbuf[poz], 11, fcIout,
 					sParam.measParam.getCurrentOut());
 			break;
+
 		case MENU_MEAS_PARAM_ROUT:
 			snprintf_P(&vLCDbuf[poz], 11, fcRout,
 					sParam.measParam.getResistOut());
@@ -4853,7 +4863,7 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 			snprintf_P(&vLCDbuf[poz], 11, fcUn,
 					sParam.measParam.getVoltageNoise());
 			break;
-
+			// в 3-х концевой может быть Uш1 == Uш, Uш2
 		case MENU_MEAS_PARAM_UN1:
 			snprintf_P(&vLCDbuf[poz], 11, fcUn1,
 					sParam.measParam.getVoltageNoise());
