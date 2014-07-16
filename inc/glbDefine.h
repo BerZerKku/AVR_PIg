@@ -1593,6 +1593,7 @@ public:
 			signal2 = getCurrentSignalK400((s + 5));
 		} else if (type == AVANT_RZSK) {
 			signal = getCurrentSignalRZSK(s);
+			signal2 = getCurrentSignalRZSK((s + 3));
 		} else if (type == AVANT_R400M) {
 			signal = getCurrentSignalR400M(s);
 		} else if (type == AVANT_OPTO) {
