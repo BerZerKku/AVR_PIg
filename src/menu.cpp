@@ -3313,6 +3313,7 @@ void clMenu::lvlSetupParamGlb() {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 
 			Punkts_.add(punkt1, GB_COM_GET_TIME_SINCHR);
+			Punkts_.add(punkt2, GB_COM_GET_DEVICE_NUM);
 			Punkts_.add(punkt3, GB_COM_GET_OUT_CHECK);
 			Punkts_.add(punkt4rzsk, GB_COM_GET_CF_THRESHOLD);
 			Punkts_.add(punkt5, GB_COM_GET_TIME_RERUN);
@@ -3320,6 +3321,7 @@ void clMenu::lvlSetupParamGlb() {
 			Punkts_.add(punkt7, GB_COM_GET_COM_PRM_KEEP);
 			Punkts_.add(punkt8, GB_COM_GET_CF_THRESHOLD);
 			Punkts_.add(punkt9, GB_COM_GET_NET_ADR);
+			Punkts_.add(punkt11, GB_COM_GET_FREQ);
 			Punkts_.add(punkt14, GB_COM_GET_TIME_SINCHR);
 			Punkts_.add(punkt15, GB_COM_GET_COR_U_I);
 			Punkts_.add(punkt16, GB_COM_GET_COR_U_I);
