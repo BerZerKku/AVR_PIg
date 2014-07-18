@@ -420,7 +420,7 @@ static const char fcJrnPrd[GB_STATE_COM_MAX + 1][21] PROGMEM = {
 static const char fcJrnPrdOptoComNo[] PROGMEM = "Команд нет";
 static const char fcJrnPrdOptoComYes[] PROGMEM = "Команда передается";
 
-/// записи журнала событий для К400 и РЗСК
+/// записи журнала событий для К400
 static char fcJrnEventK400[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 //		 01234567890123456789
 		"Событие - 0",				// 0 - ошибочное значение
@@ -459,7 +459,7 @@ static char fcJrnEventK400[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 		"Событие - %d"          	// MAX_JRN_EVENT_VALUE - ошибочное значение
 };
 
-/// записи журнала событий для К400 и РЗСК
+/// записи журнала событий для РЗСК
 static char fcJrnEventRZSK[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 //		 01234567890123456789
 		"Событие - %d",				// 0 - ошибочное значение

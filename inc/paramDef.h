@@ -96,7 +96,8 @@ public:
 		delay_[0] = DEF_DELAY_MIN_F;
 		delay_[1] = DEF_DELAY_MIN_F;
 		rzThreshold_ = DEF_RZ_THRESH_MIN_F;
-		rzDec_ = DEF_RZ_DEC_MIN_F;
+		rzDec_[0] = DEF_RZ_DEC_MIN_F;
+		rzDec_[1] = DEF_RZ_DEC_MIN_F;
 		prmType_ = DEF_PRM_TYPE_MIN;
 		typeAc_ = GB_TYPE_AC_AUTO_NORM;
 		timeToAc_ = 0;
@@ -182,7 +183,7 @@ public:
 	}
 
 	/** Установка значения "Компенсация задержки на линии".
-	 * 	В 3-х концевой два параметра, в 2-х концевой о.дин
+	 * 	В 3-х концевой два параметра, в 2-х концевой один.
 	 * 	@param num 	Номер параметра.
 	 * 	@arg 1	Первый.
 	 * 	@arg 2	Второй (только в 3-х концевой).
@@ -195,8 +196,7 @@ public:
 		bool stat = false;
 		val = (val / DEF_DELAY_DISC_F) * DEF_DELAY_DISC_F;
 
-		if ((num < 1) || (num > 2))
-			num = 1;
+		num = (num == 2) ? 1 : 0;
 
 		// записано в таком виде т.к. иначе портится автоформат в Eclipse
 		if (val >= DEF_DELAY_MIN_F) {
@@ -209,7 +209,10 @@ public:
 	}
 
 	/**	Считывание значения "Компенсация задержки на линии".
+	 *
 	 * 	В 3-х концевой два параметра, в 2-х концевой один.
+	 *	В случае ошибочного значения номера параметра будет считан первый.
+	 *
 	 * 	@param num 	Номер параметра.
 	 * 	@arg 1	Первый.
 	 * 	@arg 2	Второй (только в 3-х концевой).
@@ -217,8 +220,7 @@ public:
 	 * 	@return Значени параметра.
 	 */
 	uint8_t getDelay(uint8_t num) const {
-		if ((num < 1) || (num > 2))
-			num = 1;
+		num = (num == 2) ? 1 : 0;
 		return (delay_[num] * DEF_DELAY_FRACT);
 	}
 
@@ -240,22 +242,49 @@ public:
 		return (rzThreshold_ * DEF_RZ_THRESH_FRACT);
 	}
 
-	// загрубление чувствительности по РЗ
-	bool setRzDec(uint8_t val) {
+	/** Установка значения "Загрубление чувствительности по РЗ".
+	 *
+	 * 	В 3-х концевой два параметра, в 2-х концевой один.
+	 *	В случае ошибочного значения номера параметра будет считан первый.
+	 *
+	 * 	@param num 	Номер параметра.
+	 * 	@arg 1	Первый.
+	 * 	@arg 2	Второй (только в 3-х концевой).
+	 * 	@arg Other Записывается значение первого параметра.
+	 * 	@param val Значение параметра.
+	 * 	@retval True Параметр успешно записан.
+	 * 	@retval False Ошибка записи.
+	 */
+	bool setRzDec(uint8_t num, uint8_t val) {
 		bool stat = false;
 		val = (val / DEF_RZ_DEC_DISC_F) * DEF_RZ_DEC_DISC_F;
+
+		num = (num == 2) ? 1 : 0;
 
 		// записано в таком виде т.к. иначе портится автоформат в Eclipse
 		if (val >= DEF_RZ_DEC_MIN_F) {
 			if (val <= DEF_RZ_DEC_MAX_F) {
-				rzDec_ = val;
+				rzDec_[num] = val;
 				stat = true;
 			}
 		}
 		return stat;
 	}
-	uint8_t getRzDec() const {
-		return (rzDec_ * DEF_RZ_DEC_FRACT);
+
+	/**	Считывание значения "Загрубление чувствительности по РЗ".
+	 *
+	 * 	В 3-х концевой два параметра, в 2-х концевой один.
+	 *	В случае ошибочного значения номера параметра будет считан первый.
+	 *
+	 * 	@param num 	Номер параметра.
+	 * 	@arg 1	Первый.
+	 * 	@arg 2	Второй (только в 3-х концевой).
+	 * 	@arg Other Возвращается значение первого параметра.
+	 * 	@return Значени параметра.
+	 */
+	uint8_t getRzDec(uint8_t num) const {
+		num = (num == 2) ? 1 : 0;
+		return (rzDec_[num] * DEF_RZ_DEC_FRACT);
 	}
 
 	// тип приемника
@@ -389,13 +418,13 @@ private:
 	uint8_t overlap_;
 
 	// компенсация задержки в линии
-	uint8_t delay_[];
+	uint8_t delay_[2];
 
 	// порог предупреждения по РЗ
 	uint8_t rzThreshold_;
 
 	// загрубление чувствительности по РЗ
-	uint8_t rzDec_;
+	uint8_t rzDec_[2];
 
 	// тип приемника
 	uint8_t prmType_;

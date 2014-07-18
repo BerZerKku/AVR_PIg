@@ -2415,6 +2415,8 @@ void clMenu::lvlSetupParamDef() {
 	static char punkt11[] PROGMEM = "Частота ПРМ";
 	static char punkt12[] PROGMEM = "Загрубл. чувств. РЗ";	// ==punkt7 для РЗСК
 
+	eGB_TYPE_DEVICE device = sParam.typeDevice;
+
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		cursorLine_ = 1;
@@ -2427,7 +2429,6 @@ void clMenu::lvlSetupParamDef() {
 		vLCDdrawBoard(lineParam_);
 
 		// заполнение массивов параметров и команд
-		eGB_TYPE_DEVICE type = sParam.typeDevice;
 		sParam.txComBuf.clear();
 		Punkts_.clear();
 
@@ -2435,7 +2436,7 @@ void clMenu::lvlSetupParamDef() {
 		// кол-ва аппаратов в линии
 		sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
 
-		if (type == AVANT_RZSK) {
+		if (device == AVANT_RZSK) {
 			Punkts_.add(punkt1, GB_COM_DEF_GET_DEF_TYPE);
 			Punkts_.add(punkt2, GB_COM_DEF_GET_LINE_TYPE);
 			Punkts_.add(punkt3, GB_COM_DEF_GET_T_NO_MAN);
@@ -2444,7 +2445,7 @@ void clMenu::lvlSetupParamDef() {
 			Punkts_.add(punkt6, GB_COM_DEF_GET_RZ_THRESH);
 			Punkts_.add(punkt12, GB_COM_DEF_GET_RZ_DEC);
 			Punkts_.add(punkt8, GB_COM_DEF_GET_PRM_TYPE);
-		} else if (type == AVANT_R400M) {
+		} else if (device == AVANT_R400M) {
 			eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
 			// для переформирования меню добавляется команда опроса:
 			// совместимости
@@ -2482,10 +2483,20 @@ void clMenu::lvlSetupParamDef() {
 
 	// отображение доп.номера, для однотипных параметров
 	poz = 60;
-	if (name == punkt5) {
-		if ((sParam.glb.getNumDevices() == GB_NUM_DEVICES_3)
-				&& (sParam.glb.getCompatibility() == GB_COMPATIBILITY_AVANT))
-			snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_, 2);
+	if (device == AVANT_R400M) {
+		if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
+			if (name == punkt5) {
+				if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_AVANT) {
+					snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_, 2);
+				}
+			}
+		}
+	} else if (device == AVANT_RZSK) {
+		if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
+			if ((name == punkt5) || (name == punkt12)) {
+				snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_, 2);
+			}
+		}
 	}
 
 	//  диапазон значений параметра
@@ -2542,6 +2553,7 @@ void clMenu::lvlSetupParamDef() {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if ((name == punkt7) || (name == punkt12)) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
 			} else if (name == punkt8) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if (name == punkt9) {
@@ -2576,7 +2588,7 @@ void clMenu::lvlSetupParamDef() {
 		} else if (name == punkt6) {
 			snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.def.getRzThreshold());
 		} else if ((name == punkt7) || (name == punkt12)) {
-			snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.def.getRzDec());
+			snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.def.getRzDec(curCom_));
 		} else if (name == punkt8) {
 			snprintf_P(&vLCDbuf[poz], 11, fcPrmType[sParam.def.getPrmType()]);
 		} else if (name == punkt9) {
@@ -2664,7 +2676,7 @@ void clMenu::lvlSetupParamDef() {
 			} else if (name == punkt6) {
 				EnterParam.setEnable();
 				EnterParam.setValueRange(DEF_RZ_THRESH_MIN, DEF_RZ_THRESH_MAX);
-				EnterParam.setValue(sParam.def.getRzDec());
+				EnterParam.setValue(sParam.def.getRzDec(curCom_));
 				EnterParam.setDisc( DEF_RZ_THRESH_DISC);
 				EnterParam.setFract(DEF_RZ_THRESH_FRACT);
 				EnterParam.com = GB_COM_DEF_SET_RZ_THRESH;
@@ -2672,7 +2684,8 @@ void clMenu::lvlSetupParamDef() {
 				// TODO Р400М в 3-х концевой 2 разных
 				EnterParam.setEnable();
 				EnterParam.setValueRange(DEF_RZ_DEC_MIN, DEF_RZ_DEC_MAX);
-				EnterParam.setValue(sParam.def.getRzDec());
+				EnterParam.setValue(sParam.def.getRzDec(curCom_));
+				EnterParam.setDopValue(curCom_);
 				EnterParam.setDisc(DEF_RZ_DEC_DISC);
 				EnterParam.setFract(DEF_RZ_DEC_FRACT);
 				EnterParam.com = GB_COM_DEF_SET_RZ_DEC;
@@ -3391,10 +3404,18 @@ void clMenu::lvlSetupParamGlb() {
 
 	// отображение доп.номера, для однотипных параметров
 	poz = 60;
-	if (name == punkt8) {
-		if ((sParam.glb.getNumDevices() == GB_NUM_DEVICES_3)
-				&& (sParam.typeDevice == AVANT_K400))
-			snprintf_P(&vLCDbuf[poz], 21, fcNumPrm, curCom_, 2);
+	if (sParam.typeDevice == AVANT_K400) {
+		if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
+			if (name == punkt8) {
+				snprintf_P(&vLCDbuf[poz], 21, fcNumPrm, curCom_, 2);
+			}
+		}
+	} else if (sParam.typeDevice == AVANT_RZSK) {
+		if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
+			if (name == punkt8) {
+				snprintf_P(&vLCDbuf[poz], 21, fcNumPrm, curCom_, 2);
+			}
+		}
 	}
 
 	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона

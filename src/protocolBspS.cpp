@@ -138,11 +138,12 @@ bool clProtocolBspS::getDefCommand(eGB_COM com) {
 		stat = sParam_->def.setTimeNoMan(buf[B1]);
 	} else if (com == GB_COM_DEF_GET_DELAY) {
 		stat = sParam_->def.setDelay(1, buf[B1]);
-		stat = sParam_->def.setDelay(2, buf[B2]);
+		sParam_->def.setDelay(2, buf[B2]);
 	} else if (com == GB_COM_DEF_GET_OVERLAP) {
 		stat = sParam_->def.setOverlap(buf[B1]);
 	} else if (com == GB_COM_DEF_GET_RZ_DEC) {
-		stat = sParam_->def.setRzDec(buf[B1]);
+		stat = sParam_->def.setRzDec(1, buf[B1]);
+		sParam_->def.setRzDec(2, buf[B2]);
 	} else if (com == GB_COM_DEF_GET_PRM_TYPE) {
 		if (sParam_->typeDevice == AVANT_RZSK) {
 			stat = sParam_->def.setPrmType(buf[B1]);
@@ -729,6 +730,8 @@ uint8_t clProtocolBspS::sendModifDefCommand(eGB_COM com) {
 		// Р400м трех-концевая версия может быть два параметра,
 		// а в двух концевой только один
 		// но будем передавать два байта всегда
+		num = addCom(com, b1, b2);
+	} else if (com == GB_COM_DEF_SET_RZ_DEC) {
 		num = addCom(com, b1, b2);
 	} else {
 		// по умолчанию передается один байт
