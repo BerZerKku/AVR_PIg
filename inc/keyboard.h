@@ -41,8 +41,8 @@ enum eKEY {
 	KEY_AC_REGIME	// Режим АК
 };
 
-void vKEYmain	(void);
-eKEY eKEYget	(eGB_TYPE_DEVICE type);
+void vKEYmain	();
+eKEY eKEYget	();
 uint8_t timePressKey();
 
 #endif /* KEYBOARD_H_ */

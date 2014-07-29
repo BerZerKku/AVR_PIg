@@ -39,22 +39,10 @@ enum eBUT
 	BUT_F_3R3C
 };
 
-/// Массив кнопок Р400м
-static const eKEY fcKeyR400M[18] = { 					//
-		//		основные функции
-		KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
-		KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
-		KEY_EMPTY, 		KEY_DOWN, 		KEY_CANCEL,		//
-		//		дополнительные функции
-		KEY_EMPTY,		KEY_CALL,		KEY_PUSK_UD,	//
-		KEY_AC_PUSK, 	KEY_MENU,		KEY_AC_PUSK_UD,	//
-		KEY_AC_RESET,	KEY_AC_REGIME,	KEY_PUSK_NALAD	//
-};
-
 /// Массив кнопок К400
-static const eKEY fcKeyK400[18] = { 					//
+static const eKEY fcKey[18] = { 						//
 		//		основные функции
-		KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
+		KEY_FUNC, 		KEY_UP, 		KEY_EMPTY, 		//
 		KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
 		KEY_CANCEL, 	KEY_DOWN, 		KEY_EMPTY,		//
 		//		дополнительные функции
@@ -63,29 +51,6 @@ static const eKEY fcKeyK400[18] = { 					//
 		KEY_EMPTY,		KEY_EMPTY,		KEY_RESET		//
 };
 
-/// Массив кнопок РЗСК
-static const eKEY fcKeyRZSK[18] = { 					//
-		//		основные функции
-		KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
-		KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
-		KEY_EMPTY, 		KEY_DOWN, 		KEY_CANCEL,		//
-		//		дополнительные функции
-		KEY_EMPTY,		KEY_CALL,		KEY_PUSK_UD,	//
-		KEY_PUSK, 		KEY_MENU,		KEY_PUSK_NALAD,	//
-		KEY_RESET_IND,	KEY_EMPTY,		KEY_EMPTY		//
-};
-
-/// Массив кнопок ОПТИКА
-static const eKEY fcKeyOPTO[18] = { 					//
-		//		основные функции
-		KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
-		KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
-		KEY_CANCEL, 	KEY_DOWN, 		KEY_EMPTY,		//
-		//		дополнительные функции
-		KEY_EMPTY,		KEY_EMPTY,		KEY_RESET_IND,	//
-		KEY_PUSK, 		KEY_MENU,		KEY_EMPTY,		//
-		KEY_EMPTY,		KEY_EMPTY,		KEY_RESET		//
-};
 
 /// код нажатой кнопки
 static eBUT keyPressed;
@@ -100,7 +65,7 @@ static uint_fast8_t timePress = 0;
  * 	@param Нет
  * 	@return eKEY Код нажатой кнопки
  */
-eKEY eKEYget(eGB_TYPE_DEVICE type) {
+eKEY eKEYget() {
 	uint_fast8_t but = keyPressed;
 	eKEY key = KEY_NO;
 
@@ -113,15 +78,7 @@ eKEY eKEYget(eGB_TYPE_DEVICE type) {
 
 	if (but != 0) {
 		but -= 1;
-		if (type == AVANT_K400) {
-			key = fcKeyK400[but];
-		} else if (type == AVANT_R400M) {
-			key = fcKeyR400M[but];
-		} else if (type == AVANT_RZSK) {
-			key = fcKeyRZSK[but];
-		} else if (type == AVANT_OPTO) {
-			key = fcKeyOPTO[but];
-		}
+		key = fcKey[but];
 	}
 
 	keyPressed = BUT_NO;
@@ -146,7 +103,7 @@ uint8_t timePressKey() {
  * 	@param Нет
  * 	@return Нет
  */
-void vKEYmain(void) {
+void vKEYmain() {
 	static uint_fast8_t delay = TIME_DELAY;	// счетчик антидребезга
 	static uint_fast8_t keyPrev = BUT_NO;	// предыдущее значение кнопки
 	uint_fast8_t tmp;						// временная переменная

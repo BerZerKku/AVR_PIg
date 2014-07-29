@@ -258,7 +258,7 @@ main(void) {
 	vLCDclear();
 
 	// зададим тип аппарата
-	// menu.setTypeDevice(AVANT_NO);
+	menu.setDevice(AVANT_TERMINAL);
 
 	while (1) {
 		if (b100ms) {
