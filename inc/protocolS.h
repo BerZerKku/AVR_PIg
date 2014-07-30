@@ -49,7 +49,12 @@ enum ePRTS_DATA_BYTE_NAME {
 	B13,
 	B14,
 	B15,
-	B16
+	B16,
+	B17,
+	B18,
+	B19,
+	B20,
+	B21
 };
 
 class clProtocolS {

@@ -10,33 +10,22 @@
 
 #include "glbDefine.h"
 #include "paramGlb.h"
+#include "paramRps.h"
 #include "paramUart.h"
 
 
 /// Структура параметров БСП
 struct stGBparam {
-	eGB_TYPE_DEVICE typeDevice;
+	eGB_TYPE_DEVICE 	typeDevice;		///< Тип устройства
 
-	// пароль
-	TPassword password;
-
-	// дата/время
-	TDataTime dataTime;
-
-	// измеряемые параметры
-	TMeasuredParameters measParam;
-
-	// общие параметры
-	TDeviceGlb glb;
-
-	// параметры для работы с последовательным портом
-	TUartData Uart;
-
-	// буфер команд
-	TTxCom txComBuf;
-
-	// запись в журнале
-	TJournalEntry jrnEntry;
+	TDataTime			DataTime;		///< Дата и время
+	TDeviceGlb 			Glb;			///< Параметры общие
+	TDeviceRps 			Rps;			///< Параметры Терминала
+	TJournalEntry 		JrnEntry;		///< Запись журнала
+	TMeasuredParameters MeasParam;		///< Измеряемые параметры
+	TPassword			Password;		///< Пароль
+	TTxCom 				TxComBuf;		///< Буфер команд
+	TUartData 			Uart;			///< Параметры последовательного порта
 };
 
 #endif /* PARAMBSP_H_ */

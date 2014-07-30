@@ -230,7 +230,7 @@ main(void) {
 	// проводится до включения прерываний, чтобы ничего не мешало
 	eeprom_read_block(&eeprom, (sEeprom*) EEPROM_START_ADDRESS, sizeof(eeprom));
 	EEAR = 0;	// сброс адреса ЕЕПРОМ в 0, для защиты данных
-	menu.sParam.password.init(eeprom.password);
+	menu.sParam.Password.init(eeprom.password);
 	menu.sParam.Uart.Interface.set(eeprom.interface);
 	menu.sParam.Uart.BaudRate.set(eeprom.baudRate);
 	menu.sParam.Uart.DataBits.set(eeprom.dataBits);
@@ -272,7 +272,6 @@ main(void) {
 
 			cnt_wdt++;
 			// обновление экрана
-			// где 100 - время рабочего цикла
 			if (++cnt_lcd >= (MENU_TIME_CYLCE / TIME_CYLCE)) {
 				cnt_lcd = 0;
 				menu.main();
@@ -318,7 +317,7 @@ main(void) {
 				}
 
 				// считывание текущего пароля в буфер ЕЕПРОМ
-				eeprom.password = menu.sParam.password.get();
+				eeprom.password = menu.sParam.Password.get();
 
 				// обновление настроек пользователя в ЕЕПРОМ
 				eeprom_update_block(&eeprom, (sEeprom*) EEPROM_START_ADDRESS,

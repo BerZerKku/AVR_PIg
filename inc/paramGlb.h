@@ -12,9 +12,9 @@
 
 /// компенсация задержки
 #define GLB_COMP_DELAY_MIN		0
-#define GLB_COMP_DELAY_MAX 		255
-#define GLB_COMP_DELAY_DISC 	1
-#define GLB_COMP_DELAY_FRACT	1
+#define GLB_COMP_DELAY_MAX 		10000
+#define GLB_COMP_DELAY_DISC 	125
+#define GLB_COMP_DELAY_FRACT	125
 #define GLB_COMP_DELAY_MIN_F  	(GLB_COMP_DELAY_MIN / GLB_COMP_DELAY_FRACT)
 #define GLB_COMP_DELAY_MAX_F  	(GLB_COMP_DELAY_MAX / GLB_COMP_DELAY_FRACT)
 #define GLB_COMP_DELAY_DISC_F 	(GLB_COMP_DELAY_DISC / GLB_COMP_DELAY_FRACT)
@@ -39,9 +39,9 @@
 
 /// минимальное напряжение
 #define GLB_VOLT_MIN_MIN		0
-#define GLB_VOLT_MIN_MAX 		255
-#define GLB_VOLT_MIN_DISC 		1
-#define GLB_VOLT_MIN_FRACT		1
+#define GLB_VOLT_MIN_MAX 		1020
+#define GLB_VOLT_MIN_DISC 		4
+#define GLB_VOLT_MIN_FRACT		4
 #define GLB_VOLT_MIN_MIN_F  	(GLB_VOLT_MIN_MIN / GLB_VOLT_MIN_FRACT)
 #define GLB_VOLT_MIN_MAX_F  	(GLB_VOLT_MIN_MAX / GLB_VOLT_MIN_FRACT)
 #define GLB_VOLT_MIN_DISC_F 	(GLB_VOLT_MIN_DISC / GLB_VOLT_MIN_FRACT)
@@ -73,7 +73,7 @@ public:
 		}
 	}
 
-	TDeviceStatus status;	///< Текущее состояние устройства
+	TDeviceStatus Status;	///< Текущее состояние устройства
 
 	/**	Запись версии прошивки для микросхем АВАНТа.
 	 * 	Данные хранятся в переменной int16_t.
@@ -137,7 +137,7 @@ public:
 	/**	Возвращает значение параметра "Компенсация задержки".
 	 * 	@retval Значение параметра.
 	 */
-	uint8_t getCompDelay() const {
+	uint16_t getCompDelay() const {
 		return compDelay_ * GLB_COMP_DELAY_FRACT;
 	}
 
@@ -218,7 +218,7 @@ public:
 	/**	Возвращает значение параметра "Минимальное напряжение".
 	 * 	@retval Значение параметра.
 	 */
-	uint8_t getVoltMin() const {
+	uint16_t getVoltMin() const {
 		return voltMin_ * GLB_VOLT_MIN_FRACT;
 	}
 
@@ -226,10 +226,10 @@ private:
 	// версии прошивок микросхем
 	uint16_t versProgIC_[GB_IC_MAX];
 
-	uint8_t compDelay_;		///< Компенсация задержки
-	uint8_t currMax_;		///< Максимальный ток
-	uint8_t currMin_;		///< Минимальный ток
-	uint8_t voltMin_;		///< Минимальное напряжение
+	uint16_t compDelay_;		///< Компенсация задержки
+	uint8_t  currMax_;		///< Максимальный ток
+	uint8_t  currMin_;		///< Минимальный ток
+	uint16_t voltMin_;		///< Минимальное напряжение
 };
 
 

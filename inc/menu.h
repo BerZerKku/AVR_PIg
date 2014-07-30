@@ -24,7 +24,7 @@
 #define MAX_NUM_PUNKTS 20
 
 /// максимальное кол-во отображаемых на экране параметров
-#define MAX_NUM_MEAS_PARAM 6
+#define MAX_NUM_MEAS_PARAM 10
 
 /// время вывода измеряемого параметра на экран, мс
 #define TIME_MEAS_PARAM (3000 / MENU_TIME_CYLCE)
@@ -35,27 +35,25 @@
 /// время вывода текста на экран, мс (например авария/код аварии)
 #define TIME_TEXT (1000 / MENU_TIME_CYLCE)
 
-/// время до выхода из Тест 1 / Тест 2 и т.д. если режим != данному тесту, мс
-#define TIME_TEST_EXIT (1000 / MENU_TIME_CYLCE)
-
 /// Измеряемые параметры
 enum eMENU_MEAS_PARAM {
 	MENU_MEAS_PARAM_NO,
 	MENU_MEAS_PARAM_DATE,
 	MENU_MEAS_PARAM_TIME,
-	MENU_MEAS_PARAM_UZ,
-	MENU_MEAS_PARAM_UZ1,
-	MENU_MEAS_PARAM_UZ2,
-	MENU_MEAS_PARAM_UC,
-	MENU_MEAS_PARAM_UC1,
-	MENU_MEAS_PARAM_UC2,
-	MENU_MEAS_PARAM_UN,
-	MENU_MEAS_PARAM_UN1,
-	MENU_MEAS_PARAM_UN2,
-	MENU_MEAS_PARAM_UOUT,
-	MENU_MEAS_PARAM_IOUT,
-	MENU_MEAS_PARAM_ROUT,
-	MENU_MEAS_PARAM_SD
+	MENU_MEAS_P_OUT,
+	MENU_MEAS_U_CTRL,
+	MENU_MEAS_S_N,
+	MENU_MEAS_N_OUT,
+	MENU_MEAS_N_IN,
+	MENU_MEAS_FAZ_A,
+	MENU_MEAS_FAZ_B,
+	MENU_MEAS_FAZ_C,
+	MENU_MEAS_I_A,
+	MENU_MEAS_I_B,
+	MENU_MEAS_I_C,
+	MENU_MEAS_U_A,
+	MENU_MEAS_U_B,
+	MENU_MEAS_U_C
 };
 
 /// Режим работы функции ввода параметров
@@ -64,7 +62,7 @@ enum eMENU_ENTER_PARAM {
 	MENU_ENTER_PARAM_INT,		// изменение параметра, целое значение
 	MENU_ENTER_PARAM_LIST,		// изменение параметра, выбор из списка
 	MENU_ENTER_PARAM_LIST_2,	// изменение параметра, выбор из списка значений
-	MENU_ENTER_PARAM_U_COR,		// изменение параметра, коррекция напряжения
+	MENU_ENTER_PARAM_COMP_D,	// изменение параметра, компенсация задержки
 	MENU_ENTER_PASSWORD,		// ввод пароля
 	MENU_ENTER_PASSWORD_NEW,	// ввод нового пароля
 	MENU_ENTER_PASSWORD_READY,	// введен верный пароль
@@ -96,7 +94,7 @@ public:
 	// если ввод из списка, автоматически дискретность и делитель равны 1
 	// для пароля автоматически выставляются диапазон ввода и начальное значение
 	void setEnable(eMENU_ENTER_PARAM s = MENU_ENTER_PARAM_INT) {
-		if ((s >= MENU_ENTER_PARAM_INT) && (s <= MENU_ENTER_PASSWORD_NEW)) {
+		if ((s > MENU_ENTER_PARAM_NO) && (s <= MENU_ENTER_PASSWORD_NEW)) {
 			if ((s == MENU_ENTER_PARAM_LIST)
 					|| (s == MENU_ENTER_PARAM_LIST_2)) {
 				disc_ = 1;
@@ -171,7 +169,7 @@ public:
 	 */
 	uint16_t incValue(uint8_t velocity = 0) {
 		eMENU_ENTER_PARAM s = status_;
-		if ((s == MENU_ENTER_PARAM_INT) || (s == MENU_ENTER_PARAM_U_COR)) {
+		if ((s == MENU_ENTER_PARAM_INT) || (s == MENU_ENTER_PARAM_COMP_D)) {
 			// увеличение значения
 //			val_ = (val_ <= (max_ - disc_)) ? val_ + disc_ : min_;
 			uint16_t disc = disc_;
@@ -211,7 +209,7 @@ public:
 	uint16_t decValue(uint8_t velocity=0) {
 		eMENU_ENTER_PARAM s = status_;
 		if ((s == MENU_ENTER_PARAM_INT)
-				|| (s == MENU_ENTER_PARAM_U_COR)) {
+				|| (s == MENU_ENTER_PARAM_COMP_D)) {
 			// уменьшение значние
 			uint16_t disc = disc_;
 			if (velocity >= 1) {
@@ -336,7 +334,7 @@ public:
 	bool add(PGM_P name, eGB_COM com=GB_COM_NO) {
 		bool stat = false;
 		if (cnt_ < MAX_NUM_PUNKTS) {
-			name_[cnt_] = name;
+			pName_[cnt_] = name;
 			com_[cnt_] = com;
 			cnt_++;
 			stat = true;
@@ -377,7 +375,7 @@ public:
 	bool change(PGM_P name, eGB_COM com, uint8_t num) {
 		bool stat = false;
 		if (num < cnt_) {
-			name_[num] = name;
+			pName_[num] = name;
 			com_[num] = com;
 			stat = true;
 		}
@@ -392,7 +390,7 @@ public:
 //		if (num >= cnt_)
 //			num = 0;
 //		return name_[num];
-		return ((num < cnt_) ? name_[num] : 0);
+		return ((num < cnt_) ? pName_[num] : 0);
 	}
 
 	/**	Возвращает номер эелемента массива с именем указанного пункта меню.
@@ -425,7 +423,7 @@ private:
 	/// текущее кол-во пунктов
 	uint8_t cnt_;
 	/// указатель на имя пункта
-	PGM_P name_[MAX_NUM_PUNKTS];
+	PGM_P pName_[MAX_NUM_PUNKTS];
 	/// номер пункта, используется с массивами
 	uint8_t number_[MAX_NUM_PUNKTS];
 	/// команда для запроса из БСП, необходимая для данного пункта меню
@@ -491,74 +489,38 @@ public:
 	stGBparam sParam;
 
 private:
-	// код кнопки
-	eKEY key_;
+	eKEY key_;				///< Код кнопки.
 
-	// флаг мигания надписей
-	bool blink_;
+	bool blink_;			///< Флаг смены надписей.
+	bool blinkMeasParam_;	///< Флаг смены измеряемых параметров.
+	bool connectionBsp_;	///< True - связь с БСП есть.
+	bool cursorEnable_;		///< True - необходимо вывести курсор на экран.
+	bool lvlCreate_;		///< True - необходимо создать уровень меню.
 
-	// флаг смены измеряемых параметров
-	bool blinkMeasParam_;
+	uint8_t cursorLine_;	///< Текущее положение курсора(номер строки).
+	uint8_t lineParam_;		///< Количество отображаемых параметров (строк).
+	uint8_t curCom_;		///< Текущий подпункт параметра, начиная с 1.
+	uint8_t delay_;			///< Время вывода доп.сообщения на экран (например ошибку).
 
-	// флаг текущего сосотояния связи с БСП, True - есть
-	bool connectionBsp_;
-
-	// true - необходимо вывести на экран курсор
-	bool cursorEnable_;
-
-	// текущее положение курсора (номер строки)
-	uint8_t cursorLine_;
-
-	// кол-во отображаемых параметров
-	uint8_t lineParam_;
-
-	// текущий подпункт (например номер текущей команды параметра, начиная с 1)
-	uint8_t curCom_;
-
-	// если true - необходимо создать уровень меню
-	bool lvlCreate_;
-
-	// время вывода доп.сообщения на экран (например сообщения об ошибке)
-	uint8_t delay_;
-
-	// измеряемые параметры
+	/// измеряемые параметры
 	eMENU_MEAS_PARAM measParam[MAX_NUM_MEAS_PARAM * 2];
 
-	// текущие пункты меню
-	TMenuPunkt Punkts_;
+	TMenuPunkt Punkts_;		///< Текущие подпунтры меню.
+	TEnterParam EnterParam;	///< Параметры для ввода новых значений.
 
-	// параметры для ввода новых значений
-	TEnterParam EnterParam;
-
-	//  настройки для соответствующих аппаратов
-	bool setDeviceK400();
-	bool setDeviceRZSK();
-	bool setDeviceR400M();
-	bool setDeviceOPTO();
-
-	// очистка текстового буфера
+	// Очистка текстового буфера.
 	void clearTextBuf();
 
-	// очистка строки
+	// Очистка строки.
 	void clearLine(uint8_t line);
 
-	// вывод сообщения на экран
-	void printMessage() {
-		delay_ = 0;
-	}
-
-	// возвращает true - в случае необходимости вывода сообщения
-	bool isMessage() const {
-		return (delay_ < TIME_MESSAGE);
-	}
-
-	// вывод на экран измеряемого параметра
+	// Вывод на экран измеряемого параметра.
 	void printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par);
 
-	// вывод на экран текущего состояния устройств
+	// Вывод на экран текущего состояния устройств.
 	void printDevicesStatus(uint8_t poz, TDeviceStatus *device);
 
-	// вывод в пунтке меню "Режим" текущего режима устройств
+	// Вывод в пунтке меню "Режим" текущего режима устройств.
 	void printDevicesRegime(uint8_t poz, TDeviceStatus *device);
 
 	// Уровни меню
@@ -568,26 +530,20 @@ private:
 	void lvlInfo();
 	void lvlJournal();
 	void lvlJournalEvent();
-	void lvlJournalDef();
-	void lvlJournalPrm();
-	void lvlJournalPrd();
+	void lvlJournalRps();
 	void lvlControl();
 	void lvlSetup();
 	void lvlRegime();
 	void lvlSetupParam();
-	void lvlSetupParamDef();
-	void lvlSetupParamPrm();
-	void lvlSetupParamPrd();
+	void lvlSetupParamRps();
 	void lvlSetupParamGlb();
 	void lvlSetupDT();
-	void lvlTest();
-	void lvlTest1();
-	void lvlTest2();
 	void lvlSetupInterface();
 
 	// ввод параметра
 	eMENU_ENTER_PARAM enterValue();
 
+	// ввод пароля
 	eMENU_ENTER_PARAM enterPassword();
 
 	// перемещение курсора вверх
@@ -607,10 +563,10 @@ private:
 //	uint8_t getNumError(uint16_t val);
 
 	// текущая функция ввода
-	eMENU_ENTER_PARAM (clMenu::*enterFunc)();
+	eMENU_ENTER_PARAM (clMenu::*pEnterFunc)();
 
 	// текущий уровень меню
-	void (clMenu::*lvlMenu)();
+	void (clMenu::*pLvlMenu)();
 };
 
 #endif /* MENU_H_ */

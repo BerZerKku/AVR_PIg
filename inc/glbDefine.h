@@ -77,7 +77,7 @@ enum eGB_TYPE_DEVICE {
 /// Устройство
 enum eGB_DEVICE {
 	GB_DEVICE_MIN = 0,
-	GB_DEVICE_DEF = 0,
+	GB_DEVICE_RPS = 0,
 	GB_DEVICE_GLB,
 	GB_DEVICE_MAX
 };
@@ -155,7 +155,7 @@ enum eGB_COM {
 enum eGB_COM_MASK {
 	// Тип устройства
 	GB_COM_MASK_DEVICE = 0x30,
-	GB_COM_MASK_DEVICE_DEF = 0x00,
+	GB_COM_MASK_DEVICE_RPS = 0x00,
 	GB_COM_MASK_DEVICE_PRM = 0x10,
 	GB_COM_MASK_DEVICE_PRD = 0x20,
 	GB_COM_MASK_DEVICE_GLB = 0x30,
@@ -367,7 +367,7 @@ public:
 	TDeviceStatus() {
 		// присваивание иемени по умолчанию
 		static const char nameDev[] PROGMEM = "НЕТ";
-		name = nameDev;
+		pName = nameDev;
 		enable_ = true;
 		fault_ = 0;
 		faults_ = 0;
@@ -454,10 +454,10 @@ public:
 	}
 
 	// массивы расшифровок аварий и предупреждений
-	PGM_P faultText[MAX_NUM_FAULTS];
-	PGM_P warningText[MAX_NUM_WARNINGS];
-	PGM_P stateText[MAX_NUM_DEVICE_STATE + 1];
-	PGM_P name;
+	PGM_P pFaultText[MAX_NUM_FAULTS];
+	PGM_P pWarningText[MAX_NUM_WARNINGS];
+	PGM_P pStateText[MAX_NUM_DEVICE_STATE + 1];
+	PGM_P pName;
 
 private:
 	// текущая приоритетная неисправность, неисправности и кол-во неисправностей
@@ -504,183 +504,349 @@ private:
 };
 
 
-
-
-
-
 /// класс для измеряемых параметров
 class TMeasuredParameters {
 public:
 	TMeasuredParameters() {
-		voltDef_ = 0;
-		voltDef2_ = 0;
-		voltCf_ = 0;
-		voltCf2_ = 0;
-		voltNoise_ = 0;
-		voltNoise2_ = 0;
-		voltOut_ = 0;
-		curOut_ = 0;
-		resistOut_ = 0;
-		pulseWidth_ = 0;
+		parPOut_ = 0;
+		parUCtrl_= 0;
+		parSN_ 	 = 0;
+		parNOut_ = 0;
+		parNin_  = 0;
+		parFazA_ = 0;
+		parFazB_ = 0;
+		parFazC_ = 0;
+		parIA_	 = 0;
+		parIB_	 = 0;
+		parIC_	 = 0;
+		parUA_	 = 0;
+		parUB_	 = 0;
+		parUC_	 = 0;
 	}
 
-	// запас по защите
-	int8_t getVoltageDef() const {
-		return voltDef_;
-	}
-	bool setVoltageDef(int8_t voltDef) {
+	/**	Установка параметра Pout.
+	 *	@param Новое значние параметра.
+	 *	@retval True В случае корректного значния.
+	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
+	 */
+	bool setPOut(uint8_t val) {
 		bool stat = false;
-		if ((voltDef > -100) && (voltDef < 100)) {
-			voltDef_ = voltDef;
+		if (val <= 50) {
+			parPOut_ = val;
 			stat = true;
 		}
 		return stat;
 	}
 
-	// запас по защите второй
-	int8_t getVoltageDef2() const {
-		return voltDef2_;
+	/**	Возвращает значение параметра Pout.
+	 *
+	 * 	@return Значение параметра.
+	 */
+	uint8_t getPOut() const {
+		return parPOut_;
 	}
-	bool setVoltageDef2(int8_t voltDef) {
+
+	/**	Установка параметра Uctrl.
+	 *	@param Новое значние параметра.
+	 *	@retval True В случае корректного значния.
+	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
+	 */
+	bool setUCtrl(int8_t val) {
 		bool stat = false;
-		if ((voltDef > -100) && (voltDef < 100)) {
-			voltDef2_ = voltDef;
+		if ((val >= -50) && (val <= 50)) {
+			parUCtrl_ = val;
 			stat = true;
 		}
 		return stat;
 	}
 
-	// запас по КЧ
-	int8_t getVoltageCf() const {
-		return voltCf_;
+	/**	Возвращает значение параметра Uctrl.
+	 *
+	 * 	@return Значение параметра.
+	 */
+	int8_t getUCtrl() const {
+		return parUCtrl_;
 	}
-	bool setVoltageCf(int8_t voltCf) {
+
+	/**	Установка параметра S_N.
+	 *	@param Новое значние параметра.
+	 *	@retval True В случае корректного значния.
+	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
+	 */
+	bool setSN(int8_t val) {
 		bool stat = false;
-		if ((voltCf > -100) && (voltCf < 100)) {
-			voltCf_ = voltCf;
+		if ((val >= -50) && (val <= 50)) {
+			parSN_ = val;
 			stat = true;
 		}
 		return stat;
 	}
 
-	// запас по КЧ кторой
-	int8_t getVoltageCf2() const {
-		return voltCf2_;
+	/**	Возвращает значение параметра S_N.
+	 *
+	 * 	@return Значение параметра.
+	 */
+	int8_t getSN() const {
+		return parSN_;
 	}
-	bool setVoltageCf2(int8_t voltCf) {
+
+	/**	Установка параметра N_out.
+	 *	@param Новое значние параметра.
+	 *	@retval True В случае корректного значния.
+	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
+	 */
+	bool setNOut(uint8_t val) {
 		bool stat = false;
-		if ((voltCf > -100) && (voltCf < 100)) {
-			voltCf2_ = voltCf;
+		if (val <= 9) {
+			parNOut_ = val;
 			stat = true;
 		}
 		return stat;
 	}
 
-	// напряжение выхода
-	uint8_t getVoltageOutInt() const {
-		return (voltOut_ / 10);
+	/**	Возвращает значение параметра N_out.
+	 *
+	 * 	@return Значение параметра.
+	 */
+	uint8_t getNOut() const {
+		return parNOut_;
 	}
-	uint8_t getVoltageOutFract() const {
-		return (voltOut_ % 10);
-	}
-	uint16_t getVoltageOut() const {
-		return voltOut_;
-	}
-	bool setVoltageOut(uint8_t voltOutInt, uint8_t voltOutFract) {
+
+	/**	Установка параметра N_in.
+	 *	@param Новое значние параметра.
+	 *	@retval True В случае корректного значния.
+	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
+	 */
+	bool setNIn(uint8_t val) {
 		bool stat = false;
-		if ((voltOutInt < 100) && (voltOutFract < 10)) {
-			voltOut_ = (((uint16_t) voltOutInt) * 10) + voltOutFract;
+		if (val <= 9) {
+			parNin_ = val;
 			stat = true;
 		}
 		return stat;
 	}
 
-	// ток выхода
-	uint16_t getCurrentOut() const {
-		return curOut_;
+	/**	Возвращает значение параметра N_in.
+	 *
+	 * 	@return Значение параметра.
+	 */
+	uint8_t getNIn() const {
+		return parNin_;
 	}
-	bool setCurrentOut(uint16_t curOut) {
+
+	/**	Установка параметра FazA.
+	 *	@param Новое значние параметра.
+	 *	@retval True В случае корректного значния.
+	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
+	 */
+	bool setFazA(int16_t val) {
 		bool stat = false;
-		if (curOut <= 999) {
-			curOut_ = curOut;
+		if ((val >= -180) && (val <= 179)) {
+			parFazA_ = val;
 			stat = true;
 		}
 		return stat;
 	}
 
-	// сопротивление выхода
-	uint16_t getResistOut() const {
-		return resistOut_;
+	/**	Возвращает значение параметра FazA.
+	 *
+	 * 	@return Значение параметра.
+	 */
+	int16_t getFazA() const {
+		return parFazA_;
 	}
-	bool setResistOut(uint16_t resistOut) {
+
+	/**	Установка параметра FazB.
+	 *	@param Новое значние параметра.
+	 *	@retval True В случае корректного значния.
+	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
+	 */
+	bool setFazB(int16_t val) {
 		bool stat = false;
-		if (resistOut <= 999) {
-			resistOut_ = resistOut;
+		if ((val >= -180) && (val <= 179)) {
+			parFazB_ = val;
 			stat = true;
 		}
 		return stat;
 	}
 
-	// уровень шума
-	int8_t getVoltageNoise() const {
-		return voltNoise_;
+	/**	Возвращает значение параметра FazB.
+	 *
+	 * 	@return Значение параметра.
+	 */
+	int16_t getFazB() const {
+		return parFazB_;
 	}
-	bool setVoltageNoise(int8_t voltNoise) {
+
+	/**	Установка параметра FazC.
+	 *	@param Новое значние параметра.
+	 *	@retval True В случае корректного значния.
+	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
+	 */
+	bool setFazC(int16_t val) {
 		bool stat = false;
-		if ((voltNoise > -100) && (voltNoise < 100)) {
-			voltNoise_ = voltNoise;
+		if ((val >= -180) && (val <= 179)) {
+			parFazC_ = val;
 			stat = true;
 		}
 		return stat;
 	}
 
-	// уровень шума 2
-	int8_t getVoltageNoise2() const {
-		return voltNoise2_;
+	/**	Возвращает значение параметра FazC.
+	 *
+	 * 	@return Значение параметра.
+	 */
+	int16_t getFazC() const {
+		return parFazC_;
 	}
-	bool setVoltageNoise2(int8_t val) {
+
+	/**	Установка параметра I_A.
+	 *	@param Новое значние параметра.
+	 *	@retval True В случае корректного значния.
+	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
+	 */
+	bool setIA(uint8_t val) {
 		bool stat = false;
-		if ((val > -100) && (val < 100)) {
-			voltNoise2_ = val;
+		if (val <= 250) {
+			parIA_ = val;
 			stat = true;
 		}
 		return stat;
 	}
 
-	// длительность импульсов ВЧ блокировки на выходе применика
-	uint16_t getPulseWidth() const {
-		return pulseWidth_;
+	/**	Возвращает значение параметра I_A.
+	 *
+	 * 	@return Значение параметра.
+	 */
+	uint8_t getIA() const {
+		return parIA_;
 	}
-	bool setPulseWidth(uint16_t val) {
+
+	/**	Установка параметра I_B.
+	 *	@param Новое значние параметра.
+	 *	@retval True В случае корректного значния.
+	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
+	 */
+	bool setIB(uint8_t val) {
 		bool stat = false;
-		if (val <= 360) {
-			pulseWidth_ = val;
+		if (val <= 250) {
+			parIB_ = val;
 			stat = true;
 		}
 		return stat;
+	}
+
+	/**	Возвращает значение параметра I_B.
+	 *
+	 * 	@return Значение параметра.
+	 */
+	uint8_t getIB() const {
+		return parIB_;
+	}
+
+	/**	Установка параметра I_C.
+	 *	@param Новое значние параметра.
+	 *	@retval True В случае корректного значния.
+	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
+	 */
+	bool setIC(uint8_t val) {
+		bool stat = false;
+		if (val <= 250) {
+			parIC_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+
+	/**	Возвращает значение параметра I_C.
+	 *
+	 * 	@return Значение параметра.
+	 */
+	uint8_t getIC() const {
+		return parIC_;
+	}
+
+	/**	Установка параметра U_A.
+	 *	@param Новое значние параметра.
+	 *	@retval True В случае корректного значния.
+	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
+	 */
+	bool setUA(uint16_t val) {
+		bool stat = false;
+		if (val <= 1020) {
+			parUA_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+
+	/**	Возвращает значение параметра U_A.
+	 *
+	 * 	@return Значение параметра.
+	 */
+	uint16_t getUA() const {
+		return parUA_;
+	}
+
+	/**	Установка параметра U_B.
+	 *	@param Новое значние параметра.
+	 *	@retval True В случае корректного значния.
+	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
+	 */
+	bool setUB(uint16_t val) {
+		bool stat = false;
+		if (val <= 1020) {
+			parUB_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+
+	/**	Возвращает значение параметра U_B.
+	 *
+	 * 	@return Значение параметра.
+	 */
+	uint16_t getUB() const {
+		return parUB_;
+	}
+
+	/**	Установка параметра U_C.
+	 *	@param Новое значние параметра.
+	 *	@retval True В случае корректного значния.
+	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
+	 */
+	bool setUC(uint16_t val) {
+		bool stat = false;
+		if (val <= 1020) {
+			parUC_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+
+	/**	Возвращает значение параметра U_C.
+	 *
+	 * 	@return Значение параметра.
+	 */
+	uint16_t getUC() const {
+		return parUC_;
 	}
 
 private:
-	// запас по защите (-99 .. 99)дБ
-	int8_t voltDef_;
-	// запас по защите второго канала (-99..99)дБ
-	int8_t voltDef2_;
-	// запас по КЧ (-99 .. 99)дБ
-	int8_t voltCf_;
-	// запас по КЧ второго канала (-99..99)дБ
-	int8_t voltCf2_;
-	// уровень шумов (-99 .. 99)дБ
-	int8_t voltNoise_;
-	// уровень шумов 2 (-99 .. 99)дБ
-	int8_t voltNoise2_;
-	// выходное напряжение умноженное на 10 (0 .. 999)В
-	uint16_t voltOut_;
-	// выходной ток (0 .. 999)мА
-	uint16_t curOut_;
-	// выходное сопротивление (0 .. 999)Ом
-	uint16_t resistOut_;
-	// длительность импульсов ВЧ блокировки на выходе применика (0..360)°
-	uint16_t pulseWidth_;
+	uint8_t	 parPOut_;		///<  Pout	(   0 .. 50  )дБм
+	int8_t	 parUCtrl_;		///<  Uctrl ( -50 .. 50  )дБ
+	int8_t	 parSN_;		///<  S_N   ( -50 .. 50  )дБ
+	uint8_t	 parNOut_;		///<  N_out (   0 .. 9   )
+	uint8_t	 parNin_;		///<  N_in  (   0 .. 9   )
+	int16_t  parFazA_;		///<  FazA  (-180 .. 179 )град.
+	int16_t  parFazB_;		///<  FazB  (-180 .. 179 )град.
+	int16_t  parFazC_;		///<  FazC  (-180 .. 179 )град.
+	uint8_t	 parIA_;		///<  I_A	(   0 .. 250 )кА
+	uint8_t	 parIB_;		///<  I_B	(   0 .. 250 )кА
+	uint8_t	 parIC_;		///<  I_C	(   0 .. 250 )кА
+	uint16_t parUA_;		///<  U_A	(   0 .. 1020)кВ
+	uint16_t parUB_;		///<  U_B	(   0 .. 1020)кВ
+	uint16_t parUC_;		///<  U_C	(   0 .. 1020)кВ
 };
 
 
@@ -701,7 +867,7 @@ public:
 	}
 
 	/** Запись команды в буфер 1.
-	 * 	Если num > 0 то происходит замена имеющейся команды в буфере,
+	 * 	Если num >= 0 то происходит замена имеющейся команды в буфере,
 	 * 	если num < 0 команда добавляется.
 	 * 	@param com Код команды.
 	 * 	@param num Индекс элемента в буфере.
@@ -822,30 +988,6 @@ public:
 		return *((uint16_t *) (buf_ + 1));
 	}
 
-//	// запись нескольких байт данных
-//	// source - указатель на массив данных
-//	// num - кол-во копируемых байт данных
-//	void copyToBufer(uint8_t *source, uint8_t num) {
-//		for (uint_fast8_t i = 0; i < num; i++) {
-//			// учет размера буфера
-//			if (i >= 6)
-//				break;
-//			byte_[i] = *source++;
-//
-//		}
-//	}
-//	// считывание нескольких байт данных
-//	// destination- указатель на массив данных
-//	// num - кол-во копируемых байт данных
-//	void copyFromBufer(uint8_t *destination, uint8_t num) const {
-//		for (uint_fast8_t i = 0; i < num; i++) {
-//			// учет размера буфера
-//			if (i >= 6)
-//				break;
-//			*destination++ = byte_[i];
-//		}
-//	}
-
 	/**	Возвращает указатель на буфер данных.
 	 * 	@return Указатель на буфер данных.
 	 */
@@ -854,22 +996,26 @@ public:
 	}
 
 private:
-	// срочная команда (на изменение)
-	eGB_COM comFast_[MAX_NUM_FAST_COM];
-	// первый буфер команд
-	eGB_COM com1_[MAX_NUM_COM_BUF1];
-	// кол-во команд в первом буфере
-	uint8_t numCom1_;
-	// номер текущей команды в первом буфере
-	uint8_t cnt1_;
-	// второй буфер команд
-	eGB_COM com2_[MAX_NUM_COM_BUF2];
-	// кол-во команд во втором буфере
-	uint8_t numCom2_;
-	// номер текущей команды во втором буфере
-	uint8_t cnt2_;
 	// буфер данных
 	uint8_t buf_[6];
+	// срочная команда (на изменение)
+	eGB_COM comFast_[MAX_NUM_FAST_COM];
+
+	// первый буфер команд
+	eGB_COM com1_[MAX_NUM_COM_BUF1];
+	// номер текущей команды в первом буфере
+	uint8_t cnt1_;
+	// кол-во команд в первом буфере
+	uint8_t numCom1_;
+
+	// второй буфер команд
+	eGB_COM com2_[MAX_NUM_COM_BUF2];
+	// номер текущей команды во втором буфере
+	uint8_t cnt2_;
+	// кол-во команд во втором буфере
+	uint8_t numCom2_;
+
+
 };
 
 class TJournalEntry {

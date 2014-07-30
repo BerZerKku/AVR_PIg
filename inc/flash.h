@@ -12,25 +12,27 @@
 
 static const char fcNull[] PROGMEM = "";
 
-// измеряемые параметры
-static const char fcUout[]  PROGMEM = "U=%02u.%01uВ";
-static const char fcIout[] 	PROGMEM	= "I=%03uмА";
-static const char fcRout[] 	PROGMEM = "R=%03uОм";
-static const char fcUz[]	PROGMEM	= "Uз=%02dдБ";
-static const char fcUz1[] 	PROGMEM = "Uз1=%02dдБ";
-static const char fcUz2[] 	PROGMEM = "Uз2=%02dдБ";
-static const char fcUcf[] 	PROGMEM	= "Uк=%02dдБ";
-static const char fcUcf1[] 	PROGMEM	= "Uк1=%02dдБ";
-static const char fcUcf2[] 	PROGMEM	= "Uк2=%02dдБ";
-static const char fcUn[] 	PROGMEM	= "Uш=%02dдБ";
-static const char fcUn1[] 	PROGMEM	= "Uш1=%02dдБ";
-static const char fcUn2[] 	PROGMEM	= "Uш2=%02dдБ";
-static const char fcSd[]	PROGMEM = "Sд=%02u°";
+// измеряемые параметры, в сумме выводится не более 9 символов
+// в крайнем случае 10, но их надо выводить в правом столбце
+static const char fcPout[]	PROGMEM = "P=%02uдБм";
+static const char fcUctrl[]	PROGMEM = "U=%02dдБ";
+static const char fcSN[]	PROGMEM = "SN=%02dдБ";
+static const char fcNOut[]	PROGMEM = "Nout=%01u";
+static const char fcNIn[]	PROGMEM = "Nin=%01u";
+static const char fcFazA[]	PROGMEM = "Fa=%02dгр";
+static const char fcFazB[]	PROGMEM = "Fb=%02dгр";
+static const char fcFazC[]	PROGMEM = "Fc=%02dгр";
+static const char fcIA[] 	PROGMEM = "Ia=%02uкА";
+static const char fcIB[] 	PROGMEM = "Ib=%02uкА";
+static const char fcIC[] 	PROGMEM = "Ic=%02uкА";
+static const char fcUA[]	PROGMEM = "Ua=%02uкВ";
+static const char fcUB[]	PROGMEM = "Ub=%02uкВ";
+static const char fcUC[]	PROGMEM = "Uc=%02uкВ";
 static const char fcDate[] 	PROGMEM = "%02u.%02u.%02u";
 static const char fcTime[] 	PROGMEM = "%02u:%02u:%02u";
 
 // имена устройств аппарата
-static const char fcDeviceName00[] PROGMEM = "ТРЗ";
+static const char fcDeviceName00[] PROGMEM = "ЗАЩ";
 
 // режимы устройств
 static const char fcRegime[GB_REGIME_MAX + 1][8] PROGMEM = {
@@ -45,7 +47,7 @@ static const char fcRegime[GB_REGIME_MAX + 1][8] PROGMEM = {
 };
 
 // версии прошивок
-static const char fcIC[GB_IC_MAX + 1][9] PROGMEM = {
+static const char fcICname[GB_IC_MAX + 1][9] PROGMEM = {
 //		 12345678
 		"БСП MCU ",	//
 		"БСП DSP ",	//
@@ -74,6 +76,7 @@ static const char fcOnOff[3][STRING_LENGHT] PROGMEM = {
 
 static const char fcDevices[GB_DEVICE_MAX + 1][4] PROGMEM = {
 // 		 123
+		"ЗАЩ",	//
 		"ОБЩ",	//
 		"ОШБ"	//
 };
@@ -130,20 +133,20 @@ static char fcStopBits[UART_STOP_BITS_MAX + 1][STRING_LENGHT] PROGMEM = {
 // кол-во состояний для всех устройств должно совпадать с MAX_NUM_DEVICE_STATE
 // неизвестное состояние
 static const char fcUnknownSost[] PROGMEM = "Ошибка";
-// состояния Защиты
-static const char fcDefSost00[] PROGMEM =	"Исходн.";
-static const char fcDefSost01[] PROGMEM =	"Контроль";
-static const char fcDefSost02[] PROGMEM =	"Пуск";
-static const char fcDefSost03[] PROGMEM =	"Останов";
-static const char fcDefSost04[] PROGMEM =	"Неиспр.";
-static const char fcDefSost05[] PROGMEM =	"П.неиспр";
-static const char fcDefSost06[] PROGMEM =	"Ожидание";
-static const char fcDefSost07[] PROGMEM =	"Нал.пуск";
-static const char fcDefSost08[] PROGMEM = 	"Уд.пуск";
-static const char fcDefSost09[] PROGMEM =	"Нет РЗ";
-static const char fcDefSost10[] PROGMEM =	"Речь";
-static const char fcDefSost11[] PROGMEM =	"ПРД";
-static const char fcDefSost12[] PROGMEM =	"ПРМ";
+// состояния Терминала
+static const char fcRpsSost00[] PROGMEM =	"Исходн.";
+static const char fcRpsSost01[] PROGMEM =	"Контроль";
+static const char fcRpsSost02[] PROGMEM =	"Пуск";
+static const char fcRpsSost03[] PROGMEM =	"Останов";
+static const char fcRpsSost04[] PROGMEM =	"Неиспр.";
+static const char fcRpsSost05[] PROGMEM =	"П.неиспр";
+static const char fcRpsSost06[] PROGMEM =	"Ожидание";
+static const char fcRpsSost07[] PROGMEM =	"Нал.пуск";
+static const char fcRpsSost08[] PROGMEM = 	"Уд.пуск";
+static const char fcRpsSost09[] PROGMEM =	"Нет РЗ";
+static const char fcRpsSost10[] PROGMEM =	"Речь";
+static const char fcRpsSost11[] PROGMEM =	"ПРД";
+static const char fcRpsSost12[] PROGMEM =	"ПРМ";
 
 // надписи для неиспользуемых в текущем аппарате кодов
 static const char fcUnknownFault[]		PROGMEM = "Неисправность";
