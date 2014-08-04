@@ -48,7 +48,7 @@ static const eKEY fcKey[18] = { 						//
 		//		дополнительные функции
 		KEY_EMPTY,		KEY_EMPTY,		KEY_EMPTY,	//
 		KEY_PUSK, 		KEY_MENU,		KEY_EMPTY,		//
-		KEY_RESET,		KEY_EMPTY,		KEY_EMPTY		//
+		KEY_RESET_IND,	KEY_EMPTY,		KEY_EMPTY		//
 };
 
 

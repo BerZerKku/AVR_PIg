@@ -21,7 +21,7 @@
 
 /// максимальный ток
 #define GLB_CURR_MIN_MIN		0
-#define GLB_CURR_MIN_MAX 		255
+#define GLB_CURR_MIN_MAX 		250
 #define GLB_CURR_MIN_DISC 		1
 #define GLB_CURR_MIN_FRACT		1
 #define GLB_CURR_MIN_MIN_F  	(GLB_CURR_MIN_MIN / GLB_CURR_MIN_FRACT)
@@ -30,7 +30,7 @@
 
 /// минимальный ток
 #define GLB_CURR_MAX_MIN		0
-#define GLB_CURR_MAX_MAX 		255
+#define GLB_CURR_MAX_MAX 		250
 #define GLB_CURR_MAX_DISC 		1
 #define GLB_CURR_MAX_FRACT		1
 #define GLB_CURR_MAX_MIN_F  	(GLB_CURR_MAX_MIN / GLB_CURR_MAX_FRACT)
