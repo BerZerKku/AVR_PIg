@@ -132,7 +132,7 @@ enum eGB_COM {
 	GB_COM_GET_COMP_DELAY		= 0x35,	// +
 	GB_COM_GET_CURR_MAX 		= 0x36, // +
 	GB_COM_GET_CURR_MIN	 		= 0x37,	// +
-	GB_COM_GET_VOLT_MIN 			= 0x38,	// +
+	GB_COM_GET_VOLT_MIN 		= 0x38,	// +
 	GB_COM_GET_VERS 			= 0x3F,	// +
 	GB_COM_SET_PRM_ENTER 		= 0x51,	// +
 	GB_COM_SET_REG_DISABLED 	= 0x70,	// +
@@ -635,14 +635,17 @@ public:
 	}
 
 	/**	Установка параметра FazA.
+	 *
+	 * 	Принятое число умножается на 2, для получения конечного значения.
+	 *
 	 *	@param Новое значние параметра.
 	 *	@retval True В случае корректного значния.
 	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
 	 */
 	bool setFazA(int16_t val) {
 		bool stat = false;
-		if ((val >= -180) && (val <= 179)) {
-			parFazA_ = val;
+		if ((val >= -90) && (val < 90)) {
+			parFazA_ = 2*val;
 			stat = true;
 		}
 		return stat;
@@ -657,13 +660,16 @@ public:
 	}
 
 	/**	Установка параметра FazB.
+	 *
+	 * 	Принятое число умножается на 2, для получения конечного значения.
+	 *
 	 *	@param Новое значние параметра.
 	 *	@retval True В случае корректного значния.
 	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
 	 */
 	bool setFazB(int16_t val) {
 		bool stat = false;
-		if ((val >= -180) && (val <= 179)) {
+		if ((val >= -90) && (val < 90)) {
 			parFazB_ = val;
 			stat = true;
 		}
@@ -679,14 +685,17 @@ public:
 	}
 
 	/**	Установка параметра FazC.
+	 *
+	 *	Принятое число умножается на 2, для получения конечного значения.
+	 *
 	 *	@param Новое значние параметра.
 	 *	@retval True В случае корректного значния.
 	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
 	 */
 	bool setFazC(int16_t val) {
 		bool stat = false;
-		if ((val >= -180) && (val <= 179)) {
-			parFazC_ = val;
+		if ((val >= -90) && (val < 90)) {
+			parFazC_ = 2*val;
 			stat = true;
 		}
 		return stat;
@@ -767,14 +776,17 @@ public:
 	}
 
 	/**	Установка параметра U_A.
+	 *
+	 * 	Принятое число умножается на 4, для получения конечного значения.
+	 *
 	 *	@param Новое значние параметра.
 	 *	@retval True В случае корректного значния.
 	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
 	 */
-	bool setUA(uint16_t val) {
+	bool setUA(uint8_t val) {
 		bool stat = false;
-		if (val <= 1020) {
-			parUA_ = val;
+		if (val <= 250) {
+			parUA_ = 4*val;
 			stat = true;
 		}
 		return stat;
@@ -789,14 +801,17 @@ public:
 	}
 
 	/**	Установка параметра U_B.
+	 *
+	 * 	Принятое число умножается на 4, для получения конечного значения.
+	 *
 	 *	@param Новое значние параметра.
 	 *	@retval True В случае корректного значния.
 	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
 	 */
-	bool setUB(uint16_t val) {
+	bool setUB(uint8_t val) {
 		bool stat = false;
-		if (val <= 1020) {
-			parUB_ = val;
+		if (val <= 250) {
+			parUB_ = 4*val;
 			stat = true;
 		}
 		return stat;
@@ -811,14 +826,17 @@ public:
 	}
 
 	/**	Установка параметра U_C.
+	 *
+	 * 	Принятое число умножается на 4, для получения конечного значения.
+	 *
 	 *	@param Новое значние параметра.
 	 *	@retval True В случае корректного значния.
 	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
 	 */
-	bool setUC(uint16_t val) {
+	bool setUC(uint8_t val) {
 		bool stat = false;
-		if (val <= 1020) {
-			parUC_ = val;
+		if (val <= 250) {
+			parUC_ = 4*val;
 			stat = true;
 		}
 		return stat;

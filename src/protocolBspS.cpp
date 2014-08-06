@@ -183,15 +183,15 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 				stat &= sParam_->MeasParam.setSN(buf[B4]);
 				stat &= sParam_->MeasParam.setNOut(buf[B5]);
 				stat &= sParam_->MeasParam.setNIn(buf[B6]);
-				stat &= sParam_->MeasParam.setFazA(TO_INT16(buf[B7], buf[B8]));
-				stat &= sParam_->MeasParam.setFazA(TO_INT16(buf[B9], buf[B10]));
-				stat &= sParam_->MeasParam.setFazA(TO_INT16(buf[B11],buf[B12]));
-				stat &= sParam_->MeasParam.setIA(buf[B13]);
-				stat &= sParam_->MeasParam.setIB(buf[B14]);
-				stat &= sParam_->MeasParam.setIC(buf[B15]);
-				stat &= sParam_->MeasParam.setUA(TO_INT16(buf[B16], buf[B17]));
-				stat &= sParam_->MeasParam.setUB(TO_INT16(buf[B18], buf[B19]));
-				stat &= sParam_->MeasParam.setUC(TO_INT16(buf[B20], buf[B21]));
+				stat &= sParam_->MeasParam.setFazA(buf[B7]);
+				stat &= sParam_->MeasParam.setFazA(buf[B8]);
+				stat &= sParam_->MeasParam.setFazA(buf[B9]);
+				stat &= sParam_->MeasParam.setIA(buf[B10]);
+				stat &= sParam_->MeasParam.setIB(buf[B11]);
+				stat &= sParam_->MeasParam.setIC(buf[B12]);
+				stat &= sParam_->MeasParam.setUA(buf[B13]);
+				stat &= sParam_->MeasParam.setUB(buf[B14]);
+				stat &= sParam_->MeasParam.setUC(buf[B15]);
 			}
 		}
 		break;
