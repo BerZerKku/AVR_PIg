@@ -640,7 +640,7 @@ public:
 	 *	@retval True В случае корректного значния.
 	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
 	 */
-	bool setFazA(int16_t val) {
+	bool setFazA(int8_t val) {
 		bool stat = false;
 		if ((val >= -128) && (val <= 127)) {
 			parFazA_ = val;
@@ -663,7 +663,7 @@ public:
 	 *	@retval True В случае корректного значния.
 	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
 	 */
-	bool setFazB(int16_t val) {
+	bool setFazB(int8_t val) {
 		bool stat = false;
 		if ((val >= -128) && (val <= 127)) {
 			parFazB_ = val;
@@ -686,7 +686,7 @@ public:
 	 *	@retval True В случае корректного значния.
 	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
 	 */
-	bool setFazC(int16_t val) {
+	bool setFazC(int8_t val) {
 		bool stat = false;
 		if ((val >= -128) && (val <= 127)) {
 			parFazC_ = val;
