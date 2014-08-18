@@ -198,15 +198,23 @@ static char fcInterface[GB_INTERFACE_MAX + 1][STRING_LENGHT] PROGMEM = {
 		"ошибка"	//
 };
 
+static char fcProtocol[GB_PROTOCOL_MAX + 1][STRING_LENGHT] PROGMEM = {
+//	 	 1234567890
+		"СТАНДАРТ",
+		"MODBUS",
+		"МЭК-101",
+		"ошибка"
+};
+
 static char fcBaudRate[UART_BAUD_RATE_MAX + 1][STRING_LENGHT] PROGMEM = {
 //		 1234567890
+		"300",		//
+		"600",		//
 		"1200",		//
 		"2400",		//
 		"4800",		//
 		"9600",		//
 		"19200",	//
-		"38400",	//
-		"57600",	//
 		"ошибка"	//
 };
 
@@ -221,21 +229,12 @@ static char fcParity[UART_PARITY_MAX + 1][STRING_LENGHT] PROGMEM = {
 		"нет",		//
 		"чет",		//
 		"нечет",	//
-#ifdef UART_PARITY_MARK
-		"Маркер",
-#endif
-#ifdef UART_PARITY_SPACE
-		"Пробел",
-#endif
 		"ошибка"
 };
 
 static char fcStopBits[UART_STOP_BITS_MAX + 1][STRING_LENGHT] PROGMEM = {
 //		 1234567890
 		"1",		//
-#ifdef UART_STOP_BITS_ONEPONTFIVE
-		"1.5",		//
-#endif
 		"2",		//
 };
 

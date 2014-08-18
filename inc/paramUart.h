@@ -16,23 +16,31 @@ enum eGB_INTERFACE {
 	GB_INTERFACE_MAX		//
 };
 
+enum eGB_PROTOCOL {
+	GB_PROTOCOL_MIN 	= 0,	//
+	GB_PROTOCOL_STANDART= 0,	// наш внутренний протокол
+	GB_PROTOCOL_MODBUS,			// MODBUS
+	GB_PROTOCOL_IEC_101,		// МЭК-101
+	GB_PROTOCOL_MAX
+};
+
 /// скорость передачи
 enum eUART_BAUD_RATE {
 	UART_BAUD_RATE_MIN = 0,		//
-	UART_BAUD_RATE_1200 = 0,	//
+	UART_BAUD_RATE_300 = 0,		//
+	UART_BAUD_RATE_600,			//
+	UART_BAUD_RATE_1200,		//
 	UART_BAUD_RATE_2400,		//
 	UART_BAUD_RATE_4800,		//
 	UART_BAUD_RATE_9600,		//
 	UART_BAUD_RATE_19200,		//
-	UART_BAUD_RATE_38400,		//
-	UART_BAUD_RATE_57600,		//
 	UART_BAUD_RATE_MAX			//
 };
 
 /// кол-во байт данных
 enum eUART_DATA_BITS {
 	UART_DATA_BITS_MIN = 0,		//
-	UART_DATA_BITS_8 = 0,		//
+	UART_DATA_BITS_8 = 0,		// 8 бит данных
 	UART_DATA_BITS_MAX			//
 };
 
@@ -42,28 +50,26 @@ enum eUART_PARITY {
 	UART_PARITY_NONE = 0,		// нет
 	UART_PARITY_EVEN,			// число установленных битов всегда четно
 	UART_PARITY_ODD,			// число установленных битов всегда нечетно
-//	UART_PARITY_MARK,			// бит четности всегда 1
-//	UART_PARITY_SPACE,			// бит четности всегда 0
 	UART_PARITY_MAX
 };
 
 /// кол-во стоп-бит
 enum eUART_STOP_BITS {
 	UART_STOP_BITS_MIN = 0,		//
-	UART_STOP_BITS_ONE = 0,		//
-//	UART_STOP_BITS_ONEPONTFIVE,	//
-	UART_STOP_BITS_TWO,			//
+	UART_STOP_BITS_ONE = 0,		// один стоп-бит
+	UART_STOP_BITS_TWO,			// два стоп-бита
 	UART_STOP_BITS_MAX			//
 };
 
 
 struct sEeprom {
-	uint16_t 		password;
-	eGB_INTERFACE 	interface;
-	eUART_BAUD_RATE baudRate;
-	eUART_DATA_BITS dataBits;
-	eUART_PARITY 	parity;
-	eUART_STOP_BITS stopBits;
+	uint16_t 		password;	// пароль
+	eGB_INTERFACE 	interface;	// интерфейс
+	eGB_PROTOCOL	protocol;	// протокол
+	eUART_BAUD_RATE baudRate;	// скорость
+	eUART_DATA_BITS dataBits;	// кол-во бит данных
+	eUART_PARITY 	parity;		// четность
+	eUART_STOP_BITS stopBits;	// кол-во стоп-бит
 };
 
 
@@ -78,7 +84,7 @@ public:
 			interface_ = GB_INTERFACE_USB;
 	}
 
-	/**	Запись
+	/**	Запись.
 	 * 	@param val Интерфейс связи.
 	 * 	@return False в случае ошибочного значения.
 	 */
@@ -91,8 +97,8 @@ public:
 		return stat;
 	}
 
-	/**	Чтение
-	 * 	@return Интерфейс связи
+	/**	Чтение.
+	 * 	@return Интерфейс связи.
 	 */
 	eGB_INTERFACE get() const {
 		return interface_;
@@ -103,11 +109,47 @@ private:
 	eGB_INTERFACE interface_;
 };
 
+/// Протокол связи.
+class TProtocol{
+public:
+	/** Контруктор.
+	 * 	По умолчанию устанавливает MODBUS.
+	 */
+	TProtocol(eGB_PROTOCOL val=GB_PROTOCOL_MODBUS) {
+		if (!set(val))
+			protocol_ = GB_PROTOCOL_MODBUS;
+	}
+
+	/**	Запись.
+	 * 	@param val Протокол связи.
+	 * 	@return False в случае ошибочного значения.
+	 */
+	bool set(eGB_PROTOCOL val) {
+		bool stat = false;
+		if ((val >= GB_PROTOCOL_MIN) && (val < GB_PROTOCOL_MAX)) {
+			protocol_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+
+	/** Чтение.
+	 * 	@return Протокол связи
+	 */
+	eGB_PROTOCOL get() const {
+		return protocol_;
+	}
+
+private:
+	// Протокол связи
+	eGB_PROTOCOL protocol_;
+};
+
 /// Скорость передачи.
 class TBaudRate {
 public:
 	/**	Конструктор.
-	 * 	По умолчанию устанваливает скорость 19200 бит/с.
+	 * 	По умолчанию устанавливает скорость 19200 бит/с.
 	 */
 	TBaudRate(eUART_BAUD_RATE val = UART_BAUD_RATE_19200) {
 		if (!set(val))
@@ -257,6 +299,8 @@ class TUartData {
 public:
 	/// Интерфейс связи
 	TInterface Interface;
+	/// Протокол связи
+	TProtocol Protocol;
 	/// Скорость передачи
 	TBaudRate BaudRate;
 	/// Количество битов данных

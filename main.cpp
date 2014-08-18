@@ -232,6 +232,7 @@ main(void) {
 	EEAR = 0;	// сброс адреса ЕЕПРОМ в 0, для защиты данных
 	menu.sParam.password.init(eeprom.password);
 	menu.sParam.Uart.Interface.set(eeprom.interface);
+	menu.sParam.Uart.Protocol.set(eeprom.protocol);
 	menu.sParam.Uart.BaudRate.set(eeprom.baudRate);
 	menu.sParam.Uart.DataBits.set(eeprom.dataBits);
 	menu.sParam.Uart.Parity.set(eeprom.parity);
@@ -315,10 +316,18 @@ main(void) {
 						// ошибочное значение
 						break;
 					}
+
+					// установка интерфейса связи с АВАНТом
+					setInterface(menu.sParam.Uart.Interface.get());
 				}
 
 				// считывание текущего пароля в буфер ЕЕПРОМ
 				eeprom.password = menu.sParam.password.get();
+
+				// проверка Протокола связи с записанным в еепром значением
+				if (eeprom.protocol != menu.sParam.Uart.Protocol.get()) {
+					eeprom.protocol = menu.sParam.Uart.Protocol.get();
+				}
 
 				// обновление настроек пользователя в ЕЕПРОМ
 				eeprom_update_block(&eeprom, (sEeprom*) EEPROM_START_ADDRESS,
@@ -330,10 +339,6 @@ main(void) {
 			if (cnt_wdt == 4)
 				wdt_reset();
 			cnt_wdt = 0;
-
-			// установка интерфейса связи с АВАНТом
-			// выполняется всегда, без проверки было изменение или нет
-			setInterface(menu.sParam.Uart.Interface.get());
 		}
 	}
 }

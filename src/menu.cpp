@@ -4125,7 +4125,8 @@ void clMenu::lvlSetupInterface() {
 					lvlCreate_ = true;
 				}
 			} else if (name == punkt2) {
-				// TODO ВСЕ протокол для ЛС
+				uint8_t val = EnterParam.getValueEnter();
+				sParam.Uart.Protocol.set(static_cast<eGB_PROTOCOL>(val));
 			} else if (name == punkt3) {
 				uint8_t val = EnterParam.getValueEnter();
 				sParam.Uart.BaudRate.set(static_cast<eUART_BAUD_RATE>(val));
@@ -4149,7 +4150,10 @@ void clMenu::lvlSetupInterface() {
 			uint8_t val = static_cast<uint8_t>(sParam.Uart.Interface.get());
 			snprintf_P(&vLCDbuf[poz], 11, fcInterface[val]);
 		} else if (name == punkt2) {
-			// TODO ВСЕ Протокол для ЛС
+			uint8_t val = static_cast<uint8_t>(sParam.Uart.Protocol.get());
+			sDebug.byte1 = val;
+			sDebug.byte2 = GB_PROTOCOL_MAX;
+			snprintf_P(&vLCDbuf[poz], 11, fcProtocol[val]);
 		} else if (name == punkt3) {
 			uint8_t val = static_cast<uint8_t>(sParam.Uart.BaudRate.get());
 			snprintf_P(&vLCDbuf[poz], 11, fcBaudRate[val]);
@@ -4194,7 +4198,11 @@ void clMenu::lvlSetupInterface() {
 			EnterParam.list = fcInterface[0];
 			EnterParam.com = GB_COM_NO;
 		} else if (name == punkt2) {
-			//TODO ВСЕ Протокол для ЛС
+			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
+			EnterParam.setValueRange(GB_PROTOCOL_MIN, GB_PROTOCOL_MAX - 1);
+			EnterParam.setValue(sParam.Uart.Protocol.get());
+			EnterParam.list = fcProtocol[0];
+			EnterParam.com = GB_COM_NO;
 		} else if (name == punkt3) {
 			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
 			EnterParam.setValueRange(UART_BAUD_RATE_MIN,

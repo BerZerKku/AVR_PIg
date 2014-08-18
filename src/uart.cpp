@@ -56,33 +56,34 @@ bool TUart::open(eUART_BAUD_RATE baud, eUART_DATA_BITS databits,
 	// установка скорости работы
 	uint32_t ibaud = 0;
 	switch(baud) {
-	case UART_BAUD_RATE_1200:
-		ibaud = 1200;
-		break;
-	case UART_BAUD_RATE_2400:
-		ibaud = 2400;
-		break;
-	case UART_BAUD_RATE_4800:
-		ibaud = 4800;
-		break;
-	case UART_BAUD_RATE_9600:
-		ibaud = 9600;
-		break;
-	case UART_BAUD_RATE_19200:
-		ibaud = 19200;
-		break;
-	case UART_BAUD_RATE_38400:
-		ibaud = 38400;
-		break;
-	case UART_BAUD_RATE_57600:
-		ibaud = 57600;
-		break;
-	case UART_BAUD_RATE_MAX:	// ошибочное значени
-		break;
+		case UART_BAUD_RATE_300:
+			ibaud = 300;
+			break;
+		case UART_BAUD_RATE_600:
+			ibaud = 600;
+			break;
+		case UART_BAUD_RATE_1200:
+			ibaud = 1200;
+			break;
+		case UART_BAUD_RATE_2400:
+			ibaud = 2400;
+			break;
+		case UART_BAUD_RATE_4800:
+			ibaud = 4800;
+			break;
+		case UART_BAUD_RATE_9600:
+			ibaud = 9600;
+			break;
+		case UART_BAUD_RATE_19200:
+			ibaud = 19200;
+			break;
+		case UART_BAUD_RATE_MAX:	// ошибочное значени
+			break;
 	}
-	// UBBRH = F_CPU / (16 * baudrate) - 1
+
 	// при условии установленного бита U2X
-	// для округления в большую сторону добавим 4*val
+	// UBBRH = F_CPU / (8 * baudrate) - 1
+	// для округления в большую сторону добавим 4*baudrate
 	ibaud = ((F_CPU + 4*ibaud) / (8*ibaud)) - 1;
 	*ubbrh_ = (uint8_t) (ibaud >> 8);		//
 	*ubbrl_ = (uint8_t) (ibaud);			//
