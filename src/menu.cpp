@@ -1051,6 +1051,9 @@ void clMenu::lvlInfo() {
 				Punkts_.add(GB_IC_BSK_PLIS_PRM2);
 			}
 		}
+		if (sParam.def.status.isEnable()) {
+			Punkts_.add(GB_IC_BSZ_PLIS);
+		}
 
 		// доплнительные команды
 		// обновляется версия прошивок (на случай перепрошивки)
@@ -1074,14 +1077,6 @@ void clMenu::lvlInfo() {
 				break;
 		}
 	}
-//	for(uint_fast8_t line = lineParam_; line < NUM_TEXT_LINES; line++) {
-//		uint8_t  ic = Punkts_.getNumber(i) + cursorLine_;
-//		uint16_t vers = sParam.glb.getVersProgIC((eGB_IC) ic);
-//		snprintf_P(	&vLCDbuf[20*(i+1)], 21, versProg,
-//					fcIC[ic],
-//					(uint8_t) (vers >> 8),
-//					(uint8_t) vers);
-//	}
 
 	switch (key_) {
 	case KEY_UP:

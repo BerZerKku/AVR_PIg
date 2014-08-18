@@ -538,6 +538,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 			glb->setVersProgIC8(buf[B13], GB_IC_BSK_PLIS_PRD2);
 			glb->setVersProgIC8(buf[B14], GB_IC_BSK_PLIS_PRM1);
 			glb->setVersProgIC8(buf[B15], GB_IC_BSK_PLIS_PRM2);
+			glb->setVersProgIC8(buf[B16], GB_IC_BSZ_PLIS);
 
 			// совместимость, только в Р400м
 			act |= sParam_->glb.setCompatibility((eGB_COMPATIBILITY) buf[B11]);
