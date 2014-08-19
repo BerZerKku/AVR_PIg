@@ -11,14 +11,7 @@
 #include "../inc/uart.h"
 #include "../inc/debug.h"
 
-/** Конструктор
- * 	Порты ввода-вывода должны быть настроены заранее
- * 	@param port Имя порта
- * 	@arg UART0
- * 	@arg UART1
- * 	@param *buf Указатель на буфер данных
- * 	@param size Размер буфера
- */
+
 TUart::TUart(eUART_PORT port, uint8_t * const buf, uint8_t size) :
 		buf_(buf), size_(size) {
 	if (port == UART_UART0) {
@@ -41,10 +34,6 @@ TUart::TUart(eUART_PORT port, uint8_t * const buf, uint8_t size) :
 	cnt_ = 0;
 }
 
-/**	Открывает порт.
- * 	@param Нет
- * 	@return True - в случае успешного открытия
- */
 bool TUart::open(eUART_BAUD_RATE baud, eUART_DATA_BITS databits,
 		eUART_PARITY parity, eUART_STOP_BITS stopbits) {
 	bool sost = true;
@@ -85,8 +74,6 @@ bool TUart::open(eUART_BAUD_RATE baud, eUART_DATA_BITS databits,
 	// UBBRH = F_CPU / (8 * baudrate) - 1
 	// для округления в большую сторону добавим 4*baudrate
 	ibaud = ((F_CPU + 4*ibaud) / (8*ibaud)) - 1;
-	*ubbrh_ = (uint8_t) (ibaud >> 8);		//
-	*ubbrl_ = (uint8_t) (ibaud);			//
 	ucsra |= (1 << U2X);					// вкл. удвоения скорости работы
 
 	switch(parity)
@@ -129,6 +116,8 @@ bool TUart::open(eUART_BAUD_RATE baud, eUART_DATA_BITS databits,
 		break;
 	}
 
+	*ubbrh_ = (uint8_t) (ibaud >> 8);
+	*ubbrl_ = (uint8_t) (ibaud);
 	*ucsra_ = ucsra;
 	*ucsrb_ = ucsrb;
 	*ucsrc_ = ucsrc;
@@ -148,21 +137,6 @@ bool TUart::isOpen() const {
 	return (*ucsrb_ && ((1 << TXEN1) | (1 << RXEN1)));
 }
 
-/*	Отправка байта данных
- * 	@param byte Данные
- * 	@return Нет
- */
-void TUart::trByte(uint8_t byte) {
-	// запретим прием
-	*ucsrb_ &= ~(1 << RXCIE);
-
-	cnt_ = 0;
-	*udr_ = byte;
-
-	// разрешим прерывание по окончанию передачи
-	*ucsrb_ |= (1 << TXCIE1);
-}
-
 /**	Отправка заданного кол-ва данных, заранее помещенных в буфер
  * 	@param size Кол-во байт данных
  * 	@return Кол-во отправляемых байт данных
@@ -172,67 +146,13 @@ uint8_t TUart::trData(uint8_t size) {
 		// Запретим прием
 		*ucsrb_ &= ~(1 << RXCIE);
 
-		numTrByte_ = size;
-
 		// отправим первый байт
 		*udr_ = buf_[0];
 		this->cnt_ = 1;
 
 		// Разрешим прерывание по опустошению буфера UART и окончанию передачи
 		*ucsrb_ |= (1 << UDRIE1) | (1 << TXCIE1);
-	} else
-		numTrByte_ = 0;
-
-
-	return numTrByte_;
-}
-
-/**	Отправка заданного кол-ва данных из массива
- * 	@param *buf Указатель на начало данных
- * 	@param size Кол-во байт данных
- * 	@return Кол-во отправляемых байт данных
- */
-uint8_t TUart::trData(uint8_t size, const uint8_t *buf) {
-	uint8_t cnt = 0;
-
-	// Скопируем данные в буфер
-	if (size != 0) {
-		// Запретим прием
-		*ucsrb_ &= ~(1 << RXCIE);
-
-		for (; cnt < size; cnt++)
-			this->buf_[cnt] = buf[cnt];
-
-		numTrByte_ = cnt;
-
-		// отправим первый байт
-		*udr_ = buf[0];
-		this->cnt_ = 1;
-
-		// Разрешим прерывание по опустошению буфера UART и окончанию передачи
-		*ucsrb_ |= (1 << UDRIE1) | (1 << TXCIE1);
-	} else {
-		numTrByte_ = 0;
 	}
 
-	return numTrByte_;
-}
-
-/** Отправка буфера данных
- * 	@param Нет
- * 	@return Кол-во передаваемых байт данных
- */
-uint8_t TUart::trBuf() {
-	// Запретим прием
-	*ucsrb_ &= ~(1 << RXCIE);
-
-	numTrByte_ = size_;
-
-	// отправим первый байт
-	*udr_ = buf_[cnt_++];
-
-	// Разрешим прерывание по опустошению буфера UART и окончанию передачи
-	*ucsrb_ |= (1 << UDRIE1) | (1 << TXCIE1);
-
-	return numTrByte_;
+	numTrByte_ = size;
 }
