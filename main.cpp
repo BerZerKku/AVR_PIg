@@ -380,22 +380,21 @@ ISR(USART1_TX_vect) {
 
 /// Прерывание по получению данных UART1
 ISR(USART1_RX_vect) {
-	volatile uint8_t tmp;
+	uint8_t state = UCSR1A;
+	uint8_t byte = UDR1;
 
-	if ((UCSR1A & ((1 << FE) | (1 << DOR) | (1 << UPE))) == 0) {
-		tmp = UDR1;
+	if ((state & ((1 << FE) | (1 << DOR) | (1 << UPE))) == 0) {
+		// в случае ошибки сброс счетчика принятых данных
+		// и текущего статуса работы протокола
+		uartPC.clrCnt();
+		protPCs.setCurrentStatus(PRTS_STATUS_NO);
+	} else {
 		// обработчик протокола "Стандартный"
 		if (protPCs.isEnable()) {
 			if (protPCs.getCurrentStatus() == PRTS_STATUS_READ) {
-				protPCs.checkByte(tmp);
+				protPCs.checkByte(byte);
 			}
 		}
-	} else {
-		// в случае ошибки сброс счетчика принятых данных
-		// и текущего статуса работы протокола
-		tmp = UDR1;
-		uartPC.clrCnt();
-		protPCs.setCurrentStatus(PRTS_STATUS_NO);
 	}
 }
 
@@ -412,21 +411,20 @@ ISR(USART0_TX_vect) {
 
 /// Прерывание по получению данных UART0
 ISR(USART0_RX_vect) {
-	volatile uint8_t tmp;
+	uint8_t state = UCSR0A;
+	uint8_t byte = UDR0;
 
 	// В случае обнаружения ошибки
-	if ((UCSR0A & ((1 << FE) | (1 << DOR) | (1 << UPE))) == 0) {
-		tmp = UDR0;
+	if (state & ((1 << FE) | (1 << DOR) | (1 << UPE))) {
+		// в случае ошибки сброс счетчика принятых данных
+		// и текущего статуса работы протокола
+		uartBSP.clrCnt();
+		protBSPs.setCurrentStatus(PRTS_STATUS_NO);
+	} else {
 		// обработчик протокола "Стандартный"
 		if (protBSPs.isEnable()) {
 			if (protBSPs.getCurrentStatus() == PRTS_STATUS_READ)
-				protBSPs.checkByte(tmp);
+				protBSPs.checkByte(byte);
 		}
-	} else {
-		// в случае ошибки сброс счетчика принятых данных
-		// и текущего статуса работы протокола
-		tmp = UDR0;
-		uartBSP.clrCnt();
-		protBSPs.setCurrentStatus(PRTS_STATUS_NO);
 	}
 }
