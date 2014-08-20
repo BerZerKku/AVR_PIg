@@ -96,6 +96,10 @@ clMenu::clearTextBuf()
 void
 clMenu::lvlStart()
 {
+	static char stateRPS[] PROGMEM = "RPS: In Operation";
+	static char stateRX[]  PROGMEM = "RX : Rx Guard";
+	static char stateTX[]  PROGMEM = "TX : Tx Guard ";
+
 	if (lvlCreate)
 	{
 		PORT_DBG |= PIN_TP2;
@@ -117,9 +121,12 @@ clMenu::lvlStart()
 	snprintf_P(&vLCDbuf[52], 11, fcUn, sParam->voltNoise);
 
 	// вывод режима\состояния устройств
-	snprintf_P(&vLCDbuf[60], 21, fcDef, fcRegime[2], fcDefSost[1]);
-	snprintf_P(&vLCDbuf[80], 21, fcPrm, fcRegime[2], fcPrmSost[1]);
-	snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[2], fcPrdSost[1]);
+//	snprintf_P(&vLCDbuf[60], 21, fcDef, fcRegime[2], fcDefSost[1]);
+//	snprintf_P(&vLCDbuf[80], 21, fcPrm, fcRegime[2], fcPrmSost[1]);
+//	snprintf_P(&vLCDbuf[100], 21, fcPrd, fcRegime[2], fcPrdSost[1]);
+	snprintf_P(&vLCDbuf[60], 21, stateRPS);
+	snprintf_P(&vLCDbuf[80], 21, stateRX);
+	snprintf_P(&vLCDbuf[100],21, stateTX);
 
 	switch(key)
 	{
@@ -145,14 +152,14 @@ clMenu::lvlStart()
 void
 clMenu::lvlFirst()
 {
-	static char title[] PROGMEM = "Меню";
+	static char title[] PROGMEM = "Menu";
 	static char punkt[] [21] PROGMEM =
 	{
-		"1. Журнал",
-		"2. Управление",
-		"3. Настройка",
-		"4. Тест",
-		"5. Информация"
+		"1. Event Logs",
+		"2. Control",
+		"3. Settings",
+		"4. Test mode",
+		"5. Info"
 	};
 
 
@@ -232,12 +239,12 @@ clMenu::lvlFirst()
 void
 clMenu::lvlInfo()
 {
-	static char title[] PROGMEM = "Меню\\Информация";
+	static char title[] PROGMEM = "Menu\\Info";
 	static char punkt[] [21] PROGMEM =
 	{
-			"БСП MCU : v1.11",
-			"БСП DSP : v1.78",
-			"ПИ  MCU : v1.49"
+			"MCU1 : v1.11",
+			"MCU2 : v1.49",
+			"DSP  : v1.78"
 	};
 
 
@@ -281,13 +288,13 @@ clMenu::lvlInfo()
 void
 clMenu::lvlJournal()
 {
-	static char title[] PROGMEM = "Меню\\Журнал";
+	static char title[] PROGMEM = "Menu\\Event Logs";
 	static char punkt[] [21] PROGMEM =
 	{
-			"1. Событий",
-			"2. Защиты",
-			"3. Приемника",
-			"4. Передатчика"
+			"1. Events",
+			"2. RPS",
+			"3. Receiver",
+			"4. Transmitter"
 	};
 
 	if (lvlCreate)
@@ -365,23 +372,23 @@ clMenu::lvlJournal()
 void
 clMenu::lvlJournalEvent()
 {
-	static char title[] PROGMEM = "Журнал\\События";
+	static char title[] PROGMEM = "Event Logs\\Events";
 	static char punkt0[] [21] PROGMEM =
 	{
-			"Номер: 1  Всего: 2",
-			"Дата:  04.07.12",
-			"Время: 09:45:12.357",
-			"Тип: Перезапуск",
-			"Значение: Выведен"
+			"Number 1 of 2",
+			"Date:  04.07.14",
+			"Time:  09:45:12.357",
+			"Event: Restart",
+			"State: Service"
 	};
 
 	static char punkt1[] [21] PROGMEM =
 	{
-			"Номер: 2  Всего: 2",
-			"Дата:  04.07.12",
-			"Время: 09:47:14.512",
-			"Тип: Перезапуск",
-			"Значение: Введен"
+			"Number 2 of 2",
+			"Date:  04.07.14",
+			"Time:  09:47:14.512",
+			"Event: Restart",
+			"State: Operate"
 	};
 
 	if (lvlCreate)
@@ -438,14 +445,14 @@ clMenu::lvlJournalEvent()
 void
 clMenu::lvlJournalDef()
 {
-	static char title[] PROGMEM = "Журнал\\Защита";
+	static char title[] PROGMEM = "Event Logs\\RPS";
 	static char punkt0[] [21] PROGMEM =
 	{
-			"Номер: 1  Всего: 1",
-			"Дата:  04.07.12",
-			"Время: 09:53:45.012",
-			"Тип: Нет РЗ",
-			"Значение: 000 000"
+			"Number 1 of 1",
+			"Date:  04.07.14",
+			"Time:  09:53:45.012",
+			"Event: No Signal",
+			"Code:  000 000"
 	};
 
 	if (lvlCreate)
@@ -500,23 +507,23 @@ clMenu::lvlJournalDef()
 void
 clMenu::lvlJournalPrm()
 {
-	static char title[] PROGMEM = "Журнал\\Приемник";
+	static char title[] PROGMEM = "Event Logs\\Receiver";
 	static char punkt0[] [21] PROGMEM =
 	{
-			"Номер: 1  Всего: 2",
-			"Дата:  05.07.12",
-			"Время: 14:13:45.987",
-			"Тип: Команда 2",
-			"Значение: Начало"
+			"Number 1 of 2",
+			"Date:  05.07.14",
+			"Time:  14:13:45.987",
+			"Com#:  2",
+			"Event: Start"
 	};
 
 	static char punkt1[] [21] PROGMEM =
 	{
-			"Номер: 2  Всего: 2",
-			"Дата:  05.07.12",
-			"Время: 14:13:46.033",
-			"Тип: Команда 2",
-			"Значение: Конец"
+			"Number 2 of 2",
+			"Date:  05.07.14",
+			"Time:  14:13:46.033",
+			"Com#:  2",
+			"Event: Stop"
 	};
 
 
@@ -574,23 +581,23 @@ clMenu::lvlJournalPrm()
 void
 clMenu::lvlJournalPrd()
 {
-	static char title[] PROGMEM = "Журнал\\Передатчик";
+	static char title[] PROGMEM = "Event Logs\\Transmitter";
 	static char punkt0[] [21] PROGMEM =
 	{
-			"Номер: 1  Всего: 2",
-			"Дата:  05.07.12",
-			"Время: 14:13:45.964",
-			"Тип: Команда 2",
-			"Значение: Начало"
+			"Number 1 of 2",
+			"Date:  05.07.14",
+			"Time:  14:13:45.964",
+			"Com#:  2",
+			"Event: Start"
 	};
 
 	static char punkt1[] [21] PROGMEM =
 	{
-			"Номер: 2  Всего: 2",
-			"Дата:  05.07.12",
-			"Время: 14:13:46.0014",
-			"Тип: Команда 2",
-			"Значение: Конец"
+			"Number 2 of 2",
+			"Date:  05.07.14",
+			"Time:  14:13:46.0014",
+			"Com#:  2",
+			"Event: Stop"
 	};
 
 
@@ -648,14 +655,14 @@ clMenu::lvlJournalPrd()
 void
 clMenu::lvlControl()
 {
-	static char title[] PROGMEM = "Меню\\Управление";
+	static char title[] PROGMEM = "Menu\\Control";
 	static char punkt[] [21] PROGMEM =
 	{
-			"1. Пуск наладочный",
-			"2. Пуск удаленного",
-			"3. Сброс своего",
-			"4. Сброс удаленного",
-			"5. Вызов"
+			"1. Manual Blocking",
+			"2. Remote Blocking",
+			"3. Reset",
+			"4. Remote Reset",
+			"5. Call"
 	};
 
 
@@ -717,13 +724,13 @@ clMenu::lvlControl()
 void
 clMenu::lvlSetup()
 {
-	static char title[] PROGMEM = "Меню\\Настройка";
+	static char title[] PROGMEM = "Menu\\Settings";
 	static char punkt[] [21] PROGMEM =
 	{
-			"1. Режим",
-			"2. Время и дата",
-			"3. Параметры",
-			"4. Пароль"
+			"1. State",
+			"2. Time/Date",
+			"3. Parameters",
+			"4. Password"
 	};
 
 	if (lvlCreate)
@@ -794,13 +801,13 @@ clMenu::lvlSetup()
 void
 clMenu::lvlSetupParam()
 {
-	static char title[] PROGMEM = "Настройка\\Параметры";
+	static char title[] PROGMEM = "Settings\\Parameters";
 	static char punkt[] [21] PROGMEM =
 	{
-			"1. Защиты",
-			"2. Приемника",
-			"3. Передатчика",
-			"4. Общие",
+			"1. RPS",
+			"2. Receiver",
+			"3. Transmitter",
+			"4. General",
 	};
 
 	if (lvlCreate)
@@ -880,56 +887,49 @@ clMenu::lvlSetupParam()
 void
 clMenu::lvlSetupParamDef()
 {
-	static char title[] PROGMEM = "Параметры\\Защиты";
+	static char title[] PROGMEM = "Parameters\\RPS";
 
 	static char punkt1[] [21] PROGMEM =
 	{
-			"Номер: 1  Всего: 7",
-			"Тип защиты",
-			"Значение: ДФЗ-ПрПД",
-			"Диапазон: список"
+			"Number 1 of 6",
+			"Logic Type",
+			"Value: Differential",
+			""
 	};
 	static char punkt2[] [21] PROGMEM =
 	{
-			"Номер: 2  Всего: 7",
-			"Тип линии",
-			"Значение: 2 концевая",
-			"Диапазон: список"
+			"Number 2 of 6",
+			"Line Type",
+			"Value: 2 ends",
+			""
 	};
 	static char punkt3[] [21] PROGMEM =
 	{
-			"Номер: 3  Всего: 7",
-			"Доп. время без ман.",
-			"Значение: 0ч",
-			"Диапазон: 0..99ч"
+			"Number 3 of 6",
+			"RPS Low Level",
+			"Value: 6dB",
+			"Range: 0..20dB"
 	};
 	static char punkt4[] [21] PROGMEM =
 	{
-			"Номер: 4  Всего: 7",
-			"Порог предупр по РЗ",
-			"Значение: 6дБ",
-			"Диапазон: 0..20дБ"
+			"Number 4 of 6",
+			"Pulse Overlap",
+			"Value: 0deg",
+			"Range: 0..54deg"
 	};
 	static char punkt5[] [21] PROGMEM =
 	{
-			"Номер: 5  Всего: 7",
-			"Перекрытие импульсов",
-			"Значение: 0град",
-			"Диапазон: 0..54град"
+			"Number 5 of 6",
+			"Line Delay",
+			"Value: 0deg",
+			"Range: 0..18deg"
 	};
 	static char punkt6[] [21] PROGMEM =
 	{
-			"Номер: 6  Всего: 7",
-			"Компенсация задержки",
-			"Значение: 0град",
-			"Диапазон: 0..18град"
-	};
-	static char punkt7[] [21] PROGMEM =
-	{
-			"Номер: 7  Всего: 7",
-			"Загруб.чувств. по РЗ",
-			"Значение: 0дБ",
-			"Диапазон: 0..32дБ"
+			"Number 6 of 6",
+			"RP Receiver Desense",
+			"Value: 0dB",
+			"Range: 0..32dB"
 	};
 
 	if (lvlCreate)
@@ -960,8 +960,6 @@ clMenu::lvlSetupParamDef()
 			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt5[i]);
 		else if (cursorLine == 6)
 			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt6[i]);
-		else if (cursorLine == 7)
-			snprintf_P(&vLCDbuf[20 + 20 * i], 21, punkt7[i]);
 	}
 
 	switch(key)
@@ -971,7 +969,7 @@ clMenu::lvlSetupParamDef()
 				cursorLine--;
 			break;
 		case KEY_DOWN:
-			if (cursorLine < 7)
+			if (cursorLine < 6)
 				cursorLine++;
 			break;
 
@@ -997,21 +995,21 @@ clMenu::lvlSetupParamDef()
 void
 clMenu::lvlSetupParamPrm()
 {
-	static char title[] PROGMEM = "Параметры\\Приемник";
+	static char title[] PROGMEM = "Parameters\\Receiver";
 
 	static char punkt1[] [21] PROGMEM =
 	{
-			"Номер: 1  Всего: 2",
-			"Время включения ком.",
-			"Значение: 5мс",
-			"Диапазон: 0..10мс"
+			"Number 1 of 2",
+			"Bounce Time",
+			"Value: 5ms",
+			"Range: 0..10ms"
 	};
 	static char punkt2[] [21] PROGMEM =
 	{
-			"Номер: 2  Всего: 2",
-			"Задержка на выкл.ком",
-			"Значение: 100мс",
-			"Диапазон: 0..1000мс"
+			"Number 2 of 2",
+			"Prolong. Command Out",
+			"Value: 100ms",
+			"Range: 0..1000ms"
 	};
 
 	if (lvlCreate)
@@ -1069,21 +1067,21 @@ clMenu::lvlSetupParamPrm()
 void
 clMenu::lvlSetupParamPrd()
 {
-	static char title[] PROGMEM = "Параметры\\Передатчик";
+	static char title[] PROGMEM = "Parameters\\Transmitter";
 
 	static char punkt1[] [21] PROGMEM =
 	{
-			"Номер: 1  Всего: 2",
-			"Время включения ком.",
-			"Значение: 5мс",
-			"Диапазон: 0..10мс"
+			"Number 1 of 2",
+			"Bounce Time",
+			"Value: 5ms",
+			"Range: 0..10ms"
 	};
 	static char punkt2[] [21] PROGMEM =
 	{
-			"Номер: 2  Всего: 2",
-			"Длительность команд",
-			"Значение: 50мс",
-			"Диапазон: 20..100мс"
+			"Number 2 of 2",
+			"Command Duration",
+			"Value: 50ms",
+			"Range: 20..100ms"
 	};
 
 	if (lvlCreate)
@@ -1141,56 +1139,56 @@ clMenu::lvlSetupParamPrd()
 void
 clMenu::lvlSetupParamGlb()
 {
-	static char title[] PROGMEM = "Параметры\\Общие";
+	static char title[] PROGMEM = "Parameters\\General";
 
 	static char punkt1[] [21] PROGMEM =
 		{
-				"Номер: 1  Всего: 7",
-				"Контроль вых.сигнала",
-				"Значение: вкл.",
-				"Диапазон: список"
+				"Number 1 of 7",
+				"Amplifier Control",
+				"Value: ON",
+				"Range: ON, OFF"
 		};
 		static char punkt2[] [21] PROGMEM =
 		{
-				"Номер: 2  Всего: 7",
-				"Время перезапуска",
-				"Значение: 5сек",
-				"Диапазон: 0..5сек"
+				"Number 2 of 7",
+				"Turn Off Time",
+				"Value: 5sec",
+				"Range: 0..5sec"
 		};
 		static char punkt3[] [21] PROGMEM =
 		{
-				"Номер: 3  Всего: 7",
-				"Порог предупр. по КЧ",
-				"Значение: 10дБ",
-				"Диапазон: 0..15дБ"
+				"Number 3 of 7",
+				"Guard Low Level",
+				"Value: 10dB",
+				"Range: 0..15dB"
 		};
 		static char punkt4[] [21] PROGMEM =
 		{
-				"Номер: 4  Всего: 7",
-				"Удерж. реле ком. ПРД",
-				"Значение: выкл.",
-				"Диапазон: список"
+				"Number 4 of 7",
+				"Tx Com Retention",
+				"Value: OFF",
+				"Range: ON, OFF"
 		};
 		static char punkt5[] [21] PROGMEM =
 		{
-				"Номер: 5  Всего: 7",
-				"Удерж. реле ком. ПРМ",
-				"Значение: выкл.",
-				"Диапазон: список"
+				"Number 5 of 7",
+				"Rx Com Retention",
+				"Value: OFF",
+				"Range: ON, OFF"
 		};
 		static char punkt6[] [21] PROGMEM =
 		{
-				"Номер: 6  Всего: 7",
-				"Загруб.чувств. по РЗ",
-				"Значение: 0дБ",
-				"Диапазон: 0..32дБ"
+				"Number 6 of 7",
+				"Com Receiver Desense",
+				"Value: 0dB",
+				"Range: 0..32dB"
 		};
 		static char punkt7[] [21] PROGMEM =
 		{
-				"Номер: 7  Всего: 7",
-				"Протокол связи",
-				"Значение: стандарт",
-				"Диапазон: список"
+				"Number 7 of 7",
+				"Communicat. Protocol",
+				"Value: MODBUS",
+				""
 		};
 
 		if (lvlCreate)
@@ -1258,11 +1256,11 @@ clMenu::lvlSetupParamGlb()
 void
 clMenu::lvlSetupDT()
 {
-	static char title[] PROGMEM = "Настройка\\Время&дата";
+	static char title[] PROGMEM = "Settings\\Date&Time";
 	static char punkt[] [21] PROGMEM =
 	{
-			"1. Дата",
-			"2. Время",
+			"1. Date",
+			"2. Time",
 	};
 
 	if (lvlCreate)

@@ -7,21 +7,18 @@
 
 #include <avr/pgmspace.h>
 
-const char fcUout[] PROGMEM = "U=%u.%uВ";
-const char fcIout[] PROGMEM	= "I=%uмА";
-const char fcRout[] PROGMEM = "R=%uОм";
-const char fcUz[] 	PROGMEM	= "Uз=%.2dдБ";
-const char fcUcf[] 	PROGMEM	= "Uк=%.2dдБ";
-const char fcUn[] 	PROGMEM	= "Uш=%.2dдБ";
+const char fcUout[] PROGMEM = "U=%u.%uV";
+const char fcIout[] PROGMEM	= "I=%umA";
+const char fcRout[] PROGMEM = "R=%uOhm";
+const char fcUz[] 	PROGMEM	= "Ud=%.2ddB";
+const char fcUcf[] 	PROGMEM	= "Uc=%.2ddB";
+const char fcUn[] 	PROGMEM	= "Un=%.2ddB";
 const char fcDate[] PROGMEM = "%02X.%02X.%02X";
 const char fcTime[] PROGMEM = "%02X:%02X:%02X";
 
-const char fcDef[] PROGMEM = "ЗАЩ:%S%S";
-const char fcPrm[] PROGMEM = "ПРМ:%S%S";
-const char fcPrd[] PROGMEM = "ПРД:%S%S";
-
-
-const char fcDDD[] PROGMEM = "Проверка";
+const char fcDef[] PROGMEM = "DEF:%S%S";
+const char fcPrm[] PROGMEM = "PRM:%S%S";
+const char fcPrd[] PROGMEM = "PRD:%S%S";
 
 // режимы устройств
 const char fcRegime[] [9] PROGMEM =
