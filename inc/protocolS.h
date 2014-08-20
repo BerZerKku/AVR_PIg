@@ -127,40 +127,46 @@ public:
 	/// ѕроверка текущего состо€ни€
 	void checkStat();
 
-	/// ѕроверка прин€того байта на соответствие протоколу
-	/// возвращает false в случае ошибки
-	/// !! ѕомещаетс€ в прерывание по приему
-	bool checkByte(uint8_t byte) {
+	/**	ѕроверка прин€того байта на соответствие протоколу
+	 *
+	 * 	!! ѕомещаетс€ в прерывание по приему
+	 *
+	 * 	@param byte Ѕайт данных.
+	 * 	@return “екуща€ позици€ в проверке протокола.
+	 * 	@retval ќжидание первого синхробайта.
+	 */
+	uint8_t checkByte(uint8_t byte) {
 		uint8_t cnt = cnt_;
 
 		buf[cnt] = byte;
 
 		switch (cnt) {
 		case 0:
+			// первый синхробайт
 			if (byte == 0x55)
 				cnt++;
 			break;
 		case 1:
+			// второй синхробайт
 			cnt = (byte == 0xAA) ? 2 : 0;
 			break;
 		case 2:
+			// прин€т байт команды
 			cnt++;
 			break;
 		case 3:
-			if (byte < (size_ - 5)) {
-				cnt++;
-				maxLen_ = byte + 5;
-			} else
-				cnt = 0;
+			// проверка на наличие в буфере достаточного места дл€ посылки
+			cnt = (byte < (size_ - 5)) ? (maxLen_ = byte + 5, cnt + 1) : 0;
 			break;
 		default:
+			// ожидание приема за€вленного количества байт данных
 			cnt++;
 			if (cnt >= maxLen_) {
 				stat_ = PRTS_STATUS_READ_OK;
 			}
 			break;
 		}
-		this->cnt_ = cnt;
+		cnt_ = cnt;
 
 		return cnt;
 	}

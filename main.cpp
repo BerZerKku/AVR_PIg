@@ -64,6 +64,7 @@ static bool uartWrite();
 static void setInterface(eGB_INTERFACE val);
 
 /**	Работа с принятыми данными по UART
+ *
  * 	@param Нет
  * 	@return False - в случае 5-и неполученных сообщений от БСП подряд
  */
@@ -129,6 +130,7 @@ static bool uartRead() {
 }
 
 /**	Передача данных по UART.
+ *
  * 	@retval True - всегда.
  */
 static bool uartWrite() {
@@ -166,6 +168,7 @@ static bool uartWrite() {
 }
 
 /**	Установка интерфейса связи с АВАНТом.
+ *
  * 	@param val Текущий интерфейс
  * 	@return Нет
  */
@@ -178,8 +181,10 @@ static void setInterface(eGB_INTERFACE val) {
 }
 
 /** Проверка необходимости переинициализации порта.
+ *
  * 	Сравниваются текущие настройки, с необходимыми. И если они не совпадают
  * 	происходит сохранение новых значений.
+ *
  * 	@param *current Текущие настройки порта.
  * 	@param *newparam Необходимые настройки порта.
  * 	@retval True, если настройки отличаются.
@@ -213,6 +218,7 @@ bool isUartPcReinit(sEeprom *current, TUartData *newparam) {
 }
 
 /**	main.c
+ *
  * 	@param Нет
  * 	@return Нет
  */
@@ -359,12 +365,7 @@ ISR(TIMER1_COMPA_vect) {
 	vKEYmain();
 
 	// установка флага раз в 100мс
-	if (cnt > 0)
-		cnt--;
-	else {
-		cnt = 10 - 1;
-		b100ms = true;
-	}
+	cnt = (cnt > 0) ? cnt - 1 : (b100ms = true, 10 - 1);
 }
 
 ///Прерывание по опустошению передающего буфера UART1
