@@ -13,13 +13,9 @@
 #include "paramBsp.h"
 #include "debug.h"
 
-// кол-во циклов, после которого залипшее текущее состояние будет сброшено
-// в состояние по-умолчанию
-#define MAX_CYCLE_TO_REST_SOST 10
 
-enum ePRTS_ACTION {
-	PRTS_READ_COM, PRTS_WRITE_COM
-};
+//#define MAX_CYCLE_TO_REST_SOST 10
+
 
 // состояния протокола
 enum ePRTS_STATUS {
@@ -53,6 +49,9 @@ enum ePRTS_DATA_BYTE_NAME {
 };
 
 class clProtocolS {
+	/** Кол-во циклов, после которого залипшее текущее состояние будет сброшено в состояние по-умолчанию
+	 */
+	static const uint8_t MAX_CYCLE_TO_REST_SOST = 10;
 
 public:
 	clProtocolS(uint8_t *buf, uint8_t size, stGBparam *sParam);
@@ -132,7 +131,7 @@ public:
 	/// возвращает false в случае ошибки
 	/// !! Помещается в прерывание по приему
 	bool checkByte(uint8_t byte) {
-		uint8_t cnt = this->cnt_;
+		uint8_t cnt = cnt_;
 
 		buf[cnt] = byte;
 
@@ -171,7 +170,7 @@ protected:
 	bool enable_;
 
 	// структура параметров
-	stGBparam *sParam_;
+	stGBparam * const sParam_;
 
 	// текущий статус работы протокола
 	ePRTS_STATUS stat_;
@@ -209,7 +208,7 @@ protected:
 	// Проверка принятой контрольной суммы
 	bool checkCRC() const;
 
-	// вычисление контрольной суммы содержимого буфера
+	// Вычисление контрольной суммы содержимого буфера
 	uint8_t getCRC() const;
 };
 

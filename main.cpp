@@ -51,9 +51,9 @@ uint8_t uBufUartBsp[BUFF_SIZE_BSP];
 /// Класс меню
 clMenu menu;
 /// Класс последовательного порта работающего с ПК
-TUart uartPC(UART_UART1, uBufUartPc, BUFF_SIZE_PC);
+TUart uartPC(TUart::PORT_UART1, uBufUartPc, BUFF_SIZE_PC);
 /// Класc последовательного порта работающего с БСП
-TUart uartBSP(UART_UART0, uBufUartBsp, BUFF_SIZE_BSP);
+TUart uartBSP(TUart::PORT_UART0, uBufUartBsp, BUFF_SIZE_BSP);
 /// Класс стандартного протокола работающего с ПК
 clProtocolPcS protPCs(uBufUartPc, BUFF_SIZE_PC, &menu.sParam);
 /// Класс стандартного протокола работающего с БСП

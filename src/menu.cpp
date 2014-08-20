@@ -849,7 +849,7 @@ void clMenu::lvlStart() {
 	}
 	if (sParam.prd.status.isEnable()) {
 		printDevicesStatus(poz, &sParam.prd.status);
-		poz += 20;
+//		poz += 20;
 	}
 
 	switch (key_) {
@@ -2204,7 +2204,7 @@ void clMenu::lvlRegime() {
 	}
 	if (sParam.prd.status.isEnable()) {
 		printDevicesRegime(poz, &sParam.prd.status);
-		poz += 20;
+//		poz += 20;
 	}
 
 	// Ввод нового значения параметра.
@@ -5009,7 +5009,7 @@ void clMenu::printDevicesRegime(uint8_t poz, TDeviceStatus *device) {
 	poz += 3;
 	snprintf(&vLCDbuf[poz], 2, ":");
 	poz += 1;
-	poz += 1 + snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
+	snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
 }
 
 

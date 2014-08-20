@@ -20,8 +20,7 @@
 /// время до переинициализации дисплея, мс
 #define TIME_TO_REINIT_LCD (10000 / MENU_TIME_CYLCE)
 
-/// максимальное кол-во пунктов в меню
-#define MAX_NUM_PUNKTS 20
+
 
 /// максимальное кол-во отображаемых на экране параметров
 #define MAX_NUM_MEAS_PARAM 6
@@ -317,6 +316,8 @@ private:
 
 /// Структура пункта меню
 class TMenuPunkt {
+	/// максимальное кол-во пунктов в меню
+	static const uint8_t  MAX_NUM_PUNKTS = 20;
 public:
 	/**	Конструктор.
 	 */

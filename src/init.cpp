@@ -47,22 +47,22 @@ low_level_init()
 	// Порт D
 	// PORTD.0 = SCL	- альтер.
 	// PORTD.1 = SDA 	- альтер.
-	// PORTD.2 = RXD1	- альтер. вход +
-	// PORTD.3 = TXD1	- альтер. выход +
+	// PORTD.2 = RXD1	- альтер. вход
+	// PORTD.3 = TXD1	- альтер. выход
 	// PORTD.4 = MUX	- выход 0 (переключение интерфейсов 0-USB, 1-485)
 	// PORTD.5 = LED	- выход 0
 	// PORTD.6 = KEY1	- вход +
 	// PORTD.7 = KEY2	- вход +
-	DDRD = (1 << DDD5) | (1 << DDD4) | (1 << DDD3);
-	PORTD= (1 << PD7) | (1 << PD6) | (1 << PD3) | (1 << PD2);
+	DDRD = (1 << DDD5) | (1 << DDD4);
+	PORTD= ~((1 << PD5) | (1 << PD4));
 
 	// Порт Е
-	// PORTE.0 = RXD0	- альтер.
-	// PORTE.1 = TXD0	- альтер.
+	// PORTE.0 = RXD0	- альтер. вход
+	// PORTE.1 = TXD0	- альтер. выход
 	// PORTE.6 = TP1 	- выход 0
 	// PORTE.7 = TP2 	- выход 0
 	DDRE = (1 << PE7) | (1 << PE6);
-	PORTE = ~((1 << PE1) | (1 << PE0));
+	PORTE = ~0x00;
 
 	// Порт F
 	// PORTF.1 = RS		- выход 0

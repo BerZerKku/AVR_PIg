@@ -660,8 +660,9 @@ public:
 		if (state < MAX_NUM_DEVICE_STATE) {
 			state_ = state;
 			stat = true;
-		} else
-			state = MAX_NUM_DEVICE_STATE;
+		} else {
+			state_ = MAX_NUM_DEVICE_STATE;
+		}
 
 		return stat;
 	}
@@ -928,6 +929,8 @@ private:
 
 // класс для передачи команд
 class TTxCom {
+	static const uint8_t BUFFER_SIZE = 6;
+
 public:
 	TTxCom() {
 		clear();
@@ -937,8 +940,12 @@ public:
 	void clear() {
 		numCom1_ = numCom2_ = 0;
 		cnt1_ = cnt2_ = 0;
-		for(uint_fast8_t i = 0; i < MAX_NUM_FAST_COM; i++)
+		for(uint_fast8_t i = 0; i < MAX_NUM_FAST_COM; i++) {
 			comFast_[i] = GB_COM_NO;
+		}
+		for(uint_fast8_t i = 0; i < BUFFER_SIZE; i++) {
+			buf_[i] = 0;
+		}
 		com1_[0] = com2_[0] = GB_COM_NO;
 	}
 
@@ -1033,7 +1040,7 @@ public:
 	 * 	@param num Индекс элемента массива.
 	 */
 	void setInt8(uint8_t byte, uint8_t num = 0) {
-		if (num < 6)
+		if (num < BUFFER_SIZE)
 			buf_[num] = byte;
 	}
 
@@ -1043,7 +1050,7 @@ public:
 	 */
 	uint8_t getInt8(uint8_t num = 0) const {
 		uint8_t byte = 0;
-		if (num < 6)
+		if (num < BUFFER_SIZE)
 			byte = buf_[num];
 		return byte;
 	}
@@ -1111,7 +1118,7 @@ private:
 	// номер текущей команды во втором буфере
 	uint8_t cnt2_;
 	// буфер данных
-	uint8_t buf_[6];
+	uint8_t buf_[BUFFER_SIZE];
 };
 
 class TJournalEntry {
