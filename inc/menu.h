@@ -39,37 +39,37 @@
 
 /// Измеряемые параметры
 enum eMENU_MEAS_PARAM {
-	MENU_MEAS_PARAM_NO,
-	MENU_MEAS_PARAM_DATE,
-	MENU_MEAS_PARAM_TIME,
-	MENU_MEAS_PARAM_UZ,
-	MENU_MEAS_PARAM_UZ1,
-	MENU_MEAS_PARAM_UZ2,
-	MENU_MEAS_PARAM_UC,
-	MENU_MEAS_PARAM_UC1,
-	MENU_MEAS_PARAM_UC2,
-	MENU_MEAS_PARAM_UN,
-	MENU_MEAS_PARAM_UN1,
-	MENU_MEAS_PARAM_UN2,
-	MENU_MEAS_PARAM_UOUT,
-	MENU_MEAS_PARAM_IOUT,
-	MENU_MEAS_PARAM_ROUT,
-	MENU_MEAS_PARAM_SD
+	MENU_MEAS_PARAM_NO,			///< нет измеряемого параметра
+	MENU_MEAS_PARAM_DATE,		///< дата
+	MENU_MEAS_PARAM_TIME,		///< время
+	MENU_MEAS_PARAM_UZ,			///< запас по зщаите
+	MENU_MEAS_PARAM_UZ1,		///< запас по защите 1 (для 3-х концевой)
+	MENU_MEAS_PARAM_UZ2,		///< запас по защите 2 (для 3-х концевой)
+	MENU_MEAS_PARAM_UC,			///< запас по КЧ
+	MENU_MEAS_PARAM_UC1,		///< запас по КЧ 1 (для 3-х концевой)
+	MENU_MEAS_PARAM_UC2,		///< запас по КЧ 2 (для 3-х концевой)
+	MENU_MEAS_PARAM_UN,			///< уровень шумов
+	MENU_MEAS_PARAM_UN1,		///< уровень шумов 1 (для 3-х концевой)
+	MENU_MEAS_PARAM_UN2,		///< уровень шумов 2 (для 3-х концевой)
+	MENU_MEAS_PARAM_UOUT,		///< напряжени выхода
+	MENU_MEAS_PARAM_IOUT,		///< ток выхода
+	MENU_MEAS_PARAM_ROUT,		///< сопротивление линии
+	MENU_MEAS_PARAM_SD			///< просечки в сигнале
 };
 
 /// Режим работы функции ввода параметров
 enum eMENU_ENTER_PARAM {
-	MENU_ENTER_PARAM_NO,		// отмена изменения параметра
-	MENU_ENTER_PARAM_INT,		// изменение параметра, целое значение
-	MENU_ENTER_PARAM_LIST,		// изменение параметра, выбор из списка
-	MENU_ENTER_PARAM_LIST_2,	// изменение параметра, выбор из списка значений
-	MENU_ENTER_PARAM_U_COR,		// изменение параметра, коррекция напряжения
-	MENU_ENTER_PASSWORD,		// ввод пароля
-	MENU_ENTER_PASSWORD_NEW,	// ввод нового пароля
-	MENU_ENTER_PASSWORD_READY,	// введен верный пароль
-	MENU_ENTER_PASSWORD_N_READY,// новый пароль введен корректно
-	MENU_ENTER_PARAM_READY,		// необходимо изменить параметр
-	MENU_ENTER_PARAM_MESSAGE,	// вывод сообщения на экран при вводе параметра
+	MENU_ENTER_PARAM_NO,		///< отмена изменения параметра
+	MENU_ENTER_PARAM_INT,		///< изменение параметра, целое значение
+	MENU_ENTER_PARAM_LIST,		///< изменение параметра, выбор из списка
+	MENU_ENTER_PARAM_LIST_2,	///< изменение параметра, выбор из списка значений
+	MENU_ENTER_PARAM_U_COR,		///< изменение параметра, коррекция напряжения
+	MENU_ENTER_PASSWORD,		///< ввод пароля
+	MENU_ENTER_PASSWORD_NEW,	///< ввод нового пароля
+	MENU_ENTER_PASSWORD_READY,	///< введен верный пароль
+	MENU_ENTER_PASSWORD_N_READY,///< новый пароль введен корректно
+	MENU_ENTER_PARAM_READY,		///< необходимо изменить параметр
+	MENU_ENTER_PARAM_MESSAGE,	///< вывод сообщения на экран при вводе параметра
 };
 
 // структура параметров для ввода значений
@@ -346,7 +346,8 @@ public:
 	}
 
 	/**	Добавление пункта меню, через номер элемента массива.
-	 * 	@param num	Номер пункта (имя).
+	 *
+	 * 	@param name	Номер пункта (имя).
 	 * 	@param com Команда для запроса из БСП. По умолчанию - нет.
 	 * 	@retval True В случае успешного добавления.
 	 * 	@retval False В случае ошибки добавления. Например, переполнен массив.

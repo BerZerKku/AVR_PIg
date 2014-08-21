@@ -243,6 +243,7 @@ main(void) {
 	menu.sParam.Uart.DataBits.set(eeprom.dataBits);
 	menu.sParam.Uart.Parity.set(eeprom.parity);
 	menu.sParam.Uart.StopBits.set(eeprom.stopBits);
+
 	// выбор интерфейса связи
 	setInterface(menu.sParam.Uart.Interface.get());
 

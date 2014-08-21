@@ -170,7 +170,7 @@ public:
 	/**	Установка параметра "Трансляция ЦС"
 	 *
 	 * 	@param val Выкл(0)/Вкл(1).
-	 * 	@param True - в случае успешной записи, False - иначе.
+	 * 	@return True - в случае успешной записи, False - иначе.
 	 */
 	bool setStateDR(uint8_t val) {
 		bool stat = false;
