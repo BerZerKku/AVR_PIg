@@ -24,7 +24,7 @@ bool clProtocolBspS::getData() {
 	eGB_COM com = (eGB_COM) buf[2];
 
 	// сообщение обработано, выставим флаг на чтение
-	this->stat_ = PRTS_STATUS_NO;
+	stat_ = PRTS_STATUS_NO;
 
 	mask = com & GB_COM_MASK_GROUP;
 	// ответ на команду изменения параметра/режима не требуется

@@ -118,6 +118,7 @@ public:
 		status_ = MENU_ENTER_PARAM_NO;
 		cnt_ = TIME_MESSAGE;
 		com = GB_COM_NO;
+		disc_ = 1;
 	}
 
 	// диапазон значений

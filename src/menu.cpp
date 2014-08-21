@@ -424,7 +424,6 @@ bool clMenu::setDeviceR400M() {
 
 	sParam.typeDevice = AVANT_R400M;
 
-	// TODO Р400М в 3-х концевой Uk1/2
 	// первый столбец параметров
 	measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
 	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
@@ -4532,7 +4531,6 @@ void clMenu::lvlTest2() {
 	}
 
 	// вывод на экран измеряемых параметров, если это не оптика
-	// TODO ВСЕ учесть что в 3-х концевой может быть 2Uk/2Uz/2Uш
 	if (device != AVANT_OPTO) {
 		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
 			if (sParam.def.status.isEnable()) {

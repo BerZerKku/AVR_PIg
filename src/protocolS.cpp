@@ -8,18 +8,17 @@
 
 clProtocolS::clProtocolS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
 		buf(buf), size_(size), sParam_(sParam) {
-	enable_ = false;
 	cnt_ = 0;
 	maxLen_ = 0;
-	old_ = PRTS_STATUS_NO;
+	old_ = PRTS_STATUS_OFF;
 	cntCycle_ = 0;
-	stat_ = PRTS_STATUS_NO;
-	statDef_ = PRTS_STATUS_NO;
+	stat_ = PRTS_STATUS_OFF;
+	statDef_ = PRTS_STATUS_OFF;
 }
 
 /**	Опрос флага наличия принятой посылки.
  *
- * 	Если посылка принята, но контрольная сумма неверная - флаг сбрасбывается.
+ * 	Если посылка принята, но контрольная сумма неверная - флаг сбрасывается.
  *
  * 	@param Нет
  * 	@return Нет
@@ -30,10 +29,8 @@ bool clProtocolS::checkReadData() {
 	// Т.к. обработка посылки уже началась, сбросим счетчик принятых байт
 	cnt_ = 0;
 
-	if (checkCRC())
-		stat = true;
-	else
-		this->stat_ = PRTS_STATUS_NO;
+	if (!(stat =checkCRC()))
+		stat_ = PRTS_STATUS_READ;
 
 	return stat;
 }

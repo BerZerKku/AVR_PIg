@@ -19,11 +19,12 @@
 
 // состо€ни€ протокола
 enum ePRTS_STATUS {
-	PRTS_STATUS_NO = 0,		// состо€ние неопределенное (в т.ч. ошибочное)
-	PRTS_STATUS_READ,		// идет считывание сообщени€
-	PRTS_STATUS_READ_OK,	// соообщение считано полностью, но  — не проверена
-	PRTS_STATUS_WRITE_PC,	// надо передать сообщене на(с) ѕ 
-	PRTS_STATUS_WRITE		// передаетс€ сообщение
+	PRTS_STATUS_OFF = 0,	///< выключен
+	PRTS_STATUS_NO = 0,		///< состо€ние неопределенное (в т.ч. ошибочное)
+	PRTS_STATUS_READ,		///< идет считывание сообщени€
+	PRTS_STATUS_READ_OK,	///< соообщение считано полностью, но  — не проверена
+	PRTS_STATUS_WRITE_PC,	///< надо передать сообщене на(с) ѕ 
+	PRTS_STATUS_WRITE		///< передаетс€ сообщение
 };
 
 // номера байт данных в протоколе
@@ -69,7 +70,6 @@ public:
 
 	/// «апуск работы данного протокола
 	void setEnable(ePRTS_STATUS stat) {
-		enable_ = true;
 		stat_ = statDef_ = stat;
 		cnt_ = 0;
 		cntCycle_ = 0;
@@ -77,32 +77,17 @@ public:
 
 	/// ќстановка работы данного протокола
 	void setDisable() {
-		enable_ = false;
+		stat_ = PRTS_STATUS_OFF;
 	}
 
 	/// ѕроверка текущего состо€ни€ протокола
 	bool isEnable() const {
-		return enable_;
-	}
-
-	/// ¬озращает размер буфера данных
-	uint8_t getBufSize() const {
-		return size_;
+		return (stat_ != PRTS_STATUS_OFF);
 	}
 
 	/// “екуща€ команда в буфере
 	uint8_t getCurrentCom() const {
 		return buf[2];
-	}
-
-	/// “екущее кол-во байт в посылке
-	uint8_t getCurrentLen() const {
-		return maxLen_;
-	}
-
-	/// “екущее кол-во прин€тых байт данных (по протоколу)
-	uint8_t getCurrentCnt() const {
-		return cnt_;
 	}
 
 	/// “екущий статус работы протокола
@@ -129,52 +114,54 @@ public:
 
 	/**	ѕроверка прин€того байта на соответствие протоколу
 	 *
-	 * 	!! ѕомещаетс€ в прерывание по приему
+	 * 	!! ѕомещаетс€ в прерывание по приему.
+	 * 	Ѕайт провер€етс€ только в состо€нии \a PRTS_STATUS_READ.
+	 *
+	 *	@see PRTS_STATUS_READ
 	 *
 	 * 	@param byte Ѕайт данных.
 	 * 	@return “екуща€ позици€ в проверке протокола.
 	 * 	@retval ќжидание первого синхробайта.
 	 */
 	uint8_t checkByte(uint8_t byte) {
-		uint8_t cnt = cnt_;
+		uint8_t cnt = 0;
+		if (stat_ == PRTS_STATUS_READ) {
+			uint8_t cnt = cnt_;
 
-		buf[cnt] = byte;
+			buf[cnt] = byte;
 
-		switch (cnt) {
-		case 0:
-			// первый синхробайт
-			if (byte == 0x55)
+			switch (cnt) {
+			case 0:
+				// первый синхробайт
+				if (byte == 0x55)
+					cnt++;
+				break;
+			case 1:
+				// второй синхробайт
+				cnt = (byte == 0xAA) ? 2 : 0;
+				break;
+			case 2:
+				// прин€т байт команды
 				cnt++;
-			break;
-		case 1:
-			// второй синхробайт
-			cnt = (byte == 0xAA) ? 2 : 0;
-			break;
-		case 2:
-			// прин€т байт команды
-			cnt++;
-			break;
-		case 3:
-			// проверка на наличие в буфере достаточного места дл€ посылки
-			cnt = (byte < (size_ - 5)) ? (maxLen_ = byte + 5, cnt + 1) : 0;
-			break;
-		default:
-			// ожидание приема за€вленного количества байт данных
-			cnt++;
-			if (cnt >= maxLen_) {
-				stat_ = PRTS_STATUS_READ_OK;
+				break;
+			case 3:
+				// проверка на наличие в буфере достаточного места дл€ посылки
+				cnt = (byte < (size_ - 5)) ? (maxLen_ = byte + 5, cnt + 1) : 0;
+				break;
+			default:
+				// ожидание приема за€вленного количества байт данных
+				cnt++;
+				if (cnt >= maxLen_) {
+					stat_ = PRTS_STATUS_READ_OK;
+				}
+				break;
 			}
-			break;
+			cnt_ = cnt;
 		}
-		cnt_ = cnt;
-
 		return cnt;
 	}
 
 protected:
-	// “екущее состо€ние протокола. true - запущен
-	bool enable_;
-
 	// структура параметров
 	stGBparam * const sParam_;
 

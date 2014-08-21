@@ -18,6 +18,7 @@
 #include "inc/uart.h"
 #include "inc/protocolPcS.h"
 #include "inc/protocolBspS.h"
+#include "inc/protocolModbus.h"
 
 /// Время работы одного цикла (зависит от настройки таймеров), мс
 #define TIME_CYLCE 100
@@ -56,8 +57,11 @@ TUart uartPC(TUart::PORT_UART1, uBufUartPc, BUFF_SIZE_PC);
 TUart uartBSP(TUart::PORT_UART0, uBufUartBsp, BUFF_SIZE_BSP);
 /// Класс стандартного протокола работающего с ПК
 clProtocolPcS protPCs(uBufUartPc, BUFF_SIZE_PC, &menu.sParam);
+/// Класс работы протокола MODBUS
+TProtocolModbus protPCm(uBufUartPc, BUFF_SIZE_PC);
 /// Класс стандартного протокола работающего с БСП
 clProtocolBspS protBSPs(uBufUartBsp, BUFF_SIZE_BSP, &menu.sParam);
+
 
 static bool uartRead();
 static bool uartWrite();
@@ -217,6 +221,25 @@ bool isUartPcReinit(sEeprom *current, TUartData *newparam) {
 	return stat;
 }
 
+void setProtocol(eGB_PROTOCOL protocol) {
+
+	switch(protocol) {
+		case GB_PROTOCOL_STANDART:
+			protPCs.setEnable(PRTS_STATUS_READ);
+			protPCm.setDisable();
+			break;
+		case GB_PROTOCOL_MODBUS:
+			protPCm.setEnable();
+			protPCs.setDisable();
+			break;
+		case GB_PROTOCOL_IEC_101:
+			// TODO МЭК 101
+			break;
+		case GB_PROTOCOL_MAX:		// заглушка
+			break;
+	}
+}
+
 /**	main.c
  *
  * 	@param Нет
@@ -257,7 +280,9 @@ main(void) {
 	TUartData *uart = &menu.sParam.Uart;
 	uartPC.open(uart->BaudRate.get(), uart->DataBits.get(), uart->Parity.get(),
 			uart->StopBits.get());
-	protPCs.setEnable(PRTS_STATUS_READ);
+
+	// выбор необходимого протокола работы с внешним миром
+	setProtocol(uart->Protocol.get());
 
 	sei();
 
@@ -319,8 +344,7 @@ main(void) {
 								uart->Parity.get(), uart->StopBits.get());
 						protPCs.setEnable(PRTS_STATUS_READ);
 						break;
-					case GB_INTERFACE_MAX:
-						// ошибочное значение
+					case GB_INTERFACE_MAX:		// заглушка
 						break;
 					}
 
@@ -331,9 +355,10 @@ main(void) {
 				// считывание текущего пароля в буфер ЕЕПРОМ
 				eeprom.password = menu.sParam.password.get();
 
-				// проверка Протокола связи с записанным в еепром значением
+				// проверка Протокола связи
 				if (eeprom.protocol != menu.sParam.Uart.Protocol.get()) {
 					eeprom.protocol = menu.sParam.Uart.Protocol.get();
+					setProtocol(menu.sParam.Uart.Protocol.get());
 				}
 
 				// обновление настроек пользователя в ЕЕПРОМ
@@ -388,15 +413,12 @@ ISR(USART1_RX_vect) {
 	if ((state & ((1 << FE) | (1 << DOR) | (1 << UPE)))) {
 		// в случае ошибки сброс счетчика принятых данных
 		// и текущего статуса работы протокола
-		uartPC.clrCnt();
 		protPCs.setCurrentStatus(PRTS_STATUS_NO);
 	} else {
 		// обработчик протокола "Стандартный"
-		if (protPCs.isEnable()) {
-			if (protPCs.getCurrentStatus() == PRTS_STATUS_READ) {
-				protPCs.checkByte(byte);
-			}
-		}
+		protPCs.checkByte(byte);
+		// протокол MODBUS
+		protPCm.push(byte);
 	}
 }
 
@@ -420,13 +442,9 @@ ISR(USART0_RX_vect) {
 	if (state & ((1 << FE) | (1 << DOR) | (1 << UPE))) {
 		// в случае ошибки сброс счетчика принятых данных
 		// и текущего статуса работы протокола
-		uartBSP.clrCnt();
 		protBSPs.setCurrentStatus(PRTS_STATUS_NO);
 	} else {
 		// обработчик протокола "Стандартный"
-		if (protBSPs.isEnable()) {
-			if (protBSPs.getCurrentStatus() == PRTS_STATUS_READ)
-				protBSPs.checkByte(byte);
-		}
+		protBSPs.checkByte(byte);
 	}
 }
