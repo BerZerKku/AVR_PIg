@@ -58,10 +58,13 @@ static const uint8_t CRC_LOW[256]={
 		0x43, 0x83, 0x41, 0x81, 0x80, 0x40
 };
 
+// Конструктор
 TProtocolModbus::TProtocolModbus(uint8_t *buf, uint8_t size) :
 		buf_(buf), size_(size){
 
 	state_ = STATE_OFF;
+
+	address_ = ADDRESS_ERR;
 
 	minReg_ = 0;
 	maxReg_ = 0;
@@ -70,5 +73,150 @@ TProtocolModbus::TProtocolModbus(uint8_t *buf, uint8_t size) :
 
 	tick_ = 0;
 	tickStep_ = 0;
+}
+
+/**	Рассчет контрольной суммы для заданного кол-ва байт данных в буфере
+ *
+ * 	@param num Кол-во байт данных.
+ * 	@return Рассчитанная контрольная сумма.
+ */
+uint16_t TProtocolModbus::calcCRC(uint8_t num) {
+	uint8_t low = 0xFF;
+	uint8_t hi = 0xFF;
+	for (uint8_t i = 0, tmp; i < num; i++) {
+		tmp = low ^ buf_[i];
+		low = hi ^ CRC_HI[tmp];
+		hi =  CRC_LOW[tmp];
+	}
+	return ((hi << 8) | low);
+}
+
+/**	Возвращает контрольную сумму переданную в посылке.
+ *
+ * 	@return Контрольная сумма посылки.
+ */
+uint16_t TProtocolModbus::getCRC() const{
+	return ((buf_[cnt_ - 2] << 8) + buf_[cnt_ - 1]);
+}
+
+bool TProtocolModbus::checkReadPackage() {
+	bool state = true;
+
+	if (!checkAddress(buf_[0])){
+		// Не совпал адрес устройства.
+		setState(STATE_READ);
+		state = false;
+	} else if (getCRC() != calcCRC(cnt_ - 2)){
+		state = false;
+	} else if (!checkCommand(buf_[1])) {
+		setException(EXCEPTION_01H_ILLEGAL_FUNCTION);
+		state = false;
+	}
+
+	return state;
+}
+
+uint16_t TProtocolModbus::readData(uint16_t num) {
+}
+
+bool TProtocolModbus::writeData(uint16_t num, uint16_t val) {
+}
+
+// Установка адреса устройства в сети.
+bool TProtocolModbus::setAddress(uint8_t adr) {
+	bool state = false;
+
+	if ((adr >= ADDRESS_MIN) && (adr <= ADDRESS_MAX)) {
+		address_ = adr;
+		state = true;
+	}
+
+	return state;
+}
+
+// Возвращает адрес устройства в сети.
+uint8_t TProtocolModbus::getAddress() const {
+	return address_;
+}
+
+
+// Ответ на запрос с кодом исключения.
+void TProtocolModbus::setException(TProtocolModbus::EXCEPTION code) {
+
+}
+
+
+void TProtocolModbus::addData(uint16_t val) {
+}
+
+/**	Добавляет к имеющейся в буфере послылке контрольную сумму.
+ *
+ * 	Рассчитывается контрольная сумма для имеющегося количества данных в буфере.
+ */
+void TProtocolModbus::addCRC() {
+	uint16_t crc = calcCRC(cnt_);
+	buf_[cnt_++] = crc >> 8;
+	buf_[cnt_++] = crc;
+}
+
+// Отправка сообщения.
+uint8_t TProtocolModbus::trCom() {
+	uint8_t cnt = 0;
+
+	if (checkState(STATE_WRITE)) {
+		cnt = cnt_;
+	}
+
+	return cnt;
+}
+
+/**	Проверка соответствия принятой команды поддерживаемым в этом классе.
+ *
+ *	@retval True - если принятая команда поддерживается в протоколе.
+ *	@retval False - если принятая команда не поддерживается в протоколе.
+ */
+bool TProtocolModbus::checkCommand(uint8_t com){
+	bool state = false;
+
+	switch(static_cast<TProtocolModbus::COM> (com)) {
+		case COM_01H_READ_COIL :
+			state = true;
+			break;
+		case COM_03H_READ_HOLDING_REGISTER:
+			state = true;
+			break;
+		case COM_05H_WRITE_SINGLE_COIL:
+			state = true;
+			break;
+		case COM_06H_WRITE_SINGLE_REGISTER:
+			state = true;
+			break;
+		case COM_0EH_READ_DEVICE_INFORMATION:
+			state = true;
+			break;
+		case COM_0FH_WRITE_MULTIPLIE_COILS:
+			state = true;
+			break;
+		case COM_10H_WRITE_MULITPLIE_REGISTERS:
+			state = true;
+			break;
+		case COM_2BH_READ_DEVICE_INDENTIFICATION:
+			state = true;
+			break;
+	}
+
+	return state;
+}
+
+
+/**	Проверка адреса устройства на совпадение с установленным
+ *
+ *	Дополнительно проводится проверка на ошибочный адрес \a ADDRESS_ERR.
+ *
+ *	@see ADDRESS_ERR
+ * 	@adr Адрес, который будет сравниваться с установленным.
+ */
+bool TProtocolModbus::checkAddress(uint8_t adr) {
+	return ((adr != ADDRESS_ERR) && (address_ == adr));
 }
 

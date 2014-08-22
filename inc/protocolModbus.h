@@ -25,13 +25,19 @@
  * 	@see MAX_ERRORS
  */
 class TProtocolModbus{
-
-	///< Пауза между принятыми байтами, при которой идет сброс на начало приема.
+	/// Пауза между принятыми байтами, при которой идет сброс на начало приема.
 	static const uint16_t DELAY_RESET = 1500;
-	///< Пауза между принятыми байтами, при которой определяется окончание приема.
+	/// Пауза между принятыми байтами, при которой определяется окончание приема.
 	static const uint16_t DELAY_READ  = 3500;
 
 public:
+	/// Адрес устройства в сети по умолчанию (т.е. ошибка)
+	static const uint8_t ADDRESS_ERR = 255;
+	/// Минимальный адрес устройства в сети
+	static const uint8_t ADDRESS_MIN = 1;
+	/// Максимальный адрес устройства в сети
+	static const uint8_t ADDRESS_MAX = 247;
+
 	/// Состояния работы протокола
 	enum STATE {
 		STATE_OFF,			///< Протокол выключен.
@@ -40,6 +46,28 @@ public:
 		STATE_WRITE_WAIT,	///< Ожидание нужных данных.
 		STATE_WRITE,		///< Отправка посылки.
 		STATE_ERROR			///< Ошибка в работе протокола.
+	};
+
+	/// Команды доступные в данном классе
+	enum COM {
+		COM_01H_READ_COIL 					= 0x01,	///< Чтение флагов.
+		COM_03H_READ_HOLDING_REGISTER 		= 0x03,	///< Чтение внутренних регистров.
+		COM_05H_WRITE_SINGLE_COIL			= 0x05,	///< Запись одного флага.
+		COM_06H_WRITE_SINGLE_REGISTER		= 0x06,	///< Запись одного внутреннего регистра.
+		COM_0EH_READ_DEVICE_INFORMATION		= 0x0E,	///< Чтение информации об устройстве.
+		COM_0FH_WRITE_MULTIPLIE_COILS		= 0x0F,	///< Запись группы флагов.
+		COM_10H_WRITE_MULITPLIE_REGISTERS	= 0x10,	///< Запись группы внутренних регистров.
+		COM_2BH_READ_DEVICE_INDENTIFICATION = 0x2B	///< Чтение информации об устройстве.
+	};
+
+	/// Коды исключения
+	enum EXCEPTION {
+		EXCEPTION_01H_ILLEGAL_FUNCTION	= 0x01,	///< Код функции не поддерживается
+		EXCEPTION_02H_ILLEGAL_DATA_ADR	= 0x02,	///< Неверный адрес регистра
+		EXCEPTION_03H_ILLEGAL_DATA_VAL	= 0x03,	///< Неверное значение поля данных
+		EXCEPTION_04H_DEVICE_FAILURE	= 0x04,	///< В устройстве произошла ошибка
+		EXCEPTION_10H_TEMP_INAC_PARAM	= 0x10,	///< Запись по адресу временно невозможна
+		EXCEPTION_11H_UNCHANG_PARAM		= 0x11	///< Запись по адресу невозможна
 	};
 
 	/**	Контструктор.
@@ -51,14 +79,14 @@ public:
 
 	/**	Запуск работы данного протокола.
 	 *
-	 *	По умолчанию протокол будет включен в состоянии "Чтение".
+	 *	Протокол будет включен в состоянии "Чтение".
 	 *	В случае ошибочного значения, протокол останется в текущем состоянии.
 	 *
 	 *	@see STATE
 	 * 	@param state Начальное состояние протокола.
 	 */
-	void setEnable(TProtocolModbus::STATE state=STATE_READ) {
-		setState(state);
+	void setEnable() {
+		setState(STATE_READ);
 	}
 
 	/**	Остановка работы данного протокола.
@@ -154,13 +182,7 @@ public:
 	 *
 	 * 	@return Кол-во байт данных для передачи
 	 */
-	uint8_t trCom(){
-		uint8_t cnt = 0;
-		if (checkState(STATE_WRITE)) {
-			cnt = cnt_;
-		}
-		return cnt;
-	}
+	uint8_t trCom();
 
 	/**	Возвращает номер младшего регистра для чтения/записи.
 	 *
@@ -168,7 +190,7 @@ public:
 	 *
 	 * 	@return Номер младшего регистра.
 	 */
-	uint16_t minNumRegisters() const {
+	uint16_t getMinNumRegisters() const {
 		return minReg_;
 	}
 
@@ -178,7 +200,7 @@ public:
 	 *
 	 * 	@return Номер младшего регистра.
 	 */
-	uint16_t maxNumRegisters() const {
+	uint16_t getMaxNumRegisters() const {
 		return maxReg_;
 	}
 
@@ -230,11 +252,44 @@ public:
 		}
 	}
 
-private:
+	/**	Установка адреса устройства в сети.
+	 *
+	 * 	@param adr Адрес устройства.
+	 * 	@retval True - в случае смены адреса устройства.
+	 * 	@retval False - в случае ошибочного адреса.
+	 */
+	bool setAddress(uint8_t adr);
+
+	/**	Возвращает адрес устройства в сети.
+	 *
+	 * 	@return Адрес устройства.
+	 */
+	uint8_t getAddress() const;
+
+	/**	Ответ на запрос с кодом исключения.
+	 *
+	 *	@param code Код исключения.
+	 */
+	void setException(TProtocolModbus::EXCEPTION code);
+
+
+
+	// Подсчет CRC для заданного кол-ва байт данных в буфере.
+	uint16_t calcCRC(uint8_t num);
+
+	// Возвращает принятый в посылке CRC.
+	uint16_t getCRC() const;
+
+	// Добавляет к имеющейся в буфере посылке контрольную сумму.
+	void addCRC();
+
+protected:
 	const uint8_t size_;	///> Размер буфера данных
 	uint8_t * const buf_;	///> Буфер принятых/передаваемых данных
 
 	STATE state_;			///> Текущее состояние работы протокола.
+
+	uint8_t address_;		///> Адрес устройства в сети.
 
 	uint16_t minReg_;		///> Номер младшего регистра для чтения/записи.
 	uint16_t maxReg_;		///> Номер старшего регистра для чтения/записи.
@@ -247,11 +302,15 @@ private:
 	// Добавляет два байта к посылке приготовленной на передачу.
 	void addData(uint16_t val);
 
-	// Подсчет CRC для заданного кол-ва байт данных в буфере.
-	uint16_t calcCRC(uint8_t num);
 
-	// Возвращает принятый в посылке CRC.
-	uint16_t getCRC();
+
+	// Проверка соответствия принятой команды поддерживаемым в этом классе.
+	bool checkCommand(uint8_t com);
+
+	// Проверка адреса устройства на совпадение с установленным.
+	bool checkAddress(uint8_t adr);
+
+	// Проверка
 };
 
 
