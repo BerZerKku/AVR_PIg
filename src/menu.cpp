@@ -1846,7 +1846,7 @@ void clMenu::lvlControl() {
 			eGB_NUM_DEVICES numDevices = sParam.def.getNumDevices();
 			eGB_COMPATIBILITY compatibility = sParam.glb.getCompatibility();
 			// первым всегда идет пуск наладочный
-			Punkts_.add(punkt07);
+			Punkts_.add(punkt07);	// далее выбирается в зависимости от текущего
 			// сброс своего есть во всех аппаратах и совместимостях
 			Punkts_.add(punkt03);
 			if (compatibility == GB_COMPATIBILITY_AVANT) {
@@ -1917,11 +1917,21 @@ void clMenu::lvlControl() {
 			// Вызов есть во всех совместимостях
 			Punkts_.add(punkt05);
 		} else if (device == AVANT_RZSK) {
-			Punkts_.add(punkt07);
-			Punkts_.add(punkt03);
-			Punkts_.add(punkt04);
-			Punkts_.add(punkt02);
-			Punkts_.add(punkt05);
+			eGB_NUM_DEVICES numDevices = sParam.def.getNumDevices();
+			if (numDevices == GB_NUM_DEVICES_2) {
+				Punkts_.add(punkt07);	// далее выбирается в зависимости от текущего
+				Punkts_.add(punkt03);
+				Punkts_.add(punkt04);
+				Punkts_.add(punkt02);
+				Punkts_.add(punkt05);
+			} else if (numDevices == GB_NUM_DEVICES_3) {
+				Punkts_.add(punkt07);	// далее выбирается в зависимости от текущего
+				Punkts_.add(punkt03);
+				Punkts_.add(punkt22);
+				Punkts_.add(punkt23);	// далее выбирается в зависимости от номера
+				Punkts_.add(punkt24);	// далее выбирается в зависимости от номера
+				Punkts_.add(punkt05);
+			}
 		} else if (device == AVANT_K400) {
 			Punkts_.add(punkt03);
 		} else if (device == AVANT_OPTO) {
@@ -1938,17 +1948,40 @@ void clMenu::lvlControl() {
 			sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
 			// номер текущего аппарата
 			sParam.txComBuf.addCom2(GB_COM_GET_DEVICE_NUM);
+		} else if (sParam.typeDevice == AVANT_RZSK) {
+			// кол-во аппаратов в линии
+			sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
+			// номер текущего аппарата
+			sParam.txComBuf.addCom2(GB_COM_GET_DEVICE_NUM);
 		}
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	// в РЗСК/Р400м
-	if ((device == AVANT_R400M) || (device == AVANT_RZSK)) {
+
+	if (sParam.def.status.isEnable()) {
+		// выбор вкл./выкл. наладочного пуска
 		if (sParam.def.status.getState() != 7)
 			Punkts_.change(punkt06, GB_COM_NO, 0);
 		else
 			Punkts_.change(punkt07, GB_COM_NO, 0);
+
+		// выбор пуск удаленного
+		if (device == AVANT_RZSK) {
+			if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+				uint8_t num = sParam.glb.getDeviceNum();
+				if (num == 1) {
+					Punkts_.change(punkt24, GB_COM_NO, 3);
+					Punkts_.change(punkt25, GB_COM_NO, 4);
+				} else if (num == 2) {
+					Punkts_.change(punkt23, GB_COM_NO, 3);
+					Punkts_.change(punkt25, GB_COM_NO, 4);
+				} else if (num == 3) {
+					Punkts_.change(punkt23, GB_COM_NO, 3);
+					Punkts_.change(punkt24, GB_COM_NO, 4);
+				}
+			}
+		}
 	}
 
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
