@@ -865,18 +865,18 @@ void clMenu::lvlStart() {
 
 	case KEY_PUSK_UD:
 		if (sParam.def.status.isEnable()) {
-			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
+			if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
+				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_ALL);
+			} else {
+				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
+			}
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 		}
 		break;
 
 	case KEY_AC_PUSK_UD:
 		if (sParam.def.status.isEnable()) {
-			if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_ALL);
-			} else {
-				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_AC_UD);
-			}
+			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_AC_UD);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 		}
 		break;
