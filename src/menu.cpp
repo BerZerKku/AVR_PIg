@@ -864,7 +864,11 @@ void clMenu::lvlStart() {
 
 	case KEY_PUSK_UD:
 		if (sParam.def.status.isEnable()) {
-			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
+			if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
+				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_ALL);
+			} else {
+				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
+			}
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 		}
 		break;
@@ -1929,6 +1933,7 @@ void clMenu::lvlControl() {
 				Punkts_.add(punkt22);
 				Punkts_.add(punkt23);	// далее выбирается в зависимости от номера
 				Punkts_.add(punkt24);	// далее выбирается в зависимости от номера
+				Punkts_.add(punkt26);
 				Punkts_.add(punkt05);
 			}
 		} else if (device == AVANT_K400) {
@@ -1956,7 +1961,6 @@ void clMenu::lvlControl() {
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
-
 
 	if (sParam.def.status.isEnable()) {
 		// выбор вкл./выкл. наладочного пуска
