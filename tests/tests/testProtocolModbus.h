@@ -23,17 +23,14 @@ class testProtocolModbus : public CPPUNIT_NS::TestFixture {
 //    CPPUNIT_TEST(testSetDisable);
 //    CPPUNIT_TEST(testSetEnable);
 //    CPPUNIT_TEST(testSetState);
-    CPPUNIT_TEST(testAddress);
-    
-    
+    CPPUNIT_TEST(testAddress); 
     CPPUNIT_TEST(testCheckReadPackage);
+    CPPUNIT_TEST(testPush);
+    
     CPPUNIT_TEST(testReadData);
     CPPUNIT_TEST(testWriteData);
-
     CPPUNIT_TEST(testGetMaxNumRegisters);
     CPPUNIT_TEST(testGetMinNumRegisters);
-    CPPUNIT_TEST(testPush);
-
     CPPUNIT_TEST(testTick);
     CPPUNIT_TEST(testTrCom);
    
@@ -48,12 +45,11 @@ public:
 
 private:
  
-    void testCheckReadPackage();
+    
     void testReadData();
     void testWriteData();
     void testGetMaxNumRegisters();
     void testGetMinNumRegisters();
-    void testPush();
     void testTick();
     void testTrCom();
     
@@ -71,6 +67,10 @@ private:
     void testAddress();
 //    void testSetAddress();
 //    void testGetAddress();
+    
+    void testCheckReadPackage();
+    void testPush();
+    
     
     // буфер данных Modbus
     uint8_t buf[128];

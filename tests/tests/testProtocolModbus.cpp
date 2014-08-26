@@ -75,59 +75,76 @@ void testProtocolModbus::testCheckReadPackage()
 {
     TProtocolModbus tProtocolModbus(buf, sizeof (buf));
     
+    uint8_t buf1[] = {  0x01,           // адрес устройства
+                        0x01,           // команда
+                        0x00, 0x00,     // адрес регистра, hi/low
+                        0x00, 0x01,     // количество регистров, hi/low
+                        0xFD, 0xCA};    // контрольна€ сумма, hi/low
     
-    buf[0] = 0x01;
-    buf[1] = tProtocolModbus.COM_01H_READ_COIL;
-    buf[2] = 0x00; buf[3] = 0x00;   // adr hi/low
-    buf[4] = 0x00; buf[5] = 0x01;   // num hi/low
-    buf[6] = 0xFD; buf[7] = 0xCA;   // crc hi/low
+    uint8_t buf2[] = {  0x01,           // адрес устройства
+                        0x06,           // команда
+                        0x80, 0x12,     // адрес регистра, hi/low
+                        0x00, 0x13,     // количество регистров, hi/low
+                        0x41, 0xC2};                               
+
     
-    sprintf(msg, "0x%X", tProtocolModbus.getCRC());
-    CPPUNIT_ASSERT_MESSAGE(msg, false);
-    
+    tProtocolModbus.setState(TProtocolModbus::STATE_READ);
+    for(uint8_t i = 0; i < sizeof(buf1); i++) {
+        tProtocolModbus.push(buf1[i]);
+    }
     
     // 1. ѕроверка правильного определени€ адреса устройства
     // ¬ызванна€ ошибка может быть из-за проблем в других проверках
     // и дл€ вы€влени€ проблемы их можно просто заккоментировать в исходнике
-
+    
     if (tProtocolModbus.checkReadPackage()) {
         sprintf(msg, "1.1 A positive result in default address.");
         CPPUNIT_ASSERT_MESSAGE(msg, false);
     }
 
+    tProtocolModbus.setState(TProtocolModbus::STATE_READ);
+    for(uint8_t i = 0; i < sizeof(buf1); i++) {
+        tProtocolModbus.push(buf1[i]);
+    }
+    
     tProtocolModbus.setAddress(buf[0] + 2);
     if (tProtocolModbus.checkReadPackage()) {
         sprintf(msg, "1.2 A positive result in incorrect address.");
         CPPUNIT_ASSERT_MESSAGE(msg, false);
     }
-
+    
+    tProtocolModbus.setState(TProtocolModbus::STATE_READ);
+    for(uint8_t i = 0; i < sizeof(buf1); i++) {
+        tProtocolModbus.push(buf1[i]);
+    }
+    
     tProtocolModbus.setAddress(buf[0]);
     if (!tProtocolModbus.checkReadPackage()) {
-        sprintf(msg, "1.3 A negative result in correct address.");
+        printf(msg, "1.3 A negative result in correct address.");
         CPPUNIT_ASSERT_MESSAGE(msg, false);
     }
     
     // 2. ѕроверка контрольной суммы.
     // ¬ызванна€ ошибка может быить из-за проблем в других проверках
     // и дл€ вы€влени€ проблемы их можно просто заккоментировать в исходнике
-    
-    buf[0] = 0x01;
+   
     tProtocolModbus.setAddress(buf[0]);
-    buf[1] = TProtocolModbus::COM_01H_READ_COIL;
-    buf[2] = 0x00; buf[3] = 0x00;   // adr hi/low
-    buf[4] = 0x00; buf[5] = 0x01;   // num hi/low
-    buf[6] = 0xFD; buf[7] = 0xCA;   // crc hi/low
+    tProtocolModbus.setState(TProtocolModbus::STATE_READ);
+    for(uint8_t i = 0; i < sizeof(buf1); i++) {
+        tProtocolModbus.push(buf1[i]);
+    }
+    
     if (!tProtocolModbus.checkReadPackage()) {
         sprintf(msg, "2.1 A negative check crc for correct data.");
         CPPUNIT_ASSERT_MESSAGE(msg, false);
     }
     
-    buf[0] = 0x01;
-    tProtocolModbus.setAddress(buf[0]);
-    buf[1] = TProtocolModbus::COM_06H_WRITE_SINGLE_REGISTER;
-    buf[2] = 0x80; buf[3] = 0x12;   // adr hi/low
-    buf[4] = 0x00; buf[5] = 0x13;   // num hi/low
-    buf[6] = 0x41; buf[7] = 0xC2;   // crc hi/low
+    
+    tProtocolModbus.setState(TProtocolModbus::STATE_READ);
+    for(uint8_t i = 0; i < sizeof(buf2); i++) {
+        tProtocolModbus.push(buf2[i]);
+    }
+
     if (!tProtocolModbus.checkReadPackage()) {
         sprintf(msg, "2.2 A negative check crc for correct data.");
         CPPUNIT_ASSERT_MESSAGE(msg, false);
@@ -142,47 +159,47 @@ void testProtocolModbus::testCheckReadPackage()
     // 3. ѕроверка правильного определени€ команды.
     // ¬ызванна€ ошибка может быить из-за проблем в других проверках
     // и дл€ вы€влени€ проблемы их можно просто заккоментировать в исходнике
+    // TODO —делать проверку на определение некорректной команды
+//    buf[0] = 0x13;
+//    tProtocolModbus.setAddress(buf[0]);
 
-    buf[0] = 0x13;
-    tProtocolModbus.setAddress(buf[0]);
-
-    for (uint16_t i = 0; i <= 255; i++) {
-        buf[1] = i;
-
-        bool iscom = false;
-        TProtocolModbus::COM com = static_cast<TProtocolModbus::COM> (i);
-        switch(com) {
-            case TProtocolModbus::COM_01H_READ_COIL:
-                iscom = true;
-                break;
-            case TProtocolModbus::COM_03H_READ_HOLDING_REGISTER:
-                iscom = true;
-                break;
-            case TProtocolModbus::COM_05H_WRITE_SINGLE_COIL:
-                iscom = true;
-                break;
-            case TProtocolModbus::COM_06H_WRITE_SINGLE_REGISTER:
-                iscom = true;
-                break;
-            case TProtocolModbus::COM_0EH_READ_DEVICE_INFORMATION:
-                iscom = true;
-                break;
-            case TProtocolModbus::COM_0FH_WRITE_MULTIPLIE_COILS:
-                iscom = true;
-                break;
-            case TProtocolModbus::COM_10H_WRITE_MULITPLIE_REGISTERS:
-                iscom = true;
-                break;
-            case TProtocolModbus::COM_2BH_READ_DEVICE_INDENTIFICATION:
-                iscom = true;
-                break;
-        }
-
-        if (iscom != tProtocolModbus.checkReadPackage()) {
-            sprintf(msg, "3.1 A positive result for an unsupported command or vice versa on step %d", i);
-            CPPUNIT_ASSERT_MESSAGE(msg, false);
-        }
-    }
+//    for (uint16_t i = 0; i <= 255; i++) {
+//        buf[1] = i;
+//
+//        bool iscom = false;
+//        TProtocolModbus::COM com = static_cast<TProtocolModbus::COM> (i);
+//        switch(com) {
+//            case TProtocolModbus::COM_01H_READ_COIL:
+//                iscom = true;
+//                break;
+//            case TProtocolModbus::COM_03H_READ_HOLDING_REGISTER:
+//                iscom = true;
+//                break;
+//            case TProtocolModbus::COM_05H_WRITE_SINGLE_COIL:
+//                iscom = true;
+//                break;
+//            case TProtocolModbus::COM_06H_WRITE_SINGLE_REGISTER:
+//                iscom = true;
+//                break;
+//            case TProtocolModbus::COM_0EH_READ_DEVICE_INFORMATION:
+//                iscom = true;
+//                break;
+//            case TProtocolModbus::COM_0FH_WRITE_MULTIPLIE_COILS:
+//                iscom = true;
+//                break;
+//            case TProtocolModbus::COM_10H_WRITE_MULITPLIE_REGISTERS:
+//                iscom = true;
+//                break;
+//            case TProtocolModbus::COM_2BH_READ_DEVICE_INDENTIFICATION:
+//                iscom = true;
+//                break;
+//        }
+//
+//        if (iscom != tProtocolModbus.checkReadPackage()) {
+//            sprintf(msg, "3.1 A positive result for an unsupported command or vice versa on step %d", i);
+//            CPPUNIT_ASSERT_MESSAGE(msg, false);
+//        }
+//    }
     
     
 
@@ -237,11 +254,26 @@ void testProtocolModbus::testPush()
 
     tProtocolModbus.setState(TProtocolModbus::STATE_READ);
 
-    uint8_t byte;
-    tProtocolModbus.push(byte);
-    if (true /*check result*/) {
-        CPPUNIT_ASSERT(false);
+    // 1. ѕроверка записи максимально возможного кол-ва байт данных
+    // без проверки срабатывани€ tick 
+    for(uint16_t i = 1; i <= 2*sizeof(buf); i++) {
+        uint16_t t = tProtocolModbus.push(i);
+        if (i <= sizeof (buf)){
+            if (t != i) {
+                sprintf(msg, "1.1 Error correct writing to the buffer on step %d", i);
+                CPPUNIT_ASSERT_MESSAGE(msg, false);
+            }
+        } else {
+            if (t != sizeof (buf)) {
+                sprintf(msg, "1.1 Error incorrect writing to the buffer on step %d", i);
+                CPPUNIT_ASSERT_MESSAGE(msg, false);
+            }
+        }
     }
+    
+    // 2. ѕроверка сброса посылки при паузе 1.5 интервала.
+    // TODO ѕроверку сброса посылки при паузе 1.5 интервала.
+    
 }
 
 void testProtocolModbus::testTick()
