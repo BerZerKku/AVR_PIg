@@ -134,10 +134,10 @@ void testProtocolModbus::testCheckReadPackage()
     tProtocolModbus.setAddress(buf[0]);
     
     if (tProtocolModbus.checkReadPackage() == TProtocolModbus::CHECK_ERR_CRC) {
-        sprintf(msg, "2.1 A negative check crc for correct data.");
+        uint8_t cnt = sprintf(msg, "2.1 A negative check crc for correct data.");
+//        cnt += sprintf(&msg[cnt], "\n calccrc = 0x%X", tProtocolModbus.calcCRC(sizeof(buf[1]) - 2));
         CPPUNIT_ASSERT_MESSAGE(msg, false);
     }
-    
     
     tProtocolModbus.setState(TProtocolModbus::STATE_READ);
     for(uint8_t i = 0; i < sizeof(buf2); i++) {
@@ -156,74 +156,70 @@ void testProtocolModbus::testCheckReadPackage()
         CPPUNIT_ASSERT_MESSAGE(msg, false);
     }
     
-    // 3. Проверка правильного определения команды.
-    uint8_t buf3[] [14] = {
-        // correct
-        {8, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0xFD, 0xCA},   
-        {8, 0x11, 0x01, 0x00, 0x13, 0x00, 0x25, 0x0E, 0x84},
-        {8, 0x01, 0x03, 0x00, 0x00, 0x00, 0x07, 0x04, 0x08},
-        {8, 0x11, 0x05, 0x00, 0xAC, 0xFF, 0x00, 0x4E, 0x8B},
-        {8, 0x11, 0x06, 0x00, 0x01, 0x00, 0x03, 0x9A, 0x9B},
-        {11,0x11, 0x0F, 0x00, 0x13, 0x00, 0x0A, 0x02, 0xCD, 0x01, 0xBF, 0x0B},
-        {13,0x11, 0x10, 0x00, 0x01, 0x00, 0x02, 0x04, 0x00, 0x0A, 0x01, 0x02, 0xC6, 0xF0},
-        {4 ,0x03, 0x11, 0xC1, 0x4C},
-        // incorrect
-        {4, 0x11, 0x04, 0x00, 0x00},
-        {8, 0x03, 0x07, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00}
+    // 3. Проверка правильного определения команды, а также корректности данных.
+    // first byte - number of bytes in package
+    struct sData {
+        TProtocolModbus::CHECK_ERR err; // ошибка 
+        uint8_t num;                    // кол-во байт в посылке
+        uint8_t buf[14];                // посылка
+        
+    };
+    
+    sData data[] = {
+        
+        // check command 0x01
+        {TProtocolModbus::CHECK_ERR_NO, 8, {0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0xFD, 0xCA}},               // кол-во адресов минимум, 1   
+        {TProtocolModbus::CHECK_ERR_NO, 8, {0x11, 0x01, 0x00, 0x13, 0x00, 0x25, 0x0E, 0x84}},               // кол-во адресов - в диапазоне
+        {TProtocolModbus::CHECK_ERR_NO, 8, {0x11, 0x01, 0x00, 0x13, 0x01, 0x00, 0xCE, 0xCF}},               // кол-во адресов максимум, 256
+        {TProtocolModbus::CHECK_ERR_FUNCTION_DATA, 8, {0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x3C, 0x0A}},    // кол-во адресов 0
+        {TProtocolModbus::CHECK_ERR_FUNCTION_DATA, 8, {0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0xFC, 0x5A}},    // кол-во адресов 257
+    
+        // check command 0x03
+        {TProtocolModbus::CHECK_ERR_NO, 8, {0x01, 0x03, 0x00, 0x01, 0x00, 0x01, 0xD5, 0xCA}},               // кол-во адресов минимум, 1
+        {TProtocolModbus::CHECK_ERR_NO, 8, {0x01, 0x03, 0x01, 0x00, 0x00, 0x14, 0x44, 0x39}},               // кол-во адресов - в диапазоне
+        {TProtocolModbus::CHECK_ERR_NO, 8, {0x01, 0x03, 0x03, 0x30, 0x00, 0x20, 0x44, 0x59}},               // кол-во адресов максимум, 32
+        {TProtocolModbus::CHECK_ERR_FUNCTION_DATA, 8, {0x01, 0x03, 0x00, 0x01, 0x00, 0x00, 0x14, 0x0A}},    // кол-во адресов 0
+        {TProtocolModbus::CHECK_ERR_FUNCTION_DATA, 8, {0x01, 0x03, 0x00, 0x02, 0x00, 0x21, 0x24, 0x12}},    // кол-во адресов 33
+                
+        // check command 0x05
+        {TProtocolModbus::CHECK_ERR_NO, 8, {0x13, 0x05, 0x00, 0xAC, 0x00, 0x00, 0x0E, 0x99}},               // значение 0x0000 = 0
+        {TProtocolModbus::CHECK_ERR_NO, 8, {0x27, 0x05, 0x00, 0xAC, 0xFF, 0x00, 0x4B, 0x1D}},               // значение 0xFF00 = 1
+        {TProtocolModbus::CHECK_ERR_FUNCTION_DATA, 8, {0x13, 0x05, 0x00, 0xAC, 0x00, 0x01, 0xCF, 0x59}},   
+        {TProtocolModbus::CHECK_ERR_FUNCTION_DATA, 8, {0x13, 0x05, 0x00, 0xAC, 0x00, 0xFF, 0x0E, 0x99}}, 
+        {TProtocolModbus::CHECK_ERR_FUNCTION_DATA, 8, {0x13, 0x05, 0x00, 0xAC, 0x01, 0x00, 0x0E, 0x99}},
+        {TProtocolModbus::CHECK_ERR_FUNCTION_DATA, 8, {0x13, 0x05, 0x00, 0xAC, 0xFF, 0xFF, 0x0E, 0x99}}, 
+         
+        
+        {TProtocolModbus::CHECK_ERR_NO, 8, {0x11, 0x06, 0x00, 0x01, 0x00, 0x03, 0x9A, 0x9B}},
+        {TProtocolModbus::CHECK_ERR_NO, 11,{0x11, 0x0F, 0x00, 0x13, 0x00, 0x0A, 0x02, 0xCD, 0x01, 0xBF, 0x0B}},
+        {TProtocolModbus::CHECK_ERR_NO, 13,{0x11, 0x10, 0x00, 0x01, 0x00, 0x02, 0x04, 0x00, 0x0A, 0x01, 0x02, 0xC6, 0xF0}},
+        {TProtocolModbus::CHECK_ERR_NO, 4, {0x03, 0x11, 0xC1, 0x4C}},
+        
+        // check incorrect function
+        {TProtocolModbus::CHECK_ERR_FUNCTION, 4, {0x11, 0x04, 0x0C, 0x23}},                                        
+        {TProtocolModbus::CHECK_ERR_FUNCTION, 8, {0x03, 0x07, 0x00, 0x01, 0x00, 0x01, 0x25, 0xE8}}
     };
 
 
-    for (uint16_t i = 0; i < (sizeof (buf3) / sizeof (buf3[0])); i++) {
+    for (uint16_t i = 0; i < (sizeof (data) / sizeof (data[0])); i++) {
         tProtocolModbus.setState(TProtocolModbus::STATE_READ);
-        for (uint8_t j = 1; j <= buf3[i][0]; j++) {
-            tProtocolModbus.push(buf3[i] [j]);
+        for (uint8_t j = 0; j <= data[i].num; j++) {
+            tProtocolModbus.push(data[i].buf[j]);
         }
         tProtocolModbus.setAddress(buf[0]);
-
-        TProtocolModbus::COM com = static_cast<TProtocolModbus::COM> (buf3[i][2]);
-        bool iscom = false;
-        switch(com) {
-            case TProtocolModbus::COM_01H_READ_COIL:
-                iscom = true;
-                break;
-            case TProtocolModbus::COM_03H_READ_HOLDING_REGISTER:
-                iscom = true;
-                break;
-            case TProtocolModbus::COM_05H_WRITE_SINGLE_COIL:
-                iscom = true;
-                break;
-            case TProtocolModbus::COM_06H_WRITE_SINGLE_REGISTER:
-                iscom = true;
-                break;
-            case TProtocolModbus::COM_0FH_WRITE_MULTIPLIE_COILS:
-                iscom = true;
-                break;
-            case TProtocolModbus::COM_10H_WRITE_MULITPLIE_REGISTERS:
-                iscom = true;
-                break;
-            case TProtocolModbus::COM_11H_SLAVE_ID:
-                iscom = true;
-                break;
-        }
-
-        
+  
         TProtocolModbus::CHECK_ERR check = tProtocolModbus.checkReadPackage();
-        if (iscom != (check == TProtocolModbus::CHECK_ERR_NO)) {
-            uint8_t cnt = sprintf(msg, "3.1 A positive result for an unsupported command or vice versa on step %d", i);
-            cnt += sprintf(&msg[cnt], "\n com = 0x%X", buf3[i][2]);
-            cnt += sprintf(&msg[cnt], "\n check = %d", check);
-            cnt += sprintf(&msg[cnt], "\n iscom = %d", iscom);
-//            uint16_t crc = tProtocolModbus.calcCRC(buf3[i][0] - 2);
-//            cnt += sprintf(&msg[cnt], "\n calccrc = 0x%X", crc);
+        if (check != data[i].err) {
+            uint8_t cnt = sprintf(msg, "3.1 Error check function or function data on step %d", i);
+            cnt += sprintf(&msg[cnt], "\n com = 0x%X", data[i].buf[1]);
+            cnt += sprintf(&msg[cnt], "\n check = %d, need = %d", check, data[i].err);
+            cnt += sprintf(&msg[cnt], "\n startadr = 0x%X", tProtocolModbus.getStartAddress());
+            cnt += sprintf(&msg[cnt], "\n numofadr = 0x%X", tProtocolModbus.getNumOfAddress());
+            uint16_t crc = tProtocolModbus.calcCRC(data[i].num - 2);
+            cnt += sprintf(&msg[cnt], "\n calccrc = 0x%X", crc);
             CPPUNIT_ASSERT_MESSAGE(msg, false);
         }
     }
-    
-    // 4. Проверка правильного определения ошибок в значений поля данных команд.
-    // Вызванная ошибка может быить из-за проблем в других проверках
-    // и для выявления проблемы их можно просто заккоментировать в исходнике
-    // TODO Сделать проверку полей данных команд.
-
 }
 
 void testProtocolModbus::testReadData()
@@ -244,26 +240,6 @@ void testProtocolModbus::testWriteData()
     uint16_t num;
     uint16_t val;
     bool result = tProtocolModbus.writeData(num, val);
-    if (true /*check result*/) {
-        CPPUNIT_ASSERT(false);
-    }
-}
-
-void testProtocolModbus::testGetMaxNumRegisters()
-{
-    TProtocolModbus tProtocolModbus(buf, sizeof (buf));
-
-    uint16_t result = tProtocolModbus.getMaxNumRegisters();
-    if (true /*check result*/) {
-        CPPUNIT_ASSERT(false);
-    }
-}
-
-void testProtocolModbus::testGetMinNumRegisters()
-{
-    TProtocolModbus tProtocolModbus(buf, sizeof (buf));
-
-    uint16_t result = tProtocolModbus.getMinNumRegisters();
     if (true /*check result*/) {
         CPPUNIT_ASSERT(false);
     }
@@ -411,6 +387,72 @@ void testProtocolModbus::testStates()
 
         if (tProtocolModbus.getState() != TProtocolModbus::STATE_READ) {
             sprintf(msg, "5.2 Error in set or get state on step %d", i);
+            CPPUNIT_ASSERT_MESSAGE(msg, false);
+        }
+    }
+}
+
+void testProtocolModbus::testGetStartAddress()
+{
+    TProtocolModbus tProtocolModbus(buf, sizeof (buf));
+    
+    struct sData {
+        uint16_t adr;
+        uint8_t buf[9]; 
+    };
+    
+    sData data[] = {
+        {0,     {0x01, 0x01, 0x00, 0x00, 0x00, 0x01}},   
+        {19,    {0x11, 0x01, 0x00, 0x13, 0x00, 0x25}},
+        {0,     {0x01, 0x03, 0x00, 0x00, 0x00, 0x07}},
+        {1027,  {0x11, 0x03, 0x04, 0x03, 0x02, 0x05}}
+    };
+    
+    for(uint16_t i = 0; i < (sizeof (data) / sizeof (data[0])); i++) {
+        tProtocolModbus.setState(TProtocolModbus::STATE_READ);
+        for (uint8_t j = 0; j <= sizeof(data[i].buf); j++) {
+            tProtocolModbus.push(data[i].buf[j]);
+        }
+        tProtocolModbus.setAddress(buf[0]);
+        
+        uint16_t adr = tProtocolModbus.getStartAddress();
+        if (adr != data[i].adr) {
+            uint8_t cnt = sprintf(msg, "1.1 Error in start address on step %d", i);
+            cnt += sprintf(&msg[cnt], "\n adr = %d", data[i].adr);
+            cnt += sprintf(&msg[cnt], "\n get = %d", adr); 
+            CPPUNIT_ASSERT_MESSAGE(msg, false);
+        }
+    }
+}
+
+void testProtocolModbus::testGetNumOfAddress()
+{
+   TProtocolModbus tProtocolModbus(buf, sizeof (buf));
+    
+    struct sData {
+        uint16_t num;
+        uint8_t buf[9]; 
+    };
+    
+    sData data[] = {
+        {1,     {0x01, 0x01, 0x00, 0x00, 0x00, 0x01}},   
+        {37,    {0x11, 0x01, 0x00, 0x13, 0x00, 0x25}},
+        {7,     {0x01, 0x03, 0x00, 0x00, 0x00, 0x07}},
+        {1535,  {0x11, 0x03, 0x04, 0x00, 0x05, 0xFF}}
+    };
+    
+    for(uint16_t i = 0; i < (sizeof (data) / sizeof (data[0])); i++) {
+        tProtocolModbus.setState(TProtocolModbus::STATE_READ);
+        for (uint8_t j = 0; j <= sizeof(data[i].buf); j++) {
+            tProtocolModbus.push(data[i].buf[j]);
+        }
+        tProtocolModbus.setAddress(buf[0]);
+        
+        uint16_t num = tProtocolModbus.getNumOfAddress();
+        if (num != data[i].num) {
+            uint8_t cnt = sprintf(msg, "1.1 Error in start address on step %d", i);
+            cnt += sprintf(&msg[cnt], "\n adr = %d", data[i].num);
+            cnt += sprintf(&msg[cnt], "\n get = %d", num); 
             CPPUNIT_ASSERT_MESSAGE(msg, false);
         }
     }

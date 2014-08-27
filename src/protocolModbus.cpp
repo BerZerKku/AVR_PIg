@@ -66,9 +66,6 @@ TProtocolModbus::TProtocolModbus(uint8_t *buf, uint8_t size) :
 
 	address_ = ADDRESS_ERR;
 
-	minReg_ = 0;
-	maxReg_ = 0;
-
 	cnt_ = 0;
 
 	tick_ = 0;
@@ -103,6 +100,7 @@ uint16_t TProtocolModbus::getCRC() const{
 	return crc;
 }
 
+// ѕроверка полученной посылки на соответствие протоколу.
 TProtocolModbus::CHECK_ERR TProtocolModbus::checkReadPackage() {
 	CHECK_ERR state = CHECK_ERR_NO;
 
@@ -111,17 +109,68 @@ TProtocolModbus::CHECK_ERR TProtocolModbus::checkReadPackage() {
 		setState(STATE_READ);
 		state = CHECK_ERR_ADR_DEVICE;
 	} else if (getCRC() != calcCRC(cnt_ - 2)){
+		// не совпала контрольна€ сумма
         setState(STATE_READ);
 		state = CHECK_ERR_CRC;
-	} else if (!checkCommand(buf_[1])) {
-		setException(EXCEPTION_01H_ILLEGAL_FUNCTION);
-		state = CHECK_ERR_FUNCTION;
+	} else {
+		state = checkCommand(buf_[1]);
+		if (state == CHECK_ERR_FUNCTION) {
+			// ошибочный код команды
+			setException(EXCEPTION_01H_ILLEGAL_FUNCTION);
+		} else if (state == CHECK_ERR_FUNCTION_DATA) {
+			// ошибочные данные в команде
+			setException(EXCEPTION_03H_ILLEGAL_DATA_VAL);
+		}
 	}
 
 	return state;
 }
 
-uint16_t TProtocolModbus::readData(uint16_t num) {
+uint16_t TProtocolModbus::readData(uint16_t adr) {
+    uint16_t data = 0xFFFF;
+    uint16_t start = getStartAddress();
+    
+    TProtocolModbus::COM com = static_cast<TProtocolModbus::COM>(buf_[1]); 
+    
+    switch (static_cast<TProtocolModbus::COM>(com)) {
+		case COM_01H_READ_COIL: {
+
+		}
+		break;
+		case COM_03H_READ_HOLDING_REGISTER: {
+
+		}
+		break;
+		case COM_05H_WRITE_SINGLE_COIL: {
+
+		}
+		break;
+		case COM_06H_WRITE_SINGLE_REGISTER: {
+            
+		}
+		break;
+
+		case COM_0FH_WRITE_MULTIPLIE_COILS: {
+
+				
+		}
+		break;
+		case COM_10H_WRITE_MULITPLIE_REGISTERS: {
+
+		}
+		break;
+		case COM_11H_SLAVE_ID:
+			break;
+	}
+    
+    if (start >= adr) {
+        uint16_t num = getNumOfAddress();
+        adr = start - adr;
+        if (num >= adr) {
+            data = (uint16_t) buf_[] 
+        }
+    }
+    
 }
 
 bool TProtocolModbus::writeData(uint16_t num, uint16_t val) {
@@ -177,41 +226,80 @@ uint8_t TProtocolModbus::trCom() {
 
 /**	ѕроверка соответстви€ прин€той команды поддерживаемым в этом классе.
  *
- *	@retval True - если прин€та€ команда поддерживаетс€ в протоколе.
- *	@retval False - если прин€та€ команда не поддерживаетс€ в протоколе.
+ * 	ѕровер€ютс€:
+ * 	- код команды;
+ * 	- данные команды;
+ *
+ * 	“ак же считываютс€ стартовый адрес и количество адресов дл€ чтени€/записи.
+ *
+ *	@retval CHECK_ERR_NO - ошибок нет.
+ *	@retval CHECK_ERR_FUNCTION - данна€ команда не поддерживаетс€.
+ *	@retval CHECK_ERR_FUNCTION_DATA - ошибка данных в команде.
  */
-bool TProtocolModbus::checkCommand(uint8_t com){
-	bool state = false;
-    
-    // TODO —делать проверку на неверное значени€ пол€ данных
-    
-	switch(static_cast<TProtocolModbus::COM> (com)) {
-		case COM_01H_READ_COIL :
-			state = true;
-			break;
-		case COM_03H_READ_HOLDING_REGISTER:
-			state = true;
-			break;
-		case COM_05H_WRITE_SINGLE_COIL:
-			state = true;
-			break;
-		case COM_06H_WRITE_SINGLE_REGISTER:
-			state = true;
-			break;
-		case COM_0FH_WRITE_MULTIPLIE_COILS:
-			state = true;
-			break;
-		case COM_10H_WRITE_MULITPLIE_REGISTERS:
-			state = true;
-			break;
+TProtocolModbus::CHECK_ERR TProtocolModbus::checkCommand(uint8_t com){
+	TProtocolModbus::CHECK_ERR state = CHECK_ERR_FUNCTION;
+
+	switch (static_cast<TProtocolModbus::COM>(com)) {
+		case COM_01H_READ_COIL: {
+			// ограничение на минимум/максимум считывемых флагов
+			uint16_t num = getNumOfAddress();
+			if ((num >= 1) && (num <= MAX_NUM_COILS)) {
+                state = CHECK_ERR_NO;
+			} else
+				state = CHECK_ERR_FUNCTION_DATA;
+		}
+		break;
+		case COM_03H_READ_HOLDING_REGISTER: {
+			// ограничение на минимум/максимум считываемых регистров
+			uint16_t num = getNumOfAddress();
+			if ((num >= 1) && (num <= MAX_NUM_REGISTERS)) {
+				state = CHECK_ERR_NO;
+			} else
+                state = CHECK_ERR_FUNCTION_DATA;
+		}
+		break;
+		case COM_05H_WRITE_SINGLE_COIL: {
+			// допускаютс€ значени€ флага 0x0000 и 0xFF00 (=1)
+			uint16_t data = readData(getStartAddress());
+			if ((data == 0x0000) || (data == 0xFF00)) {
+				state = CHECK_ERR_NO;
+			} else
+                state = CHECK_ERR_FUNCTION_DATA;	
+		}
+		break;
+		case COM_06H_WRITE_SINGLE_REGISTER: {
+			// допустимое значение адреса дл€ записи от 0х0000 до 0хFFFF
+			state = CHECK_ERR_NO;
+		}
+		break;
+
+		case COM_0FH_WRITE_MULTIPLIE_COILS: {
+			// ограничение на минимум/максимум устанавливаемых флагов
+			uint16_t num = getNumOfAddress();
+			if ((num >= 1) && (num <= MAX_NUM_COILS)) {
+				state = CHECK_ERR_NO;
+			} else
+                state = CHECK_ERR_FUNCTION_DATA;
+				
+		}
+		break;
+		case COM_10H_WRITE_MULITPLIE_REGISTERS: {
+			// ограничение на минимум/максимум записываемых регистров
+			uint16_t num = getNumOfAddress();
+			if ((num >= 1) && (num <= MAX_NUM_REGISTERS)) {
+                state = CHECK_ERR_NO;
+			} else
+                state = CHECK_ERR_FUNCTION_DATA;
+		}
+		break;
 		case COM_11H_SLAVE_ID:
-			state = true;
+			// нет ограничений
+			state = CHECK_ERR_NO;
 			break;
 	}
     
 	return state;
 }
-
 
 /**	ѕроверка адреса устройства на совпадение с установленным
  *

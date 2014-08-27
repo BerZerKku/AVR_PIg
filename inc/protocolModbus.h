@@ -29,7 +29,10 @@ class TProtocolModbus{
 	static const uint16_t DELAY_RESET = 1500;
 	/// Пауза между принятыми байтами, при которой определяется окончание приема.
 	static const uint16_t DELAY_READ  = 3500;
-
+	/// Максимальное количество регистров доступных для чтения в одном запрсе
+	static const uint16_t MAX_NUM_REGISTERS = 32;
+	/// Максимальное количество флагов доступных для чтения в одном запросе
+	static const uint16_t MAX_NUM_COILS = MAX_NUM_REGISTERS * 8;
 public:
 	/// Адрес устройства в сети по умолчанию (т.е. ошибка)
 	static const uint8_t ADDRESS_ERR = 255;
@@ -75,6 +78,7 @@ public:
         CHECK_ERR_ADR_DEVICE,   ///< Ошибка проверки адреса устройства
         CHECK_ERR_CRC,          ///< Ошибка контрольной суммы
         CHECK_ERR_FUNCTION,     ///< Ошибка проверки кода команды
+        CHECK_ERR_FUNCTION_DATA	///< Ошибка проверки данных команды
     };
 
 	/**	Контструктор.
@@ -192,32 +196,35 @@ public:
 	 */
 	uint8_t trCom();
 
-	/**	Возвращает номер младшего регистра для чтения/записи.
+	/**	Возвращает стартовый адрес регистра/флага в посылке.
 	 *
-	 * 	Если 0, то ничего не надо.
-	 *
-	 * 	@return Номер младшего регистра.
+	 * 	@return Стартовый адрес регистра или флага в принятой посылке.
 	 */
-	uint16_t getMinNumRegisters() const {
-		return minReg_;
+	uint16_t getStartAddress() const {
+		return ((uint16_t) buf_[2] << 8) + buf_[3];
 	}
 
-	/**	Возвращает номер старшего регистра для чтения/записи.
+	/**	Возвращает количество регистров/флагов в посылке.
 	 *
-	 * 	Если 0, то ничего не надо.
-	 *
-	 * 	@return Номер младшего регистра.
+	 * 	@return Количество регистров/флагов в посылке.
 	 */
-	uint16_t getMaxNumRegisters() const {
-		return maxReg_;
+	uint16_t getNumOfAddress() const {
+		return ((uint16_t) buf_[4] << 8) + buf_[5];
 	}
 
-	/**	Проверка полученной посылки на корректность данных.
+	/**	Проверка полученной посылки на соответствие протоколу.
 	 *
-	 * 	?!
+	 * 	Проверяются:
+	 * 	- адрес устройства;
+	 * 	- контрольная сумма;
+	 * 	- поддерживаемая команда;
+	 * 	- корректность данных в принятой команде.
 	 *
-	 * 	@retval True - если ошибок в полученной посылке нет.
-	 * 	@retval False - если есть ошибки в полученной посылке.
+	 * 	Не проверяются:
+	 * 	- корректность адресов регистров и флагов.
+	 *
+	 * 	@return Статус проверки.
+	 * 	@see CHECK_ERR
 	 */
 	TProtocolModbus::CHECK_ERR checkReadPackage();
 
@@ -226,9 +233,9 @@ public:
 	 * 	Для того чтобы забрать полученные по протоколу новые значения регистра,
 	 * 	необходимо указать его номер.
 	 *
-	 * 	@param num Номер регистра.
+	 * 	@param num Адрес регистра.
 	 */
-	uint16_t readData(uint16_t num);
+	uint16_t readData(uint16_t adr);
 
 	/**	Запись данных для передачи.
 	 *
@@ -280,6 +287,9 @@ public:
 	 */
 	void setException(TProtocolModbus::EXCEPTION code);
 	
+	// Подсчет CRC для заданного кол-ва байт данных в буфере.
+	uint16_t calcCRC(uint8_t num);
+	
 protected:
 	const uint8_t size_;	///> Размер буфера данных
 	uint8_t * const buf_;	///> Буфер принятых/передаваемых данных
@@ -290,10 +300,11 @@ protected:
 	STATE state_;			///> Текущее состояние работы протокола.
 
 	uint8_t address_;		///> Адрес устройства в сети.
-
-	uint16_t minReg_;		///> Номер младшего регистра для чтения/записи.
-	uint16_t maxReg_;		///> Номер старшего регистра для чтения/записи.
-
+	
+	uint16_t startAddress_;
+	uint16_t numOfAdress_;
+	uint8_t	 startData_;
+	
 	uint8_t cnt_;			///> Кол-во принятых байт.
 
 	uint16_t tick_;			///> Время прошедшее с момента приема последнего байта.
@@ -303,13 +314,10 @@ protected:
 	void addData(uint16_t val);
 
 	// Проверка соответствия принятой команды поддерживаемым в этом классе.
-	bool checkCommand(uint8_t com);
+	TProtocolModbus::CHECK_ERR checkCommand(uint8_t com);
 
 	// Проверка адреса устройства на совпадение с установленным.
 	bool checkAddress(uint8_t adr);
-
-	// Подсчет CRC для заданного кол-ва байт данных в буфере.
-	uint16_t calcCRC(uint8_t num);
 
 	// Возвращает принятый в посылке CRC.
 	uint16_t getCRC() const;
