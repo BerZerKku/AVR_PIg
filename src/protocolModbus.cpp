@@ -96,21 +96,26 @@ uint16_t TProtocolModbus::calcCRC(uint8_t num) {
  * 	@return Контрольная сумма посылки.
  */
 uint16_t TProtocolModbus::getCRC() const{
-	return (((uint16_t ) buf_[cnt_ - 2] << 8) + buf_[cnt_ - 1]);
+    uint16_t crc = 0xFFFF;
+    if (cnt_ >= 3) {
+        crc = (((uint16_t ) buf_[cnt_ - 2] << 8) + buf_[cnt_ - 1]);
+    }
+	return crc;
 }
 
-bool TProtocolModbus::checkReadPackage() {
-	bool state = true;
+TProtocolModbus::CHECK_ERR TProtocolModbus::checkReadPackage() {
+	CHECK_ERR state = CHECK_ERR_NO;
 
 	if (!checkAddress(buf_[0])){
 		// Не совпал адрес устройства.
 		setState(STATE_READ);
-		state = false;
+		state = CHECK_ERR_ADR_DEVICE;
 	} else if (getCRC() != calcCRC(cnt_ - 2)){
-		state = false;
+        setState(STATE_READ);
+		state = CHECK_ERR_CRC;
 	} else if (!checkCommand(buf_[1])) {
 		setException(EXCEPTION_01H_ILLEGAL_FUNCTION);
-		state = false;
+		state = CHECK_ERR_FUNCTION;
 	}
 
 	return state;
@@ -177,7 +182,9 @@ uint8_t TProtocolModbus::trCom() {
  */
 bool TProtocolModbus::checkCommand(uint8_t com){
 	bool state = false;
-
+    
+    // TODO Сделать проверку на неверное значения поля данных
+    
 	switch(static_cast<TProtocolModbus::COM> (com)) {
 		case COM_01H_READ_COIL :
 			state = true;
@@ -191,20 +198,17 @@ bool TProtocolModbus::checkCommand(uint8_t com){
 		case COM_06H_WRITE_SINGLE_REGISTER:
 			state = true;
 			break;
-		case COM_0EH_READ_DEVICE_INFORMATION:
-			state = true;
-			break;
 		case COM_0FH_WRITE_MULTIPLIE_COILS:
 			state = true;
 			break;
 		case COM_10H_WRITE_MULITPLIE_REGISTERS:
 			state = true;
 			break;
-		case COM_2BH_READ_DEVICE_INDENTIFICATION:
+		case COM_11H_SLAVE_ID:
 			state = true;
 			break;
 	}
-
+    
 	return state;
 }
 

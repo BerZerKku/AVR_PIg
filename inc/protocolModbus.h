@@ -54,10 +54,9 @@ public:
 		COM_03H_READ_HOLDING_REGISTER 		= 0x03,	///< Чтение внутренних регистров.
 		COM_05H_WRITE_SINGLE_COIL			= 0x05,	///< Запись одного флага.
 		COM_06H_WRITE_SINGLE_REGISTER		= 0x06,	///< Запись одного внутреннего регистра.
-		COM_0EH_READ_DEVICE_INFORMATION		= 0x0E,	///< Чтение информации об устройстве.
 		COM_0FH_WRITE_MULTIPLIE_COILS		= 0x0F,	///< Запись группы флагов.
 		COM_10H_WRITE_MULITPLIE_REGISTERS	= 0x10,	///< Запись группы внутренних регистров.
-		COM_2BH_READ_DEVICE_INDENTIFICATION = 0x2B	///< Чтение информации об устройстве.
+		COM_11H_SLAVE_ID					= 0x11, ///< Чтение ID подчиненного
 	};
 
 	/// Коды исключения
@@ -69,6 +68,14 @@ public:
 		EXCEPTION_10H_TEMP_INAC_PARAM	= 0x10,	///< Запись по адресу временно невозможна
 		EXCEPTION_11H_UNCHANG_PARAM		= 0x11	///< Запись по адресу невозможна
 	};
+    
+    /// Коды ошибок проверки принятого сообщения
+    enum CHECK_ERR {
+        CHECK_ERR_NO = 0,       ///< Ошибок нет                       
+        CHECK_ERR_ADR_DEVICE,   ///< Ошибка проверки адреса устройства
+        CHECK_ERR_CRC,          ///< Ошибка контрольной суммы
+        CHECK_ERR_FUNCTION,     ///< Ошибка проверки кода команды
+    };
 
 	/**	Контструктор.
 	 *
@@ -212,7 +219,7 @@ public:
 	 * 	@retval True - если ошибок в полученной посылке нет.
 	 * 	@retval False - если есть ошибки в полученной посылке.
 	 */
-	bool checkReadPackage();
+	TProtocolModbus::CHECK_ERR checkReadPackage();
 
 	/**	Считывание полученных данных.
 	 *
@@ -272,7 +279,7 @@ public:
 	 *	@param code Код исключения.
 	 */
 	void setException(TProtocolModbus::EXCEPTION code);
-
+	
 protected:
 	const uint8_t size_;	///> Размер буфера данных
 	uint8_t * const buf_;	///> Буфер принятых/передаваемых данных
@@ -302,7 +309,7 @@ protected:
 	bool checkAddress(uint8_t adr);
 
 	// Подсчет CRC для заданного кол-ва байт данных в буфере.
-	uint16_t calcCRC(uint8_t num);
+//	uint16_t calcCRC(uint8_t num);
 
 	// Возвращает принятый в посылке CRC.
 	uint16_t getCRC() const;
