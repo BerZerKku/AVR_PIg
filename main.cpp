@@ -410,7 +410,7 @@ ISR(USART1_RX_vect) {
 	uint8_t state = UCSR1A;
 	uint8_t byte = UDR1;
 
-	if ((state & ((1 << FE) | (1 << DOR) | (1 << UPE)))) {
+	if (state & ((1 << FE) | (1 << DOR) | (1 << UPE))) {
 		// в случае ошибки сброс счетчика принятых данных
 		// и текущего статуса работы протокола
 		protPCs.setCurrentStatus(PRTS_STATUS_NO);

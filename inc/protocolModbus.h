@@ -309,7 +309,7 @@ protected:
 	bool checkAddress(uint8_t adr);
 
 	// Подсчет CRC для заданного кол-ва байт данных в буфере.
-//	uint16_t calcCRC(uint8_t num);
+	uint16_t calcCRC(uint8_t num);
 
 	// Возвращает принятый в посылке CRC.
 	uint16_t getCRC() const;
