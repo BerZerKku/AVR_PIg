@@ -160,7 +160,7 @@ void testProtocolModbus::testCheckReadPackage() {
 	}
 
 	// проверка максимального кол-ва флагов доступных для одновременного чтения/записи
-	if (TProtocolModbus::MAX_NUM_COILS != (32 * 8)) {
+	if (TProtocolModbus::MAX_NUM_COILS != 256) {
 		sprintf(msg, "3.2 Constant MAX_NUM_COILS is not 32, it is %d", TProtocolModbus::MAX_NUM_COILS);
 		CPPUNIT_ASSERT_MESSAGE(msg, false);
 	}
@@ -168,7 +168,7 @@ void testProtocolModbus::testCheckReadPackage() {
 	struct sData {
 		TProtocolModbus::CHECK_ERR err; // ошибка 
 		uint8_t num; // кол-во байт в посылке
-		uint8_t buf[50]; // посылка
+		uint8_t buf[100]; // посылка
 
 	};
 
@@ -263,13 +263,17 @@ void testProtocolModbus::testCheckReadPackage() {
 			 0xED, 0xDE}},
 		{TProtocolModbus::CHECK_ERR_FUNCTION_DATA, 9, // кол-во адресов 0
 			{0x11, 0x10, 0x00, 0x01, 0x00, 0x00, 0x00, 0x19, 0x6D}},
-		{TProtocolModbus::CHECK_ERR_FUNCTION_DATA, 43, // кол-во адресов 33
+		{TProtocolModbus::CHECK_ERR_FUNCTION_DATA, 75, // кол-во адресов 33
 			{0x11, 0x10, 0x00, 0x01, 0x00, 0x21, 0x42,
 			 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
 			 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
 			 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
 			 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
-			 0x05, 0x05, 0x94, 0x46}},
+			 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
+			 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06,
+			 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07,
+			 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+			 0x09, 0x09, 0x19, 0xEC}},
 		{TProtocolModbus::CHECK_ERR_FUNCTION_DATA, 13, // кол-во заявленных байт меньше
 			{0x11, 0x10, 0x00, 0x01, 0x00, 0x02, 0x03, 0x00, 0x0A, 0x01, 0x02, 0x73, 0x30}},
 		{TProtocolModbus::CHECK_ERR_FUNCTION_DATA, 13, // кол-во заявленных байт больше
@@ -632,6 +636,32 @@ void testProtocolModbus::testGetRegister() {
 		if (val != data[i].data) {
 			uint8_t cnt = sprintf(msg, "1.1 Error read value on step %d", i);
 			cnt += sprintf(&msg[cnt], "\n data = 0x%X, need = 0x%X", val, data[i].data);
+			CPPUNIT_ASSERT_MESSAGE(msg, false);
+		}
+	}
+}
+
+void testProtocolModbus::testSetTick() {
+	TProtocolModbus tProtocolModbus(buf, sizeof (buf));
+	
+	struct sData {
+		uint16_t baudrate; // скорость работы порта 
+		uint16_t period; // период вызова функции tick()
+		uint16_t step; // полученный шаг 
+	};
+	
+	sData data[] = {
+		{57600, 50, 1000}, //
+		{19200, 50, 870} //
+	};
+	
+	for (uint16_t i = 0; i < (sizeof (data) / sizeof (data[0])); i++) {
+
+		uint16_t step = tProtocolModbus.setTick(data[i].baudrate, data[i].period);
+
+		if (step != data[i].step) {
+			uint8_t cnt = sprintf(msg, "1.1 Error read value on step %d", i);
+			cnt += sprintf(&msg[cnt], "\n step = %d, need = %d", step, data[i].step);
 			CPPUNIT_ASSERT_MESSAGE(msg, false);
 		}
 	}

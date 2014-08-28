@@ -204,6 +204,20 @@ uint8_t TProtocolModbus::trCom() {
 	return cnt;
 }
 
+// Настройка счетчика времени
+uint16_t TProtocolModbus::setTick(uint16_t baudrate, uint8_t period) {
+	uint16_t step = 0;
+
+	if (baudrate > 19200) {
+		step = (1UL * DELAY_RESET * period) / 750;
+	} else {
+		step = ((1UL * period * baudrate) / 11000) * (DELAY_RESET / 1500);
+	}
+
+	tickStep_ = step;
+	return step;
+}
+
 /**	Проверка адреса устройства на совпадение с установленным
  *
  *	Дополнительно проводится проверка на ошибочный адрес \a ADDRESS_ERR.
