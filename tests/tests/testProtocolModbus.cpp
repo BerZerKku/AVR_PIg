@@ -152,7 +152,19 @@ void testProtocolModbus::testCheckReadPackage() {
 
 	// 3. Проверка правильного определения команды, а также корректности данных.
 	// first byte - number of bytes in package
+	
+	// проверка максимального кол-ва регистров доступных для одновременного чтения/записи
+	if (TProtocolModbus::MAX_NUM_REGISTERS != 32) {
+		sprintf(msg, "3.1 Constant MAX_NUM_REGISTER is not 32, it is %d", TProtocolModbus::MAX_NUM_REGISTERS);
+		CPPUNIT_ASSERT_MESSAGE(msg, false);
+	}
 
+	// проверка максимального кол-ва флагов доступных для одновременного чтения/записи
+	if (TProtocolModbus::MAX_NUM_COILS != (32 * 8)) {
+		sprintf(msg, "3.2 Constant MAX_NUM_COILS is not 32, it is %d", TProtocolModbus::MAX_NUM_COILS);
+		CPPUNIT_ASSERT_MESSAGE(msg, false);
+	}
+	
 	struct sData {
 		TProtocolModbus::CHECK_ERR err; // ошибка 
 		uint8_t num; // кол-во байт в посылке
@@ -283,13 +295,13 @@ void testProtocolModbus::testCheckReadPackage() {
 
 		TProtocolModbus::CHECK_ERR check = tProtocolModbus.checkReadPackage();
 		if (check != data[i].err) {
-			uint8_t cnt = sprintf(msg, "3.1 Error check function or function data on step %d", i);
+			uint8_t cnt = sprintf(msg, "3.3 Error check function or function data on step %d", i);
 			cnt += sprintf(&msg[cnt], "\n com = 0x%X", data[i].buf[1]);
 			cnt += sprintf(&msg[cnt], "\n check = %d, need = %d", check, data[i].err);
 			cnt += sprintf(&msg[cnt], "\n startadr = 0x%X", tProtocolModbus.getStartAddress());
 			cnt += sprintf(&msg[cnt], "\n numofadr = 0x%X", tProtocolModbus.getNumOfAddress());
-			uint16_t crc = tProtocolModbus.calcCRC(data[i].num - 2);
-			cnt += sprintf(&msg[cnt], "\n calccrc = 0x%X", crc);
+//			uint16_t crc = tProtocolModbus.calcCRC(data[i].num - 2);
+//			cnt += sprintf(&msg[cnt], "\n calccrc = 0x%X", crc);
 			CPPUNIT_ASSERT_MESSAGE(msg, false);
 		}
 	}

@@ -25,15 +25,17 @@
  * 	@see MAX_ERRORS
  */
 class TProtocolModbus{
+private:
 	/// Пауза между принятыми байтами, при которой идет сброс на начало приема.
 	static const uint16_t DELAY_RESET = 1500;
 	/// Пауза между принятыми байтами, при которой определяется окончание приема.
 	static const uint16_t DELAY_READ  = 3500;
+public:
 	/// Максимальное количество регистров доступных для чтения в одном запрсе
 	static const uint16_t MAX_NUM_REGISTERS = 32;
 	/// Максимальное количество флагов доступных для чтения в одном запросе
 	static const uint16_t MAX_NUM_COILS = MAX_NUM_REGISTERS * 8;
-public:
+
 	/// Адрес устройства в сети по умолчанию (т.е. ошибка)
 	static const uint8_t ADDRESS_ERR = 255;
 	/// Минимальный адрес устройства в сети
@@ -305,10 +307,7 @@ public:
 	 */
 	void setException(TProtocolModbus::EXCEPTION code);
 	
-	// Подсчет CRC для заданного кол-ва байт данных в буфере.
-	uint16_t calcCRC(uint8_t num);
-	
-protected:
+private:
 	const uint8_t size_;	///> Размер буфера данных
 	uint8_t * const buf_;	///> Буфер принятых/передаваемых данных
 
@@ -332,7 +331,10 @@ protected:
 
 	// Проверка адреса устройства на совпадение с установленным.
 	bool checkAddress(uint8_t adr);
-
+	
+	// Подсчет CRC для заданного кол-ва байт данных в буфере.
+	uint16_t calcCRC(uint8_t num);
+	
 	// Возвращает принятый в посылке CRC.
 	uint16_t getCRC() const;
 
