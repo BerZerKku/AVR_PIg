@@ -211,11 +211,10 @@ uint16_t TProtocolModbus::setTick(uint16_t baudrate, uint8_t period) {
 	if (baudrate > 19200) {
 		step = (1UL * DELAY_RESET * period) / 750;
 	} else {
-		step = ((1UL * period * baudrate) / 11000) * (DELAY_RESET / 1500);
+		step = (((1UL * baudrate * period ) / 1100) * DELAY_RESET) / 15000;
 	}
 
-	tickStep_ = step;
-	return step;
+	return (tickStep_ = step);
 }
 
 /**	Проверка адреса устройства на совпадение с установленным

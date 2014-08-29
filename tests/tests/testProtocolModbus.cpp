@@ -327,7 +327,7 @@ void testProtocolModbus::testPush() {
 			}
 		} else {
 			if (t != sizeof (buf)) {
-				sprintf(msg, "1.1 Error incorrect writing to the buffer on step %d", i);
+				sprintf(msg, "1.2 Error incorrect writing to the buffer on step %d", i);
 				CPPUNIT_ASSERT_MESSAGE(msg, false);
 			}
 		}
@@ -335,7 +335,60 @@ void testProtocolModbus::testPush() {
 
 	// 2. Проверка сброса посылки при паузе 1.5 интервала.
 	// TODO Проверку сброса посылки при паузе 1.5 интервала.
+	
+	struct sData {
+		TProtocolModbus::STATE stateStart;	// состояние протокола в начале
+		TProtocolModbus::STATE stateStop;	// состояние протокола в конце
+		uint8_t numOfPush;	// кол-во принятых данных
+		uint8_t stepToReset;	// шаг, на котором формируется пауза сброса
+		uint8_t numOfByte;	// кол-во принятых байт по окончанию
+	}; 
+	
+	sData data[] = {
+		{TProtocolModbus::STATE_OFF, TProtocolModbus::STATE_OFF, 20, 21, 0},
+		{TProtocolModbus::STATE_OFF, TProtocolModbus::STATE_OFF, 20, 5, 0},
+		{TProtocolModbus::STATE_READ, TProtocolModbus::STATE_READ, 20, 20, 20},
+		{TProtocolModbus::STATE_READ, TProtocolModbus::STATE_READ_ERROR, 20, 18, 0},
+		{TProtocolModbus::STATE_READ, TProtocolModbus::STATE_READ_ERROR, 20, 2, 0},
+		{TProtocolModbus::STATE_READ_ERROR, TProtocolModbus::STATE_READ_ERROR, 20, 18, 0},
+		{TProtocolModbus::STATE_READ_OK, TProtocolModbus::STATE_READ_OK, 20, 18, 0},
+		{TProtocolModbus::STATE_WRITE_WAIT, TProtocolModbus::STATE_WRITE_WAIT, 20, 18, 0},
+		{TProtocolModbus::STATE_WRITE, TProtocolModbus::STATE_WRITE, 20, 21, 0}
+	};
+	
+	for (uint16_t i = 0; i < (sizeof (data) / sizeof (data[0])); i++) {
 
+		uint16_t step = tProtocolModbus.setTick(57600, 100);
+		tProtocolModbus.setState(TProtocolModbus::STATE_READ);	// для сброса счетчика
+		tProtocolModbus.setState(data[i].stateStart);	// нужное для теста состояние
+		
+		uint8_t num = 0;
+		for (uint8_t j = 0; j < data[i].numOfPush; j++) {
+			// формирование паузы сброса
+			if (j == data[i].stepToReset) {
+				for(uint8_t k = 0; k < 15; k++) {
+					tProtocolModbus.tick();
+				}
+			}	
+			num = tProtocolModbus.push(0x00);	
+		}
+
+		TProtocolModbus::STATE state = tProtocolModbus.getState();
+		if (state != data[i].stateStop) {
+			uint8_t cnt = sprintf(msg, "2.1 Error read state on step %d", i);
+			cnt += sprintf(&msg[cnt], "\n start = %d,  finish = %d, need = %d", data[i].stateStart, state, data[i].stateStop);
+			cnt += sprintf(&msg[cnt], "\n num = %d", num);
+			CPPUNIT_ASSERT_MESSAGE(msg, false);
+		}
+		
+		if (num != data[i].numOfByte) {
+			uint8_t cnt = sprintf(msg, "2.2 Error read number of bytes on step %d", i);
+			cnt += sprintf(&msg[cnt], "\n start = %d,  finish = %d", data[i].stateStart, data[i].stateStop);
+			cnt += sprintf(&msg[cnt], "\n num = %d, need = %d", num, data[i].numOfByte);
+			CPPUNIT_ASSERT_MESSAGE(msg, false);
+		}
+	}
+	
 }
 
 //void testProtocolModbus::testTick()
@@ -651,8 +704,12 @@ void testProtocolModbus::testSetTick() {
 	};
 	
 	sData data[] = {
-		{57600, 50, 1000}, //
-		{19200, 50, 870} //
+		{57600, 50,  1000}, 
+		{57600, 100, 2000},
+		{19200, 50,	 872}, 
+		{19200, 100, 1745},	
+		{300,	50,  13},
+		{300,	100, 27}
 	};
 	
 	for (uint16_t i = 0; i < (sizeof (data) / sizeof (data[0])); i++) {
@@ -662,6 +719,50 @@ void testProtocolModbus::testSetTick() {
 		if (step != data[i].step) {
 			uint8_t cnt = sprintf(msg, "1.1 Error read value on step %d", i);
 			cnt += sprintf(&msg[cnt], "\n step = %d, need = %d", step, data[i].step);
+			CPPUNIT_ASSERT_MESSAGE(msg, false);
+		}
+	}
+}
+
+void testProtocolModbus::testTick() {
+	TProtocolModbus tProtocolModbus(buf, sizeof (buf));
+	
+	struct sData {
+		TProtocolModbus::STATE startState;	// начальное состояние протокола
+		TProtocolModbus::STATE stopState;	// конечное состояние протокола
+		uint16_t baudrate;	// скорость работы порта
+		uint8_t  period; // период вызова функции tick()
+		uint16_t numTicks; // кол-во тиков
+		
+	};
+
+	sData data[] = {
+		{TProtocolModbus::STATE_OFF, TProtocolModbus::STATE_OFF, 19200, 50, 50},
+		{TProtocolModbus::STATE_READ, TProtocolModbus::STATE_READ_OK, 57600, 50, 35},
+		{TProtocolModbus::STATE_READ, TProtocolModbus::STATE_READ_OK, 19200, 50, 41},
+		{TProtocolModbus::STATE_READ, TProtocolModbus::STATE_READ, 19200, 50, 40},
+		{TProtocolModbus::STATE_READ, TProtocolModbus::STATE_READ_OK, 19200, 50, 41},
+		{TProtocolModbus::STATE_READ_ERROR, TProtocolModbus::STATE_READ, 19200, 50, 41},
+		{TProtocolModbus::STATE_READ_OK, TProtocolModbus::STATE_READ_OK, 19200, 50, 50},
+		{TProtocolModbus::STATE_WRITE_WAIT, TProtocolModbus::STATE_WRITE_WAIT, 19200, 50, 50},
+		{TProtocolModbus::STATE_WRITE, TProtocolModbus::STATE_WRITE, 19200, 50, 50}
+	};
+	
+	for (uint16_t i = 0; i < (sizeof (data) / sizeof (data[0])); i++) {
+
+		uint16_t step = tProtocolModbus.setTick(data[i].baudrate, data[i].period);
+		tProtocolModbus.setState(TProtocolModbus::STATE_READ);	// для сброса счетчика
+		tProtocolModbus.setState(data[i].startState);	// нужное для теста состояние
+
+		for (uint8_t j = 0; j < data[i].numTicks; j++) {
+			tProtocolModbus.tick();
+		}
+
+		TProtocolModbus::STATE state = tProtocolModbus.getState();
+		if (state != data[i].stopState) {
+			uint8_t cnt = sprintf(msg, "1.1 Error read state on step %d", i);
+			cnt += sprintf(&msg[cnt], "\n start = %d,  finish = %d, need = %d", data[i].startState, state, data[i].stopState);
+			cnt += sprintf(&msg[cnt], "\n step tick = %d", step);
 			CPPUNIT_ASSERT_MESSAGE(msg, false);
 		}
 	}

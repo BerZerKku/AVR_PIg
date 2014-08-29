@@ -47,6 +47,7 @@ public:
 	enum STATE {
 		STATE_OFF,			///< Протокол выключен.
 		STATE_READ,			///< Чтение посылки.
+		STATE_READ_ERROR,	///< Ошибка в принятом пакете (1.5мc < пауза < 3.5мс)
 		STATE_READ_OK,		///< Посылка принята.
 		STATE_WRITE_WAIT,	///< Ожидание нужных данных.
 		STATE_WRITE,		///< Отправка посылки.
@@ -138,6 +139,7 @@ public:
 				// при смене режима работы на "Чтение", обнулим счетчик принятых
 				// байт
 				cnt_ = 0;
+				tick_ = 0;
 			}
 			state_ = state;
 		}
@@ -171,22 +173,22 @@ public:
 	 *	@return Возвращает кол-во принятых данных в буфере.
 	 */
 	uint8_t push(uint8_t byte) {
-
+		uint8_t cnt = cnt_;
 		if (state_ == STATE_READ) {
 			// сброс счетчика принятых байт, если обнаружено начало новой посылки
 			if (tick_ >= DELAY_RESET) {
-				cnt_ = 0;
-			}
-
-			if (cnt_ < size_) {
-				buf_[cnt_++] = byte;
+				cnt = 0;
+				setState(STATE_READ_ERROR);
+			} else {
+				if (cnt < size_) {
+					buf_[cnt++] = byte;
+				}
 			}
 
 			// сброс счетчика времени
 			tick_ = 0;
 		}
-
-		return cnt_;
+		return (cnt_ = cnt);
 	}
 
 	/**	Возвращает стартовый адрес регистра/флага в посылке.
@@ -290,23 +292,39 @@ public:
 	uint16_t setTick(uint16_t baudrate, uint8_t period);
 
 	/**	Счет времени прошедшего с момента прихода последнего байта.
+	 *	
+	 *	Счетчик считает только в состояниях \a STATE_READ и \a STATE_READ_ERROR.
+	 *	
+	 *	Как только счетчик времени достигнет (превысит) \a DELAY_READ, т.е.
+	 *	будет обнаружена "3.5 пауза":
+	 *	- в состоянии \a STATE_READ, формируется состояние принятой посылки
+	 *	\a STATE_READ_OK;
+	 *	- в состоянии \a STATE_READ_ERROR, формируется состояние приема посылки
+	 *	\a STATE_READ (т.е. ожидание новой посылки).
 	 *
-	 * 	Как только счетчик времени достигнет (превысит) \a DELAY_READ,
-	 * 	это послужит флагом принятия посылки.
-	 *
-	 * 	Вызывается с заданным интервалом. Например, из прерывания.
+	 * 	Вызывается с заданным интервалом.  Например, из прерывания.
 	 *
 	 *	@see DELAY_READ
+	 *	@see STATE_READ
+	 *	@see STATE_READ_ERROR
 	 */
 	void tick() {
-		if (state_ == STATE_READ) {
-			if (tick_ < DELAY_READ) {
-				tick_ += tickStep_;
+		uint16_t tick = tick_;
+		TProtocolModbus::STATE state = state_;
+		
+		if ((state == STATE_READ) || (state == STATE_READ_ERROR)) {
+			if (tick < DELAY_READ) {
+				tick += tickStep_;
 
-				if (tick_ >= DELAY_READ) {
-					setState(STATE_READ_OK);
+				if (tick >= DELAY_READ) {
+					if (state == STATE_READ) {
+						setState(STATE_READ_OK);
+					} else {
+						setState(STATE_READ);
+					}
 				}
 			}
+			tick_ = tick;
 		}
 	}
 
@@ -341,9 +359,9 @@ private:
 
 	uint8_t address_;		///> Адрес устройства в сети.
 	
-	uint8_t cnt_;			///> Кол-во принятых байт.
+	VOLATILE uint8_t cnt_;	///> Кол-во принятых байт.
 
-	uint16_t tick_;			///> Время прошедшее с момента приема последнего байта.
+	VOLATILE uint16_t tick_;///> Время прошедшее с момента приема последнего байта.
 	uint16_t tickStep_;		///> Шаг счетчика паузы.
 
 	// Добавляет два байта к посылке приготовленной на передачу.
