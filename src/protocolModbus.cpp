@@ -48,7 +48,7 @@ const uint8_t TProtocolModbus::CRC_LOW[256] = { 0x00, 0xC0, 0xC1, 0x01, 0xC3,
 
 // Конструктор
 TProtocolModbus::TProtocolModbus(uint8_t *buf, uint8_t size) :
-				buf_(buf), size_(size) {
+		buf_(buf), size_(size) {
 
 	state_ = STATE_OFF;
 
@@ -58,6 +58,39 @@ TProtocolModbus::TProtocolModbus(uint8_t *buf, uint8_t size) :
 
 	tick_ = 0;
 	tickStep_ = 0;
+}
+
+// Cмена состояния работы протокола.
+void TProtocolModbus::setState(TProtocolModbus::STATE state) {
+	if ((state >= STATE_OFF) && (state < STATE_ERROR)) {
+		if (state == STATE_READ) {
+			// при смене режима работы на "Чтение", обнулим счетчик принятых
+			// байт
+			cnt_ = 0;
+			tick_ = 0;
+		}
+		state_ = state;
+	}
+}
+
+// принятый байт данных
+uint8_t TProtocolModbus::push(uint8_t byte) {
+	uint8_t cnt = cnt_;
+	if (state_ == STATE_READ) {
+		// сброс счетчика принятых байт, если обнаружено начало новой посылки
+		if (tick_ >= DELAY_RESET) {
+			cnt = 0;
+			setState(STATE_READ_ERROR);
+		} else {
+			if (cnt < size_) {
+				buf_[cnt++] = byte;
+			}
+		}
+
+		// сброс счетчика времени
+		tick_ = 0;
+	}
+	return (cnt_ = cnt);
 }
 
 /**	Рассчет контрольной суммы для заданного кол-ва байт данных в буфере
@@ -124,10 +157,10 @@ uint8_t TProtocolModbus::getCoil(uint16_t adr) {
 		if (adr == startadr) {
 			data = (buf_[4] == 0xFF) ? 1 : 0;
 		}
-	} else if (com ==COM_0FH_WRITE_MULTIPLIE_COILS) {
+	} else if (com == COM_0FH_WRITE_MULTIPLIE_COILS) {
 		if ((adr >= startadr) && (adr < (startadr + numofadr))) {
 			uint8_t num = adr - startadr;
-			data = (buf_[num/8 + 7] & (1 << (num % 8))) ? 1 : 0;
+			data = (buf_[num / 8 + 7] & (1 << (num % 8))) ? 1 : 0;
 		}
 	}
 
@@ -211,10 +244,31 @@ uint16_t TProtocolModbus::setTick(uint16_t baudrate, uint8_t period) {
 	if (baudrate > 19200) {
 		step = (1UL * DELAY_RESET * period) / 750;
 	} else {
-		step = (((1UL * baudrate * period ) / 1100) * DELAY_RESET) / 15000;
+		step = (((1UL * baudrate * period) / 1100) * DELAY_RESET) / 15000;
 	}
 
 	return (tickStep_ = step);
+}
+
+// Счет времени прошедшего с момента прихода последнего байта.
+void TProtocolModbus::tick() {
+	uint16_t tick = tick_;
+	TProtocolModbus::STATE state = state_;
+
+	if ((state == STATE_READ) || (state == STATE_READ_ERROR)) {
+		if (tick < DELAY_READ) {
+			tick += tickStep_;
+
+			if (tick >= DELAY_READ) {
+				if (state == STATE_READ) {
+					setState(STATE_READ_OK);
+				} else {
+					setState(STATE_READ);
+				}
+			}
+		}
+		tick_ = tick;
+	}
 }
 
 /**	Проверка адреса устройства на совпадение с установленным
@@ -294,7 +348,7 @@ TProtocolModbus::CHECK_ERR TProtocolModbus::checkCommand(uint8_t com) {
 			// а также сравнение с заявленным кол-вом байт данных в посылке
 			uint16_t num = getNumOfAddress();
 			if ((num >= 1) && (num <= MAX_NUM_REGISTERS)) {
-				if ((num*2) != buf_[6]) {
+				if ((num * 2) != buf_[6]) {
 					state = CHECK_ERR_FUNCTION_DATA;
 				} else {
 					state = CHECK_ERR_NO;

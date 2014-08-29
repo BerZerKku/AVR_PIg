@@ -27,9 +27,13 @@ void testProtocolModbus::tearDown() {
  */
 void testProtocolModbus::testAddress() {
 	TProtocolModbus tProtocolModbus(buf, sizeof (buf));
-
+	
+	uint8_t adrError = tProtocolModbus.getAddressError();
+	uint8_t adrMin = tProtocolModbus.getAddressMin();
+	uint8_t adrMax = tProtocolModbus.getAddressMax();
+	
 	// 1. Проверка адреса по-умолчанию.
-	if (tProtocolModbus.getAddress() != tProtocolModbus.ADDRESS_ERR) {
+	if (tProtocolModbus.getAddress() != adrError) {
 		sprintf(msg, "1.1 Address by default is not ADDRESS_ERR.");
 		CPPUNIT_ASSERT_MESSAGE(msg, false);
 	}
@@ -40,19 +44,19 @@ void testProtocolModbus::testAddress() {
 		bool t = tProtocolModbus.setAddress(i);
 
 		// проверка возвращаемого значения функцией serAddress())
-		if (((i < tProtocolModbus.ADDRESS_MIN) || (i > tProtocolModbus.ADDRESS_MAX)) == t) {
+		if (((i < adrMin) || (i > adrMax)) == t) {
 			sprintf(msg, "2.1 Function setAddress() returned error state on step %d", i);
 			CPPUNIT_ASSERT_MESSAGE(msg, false);
 		}
 
 		// проверка установленного значения
-		if (i < tProtocolModbus.ADDRESS_MIN) {
-			if (tProtocolModbus.getAddress() != tProtocolModbus.ADDRESS_ERR) {
+		if (i < adrMin) {
+			if (tProtocolModbus.getAddress() != adrError) {
 				sprintf(msg, "2.2 Set Address less ADDRESS_MIN get not ADDRESS_ERR on step %d", i);
 				CPPUNIT_ASSERT_MESSAGE(msg, false);
 			}
-		} else if (i > tProtocolModbus.ADDRESS_MAX) {
-			if (tProtocolModbus.getAddress() != tProtocolModbus.ADDRESS_MAX) {
+		} else if (i > adrMax) {
+			if (tProtocolModbus.getAddress() != adrMax) {
 				sprintf(msg, "2.3 Set Address greater ADDRESS_MAX get not ADDRESS_MAX on step %d", i);
 				CPPUNIT_ASSERT_MESSAGE(msg, false);
 			}
@@ -154,14 +158,14 @@ void testProtocolModbus::testCheckReadPackage() {
 	// first byte - number of bytes in package
 	
 	// проверка максимального кол-ва регистров доступных для одновременного чтения/записи
-	if (TProtocolModbus::MAX_NUM_REGISTERS != 32) {
-		sprintf(msg, "3.1 Constant MAX_NUM_REGISTER is not 32, it is %d", TProtocolModbus::MAX_NUM_REGISTERS);
+	if (tProtocolModbus.getMaxNumRegisters() != 32) {
+		sprintf(msg, "3.1 Constant MAX_NUM_REGISTER is not 32, it is %d", tProtocolModbus.getMaxNumRegisters());
 		CPPUNIT_ASSERT_MESSAGE(msg, false);
 	}
 
 	// проверка максимального кол-ва флагов доступных для одновременного чтения/записи
-	if (TProtocolModbus::MAX_NUM_COILS != 256) {
-		sprintf(msg, "3.2 Constant MAX_NUM_COILS is not 32, it is %d", TProtocolModbus::MAX_NUM_COILS);
+	if (tProtocolModbus.getMaxNumCoils() != 256) {
+		sprintf(msg, "3.2 Constant MAX_NUM_COILS is not 32, it is %d", tProtocolModbus.getMaxNumRegisters());
 		CPPUNIT_ASSERT_MESSAGE(msg, false);
 	}
 	
