@@ -22,6 +22,38 @@ void testProtocolModbus::setUp() {
 void testProtocolModbus::tearDown() {
 }
 
+/**	Проверка констант
+ * 
+ */
+void testProtocolModbus::testConstant() {
+	TProtocolModbus tProtocolModbus(buf, sizeof (buf));
+	
+	if (tProtocolModbus.getMaxNumRegisters() != 32) {
+		sprintf(msg, "1.1 Max number registers is not 32.");
+		CPPUNIT_ASSERT_MESSAGE(msg, false);
+	}
+	
+	if (tProtocolModbus.getMaxNumCoils() != 256) {
+		sprintf(msg, "1.2 Max number coils is not 256.");
+		CPPUNIT_ASSERT_MESSAGE(msg, false);
+	}
+	
+	if (tProtocolModbus.getAddressError() != 0xFF) {
+		sprintf(msg, "1.3 Wrong address is not 0xFF.");
+		CPPUNIT_ASSERT_MESSAGE(msg, false);
+	}
+	
+	if (tProtocolModbus.getAddressMin() != 1) {
+		sprintf(msg, "1.4 Minimum address is not 1.");
+		CPPUNIT_ASSERT_MESSAGE(msg, false);
+	}
+	
+	if (tProtocolModbus.getAddressMax() != 247) {
+		sprintf(msg, "1.5 Maximum address is not 247.");
+		CPPUNIT_ASSERT_MESSAGE(msg, false);
+	}
+}
+
 /** Тестирование установки/чтения адреса устройства.
  * 
  */
@@ -313,6 +345,21 @@ void testProtocolModbus::testCheckReadPackage() {
 			CPPUNIT_ASSERT_MESSAGE(msg, false);
 		}
 	}
+}
+
+/** Тестирование функции формирования исключения
+ * 
+ */
+void testProtocolModbus::testCheckReadPackage() {
+	TProtocolModbus tProtocolModbus(buf, sizeof (buf));
+	
+	struct sData{
+		uint8_t bufStart[10]; // данные посылки
+		uint8_t numTrBytes; // кол-во байт в сформированной посылке
+		TProtocolModbus::EXCEPTION ex; // формируемое исключение
+	};
+	
+	
 }
 
 void testProtocolModbus::testPush() {

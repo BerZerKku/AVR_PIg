@@ -210,7 +210,11 @@ uint8_t TProtocolModbus::getAddress() const {
 
 // Ответ на запрос с кодом исключения.
 void TProtocolModbus::setException(TProtocolModbus::EXCEPTION code) {
-
+	cnt_ = 0;
+	buf_[cnt_++] |= 0x80;
+	buf_[cnt_++]  = code;
+	addCRC();
+	setState(STATE_WRITE);
 }
 
 void TProtocolModbus::addData(uint16_t val) {

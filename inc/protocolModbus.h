@@ -42,8 +42,6 @@ private:
 	static const uint8_t ADDRESS_MAX = 247;
 public:
 
-
-
 	/// Состояния работы протокола
 	enum STATE {
 		STATE_OFF,			///< Протокол выключен.
@@ -150,7 +148,7 @@ public:
 	 *
 	 */
 	void setDisable() {
-		state_ = STATE_OFF;
+		setState(STATE_OFF);
 	}
 
 	/** Проверка текущего состояния работы данного протокола
@@ -158,7 +156,7 @@ public:
 	 *	@retval True - если текущее состояние протокола не STATE_OFF.
 	 *	@retval False - если протокол отключен, т.е. состояние STATE_OFF.
 	 */
-	bool isEnable() {
+	bool isEnable() const {
 		return (state_ != STATE_OFF);
 	}
 
@@ -183,7 +181,7 @@ public:
 	 * 	@retval True - если протокол в нужном состоянии.
 	 * 	@retval False - если состояние протокола отличается от нужного.
 	 */
-	bool checkState(TProtocolModbus::STATE state) {
+	bool checkState(TProtocolModbus::STATE state) const {
 		return (state_ == state);
 	}
 
@@ -192,7 +190,7 @@ public:
 	 * 	@retval True - при наличии принятой посылки.
 	 * 	@retval False - при отсутствии принятой посылки
 	 */
-	bool isReadData() {
+	bool isReadData() const{
 		return (state_ == STATE_READ_OK);
 	}
 
@@ -221,6 +219,14 @@ public:
 	 */
 	uint16_t getNumOfAddress() const {
 		return ((uint16_t) buf_[4] << 8) + buf_[5];
+	}
+
+	/** Возвращает кол-во байт в принятой посылке или готовых к отправке.
+	 *
+	 * 	@return Кол-во байт данных.
+	 */
+	uint8_t getNumOfBytes() const {
+		return cnt_;
 	}
 
 	/**	Проверка полученной посылки на соответствие протоколу.
@@ -341,6 +347,12 @@ public:
 	uint8_t getAddress() const;
 
 	/**	Ответ на запрос с кодом исключения.
+	 *
+	 *	К коду принятой команды добавляется 0х80.
+	 *	Добавляется один байт данных - код исключения.
+	 *	Подсчитывается контрольная сумма.
+	 *	Флаг состояния протокола устанавливаетс \a STATE_WRITE, т.е. готовность
+	 *	к отправке данных.
 	 *
 	 *	@param code Код исключения.
 	 */

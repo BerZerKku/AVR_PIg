@@ -13,7 +13,13 @@
 
 class testProtocolModbus : public CPPUNIT_NS::TestFixture {
 	CPPUNIT_TEST_SUITE(testProtocolModbus);
-
+	
+	CPPUNIT_TEST(testConstant);
+//	CPPUNIT_TEST(testGetMaxNumRegisters);
+//	CPPUNIT_TEST(testGetMaxNumCoils);
+//	CPPUINT_TEST(testGetAddressError);
+//	CPPUNIT_TEST(testGetAddressMin);
+//	CPPUNIT_TEST(testGetAddressMax);
 	CPPUNIT_TEST(testStates);
 //	CPPUNIT_TEST(testCheckState);
 //	CPPUNIT_TEST(testGetState);
@@ -31,10 +37,12 @@ class testProtocolModbus : public CPPUNIT_NS::TestFixture {
 	CPPUNIT_TEST(testGetCoil);
 	CPPUNIT_TEST(testGetRegister);
 	CPPUNIT_TEST(testCheckReadPackage);
+	CPPUNIT_TEST(testSetException);
     
 	
 //	CPPUNIT_TEST(testTrCom);
 //	CPPUNIT_TEST(testWriteData);
+//	CPPUNIT_TEST(testSetException);
    
 
 	CPPUNIT_TEST_SUITE_END();
@@ -47,7 +55,13 @@ public:
 
 private:
 	
-	
+	// проверка констант
+	void testConstant();
+//	void testGetMaxNumRegisters();
+//	void testGetMaxNumCoils();
+//	void testGetAddressError();
+//	void testGetAddressMin();
+//	void testGetAddressMax();
     // проверка нескольких методов статуса работы
 	void testStates();
 //	void testCheckState();
@@ -69,24 +83,21 @@ private:
 	//
 	void testSetTick();
 	void testTick(); 
-	// 
 	void testPush();
 	void testGetCoil();
 	void testGetRegister();
 	void testCheckReadPackage();
+	void testSetException();
 	
-    
-
 //	void testTrCom();
 //	void testWriteData();
+//	void setException();)
     
     // буфер данных Modbus
     uint8_t buf[128];
     
     // буфер сообщения об ошибке
-    char msg[256];
-    
-    
+    char msg[256]; 
 };
 
 #endif	/* TESTPROTOCOLMODBUS_H */
