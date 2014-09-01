@@ -188,7 +188,7 @@ uint16_t TProtocolModbus::getRegister(uint16_t adr) {
 	return data;
 }
 
-bool TProtocolModbus::writeData(uint16_t num, uint16_t val) {
+bool TProtocolModbus::writeData(uint16_t adr, uint16_t val) {
 }
 
 // Установка адреса устройства в сети.
@@ -210,7 +210,7 @@ uint8_t TProtocolModbus::getAddress() const {
 
 // Ответ на запрос с кодом исключения.
 void TProtocolModbus::setException(TProtocolModbus::EXCEPTION code) {
-	cnt_ = 0;
+	cnt_ = 1;	// адрес остается прежним
 	buf_[cnt_++] |= 0x80;
 	buf_[cnt_++]  = code;
 	addCRC();
@@ -223,6 +223,7 @@ void TProtocolModbus::addData(uint16_t val) {
 /**	Добавляет к имеющейся в буфере послылке контрольную сумму.
  *
  * 	Рассчитывается контрольная сумма для имеющегося количества данных в буфере.
+ *	При этом увеличиваетс счетчик байт в посылке.
  */
 void TProtocolModbus::addCRC() {
 	uint16_t crc = calcCRC(cnt_);

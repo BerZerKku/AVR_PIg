@@ -344,22 +344,100 @@ void testProtocolModbus::testCheckReadPackage() {
 //			cnt += sprintf(&msg[cnt], "\n calccrc = 0x%X", crc);
 			CPPUNIT_ASSERT_MESSAGE(msg, false);
 		}
+		
+		// проверка содержимого буфера, при наличии ошибки принятой команды
+		if (data[i].err == TProtocolModbus::CHECK_ERR_FUNCTION) {
+			if (!tProtocolModbus.checkState(TProtocolModbus::STATE_WRITE)) {
+				uint8_t cnt = sprintf(msg, "3.4 Error state on step %d", i);
+				cnt += sprintf(&msg[cnt], "\n state = %d, need = %d", tProtocolModbus.getState(), TProtocolModbus::STATE_WRITE);
+				CPPUNIT_ASSERT_MESSAGE(msg, false);
+			}
+			
+			if ((buf[1] != (data[i].buf[1] | 0x80)) ||
+				(buf[2] != TProtocolModbus::EXCEPTION_01H_ILLEGAL_FUNCTION)) {
+				uint8_t cnt = sprintf(msg, "3.5 Error data in buffer for transferring on step %d", i);
+				cnt += sprintf(&msg[cnt], "\n buf[1] = 0x%X, need 0x%X", buf[1], (data[i].buf[1] | 0x80));
+				cnt += sprintf(&msg[cnt], "\n buf[2] = 0x%X, need 0x%X", buf[2], TProtocolModbus::EXCEPTION_01H_ILLEGAL_FUNCTION);
+				CPPUNIT_ASSERT_MESSAGE(msg, false);
+			}
+		}
+		
+		// проверка содержимого буфера, при наличии ошибки принятых данных
+		if (data[i].err == TProtocolModbus::CHECK_ERR_FUNCTION_DATA) {
+			if (!tProtocolModbus.checkState(TProtocolModbus::STATE_WRITE)) {
+				uint8_t cnt = sprintf(msg, "3.6 Error state on step %d", i);
+				cnt += sprintf(&msg[cnt], "\n state = %d, need = %d", tProtocolModbus.getState(), TProtocolModbus::STATE_WRITE);
+				CPPUNIT_ASSERT_MESSAGE(msg, false);
+			}
+			if ((buf[1] != (data[i].buf[1] | 0x80)) ||
+				(buf[2] != TProtocolModbus::EXCEPTION_03H_ILLEGAL_DATA_VAL)) {
+				uint8_t cnt = sprintf(msg, "3.7 Error data in buffer for transferring on step %d", i);
+				cnt += sprintf(&msg[cnt], "\n buf[1] = 0x%X, need 0x%X", buf[1], (data[i].buf[1] | 0x80));
+				cnt += sprintf(&msg[cnt], "\n buf[2] = 0x%X, need 0x%X", buf[2], TProtocolModbus::EXCEPTION_03H_ILLEGAL_DATA_VAL);
+				CPPUNIT_ASSERT_MESSAGE(msg, false);
+			}
+		}
 	}
 }
 
-/** Тестирование функции формирования исключения
+/** Тестирование функции формирования исключения.
  * 
  */
-void testProtocolModbus::testCheckReadPackage() {
+void testProtocolModbus::testSetException() {
 	TProtocolModbus tProtocolModbus(buf, sizeof (buf));
 	
 	struct sData{
-		uint8_t bufStart[10]; // данные посылки
+		uint8_t bufStart[15]; // исходная посылка
+		uint8_t bufStop[10];	// ожидаемая посылка с исключением
 		uint8_t numTrBytes; // кол-во байт в сформированной посылке
 		TProtocolModbus::EXCEPTION ex; // формируемое исключение
 	};
 	
+	sData data[] = {
+		{{0x12, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8E, 0xA1},
+		{0x12, 0x81, 0x01, 0x70, 0x55}, 
+		5, TProtocolModbus::EXCEPTION_01H_ILLEGAL_FUNCTION},
+		{{0x08, 0x03, 0x00, 0x6B, 0x00, 0x03, 0x8E, 0x74},
+		{0x08, 0x83, 0x02, 0x10, 0xF3}, 
+		5, TProtocolModbus::EXCEPTION_02H_ILLEGAL_DATA_ADR},
+		{{0x76, 0x06, 0x00, 0x01, 0x00, 0x03, 0x92, 0x8C},
+		{0x76, 0x86, 0x03, 0xB2, 0x7B},
+		5, TProtocolModbus::EXCEPTION_03H_ILLEGAL_DATA_VAL},
+		{{0xAA, 0x05, 0x00, 0xAC, 0xFF, 0x00, 0x55, 0xC0},
+		{0xAA, 0x85, 0x04, 0x32, 0xB3}, 
+		5, TProtocolModbus::EXCEPTION_04H_DEVICE_FAILURE},
+		{{0x01, 0x0F, 0x00, 0x13, 0x00, 0x0A, 0x02, 0xCD, 0x01, 0x72, 0xCB},
+		{0x01, 0x8F, 0x10, 0x45, 0xFC},
+		5, TProtocolModbus::EXCEPTION_10H_TEMP_INAC_PARAM},
+		{{0x02, 0x10, 0x00, 0x01, 0x00, 0x02, 0x04, 0x00, 0x0A, 0x01, 0x02, 0x9D, 0x74},
+		{0x02, 0x90, 0x11, 0x7C, 0x0C},
+		5, TProtocolModbus::EXCEPTION_11H_UNCHANG_PARAM}
+	};
+
+	for (uint16_t i = 0; i < (sizeof(data)/sizeof(data[0])); i++) {
+		for (uint8_t j = 0; j < sizeof(data[0].bufStart); j++) {
+			buf[j] = data[i].bufStart[j]; 
+		}
+		
+		tProtocolModbus.setException(data[i].ex);
+		
+		uint8_t numbytes = tProtocolModbus.getNumOfBytes();
+		if (numbytes != data[i].numTrBytes) {
+			uint8_t cnt = sprintf(msg, "1.1 Wrong number of byte for transferring on step %d", i);
+			cnt += sprintf(&msg[cnt], "\n Num of bytes = %d, need = %d", numbytes,  data[i].numTrBytes);
+			CPPUNIT_ASSERT_MESSAGE(msg, false);
+		}
+		
+		for(uint8_t j = 0; j < data[i].numTrBytes; j++) {
+			if (buf[j] != data[i].bufStop[j]) {
+				uint8_t cnt = sprintf(msg, "1.2 Wrong %d byte in package on step %d", j, i);
+				cnt += sprintf(&msg[cnt], "\n Byte[%d] = 0x%X, need 0x%X", j, buf[j], data[i].bufStop[j]);
+				CPPUNIT_ASSERT_MESSAGE(msg, false);
+			}
+		}
+	}
 	
+	// 
 }
 
 void testProtocolModbus::testPush() {
@@ -442,25 +520,16 @@ void testProtocolModbus::testPush() {
 	
 }
 
-//void testProtocolModbus::testTick()
-//{
-//    TProtocolModbus tProtocolModbus(buf, sizeof (buf));
-//
-//    tProtocolModbus.tick();
-//    if (true /*check result*/) {
-//        CPPUNIT_ASSERT(false);
-//    }
-//}
-//
-//void testProtocolModbus::testTrCom()
-//{
-//    TProtocolModbus tProtocolModbus(buf, sizeof (buf));
-//
-//    uint8_t result = tProtocolModbus.trCom();
-//    if (true /*check result*/) {
-//        CPPUNIT_ASSERT(false);
-//    }
-//}
+
+void testProtocolModbus::testTrCom()
+{
+    TProtocolModbus tProtocolModbus(buf, sizeof (buf));
+
+    uint8_t result = tProtocolModbus.trCom();
+    if (true /*check result*/) {
+        CPPUNIT_ASSERT(false);
+    }
+}
 
 /** Тестирование функций управления / проверки текущего состояния:
  * 
