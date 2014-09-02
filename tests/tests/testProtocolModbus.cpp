@@ -347,7 +347,7 @@ void testProtocolModbus::testCheckReadPackage() {
 		
 		// проверка содержимого буфера, при наличии ошибки принятой команды
 		if (data[i].err == TProtocolModbus::CHECK_ERR_FUNCTION) {
-			if (!tProtocolModbus.checkState(TProtocolModbus::STATE_WRITE)) {
+			if (!tProtocolModbus.checkState(TProtocolModbus::STATE_WRITE_READY)) {
 				uint8_t cnt = sprintf(msg, "3.4 Error state on step %d", i);
 				cnt += sprintf(&msg[cnt], "\n state = %d, need = %d", tProtocolModbus.getState(), TProtocolModbus::STATE_WRITE);
 				CPPUNIT_ASSERT_MESSAGE(msg, false);
@@ -364,7 +364,7 @@ void testProtocolModbus::testCheckReadPackage() {
 		
 		// проверка содержимого буфера, при наличии ошибки принятых данных
 		if (data[i].err == TProtocolModbus::CHECK_ERR_FUNCTION_DATA) {
-			if (!tProtocolModbus.checkState(TProtocolModbus::STATE_WRITE)) {
+			if (!tProtocolModbus.checkState(TProtocolModbus::STATE_WRITE_READY)) {
 				uint8_t cnt = sprintf(msg, "3.6 Error state on step %d", i);
 				cnt += sprintf(&msg[cnt], "\n state = %d, need = %d", tProtocolModbus.getState(), TProtocolModbus::STATE_WRITE);
 				CPPUNIT_ASSERT_MESSAGE(msg, false);
@@ -486,7 +486,6 @@ void testProtocolModbus::testPush() {
 	};
 	
 	for (uint16_t i = 0; i < (sizeof (data) / sizeof (data[0])); i++) {
-
 		uint16_t step = tProtocolModbus.setTick(57600, 100);
 		tProtocolModbus.setState(TProtocolModbus::STATE_READ);	// для сброса счетчика
 		tProtocolModbus.setState(data[i].stateStart);	// нужное для теста состояние
@@ -517,18 +516,54 @@ void testProtocolModbus::testPush() {
 			CPPUNIT_ASSERT_MESSAGE(msg, false);
 		}
 	}
-	
 }
 
 
 void testProtocolModbus::testTrCom()
 {
     TProtocolModbus tProtocolModbus(buf, sizeof (buf));
-
-    uint8_t result = tProtocolModbus.trCom();
-    if (true /*check result*/) {
-        CPPUNIT_ASSERT(false);
-    }
+	
+	// сформируем из принятого сообщения ошибку, которую надо передать
+	uint8_t pckg[] = {0x12, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8E, 0xA1};
+	for(uint8_t i = 0; i < sizeof(pckg); i++) {
+		buf[i] = pckg[i];
+	}
+	tProtocolModbus.setException(TProtocolModbus::EXCEPTION_01H_ILLEGAL_FUNCTION);
+	
+	
+	struct sData {
+		TProtocolModbus::STATE stateStart;	// начальное состояние
+		TProtocolModbus::STATE stateStop;	// конеченое состояние
+		uint8_t numBytes;	// кол-во байт данных на передачу
+	};
+	
+	sData data[] = {
+		{TProtocolModbus::STATE_OFF, TProtocolModbus::STATE_OFF, 0},
+		{TProtocolModbus::STATE_READ, TProtocolModbus::STATE_OFF, 0},
+		{TProtocolModbus::STATE_READ_ERROR, TProtocolModbus::STATE_OFF, 0},
+		{TProtocolModbus::STATE_READ_OK, TProtocolModbus::STATE_OFF, 0},
+		{TProtocolModbus::STATE_WRITE_WAIT, TProtocolModbus::STATE_OFF, 0},
+		{TProtocolModbus::STATE_WRITE_READY, TProtocolModbus::STATE_WRITE, 5},
+		{TProtocolModbus::STATE_WRITE, TProtocolModbus::STATE_OFF, 0},
+		{TProtocolModbus::STATE_ERROR, TProtocolModbus::STATE_OFF, 0}
+	};
+	
+	for(uint8_t i = 0; i < (sizeof(data) / sizeof(data[0])); i++) {
+		tProtocolModbus.setState(data[i].stateStart);
+		uint8_t num = tProtocolModbus.trCom();
+		
+		TProtocolModbus::STATE state = tProtocolModbus.getState();
+		if (state != data[i].stateStop) {
+			uint8_t cnt = sprintf(msg, "1.1 Wrong state on step %d", i);
+			cnt += sprintf(&msg[cnt], "\n state = %d, need = %d", state, data[i].stateStop);
+		}
+		
+		if (num != data[i].numBytes) {
+			uint8_t cnt = sprintf(msg, "1.2 Invalid number of bytes to transfer on step %d", i);
+			cnt += sprintf(&msg[cnt], "\n num = %d, need = %d", num, data[i].numBytes);
+		}
+	}
+	
 }
 
 /** Тестирование функций управления / проверки текущего состояния:
@@ -885,5 +920,13 @@ void testProtocolModbus::testTick() {
 			cnt += sprintf(&msg[cnt], "\n step tick = %d", step);
 			CPPUNIT_ASSERT_MESSAGE(msg, false);
 		}
+	}
+}
+
+void testProtocolModbus::testWriteRegister() {
+	TProtocolModbus tProtocolModbus(buf, sizeof (buf));
+	
+	if (true) {
+		CPPUNIT_ASSERT_MESSAGE(msg, false);
 	}
 }
