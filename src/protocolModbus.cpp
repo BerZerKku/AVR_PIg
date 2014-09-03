@@ -121,10 +121,6 @@ TProtocolModbus::CHECK_ERR TProtocolModbus::checkReadPackage() {
 		}
 	}
 
-	if (state == CHECK_ERR_NO) {
-		makeResponse(com);
-	}
-
 	return state;
 }
 
@@ -176,7 +172,8 @@ bool TProtocolModbus::writeRegister(uint16_t adr, uint16_t val) {
 	bool state = false;
 
 	if ((adr >= startAdr_) && (adr < (startAdr_ + numOfAdr_))) {
-		buf_[(adr - startAdr_)*2 + 4];
+		buf_[(adr - startAdr_)*2 + 4] = val >> 8;
+		buf_[(adr - startAdr_)*2 + 5] = val;
 		state = true;
 	}
 
@@ -187,8 +184,27 @@ bool TProtocolModbus::writeRegister(uint16_t adr, uint16_t val) {
 bool TProtocolModbus::writeCoil(uint16_t adr, bool val) {
 	bool state = false;
 
+	if ((adr >= startAdr_) && (adr < (startAdr_ + numOfAdr_))) {
+		// ѕри подготовке посылки в данные были помещены нули
+		// поэтому тут можно обрабатывать только установленные флаги
+		if (val) {
+			uint8_t a = (adr - startAdr_) / 8;
+			uint8_t n = (adr - startAdr_) % 8;
+			buf_[a + 4] |= 1 << n;
+		}
+		state = true;
+	}
+
 
 	return state;
+}
+
+// запись группы флагов на передачу
+bool TProtocolModbus::writeCoils(uint16_t adr, uint8_t val) {
+
+	for(uint8_t i = 1; i > 0; i <<= 1, adr++) {
+		writeCoil(adr, (val&i));
+	}
 }
 
 // ќтправка сообщени€.
@@ -261,6 +277,57 @@ void TProtocolModbus::setException(TProtocolModbus::EXCEPTION code) {
 	buf_[cnt_++]  = code;
 	addCRC();
 	setState(STATE_WRITE_READY);
+}
+
+//	ѕодготовка посылки дл€ ответа на запрос.
+void TProtocolModbus::prepareResponse(uint8_t com) {
+	uint8_t cnt = 0;
+
+	switch (static_cast<TProtocolModbus::COM>(com)) {
+		case COM_01H_READ_COIL: {
+			cnt = 2;
+			buf_[cnt++] = (numOfAdr_ + 7) / 8;
+			for(uint8_t i = 0; i < buf_[2]; i++) {
+				buf_[cnt++] = 0;
+			}
+		}
+		break;
+		case COM_03H_READ_HOLDING_REGISTER: {
+			cnt = 2;
+			buf_[cnt++] = numOfAdr_ * 2;
+			for(uint8_t i = 0; i < buf_[2]; i++) {
+				buf_[cnt++] = 0x00;
+			}
+		}
+		break;
+		case COM_05H_WRITE_SINGLE_COIL: {
+			// команда возвращаетс€ без изменени€
+			cnt = cnt_;
+			setState(STATE_WRITE_READY);
+		}
+		break;
+		case COM_06H_WRITE_SINGLE_REGISTER: {
+			// команда возвращаетс€ без изменени€
+			cnt = cnt_;
+			setState(STATE_WRITE_READY);
+		}
+		break;
+		case COM_0FH_WRITE_MULTIPLIE_COILS: {
+			cnt = 6;
+			// TODO рассчет CRC
+		}
+		break;
+		case COM_10H_WRITE_MULITPLIE_REGISTERS: {
+			cnt = 6;
+			// TODO рассчет CRC
+		}
+		break;
+		case COM_11H_SLAVE_ID: {
+			cnt = 2;	// адрес и команда
+		}
+		break;
+	}
+	cnt_ = cnt;
 }
 
 /**	ѕроверка соответстви€ прин€той команды поддерживаемым в этом классе.
@@ -352,6 +419,8 @@ TProtocolModbus::CHECK_ERR TProtocolModbus::checkCommand(uint8_t com) {
 		break;
 		case COM_11H_SLAVE_ID:
 			// нет ограничений
+			startAdr_ = 0;
+			numOfAdr_ = 0;
 			state = CHECK_ERR_NO;
 			break;
 	}
@@ -406,61 +475,4 @@ void TProtocolModbus::addCRC() {
 	uint16_t crc = calcCRC(cnt_);
 	buf_[cnt_++] = crc >> 8;
 	buf_[cnt_++] = crc;
-}
-
-/**	ѕодготовка посылки дл€ ответа на запрос.
- *
- * 	ќтвет заполн€етс€ данными по умолчанию.
- *
- *	@param com  од команды, дл€ которой формируетс€ ответ.
- */
-
-void TProtocolModbus::makeResponse(uint8_t com) {
-	uint8_t cnt = 0;
-
-	switch (static_cast<TProtocolModbus::COM>(com)) {
-		case COM_01H_READ_COIL: {
-			cnt = 2;
-			buf_[cnt++] = (numOfAdr_ + 7) / 8;
-			for(uint8_t i = 0; i < buf_[2]; i++) {
-				buf_[cnt++] = 0;
-			}
-		}
-		break;
-		case COM_03H_READ_HOLDING_REGISTER: {
-			cnt = 2;
-			buf_[cnt++] = numOfAdr_ * 2 ;
-			for(uint8_t i = 0; i < buf_[2]; i++) {
-				buf_[cnt++] = 0x00;
-			}
-		}
-		break;
-		case COM_05H_WRITE_SINGLE_COIL: {
-			// команда возвращаетс€ без изменени€
-			cnt = cnt_;
-			setState(STATE_WRITE_READY);
-		}
-		break;
-		case COM_06H_WRITE_SINGLE_REGISTER: {
-			// команда возвращаетс€ без изменени€
-			cnt = cnt_;
-			setState(STATE_WRITE_READY);
-		}
-		break;
-		case COM_0FH_WRITE_MULTIPLIE_COILS: {
-			cnt = 5;
-			// TODO рассчет CRC
-		}
-		break;
-		case COM_10H_WRITE_MULITPLIE_REGISTERS: {
-			cnt = 5;
-			// TODO рассчет CRC
-		}
-		break;
-		case COM_11H_SLAVE_ID: {
-			// TODO подготовка посылки дл€ ответа
-		}
-		break;
-	}
-	cnt_ = cnt;
 }
