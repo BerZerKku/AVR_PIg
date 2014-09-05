@@ -4119,6 +4119,8 @@ void clMenu::lvlSetupInterface() {
 		// если установлена св€зь по Ћокальной сети
 		// по€вл€ютс€ настройки портов
 		// в RS-232 всегда: 19200 бит/с, 8 бит, 2 стоп-бита, четность-нет
+		// (но во врем€ отлдаки можно настраивать)
+#ifndef DEBUG
 		if (sParam.Uart.Interface.get() == GB_INTERFACE_RS485) {
 			Punkts_.add(punkt2);
 			Punkts_.add(punkt3);
@@ -4126,6 +4128,13 @@ void clMenu::lvlSetupInterface() {
 			Punkts_.add(punkt5);
 			Punkts_.add(punkt6);
 		}
+#else
+		Punkts_.add(punkt2);
+		Punkts_.add(punkt3);
+		Punkts_.add(punkt4);
+		Punkts_.add(punkt5);
+		Punkts_.add(punkt6);
+#endif
 
 		// дополнительные команды
 		sParam.txComBuf.clear();

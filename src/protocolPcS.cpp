@@ -6,9 +6,8 @@
  */
 #include "../inc/protocolPcS.h"
 
-clProtocolPcS::clProtocolPcS(uint8_t *buf, uint8_t size, stGBparam *sParam)
-										: clProtocolS(buf, size, sParam)
-{
+clProtocolPcS::clProtocolPcS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
+clProtocolS(buf, size, sParam) {
 
 }
 

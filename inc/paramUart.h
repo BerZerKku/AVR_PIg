@@ -225,9 +225,9 @@ public:
 	/**	Конструктор.
 	 * 	По умолчанию проверка четности отключена.
 	 */
-	TParity(eUART_PARITY val = UART_PARITY_NONE) {
+	TParity(eUART_PARITY val = UART_PARITY_EVEN) {
 		if (!set(val))
-			parity_ = UART_PARITY_NONE;
+			parity_ = UART_PARITY_EVEN;
 	}
 
 	/**	Запись
@@ -262,9 +262,9 @@ public:
 	/**	Конструктор.
 	 * 	По умолчанию 2 стоп бита.
 	 */
-	TStopBits(eUART_STOP_BITS val = UART_STOP_BITS_TWO) {
+	TStopBits(eUART_STOP_BITS val = UART_STOP_BITS_ONE) {
 		if (!set(val))
-			stopBits_ = UART_STOP_BITS_TWO;
+			stopBits_ = UART_STOP_BITS_ONE;
 	}
 
 	/**	Запись

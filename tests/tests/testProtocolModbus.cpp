@@ -716,8 +716,6 @@ void testProtocolModbus::testPush() {
 	}
 
 	// 2. Проверка сброса посылки при паузе 1.5 интервала.
-	// TODO Проверку сброса посылки при паузе 1.5 интервала.
-	
 	struct sData {
 		TProtocolModbus::STATE stateStart;	// состояние протокола в начале
 		TProtocolModbus::STATE stateStop;	// состояние протокола в конце
@@ -772,16 +770,12 @@ void testProtocolModbus::testPush() {
 }
 
 
-void testProtocolModbus::testTrCom()
+void testProtocolModbus::testTrResponse()
 {
     TProtocolModbus tProtocolModbus(buf, sizeof (buf));
 	
 	// сформируем из принятого сообщения ошибку, которую надо передать
-	uint8_t pckg[] = {0x12, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8E, 0xA1};
-	for(uint8_t i = 0; i < sizeof(pckg); i++) {
-		buf[i] = pckg[i];
-	}
-	tProtocolModbus.setException(TProtocolModbus::EXCEPTION_01H_ILLEGAL_FUNCTION);
+	
 	
 	
 	struct sData {
@@ -792,28 +786,38 @@ void testProtocolModbus::testTrCom()
 	
 	sData data[] = {
 		{TProtocolModbus::STATE_OFF, TProtocolModbus::STATE_OFF, 0},
-		{TProtocolModbus::STATE_READ, TProtocolModbus::STATE_OFF, 0},
-		{TProtocolModbus::STATE_READ_ERROR, TProtocolModbus::STATE_OFF, 0},
-		{TProtocolModbus::STATE_READ_OK, TProtocolModbus::STATE_OFF, 0},
-		{TProtocolModbus::STATE_WRITE_WAIT, TProtocolModbus::STATE_OFF, 0},
+		{TProtocolModbus::STATE_READ, TProtocolModbus::STATE_READ, 0},
+		{TProtocolModbus::STATE_READ_ERROR, TProtocolModbus::STATE_READ_ERROR, 0},
+		{TProtocolModbus::STATE_READ_OK, TProtocolModbus::STATE_WRITE, 7},
+		{TProtocolModbus::STATE_WRITE_WAIT, TProtocolModbus::STATE_WRITE_WAIT, 0},
 		{TProtocolModbus::STATE_WRITE_READY, TProtocolModbus::STATE_WRITE, 5},
-		{TProtocolModbus::STATE_WRITE, TProtocolModbus::STATE_OFF, 0},
-		{TProtocolModbus::STATE_ERROR, TProtocolModbus::STATE_OFF, 0}
+		{TProtocolModbus::STATE_WRITE, TProtocolModbus::STATE_WRITE, 0},
+		{TProtocolModbus::STATE_ERROR, TProtocolModbus::STATE_WRITE, 5}
 	};
 	
-	for(uint8_t i = 0; i < (sizeof(data) / sizeof(data[0])); i++) {
-		tProtocolModbus.setState(data[i].stateStart);
-		uint8_t num = tProtocolModbus.trCom();
+	for (uint8_t i = 0; i < (sizeof (data) / sizeof (data[0])); i++) {
 		
+		tProtocolModbus.setState(TProtocolModbus::STATE_READ);
+		uint8_t pckg[] = {0x12, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8E, 0xA1};
+		for (uint8_t j = 0; j < sizeof (pckg); j++) {
+			buf[j] = pckg[j];
+		}
+		tProtocolModbus.setException(TProtocolModbus::EXCEPTION_01H_ILLEGAL_FUNCTION);
+
+		tProtocolModbus.setState(data[i].stateStart);
+		uint8_t num = tProtocolModbus.trResponse();
+
 		TProtocolModbus::STATE state = tProtocolModbus.getState();
 		if (state != data[i].stateStop) {
 			uint8_t cnt = sprintf(msg, "1.1 Wrong state on step %d", i);
 			cnt += sprintf(&msg[cnt], "\n state = %d, need = %d", state, data[i].stateStop);
+			CPPUNIT_ASSERT_MESSAGE(msg, false);
 		}
-		
+
 		if (num != data[i].numBytes) {
 			uint8_t cnt = sprintf(msg, "1.2 Invalid number of bytes to transfer on step %d", i);
 			cnt += sprintf(&msg[cnt], "\n num = %d, need = %d", num, data[i].numBytes);
+			CPPUNIT_ASSERT_MESSAGE(msg, false);
 		}
 	}
 	
@@ -893,7 +897,7 @@ void testProtocolModbus::testStates() {
 
 		if ((state == TProtocolModbus::STATE_READ_OK) != (tProtocolModbus.isReadData())) {
 			sprintf(msg, "4.4 Error in isReadData() on step %d", i);
-			CPPUNIT_ASSERT_MESSAGE(msg, false);
+			CPPUNIT_ASSERT_MESSAGE(msg, false); 
 		}
 	}
 
@@ -1063,11 +1067,11 @@ void testProtocolModbus::testPrepareResponse() {
 		if (TProtocolModbus::CHECK_ERR_NO != err){
 			uint8_t cnt = sprintf(msg, "1.0 Error input data on step %d", i);
 			cnt += sprintf(&msg[cnt], "\n check_error = %d", err);
-			CPPUNIT_ASSERT_MESSAGE(msg, false);
-			
+			CPPUNIT_ASSERT_MESSAGE(msg, false);	
 		}
-		tProtocolModbus.prepareResponse(data[i].bufin[1]);
-
+		uint8_t num = tProtocolModbus.prepareResponse(buf[1]);
+		
+		// проверка данных подготовленных для передачи
 		for(uint8_t j = 0; j < data[i].numout; j++) {
 			if (buf[j] != data[i].bufout[j]) {
 				uint8_t cnt = sprintf(msg, "1.1 Error in out data on step %d", i);
@@ -1085,8 +1089,6 @@ void testProtocolModbus::testPrepareResponse() {
 		}
 		
 		// проверка кол-ва байт подготовленных для передачи
-		tProtocolModbus.setState(TProtocolModbus::STATE_WRITE_READY);
-		uint8_t num = tProtocolModbus.trCom();
 		if (num != data[i].numout) {
 			uint8_t cnt = sprintf(msg, "1.3 Error number of bytes on step %d", i);
 			cnt += sprintf(&msg[cnt], "\n num = %d, need = %d", num, data[i].numout);
@@ -1095,10 +1097,219 @@ void testProtocolModbus::testPrepareResponse() {
 	}
 }
 
-void testProtocolModbus::testWriteRegister() {
+
+void testProtocolModbus::testSendRegister() {
 	TProtocolModbus tProtocolModbus(buf, sizeof (buf));
 	
-	if (true) {
-		CPPUNIT_ASSERT_MESSAGE(msg, false);
-	}
+	struct sData {
+		bool state;			// флаг выполнения операции (false - ошибка)
+		uint16_t adr;		// адрес регистра
+		uint16_t val;		// значение регистра	
+		uint8_t numin;		// кол-во байт в буфере до записи
+		uint8_t	bufin[50];	// буфер до записи
+		uint8_t numout;		// кол-во байт в буфере после записи
+		uint8_t bufout[50];	// буфер после записи
+		
+	};
+
+	sData data[] = {	{true, 0x0001, 0x1113, 
+						8, {0x01, 0x03, 0x00, 0x01, 0x00, 0x01, 0xD5, 0xCA},
+						5, {0x01, 0x03, 0x02, 0x11, 0x13}},
+						{true, 0x0002, 0x1113, 
+						8, {0x01, 0x03, 0x00, 0x01, 0x00, 0x03, 0x54, 0x0B},
+						9, {0x01, 0x03, 0x06, 0x00, 0x00, 0x11, 0x13, 0x00, 0x00}},
+						{true, 0x0003, 0x1113, 
+						8, {0x01, 0x03, 0x00, 0x01, 0x00, 0x03, 0x54, 0x0B},
+						9, {0x01, 0x03, 0x06, 0x00, 0x00, 0x00, 0x00, 0x11, 0x13}},
+						{false, 0x0002, 0x0013, 
+						8, {0x01, 0x03, 0x00, 0x01, 0x00, 0x01, 0xD5, 0xCA},
+						5, {0x01, 0x03, 0x02, 0x00, 0x00}}					
+	};
+		 
+	for(uint8_t i = 0; i < (sizeof(data)/sizeof(data[0])); i++){
+		// заполнение приемного буфера
+		tProtocolModbus.setState(TProtocolModbus::STATE_READ);
+		for (uint8_t j = 0; j < data[i].numin; j++) {
+			tProtocolModbus.push(data[i].bufin[j]);
+		}
+		// Проверка правильной тестовой посылки
+		tProtocolModbus.setAddress(buf[0]);
+		TProtocolModbus::CHECK_ERR err = tProtocolModbus.checkReadPackage();
+		if (TProtocolModbus::CHECK_ERR_NO != err){
+			uint8_t cnt = sprintf(msg, "1.0 Error input data on step %d", i);
+			cnt += sprintf(&msg[cnt], "\n check_error = %d", err);
+			CPPUNIT_ASSERT_MESSAGE(msg, false);	
+		}
+		tProtocolModbus.prepareResponse(data[i].bufin[1]);
+		
+		bool state = tProtocolModbus.sendRegister(data[i].adr, data[i].val);
+		
+		// проверка флага выполнения функции
+		if (state != data[i].state) {
+			uint8_t cnt = sprintf(msg, "1.1 Error state on step %d", i);
+			cnt += sprintf(&msg[cnt], "\n state = %d, need = %d", state, data[i].state);
+			CPPUNIT_ASSERT_MESSAGE(msg, false);	
+		}
+		
+		// проверка подготовленных для передачи данных
+		for (uint8_t j = 0; j < data[i].numout; j++) {
+			if (buf[j] != data[i].bufout[j]) {
+				uint8_t cnt = sprintf(msg, "1.2 Error bufout on step %d", i);
+				cnt += sprintf(&msg[cnt], "\n buf[%d] = 0x%X, need = 0x%X", j, buf[j], data[i].bufout[j]);
+				CPPUNIT_ASSERT_MESSAGE(msg, false);
+			}
+		}
+	} 
+}
+
+void testProtocolModbus::testSendCoil() {
+	TProtocolModbus tProtocolModbus(buf, sizeof (buf));
+	
+	struct sData {
+		bool state;			// флаг выполнения операции (false - ошибка)
+		uint16_t adr;		// адрес регистра
+		bool val;			// значение регистра	
+		uint8_t numin;		// кол-во байт в буфере до записи
+		uint8_t	bufin[50];	// буфер до записи
+		uint8_t numout;		// кол-во байт в буфере после записи
+		uint8_t bufout[50];	// буфер после записи
+		
+	};
+
+	sData data[] = {	{true, 0x1300, true, 
+						8, {0x01, 0x01, 0x13, 0x00, 0x00, 0x01, 0xF9, 0x4E},
+						4, {0x01, 0x01, 0x01, 0x01}},
+						{true, 0x0013, true, 
+						8, {0x01, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8C, 0x02},
+						6, {0x01, 0x01, 0x03, 0x01, 0x00, 0x00}},
+						{true, 0x0015, true, 
+						8, {0x01, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8C, 0x02},
+						6, {0x01, 0x01, 0x03, 0x04, 0x00, 0x00}},
+						{true, 0x0022, true, 
+						8, {0x01, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8C, 0x02},
+						6, {0x01, 0x01, 0x03, 0x00, 0x80, 0x00}},
+						{true, 0x0025, true, 
+						8, {0x01, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8C, 0x02},
+						6, {0x01, 0x01, 0x03, 0x00, 0x00, 0x04}},
+						{false, 0x0026, false, 
+						8, {0x01, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8C, 0x02},
+						6, {0x01, 0x01, 0x03, 0x00, 0x00, 0x00}},
+						{false, 0x0012, false, 
+						8, {0x01, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8C, 0x02},
+						6, {0x01, 0x01, 0x03, 0x00, 0x00, 0x00}},
+						{false, 0x0002, 0x0013, 
+						8, {0x01, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8C, 0x02},
+						6, {0x01, 0x01, 0x03, 0x00, 0x00, 0x00}},					
+	};
+		 
+	for(uint8_t i = 0; i < (sizeof(data)/sizeof(data[0])); i++){
+		// заполнение приемного буфера
+		tProtocolModbus.setState(TProtocolModbus::STATE_READ);
+		for (uint8_t j = 0; j < data[i].numin; j++) {
+			tProtocolModbus.push(data[i].bufin[j]);
+		}
+		// Проверка правильной тестовой посылки
+		tProtocolModbus.setAddress(buf[0]);
+		TProtocolModbus::CHECK_ERR err = tProtocolModbus.checkReadPackage();
+		if (TProtocolModbus::CHECK_ERR_NO != err){
+			uint8_t cnt = sprintf(msg, "1.0 Error input data on step %d", i);
+			cnt += sprintf(&msg[cnt], "\n check_error = %d", err);
+			CPPUNIT_ASSERT_MESSAGE(msg, false);	
+		}
+		tProtocolModbus.prepareResponse(data[i].bufin[1]);
+		
+		bool state = tProtocolModbus.sendCoil(data[i].adr, data[i].val);
+		
+		// проверка флага выполнения функции
+		if (state != data[i].state) {
+			uint8_t cnt = sprintf(msg, "1.1 Error state on step %d", i);
+			cnt += sprintf(&msg[cnt], "\n state = %d, need = %d", state, data[i].state);
+			CPPUNIT_ASSERT_MESSAGE(msg, false);	
+		}
+
+		// проверка для данных которые должны быть записаны
+		for (uint8_t j = 0; j < data[i].numout; j++) {
+			if (buf[j] != data[i].bufout[j]) {
+				uint8_t cnt = sprintf(msg, "1.1 Error bufout on step %d", i);
+				cnt += sprintf(&msg[cnt], "\n buf[%d] = 0x%X, need = 0x%X", j, buf[j], data[i].bufout[j]);
+				CPPUNIT_ASSERT_MESSAGE(msg, false);
+			}
+		}
+	} 
+}
+
+void testProtocolModbus::testSendCoils() {
+	TProtocolModbus tProtocolModbus(buf, sizeof (buf));
+	
+	struct sData {
+		bool state;			// флаг выполнения операции (false - ошибка)
+		uint16_t adr;		// адрес регистра
+		uint8_t val;		// значение регистра	
+		uint8_t numin;		// кол-во байт в буфере до записи
+		uint8_t	bufin[50];	// буфер до записи
+		uint8_t numout;		// кол-во байт в буфере после записи
+		uint8_t bufout[50];	// буфер после записи
+		
+	};
+
+	sData data[] = {	{true, 0x1300, 0x01, 
+						8, {0x01, 0x01, 0x13, 0x00, 0x00, 0x01, 0xF9, 0x4E},
+						4, {0x01, 0x01, 0x01, 0x01}},
+						{true, 0x0012, 0x02, 
+						8, {0x01, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8C, 0x02},
+						6, {0x01, 0x01, 0x03, 0x01, 0x00, 0x00}},
+						{true, 0x0013, 0x12, 
+						8, {0x01, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8C, 0x02},
+						6, {0x01, 0x01, 0x03, 0x12, 0x00, 0x00}},
+						{true, 0x0015, 0xFF, 
+						8, {0x01, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8C, 0x02},
+						6, {0x01, 0x01, 0x03, 0xFC, 0x03, 0x00}},
+						{true, 0x0022, 0x19, 
+						8, {0x01, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8C, 0x02},
+						6, {0x01, 0x01, 0x03, 0x00, 0x80, 0x04}},
+						{true, 0x0025, 0xFF, 
+						8, {0x01, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8C, 0x02},
+						6, {0x01, 0x01, 0x03, 0x00, 0x00, 0x04}},
+						{false, 0x0026, 0xFF, 
+						8, {0x01, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8C, 0x02},
+						6, {0x01, 0x01, 0x03, 0x00, 0x00, 0x00}},		
+						{false, 0x0002, 0x0013, 
+						8, {0x01, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8C, 0x02},
+						6, {0x01, 0x01, 0x03, 0x00, 0x00, 0x00}},					
+	};
+		 
+	for(uint8_t i = 0; i < (sizeof(data)/sizeof(data[0])); i++){
+		// заполнение приемного буфера
+		tProtocolModbus.setState(TProtocolModbus::STATE_READ);
+		for (uint8_t j = 0; j < data[i].numin; j++) {
+			tProtocolModbus.push(data[i].bufin[j]);
+		}
+		// Проверка правильной тестовой посылки
+		tProtocolModbus.setAddress(buf[0]);
+		TProtocolModbus::CHECK_ERR err = tProtocolModbus.checkReadPackage();
+		if (TProtocolModbus::CHECK_ERR_NO != err){
+			uint8_t cnt = sprintf(msg, "1.0 Error input data on step %d", i);
+			cnt += sprintf(&msg[cnt], "\n check_error = %d", err);
+			CPPUNIT_ASSERT_MESSAGE(msg, false);	
+		}
+		tProtocolModbus.prepareResponse(data[i].bufin[1]);
+		
+		bool state = tProtocolModbus.sendCoils(data[i].adr, data[i].val);
+		
+		// проверка флага выполнения функции
+		if (state != data[i].state) {
+			uint8_t cnt = sprintf(msg, "1.1 Error state on step %d", i);
+			cnt += sprintf(&msg[cnt], "\n state = %d, need = %d", state, data[i].state);
+			CPPUNIT_ASSERT_MESSAGE(msg, false);	
+		}
+
+		// проверка для данных которые должны быть записаны
+		for (uint8_t j = 0; j < data[i].numout; j++) {
+			if (buf[j] != data[i].bufout[j]) {
+				uint8_t cnt = sprintf(msg, "1.1 Error bufout on step %d", i);
+				cnt += sprintf(&msg[cnt], "\n buf[%d] = 0x%X, need = 0x%X", j, buf[j], data[i].bufout[j]);
+				CPPUNIT_ASSERT_MESSAGE(msg, false);
+			}
+		}
+	} 
 }
