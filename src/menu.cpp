@@ -2470,7 +2470,7 @@ void clMenu::lvlSetupParamDef() {
 
 		if (device == AVANT_RZSK) {
 			Punkts_.add(punkt1, GB_COM_DEF_GET_DEF_TYPE);
-			Punkts_.add(punkt2, GB_COM_DEF_GET_LINE_TYPE);
+//			Punkts_.add(punkt2, GB_COM_DEF_GET_LINE_TYPE);
 			Punkts_.add(punkt3, GB_COM_DEF_GET_T_NO_MAN);
 			Punkts_.add(punkt4, GB_COM_DEF_GET_OVERLAP);
 			Punkts_.add(punkt5, GB_COM_DEF_GET_DELAY);
@@ -3357,6 +3357,7 @@ void clMenu::lvlSetupParamGlb() {
 		} else if (type == AVANT_RZSK) {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 
+			Punkts_.add(punkt25, GB_COM_DEF_GET_LINE_TYPE);
 			Punkts_.add(punkt1, GB_COM_GET_TIME_SINCHR);
 			Punkts_.add(punkt2, GB_COM_GET_DEVICE_NUM);
 			Punkts_.add(punkt3, GB_COM_GET_OUT_CHECK);
