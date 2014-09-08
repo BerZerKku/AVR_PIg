@@ -1296,14 +1296,22 @@ void clMenu::lvlJournalEvent() {
 			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventR400_MSK[event], event);
 		} else if (device == AVANT_K400) {
 			if (event <= MAX_JRN_EVENT_VALUE) {
-				uint8_t device = (uint8_t) sParam.jrnEntry.getDeviceJrn();
+				uint8_t dev = (uint8_t) sParam.jrnEntry.getDeviceJrn();
 				snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event],
-						fcDevicesK400[device]);
+						fcDevicesK400[dev]);
 			} else {
-				snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event], event);
+				snprintf_P(&vLCDbuf[poz], 21,
+						fcJrnEventK400[MAX_JRN_EVENT_VALUE], event);
 			}
 		} else if (device == AVANT_RZSK) {
-			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventRZSK[event], event);
+			if (event < MAX_JRN_EVENT_VALUE) {
+				uint8_t dev = (uint8_t) sParam.jrnEntry.getDeviceJrn();
+				snprintf_P(&vLCDbuf[poz], 21, fcJrnEventRZSK[event], event,
+						fcDevicesK400[dev]);
+			} else {
+				snprintf_P(&vLCDbuf[poz], 21,
+						fcJrnEventRZSK[MAX_JRN_EVENT_VALUE], event);
+			}
 		} else if (device == AVANT_OPTO) {
 			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventOPTO[event], event);
 		}

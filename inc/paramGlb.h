@@ -178,6 +178,7 @@ enum eGB_PVZUE_PARITY {
 class TDeviceGlb {
 public:
 	TDeviceGlb() {
+		typeDevice_ = AVANT_NO;
 		numDevices_ = GB_NUM_DEVICES_MAX;
 		typeLine_ = GB_TYPE_LINE_MAX;
 		compatibility_ = GB_COMPATIBILITY_MAX;
@@ -215,7 +216,40 @@ public:
 
 	TDeviceStatus status;
 
+	/**	Возвращает тип аппарата.
+	 *
+	 * 	@return Тип аппарата.
+	 */
+	eGB_TYPE_DEVICE getTypeDevice() const {
+		return typeDevice_;
+	}
+
+	/**	Установка типа аппарата.
+	 *
+	 * 	В случае ошибки, значение не поменяется.
+	 *
+	 * 	@param Тип аппарата.
+	 * 	@return Статус установки.
+	 */
+	uint8_t setTypeDevice(eGB_TYPE_DEVICE val) {
+		uint8_t act = GB_ACT_NO;
+
+		if ((val < AVANT_NO) || (val > AVANT_MAX)) {
+			act = GB_ACT_ERROR;
+		} else {
+			if (typeDevice_ == val) {
+				act = GB_ACT_OLD;
+			} else {
+				typeDevice_ = val;
+				act = GB_ACT_NEW;
+			}
+		}
+
+		return act;
+	}
+
 	/**	Возвращает максимальное кол-во аппаратов в линии.
+	 *
 	 * 	@retval 3 В случае 3-х концевой версии
 	 * 	@retval 2 Во всех остальных случаях.
 	 */
@@ -224,6 +258,7 @@ public:
 	}
 
 	/**	Возвращает кол-во аппаратов в линии (2-х, 3-х концевая).
+	 *
 	 * 	@return Кол-во аппаратов в линии.
 	 */
 	eGB_NUM_DEVICES getNumDevices() const {
@@ -231,6 +266,8 @@ public:
 	}
 
 	/** Установка кол-ва аппаратов в линии (2-х, 3-х концевая.).
+	 *
+	 * 	В случае ошибки, значение не поменяется.
 	 * 	@param val Кол-во аппаратов в линии.
 	 * 	@return Статус установки (eGB_ACT - побитные значения).
 	 */
@@ -238,21 +275,21 @@ public:
 		uint8_t act = GB_ACT_NO;
 
 		if ((val < GB_NUM_DEVICES_MIN) || (val >= GB_NUM_DEVICES_MAX)) {
-			val = GB_NUM_DEVICES_MAX;
 			act = GB_ACT_ERROR;
-		}
-
-		if (numDevices_ == val) {
-			act |= GB_ACT_OLD;
 		} else {
-			numDevices_ = val;
-			act |= GB_ACT_NEW;
+			if (numDevices_ == val) {
+				act = GB_ACT_OLD;
+			} else {
+				numDevices_ = val;
+				act = GB_ACT_NEW;
+			}
 		}
 
 		return act;
 	}
 
 	/**	Возвращает текущий тип линии (вч/оптика и т.д.).
+	 *
 	 * 	@return Тип линии.
 	 */
 	eGB_TYPE_LINE getTypeLine() const {
@@ -260,6 +297,9 @@ public:
 	}
 
 	/** Установка типа линии (вч/оптика и т.д.).
+	 *
+	 * 	В случае ошибки, значение не поменяется.
+	 *
 	 * 	@param val Тип линии.
 	 * 	@return Статус установки (eGB_ACT - побитные значения).
 	 */
@@ -267,51 +307,18 @@ public:
 		uint8_t act = GB_ACT_NO;
 
 		if ((val < GB_TYPE_LINE_MIN) || (val >= GB_TYPE_LINE_MAX)) {
-			val = GB_TYPE_LINE_MAX;
 			act = GB_ACT_ERROR;
-		}
-
-		if (typeLine_ == val) {
-			act |= GB_ACT_OLD;
 		} else {
-			typeLine_ = val;
-			act |= GB_ACT_NEW;
+			if (typeLine_ == val) {
+				act = GB_ACT_OLD;
+			} else {
+				typeLine_ = val;
+				act = GB_ACT_NEW;
+			}
 		}
 
 		return act;
 	}
-
-//	// версия прошивки AtMega BSP
-//	void setVersBsp(uint16_t versBsp) {
-//		versBsp_ = versBsp;
-//	}
-//	uint16_t getVersBsp() const {
-//		return versBsp_;
-//	}
-//
-//	//  версия прошивки DSP
-//	void setVersDsp(uint16_t versDsp) {
-//		versDsp_ = versDsp;
-//	}
-//	uint16_t getVersDsp() const {
-//		return versDsp_;
-//	}
-//
-//	// версия прошивки БСК ПРД1
-//	void setVersBskPrd1(uint8_t vers) {
-//		versBskPrd1_ = vers;
-//	}
-//	uint16_t getVersBskPrd1() const {
-//		return versBskPrd1_;
-//	}
-//
-//	// версия прошивки БСК ПРД2
-//	void setVersBskPrd2(uint8_t vers) {
-//		versBskPrd2_ = vers;
-//	}
-//	uint16_t getVersBskPrd2() const {
-//		return versBskPrd2_;
-//	}
 
 	/**	Запись версии прошивки для микросхем АВАНТа.
 	 * 	Данные хранятся в переменной int16_t.
@@ -802,6 +809,9 @@ public:
 private:
 	// версии прошивок микросхем
 	uint16_t versProgIC_[GB_IC_MAX];
+
+	// тип аппарата
+	eGB_TYPE_DEVICE typeDevice_;
 
 	// кол-во аппаратов в линии 2 или 3
 	eGB_NUM_DEVICES numDevices_;
