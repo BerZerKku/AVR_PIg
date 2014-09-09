@@ -582,31 +582,33 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 	// если необходимый тип аппарата небыл передан, сделаем вывод исходя
 	// из текущих настроек.
 	if (device == AVANT_NO) {
+		device = sParam.glb.getTypeDevice();
+		if (device == AVANT_NO) {
+			if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM) {
+				// ВЧ вариант
+				// если есть защита + команды (прм и/или прд) - РЗСК
+				// если есть только команды (прм и/или прд) - К400
+				// если есть защита и (версия прошивки & 0xF000) = 0xF000 - Р400М
 
-		if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM) {
-			// ВЧ вариант
-			// если есть защита + команды (прм и/или прд) - РЗСК
-			// если есть только команды (прм и/или прд) - К400
-			// если есть защита и (версия прошивки & 0xF000) = 0xF000 - Р400М
-
-			if (sParam.def.status.isEnable()) {
-				if ((sParam.prm.status.isEnable())
-						|| (sParam.prd.status.isEnable())) {
-					device = AVANT_RZSK;
+				if (sParam.def.status.isEnable()) {
+					if ((sParam.prm.status.isEnable())
+							|| (sParam.prd.status.isEnable())) {
+						device = AVANT_RZSK;
+					} else {
+						uint16_t vers = sParam.glb.getVersProgIC(GB_IC_BSP_MCU);
+						if ((vers & 0xF000) == 0xF000) {
+							device = AVANT_R400M;
+						}
+					}
 				} else {
-					uint16_t vers = sParam.glb.getVersProgIC(GB_IC_BSP_MCU);
-					if ((vers & 0xF000) == 0xF000) {
-						device = AVANT_R400M;
+					if ((sParam.prd.status.isEnable())
+							|| (sParam.prm.status.isEnable())) {
+						device = AVANT_K400;
 					}
 				}
-			} else {
-				if ((sParam.prd.status.isEnable())
-						|| (sParam.prm.status.isEnable())) {
-					device = AVANT_K400;
-				}
+			} else if (sParam.glb.getTypeLine() == GB_TYPE_LINE_OPTO) {
+				device = AVANT_OPTO;
 			}
-		} else if (sParam.glb.getTypeLine() == GB_TYPE_LINE_OPTO) {
-			device = AVANT_OPTO;
 		}
 
 		// если текущее устройство совпадает с новым, то ничего не делаем
@@ -1306,7 +1308,7 @@ void clMenu::lvlJournalEvent() {
 		} else if (device == AVANT_RZSK) {
 			if (event < MAX_JRN_EVENT_VALUE) {
 				uint8_t dev = (uint8_t) sParam.jrnEntry.getDeviceJrn();
-				snprintf_P(&vLCDbuf[poz], 21, fcJrnEventRZSK[event], event,
+				snprintf_P(&vLCDbuf[poz], 21, fcJrnEventRZSK[event],
 						fcDevicesK400[dev]);
 			} else {
 				snprintf_P(&vLCDbuf[poz], 21,

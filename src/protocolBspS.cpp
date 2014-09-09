@@ -541,7 +541,8 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 			glb->setVersProgIC8(buf[B16], GB_IC_BSZ_PLIS);
 
 			if (buf[3] >= 16) {
-				glb->setTypeDevice((eGB_TYPE_DEVICE) buf[B17]);
+				// Тип аппарата, в сентябре 2014 появился у РЗСК без поста
+				act |= glb->setTypeDevice((eGB_TYPE_DEVICE) buf[B17]);
 			}
 
 			// совместимость, только в Р400м
