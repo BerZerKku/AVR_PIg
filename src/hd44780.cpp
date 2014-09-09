@@ -123,10 +123,10 @@ void vLCDputchar(char *b) {
  * 	@param val Код символа в таблице знаков ЖКИ.
  */
 void sendData(uint8_t val) {
-	PORT_RS	|= (1 << PIN_RS);
-	PORT_E	|= (1 << PIN_E);
-	PORT_D	 = val;
-	PORTE	&= ~(1 << PIN_E);
+	PORT_RS	|=  (1 << PIN_RS);
+	PORT_ES	|=  (1 << PIN_ES);
+	PORT_DB	 = val;
+	PORT_ES	&= ~(1 << PIN_ES);
 }
 
 /**	Отправка команды в ЖКИ.
@@ -136,9 +136,9 @@ void sendData(uint8_t val) {
  */
 void sendCom(uint8_t val) {
 	PORT_RS	&= ~(1 << PIN_RS);
-	PORT_E	|= (1 << PIN_E);
-	PORT_D	 = val;
-	PORTE	&= ~(1 << PIN_E);
+	PORT_ES	|=  (1 << PIN_ES);
+	PORT_DB	 = val;
+	PORT_ES	&= ~(1 << PIN_ES);
 }
 
 //#pragma vector=TIMER2_OVF_vect

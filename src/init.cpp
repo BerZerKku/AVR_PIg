@@ -70,8 +70,8 @@ low_level_init()
 	// PORTE.2 = 		- вход +
 	// PORTE.3 = 		- вход +
 	// PORTE.4 = 		- вход +
-	// PORTE.5 = E_STR	- вход +
-	// PORTE.6 = RS		- вход +
+	// PORTE.5 = 		- вход +
+	// PORTE.6 = 		- вход +
 	// PORTE.7 = 		- вход +
 	DDRE = 0x00;
 	PORTE = 0xFF;
@@ -79,10 +79,14 @@ low_level_init()
 	// Порт F
 	// PORTF.0 = 		- вход +
 	// PORTF.1 = 		- вход +
-	// PORTF.2 = 		- вход +
-	// PORTF.3 = 		- вход +
-	DDRF = (1 << DDF3) | (1 << DDF2);
-	PORTF = (1 << PF1) | (1 << PF0);
+	// PORTF.2 = 		- вход (проходит сигнал E_STR)
+	// PORTF.3 = 		- вход (проходит сигнал RS)
+	// PORTF.4 = 		- вход +
+	// PORTF.5 = 		- вход +
+	// PORTF.6 = 		- вход +
+	// PORTF.7 = 		- вход +
+	DDRF = 0x00;
+	PORTF = 0xFC;
 
 	// Порт G
 	// PORTG.0 = 		- вход +

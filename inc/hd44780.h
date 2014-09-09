@@ -22,15 +22,15 @@
 
 
 /// Порт подключения сигнала E.
-#define PORT_E PORTB
+#define PORT_ES PORTB
 /// Пин подключения сигнала Е.
-#define PIN_E 5
+#define PIN_ES 5
 /// Порт подключения сигнала RS
 #define PORT_RS PORTB
 /// Пин подключения сигнала RS.
 #define PIN_RS 6
 /// Порт подключения шины данных.
-#define PORT_D PORTA
+#define PORT_DB PORTA
 
 /**	Инициализация ЖКИ.
  *

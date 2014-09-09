@@ -187,7 +187,7 @@ void clMenu::main(void) {
 	}
 
 	// преобразование строки символов в данные для вывода на экран
-	// vLCDputchar(vLCDbuf);
+	vLCDputchar(vLCDbuf);
 	// запуск обновления инф-ии на ЖКИ
 	vLCDrefresh();
 }

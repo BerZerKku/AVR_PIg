@@ -9,92 +9,51 @@
 #include "../inc/keyboard.h"
 #include "../inc/debug.h"
 
-// коды кнопок
-// 1R1C - Номер строки (1..3) и стоблца (1..3)
-// F - дополнительная функция
+/** Коды кнопок.
+ *	Например: 1R1C - Номер строки (1..4) и стоблца (1..4).
+ */
 enum eBUT
 {
-	// коды кнопок, одиночное нажатие
 	BUT_NO = 0x00,
 	BUT_1R1C,
 	BUT_1R2C,
 	BUT_1R3C,
+	BUT_1R4C,
 	BUT_2R1C,
 	BUT_2R2C,
 	BUT_2R3C,
+	BUT_RR4C,
 	BUT_3R1C,
 	BUT_3R2C,
 	BUT_3R3C,
-
-	// коды кнопок, при нажатой кнопке ФУНКЦИЯ
-	BUT_F = 0x80,
-	BUT_F_1R1C,
-	BUT_F_1R2C,
-	BUT_F_1R3C,
-	BUT_F_2R1C,
-	BUT_F_2R2C,
-	BUT_F_2R3C,
-	BUT_F_3R1C,
-	BUT_F_3R2C,
-	BUT_F_3R3C
+	BUT_3R4C,
+	BUT_4R1C,
+	BUT_4R2C,
+	BUT_4R3C,
+	BUT_4R4C,
+	BUT_ERR = 0xF0
 };
 
-/// Массив кнопок Р400м
-static const eKEY fcKeyR400M[18] = { 					//
-		//		основные функции
-		KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
-		KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
-		KEY_EMPTY, 		KEY_DOWN, 		KEY_CANCEL,		//
-		//		дополнительные функции
-		KEY_EMPTY,		KEY_CALL,		KEY_PUSK_UD,	//
-		KEY_AC_PUSK, 	KEY_MENU,		KEY_AC_PUSK_UD,	//
-		KEY_AC_RESET,	KEY_AC_REGIME,	KEY_PUSK_NALAD	//
+/// Массив кнопок
+static const eKEY fcKey[] = {
+		KEY_1, 		KEY_2,		KEY_3,		KEY_ENTER,
+		KEY_4,		KEY_5,		KEY_6,		KEY_UP,
+		KEY_7,		KEY_8,		KEY_9,		KEY_DOWN,
+		KEY_STAR,	KEY_0,		KEY_SHARP,	KEY_CANCEL
 };
 
-/// Массив кнопок К400
-static const eKEY fcKeyK400[18] = { 					//
-		//		основные функции
-		KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
-		KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
-		KEY_CANCEL, 	KEY_DOWN, 		KEY_EMPTY,		//
-		//		дополнительные функции
-		KEY_EMPTY,		KEY_EMPTY,		KEY_RESET_IND,	//
-		KEY_PUSK, 		KEY_MENU,		KEY_EMPTY,		//
-		KEY_EMPTY,		KEY_EMPTY,		KEY_RESET		//
+// массив декодирования строки
+static const uint8_t fcDecodeRow[9] = {
+		0, 1, 5, BUT_ERR, 9, BUT_ERR, BUT_ERR, BUT_ERR, 13
 };
 
-/// Массив кнопок РЗСК
-static const eKEY fcKeyRZSK[18] = { 					//
-		//		основные функции
-		KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
-		KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
-		KEY_EMPTY, 		KEY_DOWN, 		KEY_CANCEL,		//
-		//		дополнительные функции
-		KEY_EMPTY,		KEY_CALL,		KEY_PUSK_UD,	//
-		KEY_PUSK, 		KEY_MENU,		KEY_PUSK_NALAD,	//
-		KEY_RESET_IND,	KEY_EMPTY,		KEY_EMPTY		//
-};
-
-/// Массив кнопок ОПТИКА
-static const eKEY fcKeyOPTO[18] = { 					//
-		//		основные функции
-		KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
-		KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
-		KEY_CANCEL, 	KEY_DOWN, 		KEY_EMPTY,		//
-		//		дополнительные функции
-		KEY_EMPTY,		KEY_EMPTY,		KEY_RESET_IND,	//
-		KEY_PUSK, 		KEY_MENU,		KEY_EMPTY,		//
-		KEY_EMPTY,		KEY_EMPTY,		KEY_RESET		//
+// массив декодирования столбцы
+static const uint8_t fcDecodeCol[9] = {
+		0, 1, 2, BUT_ERR, 3, BUT_ERR, BUT_ERR, BUT_ERR, 4
 };
 
 /// код нажатой кнопки
 static eBUT keyPressed;
-/// время нажатия на кнопку (0..10)
-static uint_fast8_t timePress = 0;
-
-//
-#define PRESS_TIME_STEP 5
-#define PRESS_TIME_MAX 10
 
 /**	Возвращает значение нажатой кнопки
  * 	@param Нет
@@ -150,38 +109,42 @@ void vKEYmain(void) {
 	static uint_fast8_t delay = TIME_DELAY;	// счетчик антидребезга
 	static uint_fast8_t keyPrev = BUT_NO;	// предыдущее значение кнопки
 	uint_fast8_t tmp;						// временная переменная
-	uint_fast8_t tmpKey = BUT_NO;			// временная переменная
+	uint_fast8_t tmpKey;					// временная переменная
 
-	tmp = (~PIND ) & 0xC0;
-	// сначала проверим нажатие кнопки "Функция"
-	if (tmp & 0x80)
-		tmpKey = BUT_F;
 
-	// сканируем клавиатуру, до определения первой нажатой кнопки
-	if (tmp & 0x40)
-		tmpKey |= BUT_3R1C;
-	else {
-		tmp = (~PING ) & 0x03;
-		if (tmp) {
-			if (tmp & 0x01)
-				tmpKey |= BUT_2R1C;
-			else if (tmp & 0x02)
-				tmpKey |= BUT_1R2C;
-		} else {
-			tmp = ~(PINC ) & 0x1F;
-			if (tmp) {
-				if (tmp & 0x01)
-					tmpKey |= BUT_1R3C;
-				else if (tmp & 0x02)
-					tmpKey |= BUT_2R2C;
-				else if (tmp & 0x04)
-					tmpKey |= BUT_2R3C;
-				else if (tmp & 0x08)
-					tmpKey |= BUT_3R2C;
-				else if (tmp & 0x10)
-					tmpKey |= BUT_3R3C;
-			}
+	for(uint8_t i = 0x01; i < 0x10; i <<= 1) {
+		DDRC = i;
+		_delay_us(1);
+		tmp = ~PINC;
+		if (PINC != i) {
+			break;
 		}
+	}
+	DDRC = 0;
+
+	tmp = fcDecodeRow[tmp & 0x0F] + fcDecodeCol[tmp >> 4];
+	if (tmp > 0) && (tmp < 0x) {
+
+	}
+
+	switch(tmp){
+		case 0x81: tmp = 'C'; break;
+		case 0x21: tmp = '#'; break;
+		case 0x41: tmp = '0'; break;
+		case 0x11: tmp = 'M'; break;
+		case 0x82: tmp = 'D'; break;
+		case 0x22: tmp = '9'; break;
+		case 0x42: tmp = '8'; break;
+		case 0x12: tmp = '7'; break;
+		case 0x84: tmp = 'U'; break;
+		case 0x24: tmp = '6'; break;
+		case 0x44: tmp = '5'; break;
+		case 0x14: tmp = '4'; break;
+		case 0x88: tmp = 'E'; break;
+		case 0x28: tmp = '3'; break;
+		case 0x48: tmp = '2'; break;
+		case 0x18: tmp = '1'; break;
+		default: TempKey=0xF0;
 	}
 
 	// Проверим на совпадение с предыдущим значением
