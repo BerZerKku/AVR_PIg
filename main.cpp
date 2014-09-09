@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include "inc/debug.h"
 #include "inc/glbDefine.h"
-#include "inc/ks0108.h"
+#include "inc/hd44780.h"
 #include "inc/menu.h"
 #include "inc/keyboard.h"
 #include "inc/uart.h"
@@ -252,11 +252,11 @@ main(void) {
 			uart->StopBits.get());
 	protPCs.setEnable(PRTS_STATUS_READ);
 
-	sei();
-
 	// настройка ЖКИ
+
 	vLCDinit();
-	vLCDclear();
+
+	sei();
 
 	// зададим тип аппарата
 	// menu.setTypeDevice(AVANT_NO);
@@ -346,9 +346,7 @@ main(void) {
 ///	Прерывание по совпадению Таймер0. Срабатывает раз в 50 мкс.
 ISR(TIMER0_COMP_vect) {
 	// Обработчик ЖКИ
-	vLCDmain();
-	// подсветка ЖКИ
-	vLCDled();
+//	vLCDmain();
 }
 
 ///	Прерывание по совпадению А Таймер1. Срабатывает раз в 10 мс.
@@ -356,7 +354,7 @@ ISR(TIMER1_COMPA_vect) {
 	static uint_fast8_t cnt = 0;
 
 	// обработчик клавиатуры вызываем раз в 10мс
-	vKEYmain();
+//	vKEYmain();
 
 	// установка флага раз в 100мс
 	if (cnt > 0)

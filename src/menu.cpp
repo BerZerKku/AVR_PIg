@@ -8,7 +8,7 @@
 
 #include "../inc/menu.h"
 #include "../inc/debug.h"
-#include "../inc/ks0108.h"
+#include "../inc/hd44780.h"
 #include "../inc/flash.h"
 
 /// режим подсветки по умолчанию
@@ -94,14 +94,6 @@ clMenu::clMenu() {
 	sParam.def.status.name = fcDeviceName00;
 	sParam.prm.status.name = fcDeviceName01;
 	sParam.prd.status.name = fcDeviceName02;
-
-#ifdef DEBUG
-	// в режиме отладки включена постоянная подсветка
-	vLCDsetLed(LED_ON);
-#else
-	// установка режима работы подсветки
-	vLCDsetLed(LED_REGIME);
-#endif
 }
 
 void clMenu::main(void) {
@@ -125,7 +117,7 @@ void clMenu::main(void) {
 		cntBlinkText = 0;
 	}
 
-	if (++cntInitLcd >= TIME_TO_INIT_LCD) {
+	if (++cntInitLcd >= TIME_TO_REINIT_LCD) {
 		vLCDinit();
 		cntInitLcd = 0;
 	}
@@ -144,13 +136,6 @@ void clMenu::main(void) {
 		if (tmp == KEY_EMPTY)
 			tmp = KEY_NO;
 		key_ = tmp;
-
-		vLCDsetLed(LED_SWITCH);
-	}
-
-	// подсветка включена всегда, если режим не "Введен"
-	if (sParam.glb.status.getRegime() != GB_REGIME_ENABLED) {
-		vLCDsetLed(LED_SWITCH);
 	}
 
 	// счетчик вывода сообщения
@@ -161,7 +146,7 @@ void clMenu::main(void) {
 	// вывод в буфер содержимого текущего меню
 	// либо сообщения что тип аппарата не определен
 	clearTextBuf();
-	(this->*lvlMenu)();
+//	(this->*lvlMenu)();
 	key_ = KEY_NO;
 
 #ifdef VIEW_DEBUG_PARAM
@@ -197,8 +182,12 @@ void clMenu::main(void) {
 	}
 	lastConnection = connection;
 
+	for(uint8_t i = 0; i < SIZE_BUF_STRING; i++) {
+		vLCDbuf[i] = i;
+	}
+
 	// преобразование строки символов в данные для вывода на экран
-	vLCDputchar(vLCDbuf, lineParam_);
+	// vLCDputchar(vLCDbuf);
 	// запуск обновления инф-ии на ЖКИ
 	vLCDrefresh();
 }
@@ -744,11 +733,8 @@ void clMenu::lvlError() {
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		cursorEnable_ = false;
-		vLCDclear();
 		// только одна строка отводится под вывод параметров
 		lineParam_ = 1;
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 		sParam.txComBuf.clear();
 		sParam.txComBuf.addCom2(GB_COM_GET_VERS);
 	}
@@ -784,8 +770,6 @@ void clMenu::lvlStart() {
 
 		cursorEnable_ = false;
 		lineParam_ = 3;
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		sParam.txComBuf.clear();
 		// буфер 1
@@ -957,9 +941,6 @@ void clMenu::lvlFirst() {
 		lineParam_ = 1;
 		cursorEnable_ = true;
 
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
-
 		Punkts_.clear();
 		Punkts_.add(punkt1);
 		Punkts_.add(punkt2);
@@ -1035,9 +1016,6 @@ void clMenu::lvlInfo() {
 		lvlCreate_ = false;
 		lineParam_ = 1;
 		cursorLine_ = 0;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		Punkts_.clear();
 		Punkts_.add(GB_IC_BSP_MCU);
@@ -1128,9 +1106,6 @@ void clMenu::lvlJournal() {
 		cursorEnable_ = true;
 		lineParam_ = 1;
 
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
-
 		sParam.txComBuf.clear();
 
 		// активация необходимых пунктов меню и соответствующих им команд
@@ -1205,9 +1180,6 @@ void clMenu::lvlJournalEvent() {
 		cursorEnable_ = false;
 		lineParam_ = 1;
 		curCom_ = 1;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// установка текущего журнала и максимального кол-во записей в нем
 		sParam.jrnEntry.clear();
@@ -1384,9 +1356,6 @@ void clMenu::lvlJournalDef() {
 		cursorEnable_ = false;
 		lineParam_ = 1;
 
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
-
 		// установка текущего журнала и максимального кол-во записей в нем
 		sParam.jrnEntry.clear();
 		sParam.jrnEntry.setCurrentDevice(GB_DEVICE_DEF);
@@ -1495,9 +1464,6 @@ void clMenu::lvlJournalPrm() {
 		cursorEnable_ = false;
 		lineParam_ = 1;
 		curCom_ = 1;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// установка текущего журнала и максимального кол-во записей в нем
 		sParam.jrnEntry.clear();
@@ -1652,9 +1618,6 @@ void clMenu::lvlJournalPrd() {
 		cursorEnable_ = false;
 		lineParam_ = 1;
 		curCom_ = 1;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// установка текущего журнала и максимального кол-во записей в нем
 		sParam.jrnEntry.clear();
@@ -1851,9 +1814,6 @@ void clMenu::lvlControl() {
 		cursorLine_ = 1;
 		cursorEnable_ = true;
 		lineParam_ = 1;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		Punkts_.clear();
 		if (device == AVANT_R400M) {
@@ -2137,9 +2097,6 @@ void clMenu::lvlSetup() {
 		cursorEnable_ = true;
 		lineParam_ = 1;
 
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
-
 		Punkts_.clear();
 		Punkts_.add(punkt1);
 		Punkts_.add(punkt2);
@@ -2228,9 +2185,6 @@ void clMenu::lvlRegime() {
 		cursorLine_ = 1;
 		cursorEnable_ = true;
 		lineParam_ = 1;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
@@ -2374,9 +2328,6 @@ void clMenu::lvlSetupParam() {
 		cursorEnable_ = true;
 		lineParam_ = 1;
 
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
-
 		// настройка меню, в зависимости от текущего устройства
 		Punkts_.clear();
 		if (sParam.def.status.isEnable()) {
@@ -2466,9 +2417,6 @@ void clMenu::lvlSetupParamDef() {
 		lineParam_ = 1;
 		curCom_ = 1;
 		EnterParam.setDisable();
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// заполнение массивов параметров и команд
 		sParam.txComBuf.clear();
@@ -2788,9 +2736,6 @@ void clMenu::lvlSetupParamPrm() {
 		lineParam_ = 1;
 		curCom_ = 1;
 
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
-
 		// заполнение массивов параметров и команд
 		eGB_TYPE_DEVICE device = sParam.typeDevice;
 		sParam.txComBuf.clear();
@@ -3026,9 +2971,6 @@ void clMenu::lvlSetupParamPrd() {
 		cursorEnable_ = true;
 		lineParam_ = 1;
 		curCom_ = 1;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// заполнение массивов параметров и команд
 		eGB_TYPE_DEVICE device = sParam.typeDevice;
@@ -3329,9 +3271,6 @@ void clMenu::lvlSetupParamGlb() {
 		lineParam_ = 1;
 		curCom_ = 1;
 		EnterParam.setDisable();
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// заполнение массивов параметров и команд
 		eGB_TYPE_DEVICE type = sParam.typeDevice;
@@ -3957,9 +3896,6 @@ void clMenu::lvlSetupDT() {
 		cursorEnable_ = true;
 		lineParam_ = 2;
 
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
-
 		Punkts_.clear();
 		Punkts_.add(punkt1);
 		Punkts_.add(punkt2);
@@ -4123,8 +4059,6 @@ void clMenu::lvlSetupInterface() {
 		cursorEnable_ = true;
 
 		lineParam_ = 1;
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		Punkts_.clear();
 		Punkts_.add(punkt1);
@@ -4303,9 +4237,6 @@ void clMenu::lvlTest() {
 		cursorEnable_ = true;
 		lineParam_ = 1;
 
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
-
 		Punkts_.clear();
 		// тест передатчика при наличии передатчика или защиты
 		if ((sParam.prd.status.isEnable()) || (sParam.def.status.isEnable())) {
@@ -4411,8 +4342,6 @@ void clMenu::lvlTest1() {
 		// в оптике не надо выводить доп.параметры
 		lineParam_ = (device == AVANT_OPTO) ? 1 : 2;
 
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 		cnt = 0;
 
 		// дополнительные команды
@@ -4567,8 +4496,7 @@ void clMenu::lvlTest2() {
 			// Иначе одна строка параметров
 			lineParam_ = 2;
 		}
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
+
 		cnt = 0;
 
 		// дополнительные команды
