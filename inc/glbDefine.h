@@ -290,21 +290,21 @@ enum eGB_COM_MASK {
 
 /// Значения команд управления
 enum eGB_CONTROL {
-	GB_CONTROL_RESET_SELF 	= 1,	//	сброс своего
-	GB_CONTROL_RESET_UD 	= 2,	//	сброс удаленного (-ых)
-	GB_CONTROL_RESET_AC		= 3,	//	сброс АК
-	GB_CONTROL_PUSK_UD_1 	= 4,	//	пуск удаленного (1)
-	GB_CONTROL_PUSK_UD_2 	= 5,	//	пуск удаленного 2
-	GB_CONTROL_PUSK_UD_ALL 	= 6,	//	пуск удаленных
-	GB_CONTROL_CALL 		= 7,	//	вызов
-	GB_CONTROL_PUSK_ON 		= 8,	//	пуск наладочный вкл.
-	GB_CONTROL_PUSK_OFF 	= 9,	//	пуск наладочный выкл.
-	GB_CONTROL_PUSK_AC_UD 	= 10,	//	пуск АК удаленный
-	// 						= 11
-	// 						= 12
+	GB_CONTROL_RESET_SELF 	= 1,	// сброс своего
+	GB_CONTROL_RESET_UD 	= 2,	// сброс удаленного (-ых)
+	GB_CONTROL_RESET_AC		= 3,	// сброс АК
+	GB_CONTROL_PUSK_UD_1 	= 4,	// пуск удаленного (1)
+	GB_CONTROL_PUSK_UD_2 	= 5,	// пуск удаленного 2
+	GB_CONTROL_PUSK_UD_ALL 	= 6,	// пуск удаленных
+	GB_CONTROL_CALL 		= 7,	// вызов
+	GB_CONTROL_PUSK_ON 		= 8,	// пуск наладочный вкл.
+	GB_CONTROL_PUSK_OFF 	= 9,	// пуск наладочный выкл.
+	GB_CONTROL_PUSK_AC_UD 	= 10,	// пуск АК удаленный
+	GB_CONTROL_RESET_UD_1	= 11,	// сброс удаленного 1
+	GB_CONTROL_RESET_UD_2	= 12,	// сброс удаленного 2
 	GB_CONTROL_PUSK_UD_3 	= 13,	// пуск удаленного 3
-	GB_CONTROL_REG_AC 		= 14,	//
-	// 						= 15
+	GB_CONTROL_REG_AC 		= 14,	// режим АК
+	GB_CONTROL_RESET_UD_3	= 15,	// сброс удаленного 3
 	GB_CONTROL_MAN_1 		= 16,	// пуск МАН удаленного (1)
 	GB_CONTROL_MAN_2 		= 17,	// пуск МАН удаленного 2
 	GB_CONTROL_MAN_3 		= 18,	// пуск МАН удаленного 3
@@ -382,6 +382,10 @@ enum eGB_TEST_SIGNAL {
 	GB_SIGNAL_COM31,				// сигналы команд должны идти
 	GB_SIGNAL_COM32,				// подряд для заполнения К400
 	GB_SIGNAL_CF_RZ_R400M,
+	GB_SIGNAL_CF1_RZ_R400M,
+	GB_SIGNAL_CF2_RZ_R400M,
+	GB_SIGNAL_CF3_RZ_R400M,
+	GB_SIGNAL_CF4_RZ_R400M,
 	GB_SIGNAL_MAX
 };
 
@@ -401,6 +405,16 @@ enum eGB_ACT {
 /// Класс для даты и времени
 class TDataTime {
 public:
+	TDataTime() {
+		msSecond_ = 0;
+		second_ = 0;
+		minute_ = 0;
+		hour_ = 0;
+		day_ = 1;
+		month_ = 1;
+		year_ = 0;
+	}
+
 	// Считывание и установка секунд
 	uint8_t getSecond() const {
 		return second_;
@@ -658,10 +672,11 @@ public:
 	bool setState(uint8_t state) {
 		bool stat = false;
 		if (state < MAX_NUM_DEVICE_STATE) {
-			state_ = state;
 			stat = true;
-		} else
+		} else {
 			state = MAX_NUM_DEVICE_STATE;
+		}
+		state_ = state;
 
 		return stat;
 	}
@@ -1215,11 +1230,10 @@ public:
 	 */
 	bool setOpticEntry(uint8_t *buf) {
 		uint8_t num = 0;
-		uint8_t byte = 0;
 
 		// В каждом байте записи считается кол-во установленных битов
 		for(uint_fast8_t i = 0; i <= 3; i++) {
-			byte = *buf++;
+			uint8_t byte = *buf++;
 			opticEntry_[i] = byte;
 			for(uint_fast8_t j = 1; j > 0; j <<= 1) {
 				if (byte & j) {
@@ -1249,13 +1263,12 @@ public:
 	 */
 	uint8_t getOpticEntry(uint8_t num) {
 		uint8_t val = 0;
-		uint8_t byte = 0;
 
 		// проверка на допустимое значение
 		if ((num >= 1) && (num <= numOpticEntries_)) {
 			for(uint_fast8_t i = 0; i <= 3; i++) {
 				// перебор 4-х байт, начиная с младшего
-				byte = opticEntry_[3 - i];
+				uint8_t byte = opticEntry_[3 - i];
 				for(uint_fast8_t j = 0; j < 8; j++) {
 					if (byte & (1 << j)) {
 						if (--num == 0) {
@@ -1747,7 +1760,7 @@ private:
 
 	/** Добавление сигнала в список для Р400м.
 	 * 	бит: 7		6		5		4		3		2		1		0		;
-	 * 	b1 : x 		x 		x 		[рз]	x		x 		x 		[кч]	;
+	 * 	b1 : x 		x 		x 		[рз]	[кч4]	[кч3]	[кч2]	[кч1]	;
 	 * 	Установленный бит означает наличие данного сигнала на передачу.
 	 * 	Одновременно могут присутствовать оба сигнала.
 	 * 	@param *s Указатель на массив данных.
@@ -1764,10 +1777,26 @@ private:
 			signal = GB_SIGNAL_RZ;
 
 			// выводится "КЧ и РЗ" при их одновременно наличии
-			if (t & 0x01)
-				signal = GB_SIGNAL_CF_RZ_R400M;
-		} else if (t & 0x01)
-			signal = GB_SIGNAL_CF;
+			if (t & 0x01) {
+				signal = GB_SIGNAL_CF1_RZ_R400M;
+			} else if (t & 0x02) {
+				signal = GB_SIGNAL_CF2_RZ_R400M;
+			} else if (t & 0x04) {
+				signal = GB_SIGNAL_CF3_RZ_R400M;
+			} else if (t & 0x08) {
+				signal = GB_SIGNAL_CF4_RZ_R400M;
+			}
+		} else {
+			if (t & 0x01) {
+				signal = GB_SIGNAL_CF1;
+			} else if (t & 0x02) {
+				signal = GB_SIGNAL_CF2;
+			} else if (t & 0x04) {
+				signal = GB_SIGNAL_CF3;
+			} else if (t & 0x08) {
+				signal = GB_SIGNAL_CF4;
+			}
+		}
 
 		return signal;
 	}

@@ -851,7 +851,6 @@ void clMenu::lvlStart() {
 	}
 	if (sParam.prd.status.isEnable()) {
 		printDevicesStatus(poz, &sParam.prd.status);
-		poz += 20;
 	}
 
 	switch (key_) {
@@ -1826,7 +1825,7 @@ void clMenu::lvlControl() {
 	static char punkt12[] PROGMEM = "%d. Пуск АК свой";
 	static char punkt13[] PROGMEM = "%d. Пуск АК удаленн.";
 	static char punkt14[] PROGMEM = "%d. Пуск ПРД";
-//	static char punkt15[] PROGMEM = "%d. АК автоматическ.";
+	static char punkt15[] PROGMEM = "%d. АК автоматическ.";
 	static char punkt16[] PROGMEM = "%d. АК ускоренный";
 	static char punkt17[] PROGMEM = "%d. АК выключен";
 	static char punkt18[] PROGMEM = "%d. АК испытания";
@@ -1843,6 +1842,9 @@ void clMenu::lvlControl() {
 	static char punkt29[] PROGMEM = "%d. Пуск удал. МАН 3";
 	static char punkt30[] PROGMEM = "%d. Пуск удал-ых МАН";
 	static char punkt31[] PROGMEM = "%d. АК включен";
+	static char punkt32[] PROGMEM = "%d. Сброс удален. 1";
+	static char punkt33[] PROGMEM = "%d. Сброс удален. 2";
+	static char punkt34[] PROGMEM = "%d. Сброс удален. 3";
 
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
@@ -1927,6 +1929,21 @@ void clMenu::lvlControl() {
 				Punkts_.add(punkt14);
 				Punkts_.add(punkt31);
 				Punkts_.add(punkt17);
+			} else if (compatibility == GB_COMPATIBILITY_LINER) {
+				eGB_NUM_DEVICES numDevices = sParam.def.getNumDevices();
+				if (numDevices == GB_NUM_DEVICES_2) {
+					Punkts_.add(punkt04);
+					Punkts_.add(punkt02);
+				} else if (numDevices == GB_NUM_DEVICES_3) {
+					Punkts_.add(punkt33);	// далее выбирается в зависимости от номера
+					Punkts_.add(punkt34);	// далее выбирается в зависимости от номера
+					Punkts_.add(punkt23);	// далее выбирается в зависимости от номера
+					Punkts_.add(punkt24);	// далее выбирается в зависимости от номера
+					Punkts_.add(punkt26);
+				}
+				Punkts_.add(punkt15);
+				Punkts_.add(punkt16);
+				Punkts_.add(punkt17);
 			}
 			// Вызов есть во всех совместимостях
 			Punkts_.add(punkt05);
@@ -1995,6 +2012,28 @@ void clMenu::lvlControl() {
 					Punkts_.change(punkt24, GB_COM_NO, 4);
 				}
 			}
+		} else if (device == AVANT_R400M) {
+			if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_LINER) {
+				if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+					uint8_t num = sParam.glb.getDeviceNum();
+					if (num == 1) {
+						Punkts_.change(punkt33, GB_COM_NO, 2);
+						Punkts_.change(punkt34, GB_COM_NO, 3);
+						Punkts_.change(punkt24, GB_COM_NO, 4);
+						Punkts_.change(punkt25, GB_COM_NO, 5);
+					} else if (num == 2) {
+						Punkts_.change(punkt32, GB_COM_NO, 2);
+						Punkts_.change(punkt34, GB_COM_NO, 3);
+						Punkts_.change(punkt23, GB_COM_NO, 4);
+						Punkts_.change(punkt25, GB_COM_NO, 5);
+					} else if (num == 3) {
+						Punkts_.change(punkt32, GB_COM_NO, 2);
+						Punkts_.change(punkt32, GB_COM_NO, 3);
+						Punkts_.change(punkt23, GB_COM_NO, 4);
+						Punkts_.change(punkt24, GB_COM_NO, 5);
+					}
+				}
+			}
 		}
 	}
 
@@ -2055,13 +2094,10 @@ void clMenu::lvlControl() {
 		} else if (name == punkt14) {
 			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
 			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		}
-//		else if (p == punkt15)
-//		{
-//			sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_FAST);
-//			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-//		}
-		else if (name == punkt16) {
+		} else if (name == punkt15) {
+			sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_NORM);
+			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+		} else if (name == punkt16) {
 			sParam.txComBuf.setInt8(GB_TYPE_AC_FAST);
 			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
 		} else if (name == punkt17) {
@@ -2109,6 +2145,15 @@ void clMenu::lvlControl() {
 		} else if (name == punkt31) {
 			sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_NORM);
 			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+		} else if (name == punkt32) {
+			sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD_1);
+			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+		} else if (name == punkt33) {
+			sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD_2);
+			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+		} else if (name == punkt34) {
+			sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD_3);
+			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 		}
 	}
 		break;
@@ -2251,7 +2296,6 @@ void clMenu::lvlRegime() {
 	}
 	if (sParam.prd.status.isEnable()) {
 		printDevicesRegime(poz, &sParam.prd.status);
-		poz += 20;
 	}
 
 	// Ввод нового значения параметра.
@@ -4424,8 +4468,14 @@ void clMenu::lvlTest1() {
 		sParam.test.clear();
 		if (device == AVANT_R400M) {
 			sParam.test.addSignalToList(GB_SIGNAL_RZ);
-			if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_AVANT)
+			if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_AVANT) {
 				sParam.test.addSignalToList(GB_SIGNAL_CF);
+			} else if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_LINER) {
+				sParam.test.addSignalToList(GB_SIGNAL_CF1);
+				sParam.test.addSignalToList(GB_SIGNAL_CF2);
+				sParam.test.addSignalToList(GB_SIGNAL_CF3);
+				sParam.test.addSignalToList(GB_SIGNAL_CF4);
+			}
 		} else if (device == AVANT_RZSK) {
 			sParam.test.addSignalToList(GB_SIGNAL_CF_NO_RZ);
 			sParam.test.addSignalToList(GB_SIGNAL_CF_RZ);
@@ -5057,7 +5107,7 @@ void clMenu::printDevicesRegime(uint8_t poz, TDeviceStatus *device) {
 	poz += 3;
 	snprintf(&vLCDbuf[poz], 2, ":");
 	poz += 1;
-	poz += 1 + snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
+	snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
 }
 
 
