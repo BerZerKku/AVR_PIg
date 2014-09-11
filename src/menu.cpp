@@ -278,22 +278,24 @@ bool clMenu::setDeviceR400M() {
 
 	sParam.typeDevice = AVANT_R400M;
 
-	// TODO Р400М в 3-х концевой Uk1/2
-	// первый столбец параметров
 	measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
-	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
-	measParam[2] = measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UOUT;
-	measParam[4] = measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_IOUT;
-
+	measParam[1] = MENU_MEAS_PARAM_DATE;
+	measParam[2] = MENU_MEAS_PARAM_UOUT;
+	measParam[3] = MENU_MEAS_PARAM_IOUT;
+	measParam[4] = MENU_MEAS_PARAM_SD;
 	// второй столбец параметров
-	measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UZ;
-	if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
-		measParam[3] = MENU_MEAS_PARAM_UC1;
-		measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC2;
+	if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+		measParam[5] = MENU_MEAS_PARAM_UZ1;
+		measParam[6] = MENU_MEAS_PARAM_UZ2;
+		measParam[7] = MENU_MEAS_PARAM_UC1;
+		measParam[8] = MENU_MEAS_PARAM_UC2;
+		measParam[9] = MENU_MEAS_PARAM_UN1;
+		measParam[10] = MENU_MEAS_PARAM_UN2;
 	} else {
-		measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
+		measParam[5] = MENU_MEAS_PARAM_UZ;
+		measParam[6] = MENU_MEAS_PARAM_UC;
+		measParam[7] = MENU_MEAS_PARAM_UN;
 	}
-	measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_SD;
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -412,7 +414,7 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 			sParam.prd.status.warningText[i] = fcUnknownWarning;
 
 		// предварительная очистка массива отображаемых параметров
-		for (uint_fast8_t i = 0; i < (MAX_NUM_MEAS_PARAM * 2); i++)
+		for (uint_fast8_t i = 0; i < MAX_NUM_MEAS_PARAM; i++)
 			measParam[i] = MENU_MEAS_PARAM_NO;
 
 		if (device == AVANT_RZSK) {
@@ -427,10 +429,10 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 		// на экране отображается ошибка
 		sParam.typeDevice = AVANT_NO;
 		// в случае неизвестного типа устройства, отключим все
-		for (uint_fast8_t i = 0; i < (MAX_NUM_MEAS_PARAM * 2); i++)
+		for (uint_fast8_t i = 0; i < MAX_NUM_MEAS_PARAM; i++)
 			measParam[i] = MENU_MEAS_PARAM_NO;
-		measParam[0] = measParam[0 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TIME;
-		measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
+		measParam[0] = MENU_MEAS_PARAM_TIME;
+		measParam[1] = MENU_MEAS_PARAM_DATE;
 
 		sParam.def.status.setEnable(false);
 		sParam.prm.status.setEnable(false);
@@ -441,7 +443,7 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 
 	// "сброс" флага необходимости проверки типа аппарата
 	sParam.device = true;
-	// обнавление текущего уровня меню
+	// обовление текущего уровня меню
 	lvlCreate_ = true;
 
 	return status;
@@ -661,55 +663,59 @@ void clMenu::lvlFirst() {
 		sParam.txComBuf.clear();
 	}
 
+	PGM_P name = Punkts_.getName(cursorLine_ - 1);
+
 	snprintf_P(&vLCDbuf[0], 21, title);
 
 	printPunkts();
 
-	switch (key_) {
-	case KEY_UP:
-		cursorLineUp();
-		break;
-	case KEY_DOWN:
-		cursorLineDown();
-		break;
+	if (key_ != KEY_NO) {
+		// обработка кнопок перехода в конкретный номер пункта меню
+		if ((key_ >= KEY_1) && (key_ <= KEY_9)) {
+			name = Punkts_.getName(key_ - KEY_1);
+			key_ = (name != 0) ? KEY_ENTER : KEY_NO;
+		}
 
-	case KEY_ENTER:
-		switch (cursorLine_) {
-		case 1:
-			lvlMenu = &clMenu::lvlJournal;
+		switch (key_) {
+		case KEY_UP:
+			cursorLineUp();
+			break;
+		case KEY_DOWN:
+			cursorLineDown();
+			break;
+
+		case KEY_ENTER:
+			if (name == punkt1) {
+				lvlMenu = &clMenu::lvlJournal;
+				lvlCreate_ = true;
+			} else if (name == punkt2) {
+				lvlMenu = &clMenu::lvlControl;
+				lvlCreate_ = true;
+			} else if (name == punkt3) {
+				lvlMenu = &clMenu::lvlSetup;
+				lvlCreate_ = true;
+			} else if (name == punkt4) {
+				lvlMenu = &clMenu::lvlTest;
+				lvlCreate_ = true;
+			} else if (name == punkt5) {
+				lvlMenu = &clMenu::lvlInfo;
+				lvlCreate_ = true;
+			}
+			break;
+
+		case KEY_CANCEL:
+			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
 			break;
-		case 2:
-			lvlMenu = &clMenu::lvlControl;
+
+		case KEY_MENU:
+			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
 			break;
-		case 3:
-			lvlMenu = &clMenu::lvlSetup;
-			lvlCreate_ = true;
-			break;
-		case 4:
-			lvlMenu = &clMenu::lvlTest;
-			lvlCreate_ = true;
-			break;
-		case 5:
-			lvlMenu = &clMenu::lvlInfo;
-			lvlCreate_ = true;
+
+		default:
 			break;
 		}
-		break;
-
-	case KEY_CANCEL:
-		lvlMenu = &clMenu::lvlStart;
-		lvlCreate_ = true;
-		break;
-
-	case KEY_MENU:
-		lvlMenu = &clMenu::lvlStart;
-		lvlCreate_ = true;
-		break;
-
-	default:
-		break;
 	}
 }
 
@@ -837,41 +843,49 @@ void clMenu::lvlJournal() {
 	snprintf_P(&vLCDbuf[0], 21, title);
 	printPunkts();
 
-	switch (key_) {
-	case KEY_UP:
-		cursorLineUp();
-		break;
-	case KEY_DOWN:
-		cursorLineDown();
-		break;
-
-	case KEY_CANCEL:
-		lvlMenu = &clMenu::lvlFirst;
-		lvlCreate_ = true;
-		break;
-	case KEY_MENU:
-		lvlMenu = &clMenu::lvlStart;
-		lvlCreate_ = true;
-		break;
-
-	case KEY_ENTER:
-		if (name == punkt1) {
-			lvlMenu = &clMenu::lvlJournalEvent;
-			lvlCreate_ = true;
-		} else if (name == punkt2) {
-			lvlMenu = &clMenu::lvlJournalDef;
-			lvlCreate_ = true;
-		} else if (name == punkt3) {
-			lvlMenu = &clMenu::lvlJournalPrm;
-			lvlCreate_ = true;
-		} else if (name == punkt4) {
-			lvlMenu = &clMenu::lvlJournalPrd;
-			lvlCreate_ = true;
+	if (key_ != KEY_NO) {
+		// обработка кнопок перехода в конкретный номер пункта меню
+		if ((key_ >= KEY_1) && (key_ <= KEY_9)) {
+			name = Punkts_.getName(key_ - KEY_1);
+			key_ = (name != 0) ? KEY_ENTER : KEY_NO;
 		}
-		break;
 
-	default:
-		break;
+		switch (key_) {
+			case KEY_UP:
+				cursorLineUp();
+				break;
+			case KEY_DOWN:
+				cursorLineDown();
+				break;
+
+			case KEY_CANCEL:
+				lvlMenu = &clMenu::lvlFirst;
+				lvlCreate_ = true;
+				break;
+			case KEY_MENU:
+				lvlMenu = &clMenu::lvlStart;
+				lvlCreate_ = true;
+				break;
+
+			case KEY_ENTER:
+				if (name == punkt1) {
+					lvlMenu = &clMenu::lvlJournalEvent;
+					lvlCreate_ = true;
+				} else if (name == punkt2) {
+					lvlMenu = &clMenu::lvlJournalDef;
+					lvlCreate_ = true;
+				} else if (name == punkt3) {
+					lvlMenu = &clMenu::lvlJournalPrm;
+					lvlCreate_ = true;
+				} else if (name == punkt4) {
+					lvlMenu = &clMenu::lvlJournalPrd;
+					lvlCreate_ = true;
+				}
+				break;
+
+			default:
+				break;
+		}
 	}
 }
 
@@ -1037,9 +1051,6 @@ void clMenu::lvlJournalDef() {
 	// вывод названия текущего пункта меню
 	snprintf_P(&vLCDbuf[poz], 21, title);
 	poz += 20;
-	// вывод номер текущей записи и их кол-ва
-	snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
-	poz += 20;
 
 	if (num_entries == 0) {
 		// вывод сообщения об отсутствии записей в журнале
@@ -1048,28 +1059,24 @@ void clMenu::lvlJournalDef() {
 		// ифнорация о текущей записи еще не получена
 		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
 	} else {
-		// вывод состояния
-//		snprintf_P(&vLCDbuf[poz], 21, fcStateJrn);
-		snprintf_P(&vLCDbuf[poz + 11], 10,
-				sParam.def.status.stateText[sParam.jrnEntry.getEventType()]);
-		poz += 20;
-		// вывод даты
-		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
+		// (Номер записи/кол-во записей) и дата
+		snprintf_P(&vLCDbuf[poz], 12, fcJrnNumEntries, cur_entry, num_entries);
+		snprintf_P(&vLCDbuf[poz + 12], 9, fcDateJrn,
 				sParam.jrnEntry.dataTime.getDay(),
 				sParam.jrnEntry.dataTime.getMonth(),
 				sParam.jrnEntry.dataTime.getYear());
+
 		poz += 20;
-		//	    snprintf_P(&vLCDbuf[poz],4,fcDevices[sParam.journalEntry.getDevice()]);
-		// вывод времени
-		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
+		// Режим и время
+		snprintf_P(&vLCDbuf[poz], 8,
+				sParam.def.status.stateText[sParam.jrnEntry.getEventType()]);
+		snprintf_P(&vLCDbuf[poz + 8], 13, fcTimeJrn,
 				sParam.jrnEntry.dataTime.getHour(),
 				sParam.jrnEntry.dataTime.getMinute(),
 				sParam.jrnEntry.dataTime.getSecond(),
 				sParam.jrnEntry.dataTime.getMsSecond());
 
 		poz += 20;
-//		uint8_t signals = sParam.jrnEntry.getSignalDef();
-//		snprintf(&vLCDbuf[poz], 21, "%x",signals);
 		snprintf_P(&vLCDbuf[poz], 21, fcSignalDefJrn,
 				sParam.jrnEntry.getSignalPusk(),
 				sParam.jrnEntry.getSignalStop(), sParam.jrnEntry.getSignalMan(),
@@ -1134,8 +1141,6 @@ void clMenu::lvlJournalPrm() {
 		sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 	}
 
-	eGB_TYPE_DEVICE device = sParam.typeDevice;
-
 	// номер текущей записи в архиве и максимальное кол-во записей
 	uint16_t cur_entry = sParam.jrnEntry.getCurrentEntry();
 	uint16_t num_entries = sParam.jrnEntry.getNumJrnEntries();
@@ -1143,9 +1148,6 @@ void clMenu::lvlJournalPrm() {
 	uint8_t poz = 0;
 	// вывод названия текущего пункта меню
 	snprintf_P(&vLCDbuf[poz], 21, title);
-	poz += 20;
-	// вывод номер текущей записи и их кол-ва
-	snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
 	poz += 20;
 
 	if (num_entries == 0) {
@@ -1155,22 +1157,23 @@ void clMenu::lvlJournalPrm() {
 		// ифнорация о текущей записи еще не получена
 		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
 	} else {
-		// вывод номера команды
-		uint8_t com = sParam.jrnEntry.getNumCom();
-		snprintf_P(&vLCDbuf[poz], 21, fcNumComJrn, com);
-		poz += 20;
-		// вывод даты
-		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
+		// (Номер записи/кол-во записей) и дата
+		snprintf_P(&vLCDbuf[poz], 12, fcJrnNumEntries, cur_entry, num_entries);
+		snprintf_P(&vLCDbuf[poz + 12], 9, fcDateJrn,
 				sParam.jrnEntry.dataTime.getDay(),
 				sParam.jrnEntry.dataTime.getMonth(),
 				sParam.jrnEntry.dataTime.getYear());
+
 		poz += 20;
-		// вывод времени
-		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
+		// Режим и время
+		uint8_t c = sParam.jrnEntry.getNumCom();
+		snprintf_P(&vLCDbuf[poz], 8, fcNumComJrn, c);
+		snprintf_P(&vLCDbuf[poz + 8], 13, fcTimeJrn,
 				sParam.jrnEntry.dataTime.getHour(),
 				sParam.jrnEntry.dataTime.getMinute(),
 				sParam.jrnEntry.dataTime.getSecond(),
 				sParam.jrnEntry.dataTime.getMsSecond());
+
 		poz += 20;
 		// вывод события
 		uint8_t event = sParam.jrnEntry.getEventType();
@@ -1240,8 +1243,6 @@ void clMenu::lvlJournalPrd() {
 		sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 	}
 
-	eGB_TYPE_DEVICE device = sParam.typeDevice;
-
 	// номер текущей записи в архиве и максимальное кол-во записей
 	uint16_t cur_entry = sParam.jrnEntry.getCurrentEntry();
 	uint16_t num_entries = sParam.jrnEntry.getNumJrnEntries();
@@ -1249,10 +1250,6 @@ void clMenu::lvlJournalPrd() {
 	uint8_t poz = 0;
 	// вывод названия текущего пункта меню
 	snprintf_P(&vLCDbuf[poz], 21, title);
-	poz += 20;
-
-	// вывод номер текущей записи и их кол-ва
-	snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
 
 	poz += 20;
 	if (num_entries == 0) {
@@ -1262,30 +1259,24 @@ void clMenu::lvlJournalPrd() {
 		// ифнорация о текущей записи еще не получена
 		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
 	} else {
-
-		// вывод номера команды
-		uint8_t com = sParam.jrnEntry.getNumCom();
-		uint8_t t = snprintf_P(&vLCDbuf[poz], 21, fcNumComJrn, com);
-
-		// для команднеой ВЧ-аппаратуры, выведем источник формирования команды
-		if (device == AVANT_RZSK) {
-			uint8_t s = sParam.jrnEntry.getSourceCom();
-			snprintf_P(&vLCDbuf[poz + t + 1], 5, fcJrnSourcePrd[s]);
-		}
-
-		poz += 20;
-		// вывод даты
-		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
+		// (Номер записи/кол-во записей) и дата
+		snprintf_P(&vLCDbuf[poz], 12, fcJrnNumEntries, cur_entry, num_entries);
+		snprintf_P(&vLCDbuf[poz + 12], 9, fcDateJrn,
 				sParam.jrnEntry.dataTime.getDay(),
 				sParam.jrnEntry.dataTime.getMonth(),
 				sParam.jrnEntry.dataTime.getYear());
+
 		poz += 20;
-		// вывод времени
-		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
+		// Режим и время
+		uint8_t s = sParam.jrnEntry.getSourceCom();
+		uint8_t c = sParam.jrnEntry.getNumCom();
+		snprintf_P(&vLCDbuf[poz], 8, fcJrnSourcePrd[s], c);
+		snprintf_P(&vLCDbuf[poz + 8], 13, fcTimeJrn,
 				sParam.jrnEntry.dataTime.getHour(),
 				sParam.jrnEntry.dataTime.getMinute(),
 				sParam.jrnEntry.dataTime.getSecond(),
 				sParam.jrnEntry.dataTime.getMsSecond());
+
 		poz += 20;
 		// вывод события
 		uint8_t event = sParam.jrnEntry.getEventType();
@@ -1513,120 +1504,128 @@ void clMenu::lvlControl() {
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
 	printPunkts();
 
-	switch (key_) {
-	case KEY_UP:
-		cursorLineUp();
-		break;
-	case KEY_DOWN:
-		cursorLineDown();
-		break;
-
-	case KEY_CANCEL:
-		lvlMenu = &clMenu::lvlFirst;
-		lvlCreate_ = true;
-		break;
-	case KEY_MENU:
-		lvlMenu = &clMenu::lvlStart;
-		lvlCreate_ = true;
-		break;
-
-	case KEY_ENTER: {
-		if (name == punkt02) {
-			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt03) {
-			sParam.txComBuf.setInt8(GB_CONTROL_RESET_SELF);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt04) {
-			sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt05) {
-			sParam.txComBuf.setInt8(GB_CONTROL_CALL);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt06) {
-			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_ON);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt07) {
-			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_OFF);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt09) {
-			sParam.txComBuf.setInt8(GB_CONTROL_MAN_1);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt10) {
-			sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
-			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-		} else if (name == punkt11) {
-			sParam.txComBuf.setInt8(GB_CONTROL_RESET_AC);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt12) {
-			sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
-			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-		} else if (name == punkt13) {
-			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_AC_UD);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt14) {
-			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+	if (key_ != KEY_NO) {
+		// обработка кнопок перехода в конкретный номер пункта меню
+		if ((key_ >= KEY_1) && (key_ <= KEY_9)) {
+			name = Punkts_.getName(key_ - KEY_1);
+			key_ = (name != 0) ? KEY_ENTER : KEY_NO;
 		}
-//		else if (p == punkt15)
-//		{
-//			sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_FAST);
-//			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-//		}
-		else if (name == punkt16) {
-			sParam.txComBuf.setInt8(GB_TYPE_AC_FAST);
-			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-		} else if (name == punkt17) {
-			sParam.txComBuf.setInt8(GB_TYPE_AC_OFF);
-			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-		} else if (name == punkt18) {
-			sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
-			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-		} else if (name == punkt19) {
-			sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_NORM);
-			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-		} else if (name == punkt20) {
-			sParam.txComBuf.setInt8(GB_TYPE_AC_CHECK);
-			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-//		} else if (p == punkt21) {
-//			sParam.txComBuf.setInt8(GB_TYPE_AC_CHECK);
-//			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-		} else if (name == punkt22) {
-			sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt23) {
-			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt24) {
-			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_2);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt25) {
-			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_3);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt26) {
-			sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_ALL);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt27) {
-			sParam.txComBuf.setInt8(GB_CONTROL_MAN_1);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt28) {
-			sParam.txComBuf.setInt8(GB_CONTROL_MAN_2);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt29) {
-			sParam.txComBuf.setInt8(GB_CONTROL_MAN_3);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt30) {
-			sParam.txComBuf.setInt8(GB_CONTROL_MAN_ALL);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-		} else if (name == punkt31) {
-			sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_NORM);
-			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-		}
-	}
-		break;
 
-	default:
-		break;
+		switch (key_) {
+			case KEY_UP:
+				cursorLineUp();
+				break;
+			case KEY_DOWN:
+				cursorLineDown();
+				break;
+
+			case KEY_CANCEL:
+				lvlMenu = &clMenu::lvlFirst;
+				lvlCreate_ = true;
+				break;
+			case KEY_MENU:
+				lvlMenu = &clMenu::lvlStart;
+				lvlCreate_ = true;
+				break;
+
+			case KEY_ENTER: {
+				if (name == punkt02) {
+					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt03) {
+					sParam.txComBuf.setInt8(GB_CONTROL_RESET_SELF);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt04) {
+					sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt05) {
+					sParam.txComBuf.setInt8(GB_CONTROL_CALL);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt06) {
+					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_ON);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt07) {
+					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_OFF);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt09) {
+					sParam.txComBuf.setInt8(GB_CONTROL_MAN_1);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt10) {
+					sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
+					sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+				} else if (name == punkt11) {
+					sParam.txComBuf.setInt8(GB_CONTROL_RESET_AC);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt12) {
+					sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
+					sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+				} else if (name == punkt13) {
+					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_AC_UD);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt14) {
+					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				}
+				//		else if (p == punkt15)
+				//		{
+				//			sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_FAST);
+				//			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+				//		}
+				else if (name == punkt16) {
+					sParam.txComBuf.setInt8(GB_TYPE_AC_FAST);
+					sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+				} else if (name == punkt17) {
+					sParam.txComBuf.setInt8(GB_TYPE_AC_OFF);
+					sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+				} else if (name == punkt18) {
+					sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
+					sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+				} else if (name == punkt19) {
+					sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_NORM);
+					sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+				} else if (name == punkt20) {
+					sParam.txComBuf.setInt8(GB_TYPE_AC_CHECK);
+					sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+					//		} else if (p == punkt21) {
+					//			sParam.txComBuf.setInt8(GB_TYPE_AC_CHECK);
+					//			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+				} else if (name == punkt22) {
+					sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt23) {
+					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt24) {
+					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_2);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt25) {
+					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_3);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt26) {
+					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_ALL);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt27) {
+					sParam.txComBuf.setInt8(GB_CONTROL_MAN_1);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt28) {
+					sParam.txComBuf.setInt8(GB_CONTROL_MAN_2);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt29) {
+					sParam.txComBuf.setInt8(GB_CONTROL_MAN_3);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt30) {
+					sParam.txComBuf.setInt8(GB_CONTROL_MAN_ALL);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else if (name == punkt31) {
+					sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_NORM);
+					sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+				}
+			}
+			break;
+
+			default:
+				break;
+		}
 	}
 
 }
@@ -1685,46 +1684,54 @@ void clMenu::lvlSetup() {
 		}
 	}
 
-	switch (key_) {
-	case KEY_UP:
-		cursorLineUp();
-		break;
-	case KEY_DOWN:
-		cursorLineDown();
-		break;
-
-	case KEY_CANCEL:
-		lvlMenu = &clMenu::lvlFirst;
-		lvlCreate_ = true;
-		break;
-	case KEY_MENU:
-		lvlMenu = &clMenu::lvlStart;
-		lvlCreate_ = true;
-		break;
-
-	case KEY_ENTER: {
-		if (name == punkt1) {
-			lvlMenu = &clMenu::lvlRegime;
-			lvlCreate_ = true;
-		} else if (name == punkt2) {
-			lvlMenu = &clMenu::lvlSetupDT;
-			lvlCreate_ = true;
-		} else if (name == punkt3) {
-			lvlMenu = &clMenu::lvlSetupParam;
-			lvlCreate_ = true;
-		} else if (name == punkt4) {
-			enterFunc = &clMenu::enterPassword;
-			EnterParam.setEnable(MENU_ENTER_PASSWORD);
-			EnterParam.com = GB_COM_NO;
-		} else if (name == punkt5) {
-			lvlMenu = &clMenu::lvlSetupInterface;
-			lvlCreate_ = true;
+	if (key_ != KEY_NO) {
+		// обработка кнопок перехода в конкретный номер пункта меню
+		if ((key_ >= KEY_1) && (key_ <= KEY_9)) {
+			name = Punkts_.getName(key_ - KEY_1);
+			key_ = (name != 0) ? KEY_ENTER : KEY_NO;
 		}
-	}
-		break;
 
-	default:
-		break;
+		switch (key_) {
+			case KEY_UP:
+				cursorLineUp();
+				break;
+			case KEY_DOWN:
+				cursorLineDown();
+				break;
+
+			case KEY_CANCEL:
+				lvlMenu = &clMenu::lvlFirst;
+				lvlCreate_ = true;
+				break;
+			case KEY_MENU:
+				lvlMenu = &clMenu::lvlStart;
+				lvlCreate_ = true;
+				break;
+
+			case KEY_ENTER: {
+				if (name == punkt1) {
+					lvlMenu = &clMenu::lvlRegime;
+					lvlCreate_ = true;
+				} else if (name == punkt2) {
+					lvlMenu = &clMenu::lvlSetupDT;
+					lvlCreate_ = true;
+				} else if (name == punkt3) {
+					lvlMenu = &clMenu::lvlSetupParam;
+					lvlCreate_ = true;
+				} else if (name == punkt4) {
+					enterFunc = &clMenu::enterPassword;
+					EnterParam.setEnable(MENU_ENTER_PASSWORD);
+					EnterParam.com = GB_COM_NO;
+				} else if (name == punkt5) {
+					lvlMenu = &clMenu::lvlSetupInterface;
+					lvlCreate_ = true;
+				}
+			}
+			break;
+
+			default:
+				break;
+		}
 	}
 }
 
@@ -1902,41 +1909,48 @@ void clMenu::lvlSetupParam() {
 	snprintf_P(&vLCDbuf[0], 20, title);
 	printPunkts();
 
-	switch (key_) {
-	case KEY_UP:
-		cursorLineUp();
-		break;
-	case KEY_DOWN:
-		cursorLineDown();
-		break;
-
-	case KEY_CANCEL:
-		lvlMenu = &clMenu::lvlSetup;
-		lvlCreate_ = true;
-		break;
-	case KEY_MENU:
-		lvlMenu = &clMenu::lvlStart;
-		lvlCreate_ = true;
-		break;
-
-	case KEY_ENTER:
-		if (name == punkt1) {
-			lvlMenu = &clMenu::lvlSetupParamDef;
-			lvlCreate_ = true;
-		} else if (name == punkt2) {
-			lvlMenu = &clMenu::lvlSetupParamPrm;
-			lvlCreate_ = true;
-		} else if (name == punkt3) {
-			lvlMenu = &clMenu::lvlSetupParamPrd;
-			lvlCreate_ = true;
-		} else if (name == punkt4) {
-			lvlMenu = &clMenu::lvlSetupParamGlb;
-			lvlCreate_ = true;
+	if (key_ != KEY_NO) {
+		// обработка кнопок перехода в конкретный номер пункта меню
+		if ((key_ >= KEY_1) && (key_ <= KEY_9)) {
+			name = Punkts_.getName(key_ - KEY_1);
+			key_ = (name != 0) ? KEY_ENTER : KEY_NO;
 		}
-		break;
+		switch (key_) {
+			case KEY_UP:
+				cursorLineUp();
+				break;
+			case KEY_DOWN:
+				cursorLineDown();
+				break;
 
-	default:
-		break;
+			case KEY_CANCEL:
+				lvlMenu = &clMenu::lvlSetup;
+				lvlCreate_ = true;
+				break;
+			case KEY_MENU:
+				lvlMenu = &clMenu::lvlStart;
+				lvlCreate_ = true;
+				break;
+
+			case KEY_ENTER:
+				if (name == punkt1) {
+					lvlMenu = &clMenu::lvlSetupParamDef;
+					lvlCreate_ = true;
+				} else if (name == punkt2) {
+					lvlMenu = &clMenu::lvlSetupParamPrm;
+					lvlCreate_ = true;
+				} else if (name == punkt3) {
+					lvlMenu = &clMenu::lvlSetupParamPrd;
+					lvlCreate_ = true;
+				} else if (name == punkt4) {
+					lvlMenu = &clMenu::lvlSetupParamGlb;
+					lvlCreate_ = true;
+				}
+				break;
+
+			default:
+				break;
+		}
 	}
 }
 
@@ -1951,14 +1965,14 @@ void clMenu::lvlSetupParamDef() {
 	static char punkt2[]  PROGMEM = "Тип линии";
 	static char punkt3[]  PROGMEM = "Доп. время без ман.";
 	static char punkt4[]  PROGMEM = "Перекрытие импульсов";
-	static char punkt5[]  PROGMEM = "Компенсация задержки";
+	static char punkt5[]  PROGMEM = "Компенс. задержки %u";
 	static char punkt6[]  PROGMEM = "Порог предупр. по РЗ";
 	static char punkt7[]  PROGMEM = "Загрубление чувствит";
 	static char punkt8[]  PROGMEM = "Тип приемника";
 	static char punkt9[]  PROGMEM = "Снижение уровня АК";
 	static char punkt10[] PROGMEM = "Частота ПРД";
 	static char punkt11[] PROGMEM = "Частота ПРМ";
-	static char punkt12[] PROGMEM = "Загрубл. чувств. РЗ";	// ==punkt7 для РЗСК
+	static char punkt12[] PROGMEM = "Загрубл. чувств. РЗ%";	// ==punkt7 для РЗСК
 
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
@@ -2015,34 +2029,31 @@ void clMenu::lvlSetupParamDef() {
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	// номер текущего параметра и их количество
+	// Сначала проверяется необходимость вывода параметра доп.номера для
+	// однотипных параметров.
+	// Если таких нет, просто выводится имя параметра.
 	uint8_t poz = 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, Punkts_.getMaxNumPunkts());
-
-	// название параметра
-	poz = 40;
-	snprintf_P(&vLCDbuf[poz], 21, name);
-
-	// отображение доп.номера, для однотипных параметров
-	poz = 60;
 	if (device == AVANT_R400M) {
 		if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
 			if (name == punkt5) {
 				if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_AVANT) {
-					snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_, 2);
+					poz += snprintf_P(&vLCDbuf[poz], 21, name, curCom_);
 				}
 			}
 		}
 	} else if (device == AVANT_RZSK) {
 		if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
 			if ((name == punkt5) || (name == punkt12)) {
-				snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_, 2);
+				poz += snprintf_P(&vLCDbuf[poz], 21, name, curCom_);
 			}
 		}
 	}
+	if (poz == 20) {
+		snprintf_P(&vLCDbuf[poz], 21, name);
+	}
 
 	//  диапазон значений параметра
-	poz = 80;
+	poz = 40;
 	poz += snprintf_P(&vLCDbuf[poz], 11, fcRange);
 	if (name == punkt1) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
@@ -2110,9 +2121,8 @@ void clMenu::lvlSetupParamDef() {
 			EnterParam.setDisable();
 		}
 	} else {
-
 		// вывод надписи "Значение:" и переход к выводу самого значения
-		poz = 100;
+		poz = 60;
 		poz += snprintf_P(&vLCDbuf[poz], 11, fcValue);
 		if (name == punkt1) {
 			uint8_t val = sParam.def.getDefType();
@@ -2152,10 +2162,11 @@ void clMenu::lvlSetupParamDef() {
 		curCom_ = 1;
 		cursorLineDown();
 		break;
-	case KEY_LEFT:
+
+	case KEY_4:
 		curCom_ = curCom_ <= 1 ? sParam.glb.getNumDevices() : curCom_ - 1;
 		break;
-	case KEY_RIGHT:
+	case KEY_6:
 		curCom_ = curCom_ >= sParam.glb.getNumDevices() ? 1 : curCom_ + 1;
 		break;
 
@@ -2275,11 +2286,11 @@ void clMenu::lvlSetupParamPrm() {
 	static char title[] PROGMEM = "Параметры/Приемник";
 
 	static char punkt1[] PROGMEM = "Задержка на фикс.ком";
-	static char punkt2[] PROGMEM = "Блокиров. команды";
-	static char punkt3[] PROGMEM = "Задержка на выкл.ком";
+	static char punkt2[] PROGMEM = "Блокиров. команда %u";
+	static char punkt3[] PROGMEM = "Задержка выкл.ком %u";
 	static char punkt4[] PROGMEM = "Трансляция ЦС";
-	static char punkt5[] PROGMEM = "Блокиров. команды ЦС";
-	static char punkt6[] PROGMEM = "Команда ВЧ в ЦС";
+	static char punkt5[] PROGMEM = "Блокиров. ком. ЦС %u";
+	static char punkt6[] PROGMEM = "Команда %u ВЧ в ЦС";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -2304,23 +2315,14 @@ void clMenu::lvlSetupParamPrm() {
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	uint8_t poz = 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, Punkts_.getMaxNumPunkts());
-
-	poz = 40;
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
-	snprintf_P(&vLCDbuf[poz], 21, name);
 
-	// при необходимости, вывод подномера данного параметра
-	poz = 60;
-	if ((name == punkt2) || (name == punkt3)
-			|| (name == punkt5) || (name == punkt6)) {
-		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_,
-				sParam.prm.getNumCom());
-	}
+	// Для однотипных параметров выводится доп. номер
+	uint8_t poz = 20;
+	snprintf_P(&vLCDbuf[poz], 21, name, curCom_);
 
 	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
-	poz = 80;
+	poz = 40;
 	poz += snprintf_P(&vLCDbuf[poz], 11, fcRange);
 	if (name == punkt1) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, PRM_TIME_ON_MIN,
@@ -2380,7 +2382,7 @@ void clMenu::lvlSetupParamPrm() {
 		}
 	} else {
 		// вывод надписи "Значение:" и выводу самого значения
-		poz = 100;
+		poz = 60;
 		poz += snprintf_P(&vLCDbuf[poz], 11, fcValue);
 		if (name == punkt1) {
 			snprintf(&vLCDbuf[poz], 11, "%dмс", sParam.prm.getTimeOn());
@@ -2411,10 +2413,11 @@ void clMenu::lvlSetupParamPrm() {
 		cursorLineDown();
 		curCom_ = 1;
 		break;
-	case KEY_LEFT:
+
+	case KEY_4:
 		curCom_ = curCom_ <= 1 ? sParam.prm.getNumCom() : curCom_ - 1;
 		break;
-	case KEY_RIGHT:
+	case KEY_6:
 		curCom_ = curCom_ >= sParam.prm.getNumCom() ? 1 : curCom_ + 1;
 		break;
 
@@ -2499,10 +2502,10 @@ void clMenu::lvlSetupParamPrd() {
 	static char punkt2[] PROGMEM = "Длительность команды";	// ВЧ
 	static char punkt2o[] PROGMEM= "Длительность команды";	// Оптика
 	static char punkt3[] PROGMEM = "Тестовая команда";
-	static char punkt4[] PROGMEM = "Следящие команды";
-	static char punkt5[] PROGMEM = "Блокиров. команды";
+	static char punkt4[] PROGMEM = "Следящая команда %u";
+	static char punkt5[] PROGMEM = "Блокиров. команда %u";
 	static char punkt6[] PROGMEM = "Трансляция ЦС";
-	static char punkt7[] PROGMEM = "Блокиров. команды ЦС";
+	static char punkt7[] PROGMEM = "Блокиров. ком. ЦС %u";
 	static char punkt8[] PROGMEM = "Количество команд А";
 
 
@@ -2530,22 +2533,14 @@ void clMenu::lvlSetupParamPrd() {
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	uint8_t poz = 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, Punkts_.getMaxNumPunkts());
-
-	poz = 40;
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
-	snprintf_P(&vLCDbuf[poz], 21, name);
 
-	// при необходимости выводим подномер данного параметра
-	poz = 60;
-	if ((name == punkt4) || (name == punkt5) || (name == punkt7)) {
-		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_,
-				sParam.prd.getNumCom());
-	}
+	// Для однотипных параметров выводится доп. номер
+	uint8_t poz = 20;
+	snprintf_P(&vLCDbuf[poz], 21, name, curCom_);
 
 	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
-	poz = 80;
+	poz = 40;
 	poz += snprintf_P(&vLCDbuf[poz], 11, fcRange);
 	if (name == punkt1) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, PRD_TIME_ON_MIN,
@@ -2621,7 +2616,7 @@ void clMenu::lvlSetupParamPrd() {
 		}
 	} else {
 		// вывод надписи "Значение:" и переход к выводу самого значения
-		poz = 100;
+		poz = 60;
 		poz += snprintf_P(&vLCDbuf[poz], 11, fcValue);
 		if (name == punkt1) {
 			snprintf(&vLCDbuf[poz], 11, "%dмс", sParam.prd.getTimeOn());
@@ -2658,10 +2653,11 @@ void clMenu::lvlSetupParamPrd() {
 		cursorLineDown();
 		curCom_ = 1;
 		break;
-	case KEY_LEFT:
+
+	case KEY_4:
 		curCom_ = curCom_ <= 1 ? sParam.prd.getNumCom() : curCom_ - 1;
 		break;
-	case KEY_RIGHT:
+	case KEY_6:
 		curCom_ = curCom_ >= sParam.prd.getNumCom() ? 1 : curCom_ + 1;
 		break;
 
@@ -2772,7 +2768,7 @@ void clMenu::lvlSetupParamGlb() {
 	static char punkt5[] PROGMEM 	= "Время перезапуска";
 	static char punkt6[] PROGMEM 	= "Удерж. реле ком. ПРД";
 	static char punkt7[] PROGMEM 	= "Удерж. реле ком. ПРМ";
-	static char punkt8[] PROGMEM 	= "Загрубл. чувств. ПРМ";
+	static char punkt8[] PROGMEM 	= "Загрубл.чувств. ПРМ%u";
 	static char punkt9[] PROGMEM 	= "Сетевой адрес";
 	static char punkt10[] PROGMEM 	= "Uвых номинальное";
 	static char punkt11[] PROGMEM 	= "Частота";
@@ -2863,25 +2859,23 @@ void clMenu::lvlSetupParamGlb() {
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
+	// Сначала проверяется необходимость вывода параметра доп.номера для
+	// однотипных параметров.
+	// Если таких нет, просто выводится имя параметра.
 	uint8_t poz = 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt,
-			cursorLine_, Punkts_.getMaxNumPunkts());
-
-	poz = 40;
-	snprintf_P(&vLCDbuf[poz], 21, name);
-
-	// отображение доп.номера, для однотипных параметров
-	poz = 60;
 	if (sParam.typeDevice == AVANT_RZSK) {
 		if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
 			if (name == punkt8) {
-				snprintf_P(&vLCDbuf[poz], 21, fcNumPrm, curCom_, 2);
+				poz += snprintf_P(&vLCDbuf[poz], 21, name, curCom_);
 			}
 		}
 	}
+	if (poz == 20) {
+		snprintf_P(&vLCDbuf[poz], 21, name);
+	}
 
 	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
-	poz = 80;
+	poz = 40;
 	poz += snprintf_P(&vLCDbuf[poz], 11, fcRange);
 	if (name == punkt1) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
@@ -3054,7 +3048,7 @@ void clMenu::lvlSetupParamGlb() {
 		}
 	} else {
 		// вывод надписи "Значение:" и переход к выводу самого значения
-		poz = 100;
+		poz = 60;
 		poz += snprintf_P(&vLCDbuf[poz], 11, fcValue);
 		if (name == punkt1) {
 			uint8_t val = sParam.glb.getTimeSinchr() ? 1 : 0;
@@ -3135,10 +3129,10 @@ void clMenu::lvlSetupParamGlb() {
 		cursorLineDown();
 		break;
 
-	case KEY_LEFT:
+	case KEY_4:
 		curCom_ = curCom_ <= 1 ? sParam.glb.getNumDevices() : curCom_ - 1;
 		break;
-	case KEY_RIGHT:
+	case KEY_6:
 		curCom_ = curCom_ >= sParam.glb.getNumDevices() ? 1 : curCom_ + 1;
 		break;
 
@@ -4047,7 +4041,7 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 			EnterParam.cnt_++;
 			key_ = KEY_NO;
 
-			uint8_t poz = 40;
+			uint8_t poz = 20;
 			for (uint_fast8_t i = 0; i < 3; i++, poz += 20)
 				snprintf_P(&vLCDbuf[poz], 21, message[i]);
 		} else {
@@ -4434,6 +4428,8 @@ void clMenu::printDevicesRegime(uint8_t poz, TDeviceStatus *device) {
 	poz += 1;
 	poz += 1 + snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
 }
+
+
 
 
 ///**	Возвращает кол-во ошибок в коде, т.е. кол-во установленных битов.

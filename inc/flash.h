@@ -395,7 +395,7 @@ static const char fcNumPunkt[] 			PROGMEM = "Параметр:%u Всего:%u";
 //	ЖУРНАЛ
 static const char fcJrnEmpty[] 			PROGMEM = "ЖУРНАЛ ПУСТ";
 static const char fcJrnNumEntries[] 	PROGMEM = "(%u/%u)";
-static const char fcNumComJrn[]			PROGMEM = "Команда: %u";
+static const char fcNumComJrn[]			PROGMEM = "Ком.%u";
 static const char fcDateJrn[]			PROGMEM = "%02u.%02u.%02u";
 static const char fcTimeJrn[]			PROGMEM = "%02u:%02u:%02u.%03u";
 static const char fcJrnNotReady[]		PROGMEM = "СЧИТЫВАНИЕ ЗАПИСИ";
@@ -403,9 +403,9 @@ static const char fcSignalDefJrn[]		PROGMEM = "П%uС%uМ%u ПД%uПМ%uВЫХ%u";
 
 /// Источник передаваемой комадны
 static const char fcJrnSourcePrd[GB_SOURCE_COM_MAX + 1][5] PROGMEM = {
-		"",						// команды с дискретных входов
-		"(ЦС)",					// команды с цифровой ретрансляции
-		"(ОШ)"					// ошибочное значение
+		"ПА%u",					// команды с дискретных входов
+		"ЦС%u",					// команды с цифровой ретрансляции
+		"ОШ%u"					// ошибочное значение
 };
 
 /// записи журнала ПРД и ПРМ
@@ -414,8 +414,6 @@ static const char fcJrnPrd[GB_STATE_COM_MAX + 1][21] PROGMEM = {
 		"Начало команды",		//
 		"Ошибочное значение"	//
 };
-static const char fcJrnPrdOptoComNo[] PROGMEM = "Команд нет";
-static const char fcJrnPrdOptoComYes[] PROGMEM = "Команда передается";
 
 /// записи журнала событий для РЗСК
 static char fcJrnEventRZSK[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
@@ -517,38 +515,6 @@ static const char fcTest1K400[GB_SIGNAL_MAX + 1][STRING_LENGHT] PROGMEM = {
 		"Ком2+блок",	//	GB_SIGNAL_COM2_RZ
 		"Ком3+блок",	//	GB_SIGNAL_COM3_RZ
 		"Ком4+блок",	//	GB_SIGNAL_COM4_RZ
-		"Команда1",		//
-		"Команда2",		//
-		"Команда3",		//
-		"Команда4",		//
-		"Команда5",		//
-		"Команда6",		//
-		"Команда7",		//
-		"Команда8",		//
-		"Команда9",		//
-		"Команда10",	//
-		"Команда11",	//
-		"Команда12",	//
-		"Команда13",	//
-		"Команда14",	//
-		"Команда15",	//
-		"Команда16",	//
-		"Команда17",	//
-		"Команда18",	//
-		"Команда19",	//
-		"Команда20",	//
-		"Команда21",	//
-		"Команда22",	//
-		"Команда23",	//
-		"Команда24",	//
-		"Команда25",	//
-		"Команда26",	//
-		"Команда27",	//
-		"Команда28",	//
-		"Команда29",	//
-		"Команда30",	//
-		"Команда31",	//
-		"Команда32",	//
 		"КЧ и РЗ",		//	GB_SIGNAL_CF_RZ_R400M
 		"ошибка"		//
 };

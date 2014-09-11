@@ -347,38 +347,6 @@ enum eGB_TEST_SIGNAL {
 	GB_SIGNAL_COM2_RZ,				// РЗСК
 	GB_SIGNAL_COM3_RZ,				// РЗСК
 	GB_SIGNAL_COM4_RZ,				// РЗСК
-	GB_SIGNAL_COM1,					// сигналы команд должны идти
-	GB_SIGNAL_COM2,					// подряд для заполнения К400
-	GB_SIGNAL_COM3,					// vvvvvvvvvvvvvvvvvvvvvvvvvv
-	GB_SIGNAL_COM4,
-	GB_SIGNAL_COM5,
-	GB_SIGNAL_COM6,
-	GB_SIGNAL_COM7,
-	GB_SIGNAL_COM8,
-	GB_SIGNAL_COM9,
-	GB_SIGNAL_COM10,
-	GB_SIGNAL_COM11,
-	GB_SIGNAL_COM12,
-	GB_SIGNAL_COM13,
-	GB_SIGNAL_COM14,
-	GB_SIGNAL_COM15,
-	GB_SIGNAL_COM16,
-	GB_SIGNAL_COM17,
-	GB_SIGNAL_COM18,
-	GB_SIGNAL_COM19,
-	GB_SIGNAL_COM20,
-	GB_SIGNAL_COM21,
-	GB_SIGNAL_COM22,
-	GB_SIGNAL_COM23,
-	GB_SIGNAL_COM24,
-	GB_SIGNAL_COM25,
-	GB_SIGNAL_COM26,
-	GB_SIGNAL_COM27,
-	GB_SIGNAL_COM28,
-	GB_SIGNAL_COM29,
-	GB_SIGNAL_COM30,				// ^^^^^^^^^^^^^^^^^^^^^^^^^^
-	GB_SIGNAL_COM31,				// сигналы команд должны идти
-	GB_SIGNAL_COM32,				// подряд для заполнения К400
 	GB_SIGNAL_CF_RZ_R400M,
 	GB_SIGNAL_MAX
 };
@@ -1459,16 +1427,14 @@ public:
 	}
 
 	/**	Преобразование тестового сигнала в значения для передачи в БСП.
+	 *
 	 * 	@param [out] cf	Код сигнала КЧ/Команды.
 	 * 	@param [out] rz	Код сигнала РЗ.
 	 *	@param sig Тестовый сигнал.
 	 *
 	 */
 	void getBytes(uint8_t &cf, uint8_t &rz, eGB_TEST_SIGNAL sig) {
-		if ((sig >= GB_SIGNAL_COM1) && (sig <= GB_SIGNAL_COM32)) {
-			rz = 0;
-			cf = 3 + sig - GB_SIGNAL_COM1; // 3 - кол-во кч ?!
-		} else if ((sig >= GB_SIGNAL_CF1) && (sig <= GB_SIGNAL_CF4)) {
+		if ((sig >= GB_SIGNAL_CF1) && (sig <= GB_SIGNAL_CF4)) {
 			rz = 0;
 			cf = 1 + sig - GB_SIGNAL_CF1;
 		} else if (sig == GB_SIGNAL_CF_NO_RZ) {
@@ -1579,59 +1545,6 @@ private:
 		return bit;
 	}
 
-	/** Добавление сигнала в список для К400.
-	 * 	бит: 7		6		5		4		3		2		1		0		;
-	 * 	b1 : x 		x 		x 		x 		x		x 		[кч2]	[кч1]	;
-	 * 	b2 : [ком8] [ком7]	[ком6] 	[ком5] 	[ком4] 	[ком3] 	[ком2] 	[ком1]	;
-	 * 	b3 : [ком16][ком15] [ком14] [ком13] [ком12] [ком11] [ком10] [ком9]	;
-	 * 	b4 : [ком24][ком23] [ком22] [ком21] [ком20] [ком19] [ком18] [ком17]	;
-	 * 	b5 : [ком32][ком31] [ком30] [ком29] [ком28] [ком27] [ком26] [ком25]	;
-	 * 	Установленный бит означает наличие данного сигнала на передачу.
-	 * 	Поиск ведется до первого установленного бита.
-	 * 	@param *s Указатель на массив данных.
-	 * 	@return Текущий тестовый сигнал.
-	 */
-	eGB_TEST_SIGNAL getCurrentSignalK400(uint8_t *s) {
-		eGB_TEST_SIGNAL signal = GB_SIGNAL_OFF;
-
-		uint8_t t = *s;
-		// сначала проверяется наличие КЧ1-КЧ2
-		if (t & 0x01)
-			signal = GB_SIGNAL_CF1;
-		else if (t & 0x02)
-			signal = GB_SIGNAL_CF2;
-		else {
-			// проверяется начичие команд с 1 по 8
-			t = getSetBit(*(++s));
-			if (t) {
-				t = GB_SIGNAL_COM1 + t - 1;
-				signal = (eGB_TEST_SIGNAL) t;
-			} else {
-				// проверяется начичие команд с 9 по 16
-				t = getSetBit(*(++s));
-				if (t) {
-					t = GB_SIGNAL_COM9 + t - 1;
-					signal = (eGB_TEST_SIGNAL) t;
-				} else {
-					// проверяется начичие команд с 17 по 24
-					t = getSetBit(*(++s));
-					if (t) {
-						t = GB_SIGNAL_COM17 + t - 1;
-						signal = (eGB_TEST_SIGNAL) t;
-					} else {
-						// проверяется начичие команд с 25 по 32
-						t = getSetBit(*(++s));
-						if (t) {
-							t = GB_SIGNAL_COM25 + t - 1;
-							signal = (eGB_TEST_SIGNAL) t;
-						}
-					}
-				}
-			}
-		}
-		return signal;
-	}
-
 	/** Добавление сигнала в список для РЗСК.
 	 * 	бит: 7	6	5	4	3		2		1		0		;
 	 * 	b1 : 0 	0 	0	0	[рз2] 	[рз1] 	[кч2] 	[кч1]	;
@@ -1700,55 +1613,6 @@ private:
 		} else if (t & 0x01)
 			signal = GB_SIGNAL_CF;
 
-		return signal;
-	}
-
-	/** Добавление сигнала в список для ОПТИКИ.
-	 * 	бит: 7		6		5		4		3		2		1		0		;
-	 * 	b1 : x 		x 		x 		x 		x		x 		x 		[кч]	;
-	 * 	b2 : [ком8] [ком7]	[ком6] 	[ком5] 	[ком4] 	[ком3] 	[ком2] 	[ком1]	;
-	 * 	b3 : [ком16][ком15] [ком14] [ком13] [ком12] [ком11] [ком10] [ком9]	;
-	 * 	b4 : [ком24][ком23] [ком22] [ком21] [ком20] [ком19] [ком18] [ком17]	;
-	 * 	b5 : [ком32][ком31] [ком30] [ком29] [ком28] [ком27] [ком26] [ком25]	;
-	 * 	Установленный бит означает наличие данного сигнала на передачу.
-	 *	Поиск ведется до первого утсановленного бита.
-	 * 	@param *s Указатель на массив данных.
-	 * 	@return Текущий тестовый сигнал.
-	 */
-	eGB_TEST_SIGNAL getCurrentSignalOpto(uint8_t *s) {
-		eGB_TEST_SIGNAL signal = GB_SIGNAL_OFF;
-
-		uint8_t t = *s;
-		if (t & 0x01) {
-			signal = GB_SIGNAL_CF;
-		} else {
-			t = getSetBit(*(++s));
-			if (t != 0) {
-				t = (t - 1) + GB_SIGNAL_COM1;
-				signal = (eGB_TEST_SIGNAL) t;
-			} else {
-				// проверяется начичие команд с 9 по 16
-				t = getSetBit(*(++s));
-				if (t) {
-					t = GB_SIGNAL_COM9 + t - 1;
-					signal = (eGB_TEST_SIGNAL) t;
-				} else {
-					// проверяется начичие команд с 17 по 24
-					t = getSetBit(*(++s));
-					if (t) {
-						t = GB_SIGNAL_COM17 + t - 1;
-						signal = (eGB_TEST_SIGNAL) t;
-					} else {
-						// проверяется начичие команд с 25 по 32
-						t = getSetBit(*(++s));
-						if (t) {
-							t = GB_SIGNAL_COM25 + t - 1;
-							signal = (eGB_TEST_SIGNAL) t;
-						}
-					}
-				}
-			}
-		}
 		return signal;
 	}
 };
