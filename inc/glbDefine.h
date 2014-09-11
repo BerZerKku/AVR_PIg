@@ -100,8 +100,6 @@ enum eGB_TYPE_DEVICE {
 	AVANT_NO = 0,	// ошибочное значение
 	AVANT_R400M,	//
 	AVANT_RZSK,		//
-	AVANT_OPTO,		//
-	AVANT_K400,		//
 	AVANT_MAX
 };
 
@@ -1206,69 +1204,6 @@ public:
 		return eventType_;
 	}
 
-
-	/**	Установка записей для журналов ОПТИКИ.
-	 * 	Считываются 4 байта, старшим вперед.
-	 * 	Каждый установленный бит в них отвечает за свое событие.
-	 * 	@param buf Указатель на массив из 4 байт данных.
-	 * 	@retval True - всегда.
-	 */
-	bool setOpticEntry(uint8_t *buf) {
-		uint8_t num = 0;
-		uint8_t byte = 0;
-
-		// В каждом байте записи считается кол-во установленных битов
-		for(uint_fast8_t i = 0; i <= 3; i++) {
-			byte = *buf++;
-			opticEntry_[i] = byte;
-			for(uint_fast8_t j = 1; j > 0; j <<= 1) {
-				if (byte & j) {
-					num++;
-				}
-			}
-		}
-		numOpticEntries_ = num;
-
-		return true;
-	}
-
-	/** Возвращает кол-во активных событий в журнале ОПТИКИ.
-	 * 	Для журнала событий это кол-во событий, для команд - команд.
-	 * 	@return Кол-во активных собыйтив журнале ОПТИКИ
-	 */
-	uint8_t getNumOpticsEntries() const {
-		return numOpticEntries_;
-	}
-
-	/** Ищет и возвращает код события, исходя из номера события.
-	 * 	Т.е. если у нас в записи 5 активных событий, для каждого из них
-	 * 	можно получить код записи (например номер команды).
-	 *
-	 * 	@param num Номер события, начиная с 1.
-	 * 	@return Код события (0 - в случае ошибки).
-	 */
-	uint8_t getOpticEntry(uint8_t num) {
-		uint8_t val = 0;
-		uint8_t byte = 0;
-
-		// проверка на допустимое значение
-		if ((num >= 1) && (num <= numOpticEntries_)) {
-			for(uint_fast8_t i = 0; i <= 3; i++) {
-				// перебор 4-х байт, начиная с младшего
-				byte = opticEntry_[3 - i];
-				for(uint_fast8_t j = 0; j < 8; j++) {
-					if (byte & (1 << j)) {
-						if (--num == 0) {
-							// номер установленного бита, от 1 до 32
-							val = 1 + ((i * 8) + j);
-						}
-					}
-				}
-			}
-		}
-		return val;
-	}
-
 	// режим
 	bool setRegime(eGB_REGIME regime) {
 		bool state = false;
@@ -1588,17 +1523,13 @@ public:
 		eGB_TEST_SIGNAL signal = GB_SIGNAL_MAX;
 		eGB_TEST_SIGNAL signal2 = GB_SIGNAL_MAX;
 
-		if (type == AVANT_K400) {
-			signal = getCurrentSignalK400(s);
-			signal2 = getCurrentSignalK400((s + 5));
-		} else if (type == AVANT_RZSK) {
+		if (type == AVANT_RZSK) {
 			signal = getCurrentSignalRZSK(s);
 			signal2 = getCurrentSignalRZSK((s + 3));
 		} else if (type == AVANT_R400M) {
 			signal = getCurrentSignalR400M(s);
-		} else if (type == AVANT_OPTO) {
-			signal = getCurrentSignalOpto(s);
 		}
+
 		currentSignal_ = signal;
 		currentSignal2_ = signal2;
 	}

@@ -354,7 +354,7 @@ ISR(TIMER1_COMPA_vect) {
 	static uint_fast8_t cnt = 0;
 
 	// обработчик клавиатуры вызываем раз в 10мс
-//	vKEYmain();
+	vKEYmain();
 
 	// установка флага раз в 100мс
 	if (cnt > 0)

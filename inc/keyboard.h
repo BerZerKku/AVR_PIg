@@ -17,24 +17,32 @@
 
 /// Функции кнопок
 enum eKEY {
-	KEY_NO = 0x00,	// нет нажатых кнопок
-	KEY_0,		// 0
-	KEY_1,		// 1
-	KEY_2,		// 2
-	KEY_3,		// 3
-	KEY_4,		// 4
-	KEY_5,		// 5
-	KEY_6,		// 6
-	KEY_7,		// 7
-	KEY_8,		// 8
-	KEY_9,		// 9
+	KEY_NO = 0,	////< Нет нажатых кнопок.
 
-	KEY_ENTER,	// Ввод
-	KEY_UP,		// Вверх
-	KEY_DOWN,	// Вниз
-	KEY_CANCEL,	// Отмена
-	KEY_SHARP,	// Подсказка
-	KEY_STAR	// Меню
+	KEY_0,		///< 0.
+	KEY_1,		///< 1.
+	KEY_2,		///< 2.
+	KEY_3,		///< 3.
+	KEY_4,		///< 4.
+	KEY_5,		///< 5.
+	KEY_6,		///< 6.
+	KEY_7,		///< 7.
+	KEY_8,		///< 8.
+	KEY_9,		///< 9.
+
+	// временно vvv
+	KEY_RESET_IND,
+	KEY_PUSK,
+	KEY_RIGHT,
+	KEY_LEFT,
+	// временно ^^^
+
+	KEY_ENTER,	///< Ввод ("ENT").
+	KEY_UP,		///< Вверх.
+	KEY_DOWN,	///< Вниз.
+	KEY_CANCEL,	///< Отмена ("CE/C").
+	KEY_HELP,	///< Подсказка ('#').
+	KEY_MENU	///< Меню ('*').
 };
 
 void vKEYmain	(void);

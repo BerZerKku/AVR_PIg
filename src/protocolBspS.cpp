@@ -253,36 +253,19 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com) {
 
 		case GB_COM_PRM_GET_JRN_ENTRY: {
 			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRM) {
-				if (sParam_->typeDevice == AVANT_OPTO) {
-					// дата
-					sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B5]));
-					sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B6]));
-					sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B7]));
-					// время
-					sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B8]));
-					sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B9]));
-					sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
-					uint16_t t = TO_INT16(buf[B11], buf[B12]);
-					sParam_->jrnEntry.dataTime.setMsSecond(t);
-					//
-					sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B1]);
-					sParam_->jrnEntry.setReady();
-					stat = true;
-				} else {
-					sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B16]));
-					sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B15]));
-					sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B14]));
-					// B13 - день недели
-					sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B12]));
-					sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B11]));
-					sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
-					uint16_t t = TO_INT16(buf[B9], buf[B8]);
-					sParam_->jrnEntry.dataTime.setMsSecond(t);
-					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
-					sParam_->jrnEntry.setNumCom(buf[B2]);
-					sParam_->jrnEntry.setEventType(buf[B3]);
-					sParam_->jrnEntry.setReady();
-				}
+				sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B16]));
+				sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B15]));
+				sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B14]));
+				// B13 - день недели
+				sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B12]));
+				sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B11]));
+				sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
+				uint16_t t = TO_INT16(buf[B9], buf[B8]);
+				sParam_->jrnEntry.dataTime.setMsSecond(t);
+				sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
+				sParam_->jrnEntry.setNumCom(buf[B2]);
+				sParam_->jrnEntry.setEventType(buf[B3]);
+				sParam_->jrnEntry.setReady();
 				stat = true;
 			}
 		}
@@ -368,38 +351,21 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com) {
 
 		case GB_COM_PRD_GET_JRN_ENTRY: {
 			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRD) {
-				if (sParam_->typeDevice == AVANT_OPTO) {
-					// дата
-					sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B5]));
-					sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B6]));
-					sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B7]));
-					// время
-					sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B8]));
-					sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B9]));
-					sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
-					uint16_t t = TO_INT16(buf[B11], buf[B12]);
-					sParam_->jrnEntry.dataTime.setMsSecond(t);
-					//
-					sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B1]);
-					sParam_->jrnEntry.setReady();
-					stat = true;
-				} else {
-					sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B16]));
-					sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B15]));
-					sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B14]));
-					// B13 - день недели
-					sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B12]));
-					sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B11]));
-					sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
-					uint16_t t = TO_INT16(buf[B9], buf[B8]);
-					sParam_->jrnEntry.dataTime.setMsSecond(t);
-					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
-					sParam_->jrnEntry.setNumCom(buf[B2]);
-					sParam_->jrnEntry.setEventType(buf[B3]);
-					sParam_->jrnEntry.setSourceCom((eGB_SOURCE_COM) buf[B4]);
-					sParam_->jrnEntry.setReady();
-					stat = true;
-				}
+				sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B16]));
+				sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B15]));
+				sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B14]));
+				// B13 - день недели
+				sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B12]));
+				sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B11]));
+				sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
+				uint16_t t = TO_INT16(buf[B9], buf[B8]);
+				sParam_->jrnEntry.dataTime.setMsSecond(t);
+				sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
+				sParam_->jrnEntry.setNumCom(buf[B2]);
+				sParam_->jrnEntry.setEventType(buf[B3]);
+				sParam_->jrnEntry.setSourceCom((eGB_SOURCE_COM) buf[B4]);
+				sParam_->jrnEntry.setReady();
+				stat = true;
 			}
 		}
 		break;
@@ -642,19 +608,15 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 
 		case GB_COM_GET_COR_U_I: {
 			eGB_TYPE_DEVICE type = sParam_->typeDevice;
-			// в оптике это резервирование, иначе коррекция тока и напряжения
-			if (type == AVANT_OPTO) {
-				stat = sParam_->glb.setBackup(buf[B1]);
-			} else {
-				int16_t val = 0;
-				int8_t i = buf[B1];
-				int8_t f = buf[B2];
-				val = i * 10 + static_cast<int16_t>(f / 10);
-				stat = sParam_->glb.setCorU(val);
-				// коррекция тока
-				val = static_cast<int16_t>(TO_INT16(buf[B3], buf[B4]));
-				stat |= sParam_->glb.setCorI(val);
-			}
+			// коррекция тока и напряжения
+			int16_t val = 0;
+			int8_t i = buf[B1];
+			int8_t f = buf[B2];
+			val = i * 10 + static_cast<int16_t>(f / 10);
+			stat = sParam_->glb.setCorU(val);
+			// коррекция тока
+			val = static_cast<int16_t>(TO_INT16(buf[B3], buf[B4]));
+			stat |= sParam_->glb.setCorI(val);
 		}
 		break;
 
@@ -676,41 +638,23 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 
 		case GB_COM_GET_JRN_ENTRY: {
 			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_GLB) {
-				if (sParam_->typeDevice == AVANT_OPTO) {
-					// дата
-					sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B6]));
-					sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B7]));
-					sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B8]));
-					// время
-					sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B9]));
-					sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B10]));
-					sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B11]));
-					uint16_t t = TO_INT16(buf[B12], buf[B13]);
-					sParam_->jrnEntry.dataTime.setMsSecond(t);
-					//
-					sParam_->jrnEntry.setRegime((eGB_REGIME) buf[B1]);
-					sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B2]);
-					sParam_->jrnEntry.setReady();
-					stat = true;
-				} else {
-					// дата
-					sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B16]));
-					sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B15]));
-					sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B14]));
-					// B13 - день недели
-					// время
-					sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B12]));
-					sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B11]));
-					sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
-					uint16_t t = TO_INT16(buf[B9], buf[B8]);
-					sParam_->jrnEntry.dataTime.setMsSecond(t);
-					// ! B1 - тип устройства, на данный момент игнорируется
-					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
-					sParam_->jrnEntry.setEventType(buf[B2]);
-					sParam_->jrnEntry.setRegime((eGB_REGIME) buf[B3]);
-					sParam_->jrnEntry.setReady();
-					stat = true;
-				}
+				// дата
+				sParam_->jrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B16]));
+				sParam_->jrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B15]));
+				sParam_->jrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B14]));
+				// B13 - день недели
+				// время
+				sParam_->jrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B12]));
+				sParam_->jrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B11]));
+				sParam_->jrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
+				uint16_t t = TO_INT16(buf[B9], buf[B8]);
+				sParam_->jrnEntry.dataTime.setMsSecond(t);
+				// ! B1 - тип устройства, на данный момент игнорируется
+				sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
+				sParam_->jrnEntry.setEventType(buf[B2]);
+				sParam_->jrnEntry.setRegime((eGB_REGIME) buf[B3]);
+				sParam_->jrnEntry.setReady();
+				stat = true;
 			}
 		}
 		break;

@@ -24,7 +24,7 @@
 #define MAX_NUM_PUNKTS 20
 
 /// максимальное кол-во отображаемых на экране параметров
-#define MAX_NUM_MEAS_PARAM 6
+#define MAX_NUM_MEAS_PARAM 11
 
 /// время вывода измеряемого параметра на экран, мс
 #define TIME_MEAS_PARAM (3000 / MENU_TIME_CYLCE)
@@ -522,7 +522,7 @@ private:
 	uint8_t delay_;
 
 	// измеряемые параметры
-	eMENU_MEAS_PARAM measParam[MAX_NUM_MEAS_PARAM * 2];
+	eMENU_MEAS_PARAM measParam[MAX_NUM_MEAS_PARAM];
 
 	// текущие пункты меню
 	TMenuPunkt Punkts_;
@@ -531,10 +531,8 @@ private:
 	TEnterParam EnterParam;
 
 	//  настройки для соответствующих аппаратов
-	bool setDeviceK400();
 	bool setDeviceRZSK();
 	bool setDeviceR400M();
-	bool setDeviceOPTO();
 
 	// очистка текстового буфера
 	void clearTextBuf();
