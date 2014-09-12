@@ -505,7 +505,7 @@ void clMenu::lvlError() {
 
 	static const char fcNoTypeDevice0[] PROGMEM = "    Тип аппарата    ";
 	static const char fcNoTypeDevice1[] PROGMEM = "   не определен!!!  ";
-	static const char fcNoTypeDevice3[] PROGMEM = "    Инициализация   ";
+	static const char fcNoTypeDevice3[] PROGMEM = "   Инициализация    ";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3385,14 +3385,16 @@ void clMenu::lvlSetupDT() {
 
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
 
-	snprintf_P(&vLCDbuf[20], 21, title);
+	uint8_t poz = 0;
+	snprintf_P(&vLCDbuf[poz], 21, title);
 
-	printMeasParam(0, MENU_MEAS_PARAM_DATE);
-	printMeasParam(1, MENU_MEAS_PARAM_TIME);
+	printMeasParam(2, MENU_MEAS_PARAM_DATE);
+	printMeasParam(3, MENU_MEAS_PARAM_TIME);
 
+	poz = 40;
 	if (EnterParam.isEnable()) {
 		// вывод текущего пункта
-		snprintf_P(&vLCDbuf[20 * lineParam_], 21, name, cursorLine_);
+		snprintf_P(&vLCDbuf[poz], 21, name, cursorLine_);
 		eMENU_ENTER_PARAM stat = enterValue();
 
 		if (stat == MENU_ENTER_PARAM_READY) {
@@ -3733,11 +3735,12 @@ void clMenu::lvlTest() {
 		for (uint_fast8_t i = lineParam_ + 1; i <= NUM_TEXT_LINES; i++)
 			clearLine(i);
 
-		uint8_t poz = 40;
+		uint8_t poz = 20;
 		for (uint_fast8_t i = 0; i < 2; i++, poz += 20)
 			snprintf_P(&vLCDbuf[poz], 21, message[i]);
-	} else
+	} else {
 		printPunkts();
+	}
 
 	eGB_REGIME reg = sParam.glb.status.getRegime();
 	switch (key_) {
@@ -3810,7 +3813,7 @@ void clMenu::lvlTest1() {
 		lvlCreate_ = false;
 		cursorLine_ = 1;
 		cursorEnable_ = true;
-		lineParam_ = 1;
+		lineParam_ = 2;
 
 		cnt = 0;
 
@@ -3841,12 +3844,16 @@ void clMenu::lvlTest1() {
 		}
 	}
 
+	uint8_t poz = 0;
+	snprintf_P(&vLCDbuf[poz], 21, title);
+
 	// вывод на экран измеряемых параметров, если это не оптика
 	printMeasParam(2, MENU_MEAS_PARAM_UOUT);
 	printMeasParam(3, MENU_MEAS_PARAM_IOUT);
 
-	snprintf_P(&vLCDbuf[0], 21, title);
-	snprintf_P(&vLCDbuf[lineParam_ * 20], 21, punkt1);
+
+	poz = 40;
+	snprintf_P(&vLCDbuf[poz], 21, punkt1);
 
 	if (EnterParam.isEnable()) {
 		// ввод нового значения параметра
@@ -3875,7 +3882,7 @@ void clMenu::lvlTest1() {
 			EnterParam.setDisable();
 		}
 	} else {
-		uint8_t poz = 100;
+		poz = 60;
 		poz += snprintf_P(&vLCDbuf[poz], 21, fcValue);
 		snprintf_P(&vLCDbuf[poz], 11,
 				fcTest1K400[sParam.test.getCurrentSignal()]);
@@ -3928,14 +3935,14 @@ void clMenu::lvlTest2() {
 	static char prm2[]	PROGMEM = "ПРМ2: ";
 
 	static uint8_t cnt = 0;		// счетчик до выхода при ошибочном режиме
-	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 
 		cursorLine_ = 1;
 		cursorEnable_ = true;
-		lineParam_ = 1;
+		lineParam_ = 2;
+		curCom_ = 1;
 
 		cnt = 0;
 
@@ -3945,20 +3952,35 @@ void clMenu::lvlTest2() {
 		sParam.txComBuf.addCom2(GB_COM_GET_TEST);	// сигналы
 	}
 
+	uint8_t poz = 0;
+	snprintf_P(&vLCDbuf[poz], 21, title);
 
 	if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
 		if (sParam.def.status.isEnable()) {
-			printMeasParam(2, MENU_MEAS_PARAM_UC1);
-			printMeasParam(3, MENU_MEAS_PARAM_UZ1);
-			printMeasParam(4, MENU_MEAS_PARAM_UC2);
-			printMeasParam(5, MENU_MEAS_PARAM_UZ2);
+			if (curCom_ == 1) {
+				printMeasParam(2, MENU_MEAS_PARAM_UC1);
+				printMeasParam(3, MENU_MEAS_PARAM_UZ1);
+			} else if (curCom_ == 2) {
+				printMeasParam(2, MENU_MEAS_PARAM_UC2);
+				printMeasParam(3, MENU_MEAS_PARAM_UZ2);
+			} else if (curCom_ == 3) {
+				printMeasParam(2, MENU_MEAS_PARAM_UN1);
+				printMeasParam(3, MENU_MEAS_PARAM_UN2);
+			}
 		} else {
-			printMeasParam(2, MENU_MEAS_PARAM_UC1);
-			printMeasParam(3, MENU_MEAS_PARAM_UN1);
-			printMeasParam(4, MENU_MEAS_PARAM_UC2);
-			printMeasParam(5, MENU_MEAS_PARAM_UN2);
+			if (curCom_ > 2)
+				curCom_ = 1;
+
+			if (curCom_ == 1) {
+				printMeasParam(2, MENU_MEAS_PARAM_UC1);
+				printMeasParam(3, MENU_MEAS_PARAM_UN1);
+			} else if (curCom_ == 2) {
+				printMeasParam(2, MENU_MEAS_PARAM_UC2);
+				printMeasParam(3, MENU_MEAS_PARAM_UN2);
+			}
 		}
 	} else {
+
 		printMeasParam(2, MENU_MEAS_PARAM_UC);
 		if (sParam.def.status.isEnable()) {
 			printMeasParam(3, MENU_MEAS_PARAM_UZ);
@@ -3967,21 +3989,17 @@ void clMenu::lvlTest2() {
 		}
 	}
 
-	snprintf_P(&vLCDbuf[0], 21, title);
-	snprintf_P(&vLCDbuf[lineParam_ * 20], 21, punkt1);
-
-	uint8_t poz = 100;
 	if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-		poz = 80;
+		poz = 40;
 		poz += snprintf_P(&vLCDbuf[poz], 11, prm1);
 		snprintf_P(&vLCDbuf[poz], 11,
 					fcTest1K400[sParam.test.getCurrentSignal()]);
-		poz = 100;
+		poz = 60;
 		poz += snprintf_P(&vLCDbuf[poz], 11, prm2);
 		snprintf_P(&vLCDbuf[poz], 11,
 				fcTest1K400[sParam.test.getCurrentSignal2()]);
 	} else {
-		poz = 100;
+		poz = 60;
 		poz += snprintf_P(&vLCDbuf[poz], 21, fcValue);
 		snprintf_P(&vLCDbuf[poz], 11,
 				fcTest1K400[sParam.test.getCurrentSignal()]);
@@ -4005,6 +4023,14 @@ void clMenu::lvlTest2() {
 		case KEY_MENU:
 			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
+			break;
+
+		// листание отображаемых параметров
+		case KEY_4:
+			curCom_ = curCom_ <= 1 ? 3 : curCom_ - 1;
+			break;
+		case KEY_6:
+			curCom_ = curCom_ >= 3 ? 1 : curCom_ + 1;
 			break;
 
 		default:
@@ -4053,7 +4079,7 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 			key_ = KEY_CANCEL;
 		} else {
 			clearLine(NUM_TEXT_LINES);
-			uint8_t poz = 100;
+			uint8_t poz = 60;
 			snprintf_P(&vLCDbuf[poz], 21, enterInt, val);
 		}
 	} else if (status == MENU_ENTER_PARAM_U_COR) {
@@ -4065,19 +4091,19 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 			key_ = KEY_CANCEL;
 		} else {
 			clearLine(NUM_TEXT_LINES);
-			uint8_t poz = 100;
+			uint8_t poz = 60;
 			snprintf_P(&vLCDbuf[poz], 21, enterUcor, val / 10, val % 10);
 		}
 	} else if (status == MENU_ENTER_PARAM_LIST) {
 		uint16_t val = EnterParam.getValue();
 		clearLine(NUM_TEXT_LINES);
-		uint8_t poz = 100;
+		uint8_t poz = 60;
 		snprintf_P(&vLCDbuf[poz], 21, enterList,
 				EnterParam.list + STRING_LENGHT * val);
 	} else if (status == MENU_ENTER_PARAM_LIST_2) {
 		uint16_t val = EnterParam.listValue[EnterParam.getValue()];
 		clearLine(NUM_TEXT_LINES);
-		uint8_t poz = 100;
+		uint8_t poz = 60;
 		snprintf_P(&vLCDbuf[poz], 21, enterList,
 				EnterParam.list + STRING_LENGHT * val);
 	} else
@@ -4136,7 +4162,7 @@ eMENU_ENTER_PARAM clMenu::enterPassword() {
 		}
 	} else {
 
-		uint8_t poz = 100;
+		uint8_t poz = 60;
 		clearLine(NUM_TEXT_LINES);
 
 		uint16_t val = EnterParam.getValue();
@@ -4232,13 +4258,15 @@ void clMenu::printPunkts() {
  * 	не более одной строки, т.е. двух параметров.
  *
  * 	@param poz Текущая позиция.
- * 	@arg 0 - левый верхний угол.
- * 	@arg 1 - правый верхний угол.
+ * 	@arg 0 - первая строка, слева.
+ * 	@arg 1 - первая строка, справа.
+ * 	@arg 2 - вторая строка, слева.
+ * 	@arg 3 - вторая строка, справа.
  * 	@param par Отображаемый параметр.
  */
 void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 	// смещение в буфере
-	if (poz < 2) {
+	if (poz < 4) {
 		// 10 - кол-во символов отведенное на экране под 1 параметр
 		poz = (poz * 10);
 
