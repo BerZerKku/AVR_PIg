@@ -47,6 +47,7 @@ static const char fcAcType[GB_TYPE_AC_MAX + 2][9] PROGMEM = {
 		"АК-пуск",		//
 		"АК-однос",		//
 		"АК-ошиб",		//
+		"АК-авто"
 };
 static const char fcTimeToAc[] PROGMEM = "%02d:%02d:%02d";
 

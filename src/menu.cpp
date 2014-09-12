@@ -822,6 +822,13 @@ void clMenu::lvlStart() {
 			uint16_t time = sParam.def.getTimeToAC();
 			eGB_TYPE_AC ac = sParam.def.getTypeAC();
 
+			// в Р400м совместимость ЛинияР подменяем название ""АК-норм"
+			// на "АК-авто"
+			if ((sParam.glb.getCompatibility() == GB_COMPATIBILITY_LINER) &&
+				(ac == GB_TYPE_AC_AUTO_NORM)) {
+				ac = GB_TYPE_AC_AUTO;
+			}
+
 			uint8_t t = poz + 20;
 			t += snprintf_P(&vLCDbuf[t], 11,
 					fcAcType[static_cast<uint8_t>(ac)]);
