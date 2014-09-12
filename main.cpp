@@ -170,7 +170,7 @@ static bool uartWrite() {
  * 	@return Нет
  */
 static void setInterface(eGB_INTERFACE val) {
-	if (val == GB_INTERFACE_USB) {
+	if (val == GB_INTERFACE_RS323) {
 		PORTD &= ~(1 << PD4);
 	} else if (val == GB_INTERFACE_RS485) {
 		PORTD |= (1 << PD4);
@@ -302,7 +302,7 @@ main(void) {
 					// если идет связь с ПК, то настройки фиксированные
 					// если идет связь по Лок.сети, то настройки пользователя
 					switch (uart->Interface.get()) {
-					case GB_INTERFACE_USB:
+					case GB_INTERFACE_RS323:
 						uartPC.open(UART_BAUD_RATE_19200, UART_DATA_BITS_8,
 								UART_PARITY_NONE, UART_STOP_BITS_TWO);
 						protPCs.setEnable(PRTS_STATUS_READ);

@@ -193,7 +193,7 @@ static char fcPvzueParity[GB_PVZUE_PARITY_MAX + 1][STRING_LENGHT] PROGMEM = {
 
 static char fcInterface[GB_INTERFACE_MAX + 1][STRING_LENGHT] PROGMEM = {
 //	 	 1234567890
-		"USB",		//
+		"RS232",	//
 		"RS485",	//
 		"ошибка"	//
 };

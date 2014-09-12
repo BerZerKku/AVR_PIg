@@ -11,7 +11,7 @@
 // интерфейс связи
 enum eGB_INTERFACE {
 	GB_INTERFACE_MIN = 0,	//
-	GB_INTERFACE_USB = 0,	// подключение через USB на передней панели
+	GB_INTERFACE_RS323 = 0,	// подключение через COM на передней панели
 	GB_INTERFACE_RS485,		// подключение через 485 интерфейс на задней панели
 	GB_INTERFACE_MAX		//
 };
@@ -79,9 +79,9 @@ public:
 	/**	Конструктор.
 	 * 	По умолчанию устанваливает связь по USB.
 	 */
-	TInterface(eGB_INTERFACE val = GB_INTERFACE_USB) {
+	TInterface(eGB_INTERFACE val = GB_INTERFACE_RS323) {
 		if (!set(val))
-			interface_ = GB_INTERFACE_USB;
+			interface_ = GB_INTERFACE_RS323;
 	}
 
 	/**	Запись.

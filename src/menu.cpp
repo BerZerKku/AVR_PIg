@@ -2287,7 +2287,7 @@ void clMenu::lvlSetupParamPrm() {
 
 	static char punkt1[] PROGMEM = "Задержка на фикс.ком";
 	static char punkt2[] PROGMEM = "Блокиров. команда %u";
-	static char punkt3[] PROGMEM = "Задержка выкл.ком %u";
+	static char punkt3[] PROGMEM = "Задержка выкл. ком%u";
 	static char punkt4[] PROGMEM = "Трансляция ЦС";
 	static char punkt5[] PROGMEM = "Блокиров. ком. ЦС %u";
 	static char punkt6[] PROGMEM = "Команда %u ВЧ в ЦС";
@@ -3556,14 +3556,11 @@ void clMenu::lvlSetupInterface() {
 	snprintf_P(&vLCDbuf[0], 21, title);
 
 	uint8_t poz = 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_, Punkts_.getMaxNumPunkts());
-
-	poz = 40;
 	snprintf_P(&vLCDbuf[poz], 21, name);
 
 	// вывод надписи "Диапазон:" и переход к выводу самого диапазона
 	// ВСЕ СПИСКИ
-	poz = 80;
+	poz = 40;
 	poz += snprintf_P(&vLCDbuf[poz], 11, fcRange);
 	snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
 
@@ -3600,7 +3597,7 @@ void clMenu::lvlSetupInterface() {
 		}
 	} else {
 		// вывод надписи "Значение:" и переход к выводу самого значения
-		poz = 100;
+		poz = 60;
 		poz += snprintf_P(&vLCDbuf[poz], 11, fcValue);
 		if (name == punkt1) {
 			uint8_t val = static_cast<uint8_t>(sParam.Uart.Interface.get());
