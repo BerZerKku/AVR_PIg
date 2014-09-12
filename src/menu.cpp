@@ -2035,7 +2035,7 @@ void clMenu::lvlControl() {
 						Punkts_.change(punkt25, GB_COM_NO, 5);
 					} else if (num == 3) {
 						Punkts_.change(punkt32, GB_COM_NO, 2);
-						Punkts_.change(punkt32, GB_COM_NO, 3);
+						Punkts_.change(punkt33, GB_COM_NO, 3);
 						Punkts_.change(punkt23, GB_COM_NO, 4);
 						Punkts_.change(punkt24, GB_COM_NO, 5);
 					}
