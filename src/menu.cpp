@@ -1440,20 +1440,33 @@ void clMenu::lvlControl() {
 			Punkts_.add(punkt05);
 		} else if (device == AVANT_RZSK) {
 			eGB_NUM_DEVICES numDevices = sParam.def.getNumDevices();
-			if (numDevices == GB_NUM_DEVICES_2) {
-				Punkts_.add(punkt07);	// далее выбираетс€ в зависимости от текущего
+			if (sParam.def.status.isEnable()) {
+				if (numDevices == GB_NUM_DEVICES_2) {
+					Punkts_.add(punkt07);	// далее выбираетс€ в зависимости от текущего
+					Punkts_.add(punkt03);
+					Punkts_.add(punkt04);
+					Punkts_.add(punkt02);
+					Punkts_.add(punkt05);
+				} else if (numDevices == GB_NUM_DEVICES_3) {
+					Punkts_.add(punkt07);	// далее выбираетс€ в зависимости от текущего
+					Punkts_.add(punkt03);
+					Punkts_.add(punkt22);
+					Punkts_.add(punkt23);	// далее выбираетс€ в зависимости от номера
+					Punkts_.add(punkt24);	// далее выбираетс€ в зависимости от номера
+					Punkts_.add(punkt26);
+					Punkts_.add(punkt05);
+				}
+			} else {
+				// если нет поста, проверим наличие передатчика
 				Punkts_.add(punkt03);
-				Punkts_.add(punkt04);
-				Punkts_.add(punkt02);
-				Punkts_.add(punkt05);
-			} else if (numDevices == GB_NUM_DEVICES_3) {
-				Punkts_.add(punkt07);	// далее выбираетс€ в зависимости от текущего
-				Punkts_.add(punkt03);
-				Punkts_.add(punkt22);
-				Punkts_.add(punkt23);	// далее выбираетс€ в зависимости от номера
-				Punkts_.add(punkt24);	// далее выбираетс€ в зависимости от номера
-				Punkts_.add(punkt26);
-				Punkts_.add(punkt05);
+				if (sParam.prd.status.isEnable()) {
+					if (numDevices == GB_NUM_DEVICES_2) {
+						Punkts_.add(punkt04);
+					} else if (numDevices == GB_NUM_DEVICES_3) {
+						Punkts_.add(punkt22);
+					}
+					Punkts_.add(punkt05);
+				}
 			}
 		}
 
@@ -1485,17 +1498,19 @@ void clMenu::lvlControl() {
 
 		// выбор пуск удаленного
 		if (device == AVANT_RZSK) {
-			if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-				uint8_t num = sParam.glb.getDeviceNum();
-				if (num == 1) {
-					Punkts_.change(punkt24, GB_COM_NO, 3);
-					Punkts_.change(punkt25, GB_COM_NO, 4);
-				} else if (num == 2) {
-					Punkts_.change(punkt23, GB_COM_NO, 3);
-					Punkts_.change(punkt25, GB_COM_NO, 4);
-				} else if (num == 3) {
-					Punkts_.change(punkt23, GB_COM_NO, 3);
-					Punkts_.change(punkt24, GB_COM_NO, 4);
+			if (sParam.def.status.isEnable()) {
+				if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+					uint8_t num = sParam.glb.getDeviceNum();
+					if (num == 1) {
+						Punkts_.change(punkt24, GB_COM_NO, 3);
+						Punkts_.change(punkt25, GB_COM_NO, 4);
+					} else if (num == 2) {
+						Punkts_.change(punkt23, GB_COM_NO, 3);
+						Punkts_.change(punkt25, GB_COM_NO, 4);
+					} else if (num == 3) {
+						Punkts_.change(punkt23, GB_COM_NO, 3);
+						Punkts_.change(punkt24, GB_COM_NO, 4);
+					}
 				}
 			}
 		}
@@ -1661,8 +1676,8 @@ void clMenu::lvlSetup() {
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	PGM_P name = Punkts_.getName(cursorLine_ - 1);
 	printPunkts();
+
 	if (EnterParam.isEnable()) {
 		// ввод нового значени€ параметра
 		eMENU_ENTER_PARAM stat = EnterParam.getStatus();
@@ -1675,8 +1690,14 @@ void clMenu::lvlSetup() {
 
 			if (sParam.password.check(val)) {
 				EnterParam.setEnable(MENU_ENTER_PASSWORD_NEW);
-			} else
-				EnterParam.setDisable();
+				enterFunc = &clMenu::enterPassword;
+				EnterParam.setValueRange(0, 9999);
+				EnterParam.setValue(0);
+				EnterParam.com = GB_COM_NO;
+
+			} else {
+				EnterParam.printMessage();
+			}
 		} else if (stat == MENU_ENTER_PASSWORD_N_READY) {
 			uint16_t val = EnterParam.getValue();
 
@@ -1684,6 +1705,8 @@ void clMenu::lvlSetup() {
 		}
 	}
 
+
+	PGM_P name = Punkts_.getName(cursorLine_ - 1);
 	if (key_ != KEY_NO) {
 		// обработка кнопок перехода в конкретный номер пункта меню
 		if ((key_ >= KEY_1) && (key_ <= KEY_9)) {
@@ -1721,6 +1744,8 @@ void clMenu::lvlSetup() {
 				} else if (name == punkt4) {
 					enterFunc = &clMenu::enterPassword;
 					EnterParam.setEnable(MENU_ENTER_PASSWORD);
+					EnterParam.setValueRange(0, 9999);
+					EnterParam.setValue(0);
 					EnterParam.com = GB_COM_NO;
 				} else if (name == punkt5) {
 					lvlMenu = &clMenu::lvlSetupInterface;
@@ -1787,6 +1812,8 @@ void clMenu::lvlRegime() {
 				if (val == GB_REGIME_ENTER_DISABLED) {
 					enterFunc = &clMenu::enterPassword;
 					EnterParam.setEnable(MENU_ENTER_PASSWORD);
+					EnterParam.setValueRange(0, 9999);
+					EnterParam.setValue(0);
 					EnterParam.setDopValue(static_cast<uint16_t>(val));
 					val = GB_REGIME_ENTER_MAX;
 				}
@@ -2915,8 +2942,14 @@ void clMenu::lvlSetupParamGlb() {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_DETECTOR_MIN,
 				GLB_DETECTOR_MAX, "");
 	} else if (name == punkt15) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_COR_U_DEC_MIN / 10,
+		// при вводе коррекции минимальное значение 0
+		if (EnterParam.isEnable()) {
+			snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, 0,
+							GLB_COR_U_DEC_MAX / 10, "¬");
+		} else {
+			snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_COR_U_DEC_MIN / 10,
 				GLB_COR_U_DEC_MAX / 10, "¬");
+		}
 	} else if (name == punkt16) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, 0, GLB_COR_I_DEC_MAX, "мј");
 	} else if (name == punkt17) {
@@ -3439,72 +3472,80 @@ void clMenu::lvlSetupDT() {
 	} else
 		printPunkts();
 
-	switch (key_) {
-	case KEY_UP:
-		cursorLineUp();
-		break;
-	case KEY_DOWN:
-		cursorLineDown();
-		break;
-
-	case KEY_ENTER:
-		enterFunc = &clMenu::enterValue;
-		if (name == punkt1) {
-			EnterParam.setEnable();
-			EnterParam.setValueRange(0, 99);
-			EnterParam.setValue(sParam.dataTime.getYear());
-			EnterParam.setDopValue(0);
-		} else if (name == punkt2) {
-			EnterParam.setEnable();
-			EnterParam.setValueRange(1, 12);
-			EnterParam.setValue(sParam.dataTime.getMonth());
-			EnterParam.setDopValue(1);
-		} else if (name == punkt3) {
-			EnterParam.setEnable();
-			uint8_t max = sParam.dataTime.getNumDaysInMonth();
-			EnterParam.setValueRange(1, max);
-			EnterParam.setValue(sParam.dataTime.getDay());
-			EnterParam.setDopValue(2);
-		} else if (name == punkt4) {
-			EnterParam.setEnable();
-			EnterParam.setValueRange(0, 23);
-			EnterParam.setValue(sParam.dataTime.getHour());
-			EnterParam.setDopValue(3);
-		} else if (name == punkt5) {
-			EnterParam.setEnable();
-			EnterParam.setValueRange(0, 59);
-			EnterParam.setValue(sParam.dataTime.getMinute());
-			EnterParam.setDopValue(4);
-		} else if (name == punkt6) {
-			EnterParam.setEnable();
-			EnterParam.setValueRange(0, 59);
-			EnterParam.setValue(sParam.dataTime.getSecond());
-			EnterParam.setDopValue(5);
+	if (key_ != KEY_NO) {
+		// обработка кнопок перехода в конкретный номер пункта меню
+		if ((key_ >= KEY_1) && (key_ <= KEY_9)) {
+			name = Punkts_.getName(key_ - KEY_1);
+			key_ = (name != 0) ? KEY_ENTER : KEY_NO;
 		}
-		EnterParam.com = GB_COM_SET_TIME;
-		EnterParam.setDisc(1);
-		EnterParam.setFract(1);
-		// сохраним текущие значени€ даты и времени
-		// байты расположены в пор€дке передачи в Ѕ—ѕ
-		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getYear()), 0);
-		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getMonth()), 1);
-		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getDay()), 2);
-		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getHour()), 3);
-		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getMinute()), 4);
-		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getSecond()), 5);
-		break;
 
-	case KEY_CANCEL:
-		lvlMenu = &clMenu::lvlSetup;
-		lvlCreate_ = true;
-		break;
-	case KEY_MENU:
-		lvlMenu = &clMenu::lvlStart;
-		lvlCreate_ = true;
-		break;
+		switch (key_) {
+			case KEY_UP:
+				cursorLineUp();
+				break;
+			case KEY_DOWN:
+				cursorLineDown();
+				break;
 
-	default:
-		break;
+			case KEY_ENTER:
+				enterFunc = &clMenu::enterValue;
+				if (name == punkt1) {
+					EnterParam.setEnable();
+					EnterParam.setValueRange(0, 99);
+					EnterParam.setValue(sParam.dataTime.getYear());
+					EnterParam.setDopValue(0);
+				} else if (name == punkt2) {
+					EnterParam.setEnable();
+					EnterParam.setValueRange(1, 12);
+					EnterParam.setValue(sParam.dataTime.getMonth());
+					EnterParam.setDopValue(1);
+				} else if (name == punkt3) {
+					EnterParam.setEnable();
+					uint8_t max = sParam.dataTime.getNumDaysInMonth();
+					EnterParam.setValueRange(1, max);
+					EnterParam.setValue(sParam.dataTime.getDay());
+					EnterParam.setDopValue(2);
+				} else if (name == punkt4) {
+					EnterParam.setEnable();
+					EnterParam.setValueRange(0, 23);
+					EnterParam.setValue(sParam.dataTime.getHour());
+					EnterParam.setDopValue(3);
+				} else if (name == punkt5) {
+					EnterParam.setEnable();
+					EnterParam.setValueRange(0, 59);
+					EnterParam.setValue(sParam.dataTime.getMinute());
+					EnterParam.setDopValue(4);
+				} else if (name == punkt6) {
+					EnterParam.setEnable();
+					EnterParam.setValueRange(0, 59);
+					EnterParam.setValue(sParam.dataTime.getSecond());
+					EnterParam.setDopValue(5);
+				}
+				EnterParam.com = GB_COM_SET_TIME;
+				EnterParam.setDisc(1);
+				EnterParam.setFract(1);
+				// сохраним текущие значени€ даты и времени
+				// байты расположены в пор€дке передачи в Ѕ—ѕ
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getYear()), 0);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getMonth()), 1);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getDay()), 2);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getHour()), 3);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getMinute()), 4);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getSecond()), 5);
+				break;
+
+			case KEY_CANCEL:
+				lvlMenu = &clMenu::lvlSetup;
+				lvlCreate_ = true;
+				break;
+			case KEY_MENU:
+				lvlMenu = &clMenu::lvlStart;
+				lvlCreate_ = true;
+				break;
+
+			default:
+				break;
+		}
 	}
 }
 
@@ -3808,8 +3849,6 @@ void clMenu::lvlTest1() {
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
 	if (lvlCreate_) {
-
-
 		lvlCreate_ = false;
 		cursorLine_ = 1;
 		cursorEnable_ = true;
@@ -3829,18 +3868,27 @@ void clMenu::lvlTest1() {
 			if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_AVANT)
 				sParam.test.addSignalToList(GB_SIGNAL_CF);
 		} else if (device == AVANT_RZSK) {
-			sParam.test.addSignalToList(GB_SIGNAL_CF_NO_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_CF_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_CF2_NO_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_CF2_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_COM1_NO_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_COM2_NO_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_COM3_NO_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_COM4_NO_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_COM1_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_COM2_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_COM3_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_COM4_RZ);
+			if (sParam.def.status.isEnable()) {
+				sParam.test.addSignalToList(GB_SIGNAL_CF_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_CF_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_CF2_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_CF2_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM1_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM2_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM3_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM4_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM1_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM2_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM3_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM4_RZ);
+			} else if (sParam.prd.status.isEnable()) {
+				sParam.test.addSignalToList(GB_SIGNAL_CF_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_CF2_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM1_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM2_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM3_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM4_NO_RZ);
+			}
 		}
 	}
 
@@ -4071,43 +4119,30 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 			key_ = KEY_CANCEL;
 		}
 	} else if (status == MENU_ENTER_PARAM_INT) {
-		uint16_t val = EnterParam.getValue();
-		uint8_t num = EnterParam.getValueNumSymbols();
-
-		// если кол-во символов выходит за допустимые значени€, закончим ввод
-		if ((num >= 5) || (num == 0)) {
-			key_ = KEY_CANCEL;
-		} else {
-			clearLine(NUM_TEXT_LINES);
-			uint8_t poz = 60;
-			snprintf_P(&vLCDbuf[poz], 21, enterInt, val);
-		}
-	} else if (status == MENU_ENTER_PARAM_U_COR) {
-		uint16_t val = EnterParam.getValue();
-		uint8_t num = EnterParam.getValueNumSymbols();
-
-		// если кол-во символов выходит за допустимые значени€, закончим ввод
-		if ((num >= 5) || (num == 0)) {
-			key_ = KEY_CANCEL;
-		} else {
-			clearLine(NUM_TEXT_LINES);
-			uint8_t poz = 60;
-			snprintf_P(&vLCDbuf[poz], 21, enterUcor, val / 10, val % 10);
-		}
-	} else if (status == MENU_ENTER_PARAM_LIST) {
-		uint16_t val = EnterParam.getValue();
 		clearLine(NUM_TEXT_LINES);
+		uint16_t val = EnterParam.getValue();
+		uint8_t poz = 60;
+		snprintf_P(&vLCDbuf[poz], 21, enterInt, val);
+	} else if (status == MENU_ENTER_PARAM_U_COR) {
+		clearLine(NUM_TEXT_LINES);
+		uint16_t val = EnterParam.getValue();
+		uint8_t poz = 60;
+		snprintf_P(&vLCDbuf[poz], 21, enterUcor, val / 10, val % 10);
+	} else if (status == MENU_ENTER_PARAM_LIST) {
+		clearLine(NUM_TEXT_LINES);
+		uint16_t val = EnterParam.getValue();
 		uint8_t poz = 60;
 		snprintf_P(&vLCDbuf[poz], 21, enterList,
 				EnterParam.list + STRING_LENGHT * val);
 	} else if (status == MENU_ENTER_PARAM_LIST_2) {
-		uint16_t val = EnterParam.listValue[EnterParam.getValue()];
 		clearLine(NUM_TEXT_LINES);
+		uint16_t val = EnterParam.listValue[EnterParam.getValue()];
 		uint8_t poz = 60;
 		snprintf_P(&vLCDbuf[poz], 21, enterList,
 				EnterParam.list + STRING_LENGHT * val);
-	} else
+	} else {
 		key_ = KEY_CANCEL;
+	}
 
 	switch (key_) {
 	case KEY_CANCEL:
@@ -4115,16 +4150,25 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 		break;
 
 	case KEY_UP:
-		EnterParam.incValue(1);
+		EnterParam.incValue();
+		EnterParam.delDigit();
 		break;
 	case KEY_DOWN:
-		EnterParam.decValue(1);
+		EnterParam.decValue();
+		EnterParam.delDigit();
 		break;
 
 	case KEY_ENTER:
 		EnterParam.setEnterValueReady();
 		break;
+
 	default:
+		if ((status == MENU_ENTER_PARAM_INT) ||
+				(status == MENU_ENTER_PARAM_U_COR)) {
+			if ((key_ >= KEY_0) && (key_ <= KEY_9)) {
+				EnterParam.setDigit(key_ - KEY_0);
+			}
+		}
 		break;
 	}
 
@@ -4137,82 +4181,81 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
  * 	@return True - по окончанию
  */
 eMENU_ENTER_PARAM clMenu::enterPassword() {
+	static char enter[] PROGMEM = "ѕароль: %04u";
+	static char enterNew[] PROGMEM = "Ќовый пароль: %04u";
+
 	eMENU_ENTER_PARAM status = EnterParam.getStatus();
+
 	if (status == MENU_ENTER_PARAM_MESSAGE) {
-		for (uint_fast8_t i = lineParam_ + 1; i <= NUM_TEXT_LINES; i++)
+		for (uint_fast8_t i = lineParam_ + 1; i <= NUM_TEXT_LINES; i++) {
 			clearLine(i);
+		}
 
 		// вывод сообщени€ до тех пор, пока счетчик времени не обнулитс€
 		// затем возврат в исходный пункт меню
 		if (EnterParam.cnt_ < TIME_MESSAGE) {
 			static char message[3][21] PROGMEM = {
-			//		 12345678901234567890
-					"       ¬веден       ",//
+					//		 12345678901234567890
+					"       ¬веден       ",		//
 					"    неправильный    ",		//
-					"       пароль       " };
+					"       пароль       "
+			};
 
 			EnterParam.cnt_++;
 			key_ = KEY_NO;
 
-			uint8_t poz = 40;
+			uint8_t poz = 20;
 			for (uint_fast8_t i = 0; i < 3; i++, poz += 20)
 				snprintf_P(&vLCDbuf[poz], 21, message[i]);
 		} else {
 			key_ = KEY_CANCEL;
 		}
 	} else {
-
 		uint8_t poz = 60;
 		clearLine(NUM_TEXT_LINES);
 
 		uint16_t val = EnterParam.getValue();
 
 		if (status == MENU_ENTER_PASSWORD) {
-			static char enter[] PROGMEM = "ѕароль: %04u";
 			snprintf_P(&vLCDbuf[poz], 21, enter, val);
 		} else if (status == MENU_ENTER_PASSWORD_NEW) {
-			static char enterNew[] PROGMEM = "Ќовый пароль: %04u";
 			snprintf_P(&vLCDbuf[poz], 21, enterNew, val);
 		} else {
 			key_ = KEY_CANCEL;
 		}
 	}
 
-	switch (key_) {
-	case KEY_CANCEL:
-		EnterParam.setDisable();
-		break;
+	if (key_ != KEY_NO) {
+		switch (key_) {
+			case KEY_CANCEL:
+				EnterParam.setDisable();
+				break;
 
-	case KEY_ENTER:
-		if (status == MENU_ENTER_PASSWORD)
-			EnterParam.setEnterValueReady(MENU_ENTER_PASSWORD_READY);
-		else if (status == MENU_ENTER_PASSWORD_NEW)
-			EnterParam.setEnterValueReady(MENU_ENTER_PASSWORD_N_READY);
-		else
-			EnterParam.setDisable();
-		break;
+			case KEY_ENTER:
+				if (status == MENU_ENTER_PASSWORD)
+					EnterParam.setEnterValueReady(MENU_ENTER_PASSWORD_READY);
+				else if (status == MENU_ENTER_PASSWORD_NEW)
+					EnterParam.setEnterValueReady(MENU_ENTER_PASSWORD_N_READY);
+				else
+					EnterParam.setDisable();
+				break;
 
-	case KEY_UP:
-		EnterParam.setDisc(1000);
-		EnterParam.incValue();
-		break;
-	case KEY_RIGHT:
-		EnterParam.setDisc(100);
-		EnterParam.incValue();
-		break;
-	case KEY_DOWN:
-		EnterParam.setDisc(10);
-		EnterParam.incValue();
-		break;
-	case KEY_LEFT:
-		EnterParam.setDisc(1);
-		EnterParam.incValue();
-		break;
+			case KEY_UP:
+				EnterParam.delDigit();
+				break;
+			case KEY_DOWN:
+				EnterParam.delDigit();
+				break;
 
-	default:
-		break;
+			default: {
+				if ((key_ >= KEY_0) && (key_ <= KEY_9)) {
+					EnterParam.setDigit(key_ - KEY_0);
+				}
+			}
+			break;
+		}
+		key_ = KEY_NO;
 	}
-	key_ = KEY_NO;
 
 	return EnterParam.getStatus();
 }
