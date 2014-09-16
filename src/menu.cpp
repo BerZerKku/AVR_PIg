@@ -562,8 +562,8 @@ void clMenu::lvlError() {
 	}
 
 	// вывод на экран измеряемых параметров
-	printMeasParam(0, measParam[0]);
-	printMeasParam(1, measParam[1]);
+	printMeasParam(0, MENU_MEAS_PARAM_DATE);
+	printMeasParam(1, MENU_MEAS_PARAM_TIME);
 
 	// Проверка времени нахождения в неизвестном состоянии типа аппарата
 	if (time++ >= 25) {
@@ -2856,7 +2856,8 @@ void clMenu::lvlSetupParamGlb() {
 	static char punkt5[] PROGMEM 	= "Время перезапуска";
 	static char punkt6[] PROGMEM 	= "Удерж. реле ком. ПРД";
 	static char punkt7[] PROGMEM 	= "Удерж. реле ком. ПРМ";
-	static char punkt8[] PROGMEM 	= "Загрубл.чувств. ПРМ%u";
+	static char punkt8[] PROGMEM 	= "Загрубл.чувств. ПРМ";
+	static char punkt8rzsk[] PROGMEM= "Загрубл.чувств. ПРМ%u";
 	static char punkt9[] PROGMEM 	= "Сетевой адрес";
 	static char punkt10[] PROGMEM 	= "Uвых номинальное";
 	static char punkt11[] PROGMEM 	= "Частота";
@@ -2954,7 +2955,9 @@ void clMenu::lvlSetupParamGlb() {
 	if (sParam.typeDevice == AVANT_RZSK) {
 		if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
 			if (name == punkt8) {
-				poz += snprintf_P(&vLCDbuf[poz], 21, name, curCom_);
+				poz += snprintf_P(&vLCDbuf[poz], 21, punkt8rzsk, curCom_);
+			} else {
+
 			}
 		}
 	}
@@ -3537,7 +3540,12 @@ void clMenu::lvlSetupDT() {
 		// обработка кнопок перехода в конкретный номер пункта меню
 		if ((key_ >= KEY_1) && (key_ <= KEY_9)) {
 			name = Punkts_.getName(key_ - KEY_1);
-			key_ = (name != 0) ? KEY_ENTER : KEY_NO;
+			if (name != 0) {
+				cursorLine_ = key_ - KEY_1 + 1;
+				key_ = KEY_ENTER;
+			} else {
+				key_ = KEY_NO;
+			}
 		}
 
 		switch (key_) {
