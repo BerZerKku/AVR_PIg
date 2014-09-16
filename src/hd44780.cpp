@@ -107,6 +107,9 @@ void vLCDputchar(char *b) {
 		} else if (buf[i] == 0x00) {
 			buf[i] = ' ';
 		}
+//		else if (buf[i] == 0xB0) {
+//			buf[i] = 0xEF;	// символ градуса '°'
+//		}
 	}
 }
 

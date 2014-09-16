@@ -19,6 +19,19 @@
 #include "inc/protocolPcS.h"
 #include "inc/protocolBspS.h"
 
+/// Структура параметров хранимая в памяти
+struct sEeprom {
+	uint16_t 			password;	// пароль
+	eGB_INTERFACE 		interface;	// интерфейс
+	eGB_PROTOCOL		protocol;	// протокол
+	eUART_BAUD_RATE 	baudRate;	// скорость
+	eUART_DATA_BITS 	dataBits;	// кол-во бит данных
+	eUART_PARITY 		parity;		// четность
+	eUART_STOP_BITS 	stopBits;	// кол-во стоп-бит
+	eMENU_MEAS_PARAM	vParam1;	// первый измеряемый параметр
+	eMENU_MEAS_PARAM	vParam2;	// второй измеряемый параметр
+};
+
 /// Время работы одного цикла (зависит от настройки таймеров), мс
 #define TIME_CYLCE 100
 
@@ -237,6 +250,8 @@ main(void) {
 	menu.sParam.Uart.DataBits.set(eeprom.dataBits);
 	menu.sParam.Uart.Parity.set(eeprom.parity);
 	menu.sParam.Uart.StopBits.set(eeprom.stopBits);
+	menu.setViewParam(1, eeprom.vParam1);
+	menu.setViewParam(2, eeprom.vParam2);
 	// выбор интерфейса связи
 	setInterface(menu.sParam.Uart.Interface.get());
 
@@ -328,6 +343,9 @@ main(void) {
 				if (eeprom.protocol != menu.sParam.Uart.Protocol.get()) {
 					eeprom.protocol = menu.sParam.Uart.Protocol.get();
 				}
+
+				eeprom.vParam1 = menu.getViewParam(1);
+				eeprom.vParam2 = menu.getViewParam(2);
 
 				// обновление настроек пользователя в ЕЕПРОМ
 				eeprom_update_block(&eeprom, (sEeprom*) EEPROM_START_ADDRESS,

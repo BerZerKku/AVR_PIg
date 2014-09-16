@@ -61,18 +61,6 @@ enum eUART_STOP_BITS {
 	UART_STOP_BITS_MAX			//
 };
 
-
-struct sEeprom {
-	uint16_t 		password;	// пароль
-	eGB_INTERFACE 	interface;	// интерфейс
-	eGB_PROTOCOL	protocol;	// протокол
-	eUART_BAUD_RATE baudRate;	// скорость
-	eUART_DATA_BITS dataBits;	// кол-во бит данных
-	eUART_PARITY 	parity;		// четность
-	eUART_STOP_BITS stopBits;	// кол-во стоп-бит
-};
-
-
 /// Интерфейс связи
 class TInterface {
 public:

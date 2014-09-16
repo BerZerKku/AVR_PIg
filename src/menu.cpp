@@ -20,6 +20,7 @@ static char vLCDbuf[SIZE_BUF_STRING + 1];
 /// кол-во строк данных отображаемых на экране
 #define NUM_TEXT_LINES (SIZE_BUF_STRING / 20)
 
+// конструктор
 clMenu::clMenu() {
 	lvlMenu = &clMenu::lvlStart;
 	lineParam_ = 3;
@@ -94,8 +95,13 @@ clMenu::clMenu() {
 	sParam.def.status.name = fcDeviceName00;
 	sParam.prm.status.name = fcDeviceName01;
 	sParam.prd.status.name = fcDeviceName02;
+
+	maxViewParam_ = 2;
+	viewParam_[0] = MENU_MEAS_PARAM_DATE;
+	viewParam_[1] = MENU_MEAS_PARAM_TIME;
 }
 
+// тело меню
 void clMenu::main(void) {
 
 	static const char fcNoConnectBsp[] PROGMEM = " Нет связи с БСП!!! ";
@@ -171,32 +177,191 @@ void clMenu::main(void) {
 	vLCDrefresh();
 }
 
-/**	Выполнение настроек для РЗСК.
- * 	@retval True - всегда.
+// Определение текущего варианта аппарата и осуществление настроек.
+bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
+	bool status = false;
+
+	sParam.glb.status.setEnable(true);
+
+	// если необходимый тип аппарата небыл передан, сделаем вывод исходя
+	// из текущих настроек.
+	if (device == AVANT_NO) {
+		device = sParam.glb.getTypeDevice();
+		if (device == AVANT_NO) {
+			if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM) {
+				// ВЧ вариант
+				// если есть защита + команды (прм и/или прд) - РЗСК
+				// если есть только команды (прм и/или прд) - К400
+				// если есть защита и (версия прошивки & 0xF000) = 0xF000 - Р400М
+
+				if (sParam.def.status.isEnable()) {
+					if ((sParam.prm.status.isEnable())
+							|| (sParam.prd.status.isEnable())) {
+						device = AVANT_RZSK;
+					} else {
+						uint16_t vers = sParam.glb.getVersProgIC(GB_IC_BSP_MCU);
+						if ((vers & 0xF000) == 0xF000) {
+							device = AVANT_R400M;
+						}
+					}
+				}
+			}
+		}
+
+		// если текущее устройство совпадает с новым, то ничего не делаем
+		// иначе прыгаем на начальный уровень
+		if (device == sParam.typeDevice) {
+			status = true;
+		} else {
+			sParam.typeDevice = device;
+			lvlMenu = &clMenu::lvlStart;
+			lvlCreate_ = true;
+		}
+	}
+
+	if (!status) {
+		// предварительная "очистка" массивов неисправностей
+		for (uint_fast8_t i = 0; i < MAX_NUM_FAULTS; i++)
+			sParam.glb.status.faultText[i] = fcUnknownFault;
+		for (uint_fast8_t i = 0; i < MAX_NUM_FAULTS; i++)
+			sParam.def.status.faultText[i] = fcUnknownFault;
+		for (uint_fast8_t i = 0; i < MAX_NUM_FAULTS; i++)
+			sParam.prm.status.faultText[i] = fcUnknownFault;
+		for (uint_fast8_t i = 0; i < MAX_NUM_FAULTS; i++)
+			sParam.prd.status.faultText[i] = fcUnknownFault;
+
+		// предварительная "очистка" массивов предупреждений
+		for (uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
+			sParam.glb.status.warningText[i] = fcUnknownWarning;
+		for (uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
+			sParam.def.status.warningText[i] = fcUnknownWarning;
+		for (uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
+			sParam.prm.status.warningText[i] = fcUnknownWarning;
+		for (uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
+			sParam.prd.status.warningText[i] = fcUnknownWarning;
+
+		// предварительная очистка массива отображаемых параметров
+		for (uint_fast8_t i = 0; i < MAX_NUM_MEAS_PARAM; i++)
+			measParam[i] = MENU_MEAS_PARAM_NO;
+
+		if (device == AVANT_RZSK) {
+			status = setDeviceRZSK();
+		} else if (device == AVANT_R400M) {
+			status = setDeviceR400M();
+		}
+
+		checkViewParams();
+	}
+
+	if ((!status) || (device == AVANT_NO)) {
+		// если полученные данные не подходят ни под один имеющийся тип
+		// на экране отображается ошибка
+		sParam.typeDevice = AVANT_NO;
+		// в случае неизвестного типа устройства, отключим все
+		uint8_t cnt = 0;
+		measParam[cnt++] = MENU_MEAS_PARAM_TIME;
+		measParam[cnt++] = MENU_MEAS_PARAM_DATE;
+		for (uint_fast8_t i = cnt; i < MAX_NUM_MEAS_PARAM; i++)
+			measParam[i] = MENU_MEAS_PARAM_NO;
+		maxViewParam_ = cnt;
+
+		sParam.def.status.setEnable(false);
+		sParam.prm.status.setEnable(false);
+		sParam.prd.status.setEnable(false);
+
+		lvlMenu = &clMenu::lvlError;
+	}
+
+	// "сброс" флага необходимости проверки типа аппарата
+	sParam.device = true;
+	// обовление текущего уровня меню
+	lvlCreate_ = true;
+
+	return status;
+}
+
+// возвращает команду для отправки в БСП
+eGB_COM clMenu::getTxCommand() {
+	static uint8_t cnt = 0;
+	eGB_COM com = sParam.txComBuf.getFastCom();
+
+	if (com == GB_COM_NO) {
+		cnt++;
+		if (cnt == 1)
+			com = GB_COM_GET_SOST;
+		else if (cnt == 2)
+			com = sParam.txComBuf.getCom1();
+
+		// если нет команды, посылаем команду из буфера 2
+		if (com == GB_COM_NO)
+			com = sParam.txComBuf.getCom2();
+
+		// начинаем цикл сначала, если отправлено 4 посылки
+		if (cnt >= 4)
+			cnt = 0;
+	}
+
+	return com;
+}
+
+// Задает измеряемый параметр, отображаемый на экране.
+void clMenu::setViewParam(uint8_t num, eMENU_MEAS_PARAM param) {
+	if ((num > 0) && (num <= NUM_VIEW_PARAM)) {
+		num--;
+		if (param >= MENU_MEAS_PARAM_MAX) {
+			param = (num%2) ? MENU_MEAS_PARAM_TIME : MENU_MEAS_PARAM_DATE;
+		}
+		viewParam_[num] = param;
+	}
+}
+
+// Возвращает измеряемый параметр, отображаемый на экране.
+eMENU_MEAS_PARAM clMenu::getViewParam(uint8_t num) {
+	eMENU_MEAS_PARAM param = MENU_MEAS_PARAM_NO;
+	if ((num > 0) && (num <= NUM_VIEW_PARAM)) {
+		param = viewParam_[num - 1];
+	}
+	return param;
+}
+
+/**	Настройка меню в случае варианта аппарата АВАНТ РЗСК.
+ *
+ *	Производятся следующие действия:
+ *	- заполняется массив отображаемых на экране параметров;
+ *	- заполняются массивы неисправностей и предупреждений.
+ *
+ * 	@retval true В случае успешной настройки.
+ * 	@retval false В ходе настройки произошла ошибка.
  */
 bool clMenu::setDeviceRZSK() {
 
 	sParam.typeDevice = AVANT_RZSK;
 
 	// первый столбец параметров
-	measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
-	measParam[1] = MENU_MEAS_PARAM_DATE;
-	measParam[2] = MENU_MEAS_PARAM_UOUT;
-	measParam[3] = MENU_MEAS_PARAM_IOUT;
-	measParam[4] = MENU_MEAS_PARAM_SD;
+	uint8_t cnt = 0;
+	measParam[cnt++] = MENU_MEAS_PARAM_TIME;
+	measParam[cnt++] = MENU_MEAS_PARAM_DATE;
+	measParam[cnt++] = MENU_MEAS_PARAM_UOUT;
+	measParam[cnt++] = MENU_MEAS_PARAM_IOUT;
+	measParam[cnt++] = MENU_MEAS_PARAM_SD;
 	// второй столбец параметров
 	if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-		measParam[5] = MENU_MEAS_PARAM_UZ1;
-		measParam[6] = MENU_MEAS_PARAM_UZ2;
-		measParam[7] = MENU_MEAS_PARAM_UC1;
-		measParam[8] = MENU_MEAS_PARAM_UC2;
-		measParam[9] = MENU_MEAS_PARAM_UN1;
-		measParam[10] = MENU_MEAS_PARAM_UN2;
+		if (sParam.def.status.isEnable()) {
+			measParam[cnt++] = MENU_MEAS_PARAM_UZ1;
+			measParam[cnt++] = MENU_MEAS_PARAM_UZ2;
+		}
+		measParam[cnt++] = MENU_MEAS_PARAM_UC1;
+		measParam[cnt++] = MENU_MEAS_PARAM_UC2;
+		measParam[cnt++] = MENU_MEAS_PARAM_UN1;
+		measParam[cnt++] = MENU_MEAS_PARAM_UN2;
 	} else {
-		measParam[5] = MENU_MEAS_PARAM_UZ;
-		measParam[6] = MENU_MEAS_PARAM_UC;
-		measParam[7] = MENU_MEAS_PARAM_UN;
+		if (sParam.def.status.isEnable()) {
+			measParam[cnt++] = MENU_MEAS_PARAM_UZ;
+		}
+		measParam[cnt++] = MENU_MEAS_PARAM_UC;
+		measParam[cnt++] = MENU_MEAS_PARAM_UN;
 	}
+	maxViewParam_ = cnt;
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -278,24 +443,25 @@ bool clMenu::setDeviceR400M() {
 
 	sParam.typeDevice = AVANT_R400M;
 
-	measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
-	measParam[1] = MENU_MEAS_PARAM_DATE;
-	measParam[2] = MENU_MEAS_PARAM_UOUT;
-	measParam[3] = MENU_MEAS_PARAM_IOUT;
-	measParam[4] = MENU_MEAS_PARAM_SD;
-	// второй столбец параметров
+	uint8_t cnt = 0;
+	measParam[cnt++] = MENU_MEAS_PARAM_TIME;	// дата <-> время
+	measParam[cnt++] = MENU_MEAS_PARAM_DATE;
+	measParam[cnt++] = MENU_MEAS_PARAM_UOUT;
+	measParam[cnt++] = MENU_MEAS_PARAM_IOUT;
+	measParam[cnt++] = MENU_MEAS_PARAM_SD;
 	if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-		measParam[5] = MENU_MEAS_PARAM_UZ1;
-		measParam[6] = MENU_MEAS_PARAM_UZ2;
-		measParam[7] = MENU_MEAS_PARAM_UC1;
-		measParam[8] = MENU_MEAS_PARAM_UC2;
-		measParam[9] = MENU_MEAS_PARAM_UN1;
-		measParam[10] = MENU_MEAS_PARAM_UN2;
+		measParam[cnt++] = MENU_MEAS_PARAM_UZ1;
+		measParam[cnt++] = MENU_MEAS_PARAM_UZ2;
+		measParam[cnt++] = MENU_MEAS_PARAM_UC1;
+		measParam[cnt++] = MENU_MEAS_PARAM_UC2;
+		measParam[cnt++] = MENU_MEAS_PARAM_UN1;
+		measParam[cnt++] = MENU_MEAS_PARAM_UN2;
 	} else {
-		measParam[5] = MENU_MEAS_PARAM_UZ;
-		measParam[6] = MENU_MEAS_PARAM_UC;
-		measParam[7] = MENU_MEAS_PARAM_UN;
+		measParam[cnt++] = MENU_MEAS_PARAM_UZ;
+		measParam[cnt++] = MENU_MEAS_PARAM_UC;
+		measParam[cnt++] = MENU_MEAS_PARAM_UN;
 	}
+	maxViewParam_ = cnt;
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -349,127 +515,6 @@ bool clMenu::setDeviceR400M() {
 	sParam.prd.status.setEnable(false);
 
 	return true;
-}
-
-bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
-	bool status = false;
-
-	sParam.glb.status.setEnable(true);
-
-	// если необходимый тип аппарата небыл передан, сделаем вывод исходя
-	// из текущих настроек.
-	if (device == AVANT_NO) {
-		device = sParam.glb.getTypeDevice();
-		if (device == AVANT_NO) {
-			if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM) {
-				// ВЧ вариант
-				// если есть защита + команды (прм и/или прд) - РЗСК
-				// если есть только команды (прм и/или прд) - К400
-				// если есть защита и (версия прошивки & 0xF000) = 0xF000 - Р400М
-
-				if (sParam.def.status.isEnable()) {
-					if ((sParam.prm.status.isEnable())
-							|| (sParam.prd.status.isEnable())) {
-						device = AVANT_RZSK;
-					} else {
-						uint16_t vers = sParam.glb.getVersProgIC(GB_IC_BSP_MCU);
-						if ((vers & 0xF000) == 0xF000) {
-							device = AVANT_R400M;
-						}
-					}
-				}
-			}
-		}
-
-		// если текущее устройство совпадает с новым, то ничего не делаем
-		// иначе прыгаем на начальный уровень
-		if (device == sParam.typeDevice) {
-			status = true;
-		} else {
-			sParam.typeDevice = device;
-			lvlMenu = &clMenu::lvlStart;
-			lvlCreate_ = true;
-		}
-	}
-
-	if (!status) {
-		// предварительная "очистка" массивов неисправностей
-		for (uint_fast8_t i = 0; i < MAX_NUM_FAULTS; i++)
-			sParam.glb.status.faultText[i] = fcUnknownFault;
-		for (uint_fast8_t i = 0; i < MAX_NUM_FAULTS; i++)
-			sParam.def.status.faultText[i] = fcUnknownFault;
-		for (uint_fast8_t i = 0; i < MAX_NUM_FAULTS; i++)
-			sParam.prm.status.faultText[i] = fcUnknownFault;
-		for (uint_fast8_t i = 0; i < MAX_NUM_FAULTS; i++)
-			sParam.prd.status.faultText[i] = fcUnknownFault;
-
-		// предварительная "очистка" массивов предупреждений
-		for (uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
-			sParam.glb.status.warningText[i] = fcUnknownWarning;
-		for (uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
-			sParam.def.status.warningText[i] = fcUnknownWarning;
-		for (uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
-			sParam.prm.status.warningText[i] = fcUnknownWarning;
-		for (uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
-			sParam.prd.status.warningText[i] = fcUnknownWarning;
-
-		// предварительная очистка массива отображаемых параметров
-		for (uint_fast8_t i = 0; i < MAX_NUM_MEAS_PARAM; i++)
-			measParam[i] = MENU_MEAS_PARAM_NO;
-
-		if (device == AVANT_RZSK) {
-			status = setDeviceRZSK();
-		} else if (device == AVANT_R400M) {
-			status = setDeviceR400M();
-		}
-	}
-
-	if ((!status) || (device == AVANT_NO)) {
-		// если полученные данные не подходят ни под один имеющийся тип
-		// на экране отображается ошибка
-		sParam.typeDevice = AVANT_NO;
-		// в случае неизвестного типа устройства, отключим все
-		for (uint_fast8_t i = 0; i < MAX_NUM_MEAS_PARAM; i++)
-			measParam[i] = MENU_MEAS_PARAM_NO;
-		measParam[0] = MENU_MEAS_PARAM_TIME;
-		measParam[1] = MENU_MEAS_PARAM_DATE;
-
-		sParam.def.status.setEnable(false);
-		sParam.prm.status.setEnable(false);
-		sParam.prd.status.setEnable(false);
-
-		lvlMenu = &clMenu::lvlError;
-	}
-
-	// "сброс" флага необходимости проверки типа аппарата
-	sParam.device = true;
-	// обовление текущего уровня меню
-	lvlCreate_ = true;
-
-	return status;
-}
-
-eGB_COM clMenu::getTxCommand() {
-	static uint8_t cnt = 0;
-	eGB_COM com = sParam.txComBuf.getFastCom();
-
-	if (com == GB_COM_NO) {
-		cnt++;
-		if (cnt == 1)
-			com = GB_COM_GET_SOST;
-		else if (cnt == 2)
-			com = sParam.txComBuf.getCom1();
-
-		// если нет команды, посылаем команду из буфера 2
-		if (com == GB_COM_NO)
-			com = sParam.txComBuf.getCom2();
-
-		// начинаем цикл сначала, если отправлено 4 посылки
-		if (cnt >= 4)
-			cnt = 0;
-	}
-
-	return com;
 }
 
 /** Очистка текстового буфера
@@ -566,7 +611,7 @@ void clMenu::lvlStart() {
 
 	// вывод на экран измеряемых параметров
 	for (uint_fast8_t i = 0; i < (lineParam_ * 2); i++) {
-		printMeasParam(i, measParam[i]);
+		printMeasParam(i, viewParam_[i]);
 	}
 
 	uint8_t poz = lineParam_ * 20;
@@ -620,6 +665,22 @@ void clMenu::lvlStart() {
 		if (sParam.prd.status.isEnable() || sParam.prm.status.isEnable()) {
 			sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
 		}
+		break;
+
+		// листание правого параметра
+	case KEY_2:
+		scrolViewParam(2, 1);
+		break;
+	case KEY_8:
+		scrolViewParam(2, -1);
+		break;
+
+		// листание левого параметра
+	case KEY_4:
+		scrolViewParam(1, -1);
+		break;
+	case KEY_6:
+		scrolViewParam(1, 1);
 		break;
 
 	case KEY_ENTER:
@@ -4028,7 +4089,6 @@ void clMenu::lvlTest2() {
 			}
 		}
 	} else {
-
 		printMeasParam(2, MENU_MEAS_PARAM_UC);
 		if (sParam.def.status.isEnable()) {
 			printMeasParam(3, MENU_MEAS_PARAM_UZ);
@@ -4083,6 +4143,74 @@ void clMenu::lvlTest2() {
 
 		default:
 			break;
+	}
+}
+
+/**	Листание списка параметров отображаемых на экране.
+ *
+ * 	@param num Позиция отображаемого параметра.
+ * 	@arg 1 Левый параметр.
+ * 	@arg 2 Правый параметр.
+ * 	@param dir Направление листания параметра.
+ * 	@dir 1 Вперед на 1.
+ * 	@dir -1 Назад на 1.
+ */
+void clMenu::scrolViewParam(uint8_t num, int8_t dir) {
+	eMENU_MEAS_PARAM t = MENU_MEAS_PARAM_NO;
+	uint8_t poz = MAX_NUM_MEAS_PARAM;
+
+	// в случае ошибочного номера параметра ничего не делаем
+	if ((num > 0) && (num <= NUM_VIEW_PARAM)) {
+		num--;
+		t = viewParam_[num];
+	} else {
+		return;
+	}
+
+	// поиск текущей позиции в списке параметров
+	for(uint_fast8_t i = 0; i < maxViewParam_; i++) {
+		if (measParam[i] == t) {
+			poz = i;
+			break;
+		}
+	}
+
+	// если текущий параметр не найдем, сбросим на нулевой элемент
+	if (poz < MAX_NUM_MEAS_PARAM) {
+		// листание параметра вверх или вниз по списку
+		if (dir > 0) {
+			if (++poz >= maxViewParam_)
+				poz = 0;
+		} else if (dir < 0) {
+			poz = (poz == 0) ? maxViewParam_ - 1 : poz - 1;
+		}
+	} else {
+		poz = 0;
+	}
+	viewParam_[num ] = measParam[poz];
+}
+
+/**	Проверка корректности отображаемых параметров.
+ *
+ * 	Производится проверка отображаемых параметров на наличие их в списке
+ * 	параметров для текущей версии аппарата.
+ *
+ * 	В случае ошибочного параметра, будет установлено значение по-умолчанию.
+ *	Для четных номеров отображаемых параметров это дата, для нечетных - время.
+ *
+ */
+void clMenu::checkViewParams() {
+	for(uint_fast8_t i=0, j=0; i < NUM_VIEW_PARAM; i++, j=0) {
+		eMENU_MEAS_PARAM t = viewParam_[i];
+		for(; j < maxViewParam_; j++) {
+			if (t == measParam[j]) {
+				break;
+			}
+		}
+		if (j >= maxViewParam_) {
+			t = (i % 2) ? MENU_MEAS_PARAM_TIME :MENU_MEAS_PARAM_DATE;
+		}
+		viewParam_[i] = t;
 	}
 }
 
