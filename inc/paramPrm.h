@@ -82,10 +82,10 @@ public:
 			act |= GB_ACT_OLD;
 		} else {
 			numCom_ = val;
-			// если кол-во команд не равно 0, то включается ПРМ
-			this->status.setEnable(val != 0);
 			act |= GB_ACT_NEW;
 		}
+		// если кол-во команд не равно 0, то включается ПРМ
+		this->status.setEnable(val != 0);
 
 		return act;
 	}

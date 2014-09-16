@@ -651,9 +651,9 @@ public:
 		if (enable_ == val) {
 			act |= GB_ACT_OLD;
 		} else {
-			enable_ = val;
 			act |= GB_ACT_NEW;
 		}
+		enable_ = val;
 
 		return act;
 	}
