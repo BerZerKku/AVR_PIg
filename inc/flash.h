@@ -13,21 +13,7 @@
 static const char fcNull[] PROGMEM = "";
 
 // измер€емые параметры
-static const char fcUout[]  PROGMEM = "U=%02u.%01u¬";
-static const char fcIout[] 	PROGMEM	= "I=%03uмј";
-static const char fcRout[] 	PROGMEM = "R=%03uќм";
-static const char fcUz[]	PROGMEM	= "Uз=%02dдЅ";
-static const char fcUz1[] 	PROGMEM = "Uз1=%02dдЅ";
-static const char fcUz2[] 	PROGMEM = "Uз2=%02dдЅ";
-static const char fcUcf[] 	PROGMEM	= "Uк=%02dдЅ";
-static const char fcUcf1[] 	PROGMEM	= "Uк1=%02dдЅ";
-static const char fcUcf2[] 	PROGMEM	= "Uк2=%02dдЅ";
-static const char fcUn[] 	PROGMEM	= "Uш=%02dдЅ";
-static const char fcUn1[] 	PROGMEM	= "Uш1=%02dдЅ";
-static const char fcUn2[] 	PROGMEM	= "Uш2=%02dдЅ";
-static const char fcSd[]	PROGMEM = "Sд=%02u∞";
-static const char fcDate[] 	PROGMEM = "%02u.%02u.%02u";
-static const char fcTime[] 	PROGMEM = "%02u:%02u:%02u";
+
 
 // имена устройств аппарата
 static const char fcDeviceName00[] PROGMEM = "«јў";
@@ -49,7 +35,6 @@ static const char fcAcType[GB_TYPE_AC_MAX + 2][9] PROGMEM = {
 		"ј -ошиб",		//
 		"ј -авто"
 };
-static const char fcTimeToAc[] PROGMEM = "%02d:%02d:%02d";
 
 // режимы устройств
 static const char fcRegime[GB_REGIME_MAX + 1][8] PROGMEM = {

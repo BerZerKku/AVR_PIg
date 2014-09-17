@@ -424,7 +424,6 @@ bool clMenu::setDeviceR400M() {
 
 	sParam.typeDevice = AVANT_R400M;
 
-	// TODO Р400М в 3-х концевой Uk1/2
 	// первый столбец параметров
 	measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
 	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
@@ -778,6 +777,9 @@ void clMenu::lvlError() {
  * 	@return Нет
  */
 void clMenu::lvlStart() {
+	static const char fcTimeToAc[] PROGMEM = "%02d:%02d:%02d";
+	static const char fcCompType[] PROGMEM = "Совместим. %S";
+
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -817,14 +819,21 @@ void clMenu::lvlStart() {
 		printDevicesStatus(poz, &sParam.def.status);
 		poz += 20;
 
-		// в Р400м выводится АК и время до АК
+		// в Р400м выводится АК и время до АК, а также тип совместимости
 		if (sParam.typeDevice == AVANT_R400M) {
 			uint16_t time = sParam.def.getTimeToAC();
 			eGB_TYPE_AC ac = sParam.def.getTypeAC();
+			eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
+
+			// если работает в совместимости, выведем это на экран
+			if (comp != GB_COMPATIBILITY_AVANT) {
+				snprintf_P(&vLCDbuf[poz], 21, fcCompType,
+						fcCompatibility[static_cast<uint8_t> (comp)]);
+			}
 
 			// в Р400м совместимость ЛинияР подменяем название ""АК-норм"
 			// на "АК-авто"
-			if ((sParam.glb.getCompatibility() == GB_COMPATIBILITY_LINER) &&
+			if ((comp == GB_COMPATIBILITY_LINER) &&
 				(ac == GB_TYPE_AC_AUTO_NORM)) {
 				ac = GB_TYPE_AC_AUTO;
 			}
@@ -846,7 +855,6 @@ void clMenu::lvlStart() {
 						uint8_t sec = time % 60;
 						snprintf_P(&vLCDbuf[t + 1], 11, fcTimeToAc, hour, min,
 								sec);
-						poz += 20;
 					}
 				}
 			}
@@ -910,8 +918,12 @@ void clMenu::lvlStart() {
 
 	case KEY_AC_PUSK:
 		if (sParam.def.status.isEnable()) {
-			sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
-			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+			if (sParam.typeDevice == AVANT_R400M) {
+				if (sParam.glb.getCompatibility() != GB_COMPATIBILITY_LINER) {
+					sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
+					sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+				}
+			}
 		}
 		break;
 
@@ -4640,7 +4652,11 @@ void clMenu::lvlTest2() {
 	// TODO ВСЕ учесть что в 3-х концевой может быть 2Uk/2Uz/2Uш
 	if (device != AVANT_OPTO) {
 		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-			if (sParam.def.status.isEnable()) {
+			if (sParam.typeDevice == AVANT_R400M) {
+				printMeasParam(2, MENU_MEAS_PARAM_UC1);
+				printMeasParam(3, MENU_MEAS_PARAM_UZ);
+				printMeasParam(4, MENU_MEAS_PARAM_UC2);
+			} else if (sParam.def.status.isEnable()) {
 				printMeasParam(2, MENU_MEAS_PARAM_UC1);
 				printMeasParam(3, MENU_MEAS_PARAM_UZ1);
 				printMeasParam(4, MENU_MEAS_PARAM_UC2);
@@ -4665,11 +4681,14 @@ void clMenu::lvlTest2() {
 	snprintf_P(&vLCDbuf[lineParam_ * 20], 21, punkt1);
 
 	uint8_t poz = 100;
-	if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+	// В Р400м всегда один приемник, не зависимо от кол-ва окончаний в линии
+	if ((sParam.def.getNumDevices() == GB_NUM_DEVICES_3) &&
+			(sParam.typeDevice != AVANT_R400M)){
 		poz = 80;
 		poz += snprintf_P(&vLCDbuf[poz], 11, prm1);
 		snprintf_P(&vLCDbuf[poz], 11,
-					fcTest1K400[sParam.test.getCurrentSignal()]);
+				fcTest1K400[sParam.test.getCurrentSignal()]);
+
 		poz = 100;
 		poz += snprintf_P(&vLCDbuf[poz], 11, prm2);
 		snprintf_P(&vLCDbuf[poz], 11,
@@ -4928,6 +4947,22 @@ void clMenu::printPunkts() {
  * 	@return Нет
  */
 void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
+	static const char fcUout[]  PROGMEM = "U=%02u.%01uВ";
+	static const char fcIout[] 	PROGMEM	= "I=%03uмА";
+	static const char fcRout[] 	PROGMEM = "R=%03uОм";
+	static const char fcUz[]	PROGMEM	= "Uз=%02dдБ";
+	static const char fcUz1[] 	PROGMEM = "Uз1=%02dдБ";
+	static const char fcUz2[] 	PROGMEM = "Uз2=%02dдБ";
+	static const char fcUcf[] 	PROGMEM	= "Uк=%02dдБ";
+	static const char fcUcf1[] 	PROGMEM	= "Uк1=%02dдБ";
+	static const char fcUcf2[] 	PROGMEM	= "Uк2=%02dдБ";
+	static const char fcUn[] 	PROGMEM	= "Uш=%02dдБ";
+	static const char fcUn1[] 	PROGMEM	= "Uш1=%02dдБ";
+	static const char fcUn2[] 	PROGMEM	= "Uш2=%02dдБ";
+	static const char fcSd[]	PROGMEM = "Sд=%02u°";
+	static const char fcDate[] 	PROGMEM = "%02u.%02u.%02u";
+	static const char fcTime[] 	PROGMEM = "%02u:%02u:%02u";
+
 	// смещение в буфере
 	if (poz < MAX_NUM_MEAS_PARAM) {
 		// 10 - кол-во символов отведенное на экране под 1 параметр
