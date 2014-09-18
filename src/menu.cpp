@@ -1828,6 +1828,7 @@ void clMenu::lvlJournalPrd() {
  * 	@return Ќет
  */
 void clMenu::lvlControl() {
+
 	static char title[] PROGMEM = "ћеню\\”правление";
 	// %d - может быть двухзначным, учесть дл€ макс. кол-ва символов !
 	//							   	"01234567890123456789"
@@ -1968,20 +1969,33 @@ void clMenu::lvlControl() {
 			Punkts_.add(punkt05);
 		} else if (device == AVANT_RZSK) {
 			eGB_NUM_DEVICES numDevices = sParam.def.getNumDevices();
-			if (numDevices == GB_NUM_DEVICES_2) {
-				Punkts_.add(punkt07);	// далее выбираетс€ в зависимости от текущего
-				Punkts_.add(punkt03);
-				Punkts_.add(punkt04);
-				Punkts_.add(punkt02);
-				Punkts_.add(punkt05);
-			} else if (numDevices == GB_NUM_DEVICES_3) {
-				Punkts_.add(punkt07);	// далее выбираетс€ в зависимости от текущего
-				Punkts_.add(punkt03);
-				Punkts_.add(punkt22);
-				Punkts_.add(punkt23);	// далее выбираетс€ в зависимости от номера
-				Punkts_.add(punkt24);	// далее выбираетс€ в зависимости от номера
-				Punkts_.add(punkt26);
-				Punkts_.add(punkt05);
+			if (sParam.def.status.isEnable()) {
+				if (numDevices == GB_NUM_DEVICES_2) {
+					Punkts_.add(punkt07);	// далее выбираетс€ в зависимости от текущего
+					Punkts_.add(punkt03);
+					Punkts_.add(punkt04);
+					Punkts_.add(punkt02);
+					Punkts_.add(punkt05);
+				} else if (numDevices == GB_NUM_DEVICES_3) {
+					Punkts_.add(punkt07);	// далее выбираетс€ в зависимости от текущего
+					Punkts_.add(punkt03);
+					Punkts_.add(punkt22);
+					Punkts_.add(punkt23);	// далее выбираетс€ в зависимости от номера
+					Punkts_.add(punkt24);	// далее выбираетс€ в зависимости от номера
+					Punkts_.add(punkt26);
+					Punkts_.add(punkt05);
+				}
+			} else {
+				// –«—  без поста
+				if (numDevices == GB_NUM_DEVICES_2) {
+					Punkts_.add(punkt03);
+					Punkts_.add(punkt04);
+					Punkts_.add(punkt05);
+				} else if (numDevices == GB_NUM_DEVICES_3) {
+					Punkts_.add(punkt03);
+					Punkts_.add(punkt22);
+					Punkts_.add(punkt05);
+				}
 			}
 		} else if (device == AVANT_K400) {
 			Punkts_.add(punkt03);
@@ -2018,23 +2032,54 @@ void clMenu::lvlControl() {
 
 		// выбор пуск удаленного
 		if (device == AVANT_RZSK) {
-			if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-				uint8_t num = sParam.glb.getDeviceNum();
-				if (num == 1) {
-					Punkts_.change(punkt24, GB_COM_NO, 3);
-					Punkts_.change(punkt25, GB_COM_NO, 4);
-				} else if (num == 2) {
-					Punkts_.change(punkt23, GB_COM_NO, 3);
-					Punkts_.change(punkt25, GB_COM_NO, 4);
-				} else if (num == 3) {
-					Punkts_.change(punkt23, GB_COM_NO, 3);
-					Punkts_.change(punkt24, GB_COM_NO, 4);
+			if (sParam.def.status.isEnable()) {
+				if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+					uint8_t num = sParam.glb.getDeviceNum();
+					if (num == 1) {
+						Punkts_.change(punkt24, GB_COM_NO, 3);
+						Punkts_.change(punkt25, GB_COM_NO, 4);
+					} else if (num == 2) {
+						Punkts_.change(punkt23, GB_COM_NO, 3);
+						Punkts_.change(punkt25, GB_COM_NO, 4);
+					} else if (num == 3) {
+						Punkts_.change(punkt23, GB_COM_NO, 3);
+						Punkts_.change(punkt24, GB_COM_NO, 4);
+					}
 				}
 			}
 		} else if (device == AVANT_R400M) {
-			if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_LINER) {
-				if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-					uint8_t num = sParam.glb.getDeviceNum();
+			if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+				eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
+				uint8_t num = sParam.glb.getDeviceNum();
+				if (comp == GB_COMPATIBILITY_AVANT) {
+					if (num == 1) {
+						Punkts_.change(punkt24, GB_COM_NO, 3);
+						Punkts_.change(punkt25, GB_COM_NO, 4);
+					} else if (num == 2) {
+						Punkts_.change(punkt23, GB_COM_NO, 3);
+						Punkts_.change(punkt25, GB_COM_NO, 4);
+					} else if (num == 3) {
+						Punkts_.change(punkt23, GB_COM_NO, 3);
+						Punkts_.change(punkt24, GB_COM_NO, 4);
+					}
+				} else if (comp == GB_COMPATIBILITY_PVZUE) {
+					if (num == 1) {
+						Punkts_.change(punkt24, GB_COM_NO, 2);
+						Punkts_.change(punkt25, GB_COM_NO, 3);
+						Punkts_.change(punkt28, GB_COM_NO, 5);
+						Punkts_.change(punkt29, GB_COM_NO, 6);
+					} else if (num == 2) {
+						Punkts_.change(punkt23, GB_COM_NO, 2);
+						Punkts_.change(punkt25, GB_COM_NO, 3);
+						Punkts_.change(punkt27, GB_COM_NO, 5);
+						Punkts_.change(punkt29, GB_COM_NO, 6);
+					} else if (num == 3) {
+						Punkts_.change(punkt23, GB_COM_NO, 2);
+						Punkts_.change(punkt24, GB_COM_NO, 3);
+						Punkts_.change(punkt27, GB_COM_NO, 5);
+						Punkts_.change(punkt28, GB_COM_NO, 6);
+					}
+				} else if (comp == GB_COMPATIBILITY_LINER) {
 					if (num == 1) {
 						Punkts_.change(punkt33, GB_COM_NO, 2);
 						Punkts_.change(punkt34, GB_COM_NO, 3);
@@ -4496,18 +4541,27 @@ void clMenu::lvlTest1() {
 				sParam.test.addSignalToList(GB_SIGNAL_CF4);
 			}
 		} else if (device == AVANT_RZSK) {
-			sParam.test.addSignalToList(GB_SIGNAL_CF_NO_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_CF_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_CF2_NO_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_CF2_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_COM1_NO_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_COM2_NO_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_COM3_NO_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_COM4_NO_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_COM1_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_COM2_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_COM3_RZ);
-			sParam.test.addSignalToList(GB_SIGNAL_COM4_RZ);
+			if (sParam.def.status.isEnable()) {
+				sParam.test.addSignalToList(GB_SIGNAL_CF_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_CF_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_CF2_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_CF2_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM1_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM2_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM3_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM4_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM1_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM2_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM3_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM4_RZ);
+			} else {
+				sParam.test.addSignalToList(GB_SIGNAL_CF_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_CF2_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM1_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM2_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM3_NO_RZ);
+				sParam.test.addSignalToList(GB_SIGNAL_COM4_NO_RZ);
+			}
 		} else if (device == AVANT_K400) {
 			sParam.test.addSignalToList(GB_SIGNAL_CF1);
 			sParam.test.addSignalToList(GB_SIGNAL_CF2);
