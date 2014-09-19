@@ -102,9 +102,8 @@ uint8_t TProtocolModbus::push(uint8_t byte) {
 // Проверка полученной посылки на соответствие протоколу.
 TProtocolModbus::CHECK_ERR TProtocolModbus::checkReadPackage() {
 	CHECK_ERR state = CHECK_ERR_NO;
-	uint8_t com = buf_[0];
 
-	if (!checkAddress(com)) {
+	if (!checkAddressLan(buf_[0])) {
 		// Не совпал адрес устройства.
 		setState(STATE_READ);
 		state = CHECK_ERR_ADR_DEVICE;
@@ -117,9 +116,11 @@ TProtocolModbus::CHECK_ERR TProtocolModbus::checkReadPackage() {
 		if (state == CHECK_ERR_FUNCTION) {
 			// ошибочный код команды
 			setException(EXCEPTION_01H_ILLEGAL_FUNCTION);
+			state = CHECK_ERR_FUNCTION;
 		} else if (state == CHECK_ERR_FUNCTION_DATA) {
 			// ошибочные данные в команде
 			setException(EXCEPTION_03H_ILLEGAL_DATA_VAL);
+			state = CHECK_ERR_FUNCTION_DATA;
 		}
 	}
 
@@ -245,12 +246,12 @@ void TProtocolModbus::tick() {
 }
 
 // Возвращает адрес устройства в сети.
-uint8_t TProtocolModbus::getAddress() const {
+uint8_t TProtocolModbus::getAddressLan() const {
 	return address_;
 }
 
 // Установка адреса устройства в сети.
-bool TProtocolModbus::setAddress(uint8_t adr) {
+bool TProtocolModbus::setAddressLan(uint8_t adr) {
 	bool state = false;
 
 	if ((adr >= ADDRESS_MIN) && (adr <= ADDRESS_MAX)) {
@@ -259,15 +260,6 @@ bool TProtocolModbus::setAddress(uint8_t adr) {
 	}
 
 	return state;
-}
-
-// Ответ на запрос с кодом исключения.
-void TProtocolModbus::setException(TProtocolModbus::EXCEPTION code) {
-	cnt_ = 1;	// адрес остается прежним
-	buf_[cnt_++] |= 0x80;
-	buf_[cnt_++]  = code;
-	addCRC();
-	setState(STATE_WRITE_READY);
 }
 
 //	Подготовка посылки для ответа на запрос.
@@ -335,6 +327,34 @@ uint8_t TProtocolModbus::trResponse() {
 	}
 
 	return cnt;
+}
+
+// Обработка принятых данных
+bool TProtocolModbus::readData() {
+	bool state = false;
+
+	if (checkReadPackage() == CHECK_ERR_NO) {
+		TProtocolModbus::COM com = static_cast<TProtocolModbus::COM> (buf_[1]);
+
+		switch(com) {
+			case COM_01H_READ_COIL:
+				state = readCoilCom();
+				break;
+			case COM_03H_READ_HOLDING_REGISTER:
+				state = readRegisterCom();
+				break;
+			case COM_11H_SLAVE_ID:
+				state = readIdCom();
+				break;
+		}
+
+		// формирование исключения в случае ошибочного адреса
+		if (!state) {
+			setException(EXCEPTION_02H_ILLEGAL_DATA_ADR);
+		}
+	}
+
+	return state;
 }
 
 /**	Проверка соответствия принятой команды поддерживаемым в этом классе.
@@ -441,7 +461,7 @@ TProtocolModbus::CHECK_ERR TProtocolModbus::checkCommand(uint8_t com) {
  *	@see ADDRESS_ERR
  * 	@adr Адрес, который будет сравниваться с установленным.
  */
-bool TProtocolModbus::checkAddress(uint8_t adr) {
+bool TProtocolModbus::checkAddressLan(uint8_t adr) {
 	return ((adr != ADDRESS_ERR) && (address_ == adr));
 }
 
@@ -482,4 +502,22 @@ void TProtocolModbus::addCRC() {
 	uint16_t crc = calcCRC(cnt_);
 	buf_[cnt_++] = crc >> 8;
 	buf_[cnt_++] = crc;
+}
+
+/**	Ответ на запрос с кодом исключения.
+ *
+ *	К коду принятой команды добавляется 0х80.
+ *	Добавляется один байт данных - код исключения.
+ *	Подсчитывается контрольная сумма.
+ *	Флаг состояния протокола устанавливаетс \a STATE_WRITE, т.е. готовность
+ *	к отправке данных.
+ *
+ *	@param code Код исключения.
+ */
+void TProtocolModbus::setException(TProtocolModbus::EXCEPTION code) {
+	cnt_ = 1;	// адрес остается прежним
+	buf_[cnt_++] |= 0x80;
+	buf_[cnt_++]  = code;
+	addCRC();
+	setState(STATE_WRITE_READY);
 }

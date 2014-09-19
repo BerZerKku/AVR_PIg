@@ -248,7 +248,7 @@ void setProtocol(eGB_PROTOCOL protocol) {
 			break;
 		case GB_PROTOCOL_MODBUS:
 			protPCm.setTick(19200, 50);
-			protPCm.setAddress(1);
+			protPCm.setAddressLan(1);
 			protPCm.setEnable();
 			protPCs.setDisable();
 			break;

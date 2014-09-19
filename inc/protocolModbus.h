@@ -58,8 +58,8 @@ private:
 	static const uint8_t ADDRESS_MIN = 1;
 	/// Максимальный адрес устройства в сети
 	static const uint8_t ADDRESS_MAX = 247;
-public:
 
+public:
 	/// Состояния работы протокола
 	enum STATE {
 		STATE_OFF = 0,		///< Протокол выключен.
@@ -108,6 +108,11 @@ public:
 	 * 	@param size Размер буфера данных.
 	 */
 	TProtocolModbus(uint8_t *buf, uint8_t size);
+
+	/**	Виртуальный деструктор.
+	 *
+	 */
+//	virtual ~TProtocolModbus() {};
 
 	/**	Возвращает значение максимального количества регистров доступных для
 	 * 	чтения или записи в одной посылке протокола.
@@ -402,25 +407,13 @@ public:
 	 * 	@retval True - в случае смены адреса устройства.
 	 * 	@retval False - в случае ошибочного адреса.
 	 */
-	bool setAddress(uint8_t adr);
+	bool setAddressLan(uint8_t adr);
 
 	/**	Возвращает адрес устройства в сети.
 	 *
 	 * 	@return Адрес устройства.
 	 */
-	uint8_t getAddress() const;
-
-	/**	Ответ на запрос с кодом исключения.
-	 *
-	 *	К коду принятой команды добавляется 0х80.
-	 *	Добавляется один байт данных - код исключения.
-	 *	Подсчитывается контрольная сумма.
-	 *	Флаг состояния протокола устанавливаетс \a STATE_WRITE, т.е. готовность
-	 *	к отправке данных.
-	 *
-	 *	@param code Код исключения.
-	 */
-	void setException(TProtocolModbus::EXCEPTION code);
+	uint8_t getAddressLan() const;
 
 	/**	Подготовка посылки для ответа на запрос.
 	 *
@@ -438,7 +431,16 @@ public:
 	 */
 	uint8_t trResponse();
 
-protected:
+	/**	Обработка принятых данных.
+	 *
+	 *	В случае обнаружения ошибочного адреса, будет сформировано исключение.
+	 *
+	 * 	@retval True - в случае успешной обработки данных.
+	 * 	@retval False - в случае ошибки.
+	 */
+	bool readData();
+
+private:
 	const uint8_t size_;	///> Размер буфера данных
 	uint8_t * const buf_;	///> Буфер принятых/передаваемых данных
 
@@ -457,7 +459,7 @@ protected:
 	TProtocolModbus::CHECK_ERR checkCommand(uint8_t com);
 
 	// Проверка адреса устройства на совпадение с установленным.
-	bool checkAddress(uint8_t adr);
+	bool checkAddressLan(uint8_t adr);
 
 	// Подсчет CRC для заданного кол-ва байт данных в буфере.
 	uint16_t calcCRC(uint8_t num);
@@ -469,6 +471,38 @@ protected:
 	void addCRC();
 
 
+	// Ответ на запрос с кодом исключения.
+	void setException(TProtocolModbus::EXCEPTION code);
+
+	/** Обработка принятой команды чтения флагов.
+	 *
+	 *	В посылку для ответа помещаются запрашиваемые флаги.
+	 *	Проводится проверка корректности указанных адресов в посылке.
+	 *
+	 *	@retval True - если все адреса корректны.
+	 * 	@retval False - имеется хотя бы один ошибочный адрес.
+	 */
+	virtual bool readCoilCom() { return false; }
+
+	/**	Обработка принятой команды чтения регистров.
+	 *
+	 *	В посылку для ответа помещаются запрашиваемые регистры. По-умолчанию
+	 * 	будет положено значение 0xFFFF.
+	 * 	Проводится проверка корректности указанных адресов в посылке.
+	 *
+	 *	@retval True - если все адреса корректны.
+	 * 	@retval False - если хотя бы один ошибочный адрес.
+	 */
+	virtual bool readRegisterCom() { return false; }
+
+	/**	Обработка принятой команды чтения ID.
+	 *
+	 * 	В посылку для ответа помещаются необходимые данные.
+	 *
+	 * 	@retval False - в случае отсутствия необходимых данных.
+	 * 	@retval True - если команда обработана без ошибок.
+	 */
+	virtual bool readIdCom() { return false; }
 };
 
 #endif /* __PROTOCOL_MODBUS_H_ */

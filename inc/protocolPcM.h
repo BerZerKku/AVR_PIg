@@ -150,16 +150,18 @@ class TProtocolPcM : public TProtocolModbus
 	};
 
 public:
+	/**	Конструктор.
+	 *
+	 * 	@param sParam Указатель на структуру параметров.
+	 * 	@param buf Указатель на буфер данных.
+	 * 	@param size Размер буфера данных.
+	 */
 	TProtocolPcM(stGBparam *sParam, uint8_t *buf, uint8_t size);
 
-	/**	Обработка принятых данных.
+	/**	Деструктор.
 	 *
-	 *	В случае обнаружения ошибочного адреса, будет сформировано исключение.
-	 *
-	 * 	@retval True - в случае успешной обработки данных.
-	 * 	@retval False - в случае ошибки.
 	 */
-	bool readData();
+//	~TProtocolPcM() {};
 
 private:
 	stGBparam * const sParam_;	///< Структура параметров

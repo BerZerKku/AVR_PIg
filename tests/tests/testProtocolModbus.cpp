@@ -57,7 +57,7 @@ void testProtocolModbus::testConstant() {
 /** “естирование установки/чтени€ адреса устройства.
  * 
  */
-void testProtocolModbus::testAddress() {
+void testProtocolModbus::testAddressLan() {
 	TProtocolModbus tProtocolModbus(buf, sizeof (buf));
 	
 	uint8_t adrError = tProtocolModbus.getAddressError();
@@ -65,15 +65,14 @@ void testProtocolModbus::testAddress() {
 	uint8_t adrMax = tProtocolModbus.getAddressMax();
 	
 	// 1. ѕроверка адреса по-умолчанию.
-	if (tProtocolModbus.getAddress() != adrError) {
+	if (tProtocolModbus.getAddressLan() != adrError) {
 		sprintf(msg, "1.1 Address by default is not ADDRESS_ERR.");
 		CPPUNIT_ASSERT_MESSAGE(msg, false);
 	}
 
 	// 2. ѕроверка установки/считывани€ адреса.
 	for (uint16_t i = 0; i <= 255; i++) {
-
-		bool t = tProtocolModbus.setAddress(i);
+		bool t = tProtocolModbus.setAddressLan(i);
 
 		// проверка возвращаемого значени€ функцией serAddress())
 		if (((i < adrMin) || (i > adrMax)) == t) {
@@ -83,16 +82,16 @@ void testProtocolModbus::testAddress() {
 
 		// проверка установленного значени€
 		if (i < adrMin) {
-			if (tProtocolModbus.getAddress() != adrError) {
+			if (tProtocolModbus.getAddressLan() != adrError) {
 				sprintf(msg, "2.2 Set Address less ADDRESS_MIN get not ADDRESS_ERR on step %d", i);
 				CPPUNIT_ASSERT_MESSAGE(msg, false);
 			}
 		} else if (i > adrMax) {
-			if (tProtocolModbus.getAddress() != adrMax) {
+			if (tProtocolModbus.getAddressLan() != adrMax) {
 				sprintf(msg, "2.3 Set Address greater ADDRESS_MAX get not ADDRESS_MAX on step %d", i);
 				CPPUNIT_ASSERT_MESSAGE(msg, false);
 			}
-		} else if (i != tProtocolModbus.getAddress()) {
+		} else if (i != tProtocolModbus.getAddressLan()) {
 			sprintf(msg, "2.4 Set Address not equivalent get Address on step %d", i);
 			CPPUNIT_ASSERT_MESSAGE(msg, false);
 		}
@@ -139,7 +138,7 @@ void testProtocolModbus::testCheckReadPackage() {
 		tProtocolModbus.push(buf1[i]);
 	}
 
-	tProtocolModbus.setAddress(buf[0] + 2);
+	tProtocolModbus.setAddressLan(buf[0] + 2);
 	if (tProtocolModbus.checkReadPackage() != TProtocolModbus::CHECK_ERR_ADR_DEVICE) {
 		sprintf(msg, "1.2 A positive result in incorrect address.");
 		CPPUNIT_ASSERT_MESSAGE(msg, false);
@@ -150,7 +149,7 @@ void testProtocolModbus::testCheckReadPackage() {
 		tProtocolModbus.push(buf1[i]);
 	}
 
-	tProtocolModbus.setAddress(buf[0]);
+	tProtocolModbus.setAddressLan(buf[0]);
 	if (tProtocolModbus.checkReadPackage() == TProtocolModbus::CHECK_ERR_ADR_DEVICE) {
 		printf(msg, "1.3 A negative result in correct address.");
 		CPPUNIT_ASSERT_MESSAGE(msg, false);
@@ -161,7 +160,7 @@ void testProtocolModbus::testCheckReadPackage() {
 	for (uint8_t i = 0; i < sizeof (buf1); i++) {
 		tProtocolModbus.push(buf1[i]);
 	}
-	tProtocolModbus.setAddress(buf[0]);
+	tProtocolModbus.setAddressLan(buf[0]);
 
 	if (tProtocolModbus.checkReadPackage() == TProtocolModbus::CHECK_ERR_CRC) {
 		uint8_t cnt = sprintf(msg, "2.1 A negative check crc for correct data.");
@@ -173,7 +172,7 @@ void testProtocolModbus::testCheckReadPackage() {
 	for (uint8_t i = 0; i < sizeof (buf2); i++) {
 		tProtocolModbus.push(buf2[i]);
 	}
-	tProtocolModbus.setAddress(buf[0]);
+	tProtocolModbus.setAddressLan(buf[0]);
 
 	if (tProtocolModbus.checkReadPackage() == TProtocolModbus::CHECK_ERR_CRC) {
 		sprintf(msg, "2.2 A negative check crc for correct data.");
@@ -331,7 +330,7 @@ void testProtocolModbus::testCheckReadPackage() {
 		for (uint8_t j = 0; j < data[i].num; j++) {
 			tProtocolModbus.push(data[i].buf[j]);
 		}
-		tProtocolModbus.setAddress(buf[0]);
+		tProtocolModbus.setAddressLan(buf[0]);
 
 		TProtocolModbus::CHECK_ERR check = tProtocolModbus.checkReadPackage();
 		if (check != data[i].err) {
@@ -392,39 +391,39 @@ void testProtocolModbus::testGetStartAddress() {
 
 	sData data[] = {
 					// check command 0x01
-		{0, 1, 8, 
+		{1, 1, 8, 
 			{0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0xFD, 0xCA}},
-		{19, 37, 8, 
+		{20, 37, 8, 
 			{0x11, 0x01, 0x00, 0x13, 0x00, 0x25, 0x0E, 0x84}},
 
 					// check command 0x03
-		{1, 1, 8, 
+		{2, 1, 8, 
 			{0x01, 0x03, 0x00, 0x01, 0x00, 0x01, 0xD5, 0xCA}},
-		{256, 20, 8, 
+		{257, 20, 8, 
 			{0x01, 0x03, 0x01, 0x00, 0x00, 0x14, 0x44, 0x39}},
 
 					// check command 0x05
-		{172, 1, 8,	
+		{173, 1, 8,	
 			{0x13, 0x05, 0x00, 0xAC, 0x00, 0x00, 0x0E, 0x99}},
-		{172, 1, 8, 
+		{173, 1, 8, 
 			{0x27, 0x05, 0x00, 0xAC, 0xFF, 0x00, 0x4B, 0x1D}},
 
 					// check command 0x06
-		{1, 1, 8, //
+		{2, 1, 8, //
 			{0x11, 0x06, 0x00, 0x01, 0x00, 0x03, 0x9A, 0x9B}},
-		{272, 1, 8, //
+		{273, 1, 8, //
 			{0x11, 0x06, 0x01, 0x10, 0xFF, 0xFF, 0x8A, 0xD3}},
 
 					// check command 0x0F
-		{19, 1, 10,  
+		{20, 1, 10,  
 			{0x11, 0x0F, 0x00, 0x13, 0x00, 0x01, 0x01, 0x00, 0xAA, 0x58}},
-		{19, 10, 11,
+		{20, 10, 11,
 			{0x11, 0x0F, 0x00, 0x13, 0x00, 0x0A, 0x02, 0xCD, 0x01, 0xBF, 0x0B}}, 
 
 					// check command 0x10
-		{1, 1, 11, 
+		{2, 1, 11, 
 			{0x11, 0x10, 0x00, 0x01, 0x00, 0x01, 0x02, 0x00, 0x0A, 0xEA, 0x46}},
-		{1, 2, 13, 
+		{2, 2, 13, 
 			{0x11, 0x10, 0x00, 0x01, 0x00, 0x02, 0x04, 0x00, 0x0A, 0x01, 0x02, 0xC6, 0xF0}},
 			
 				// check command 0x11
@@ -437,13 +436,14 @@ void testProtocolModbus::testGetStartAddress() {
 		for (uint8_t j = 0; j < data[i].numb; j++) {
 			tProtocolModbus.push(data[i].buf[j]);
 		}
-		tProtocolModbus.setAddress(buf[0]);
-		tProtocolModbus.checkReadPackage();
+		tProtocolModbus.setAddressLan(data[i].buf[0]);
+		TProtocolModbus::CHECK_ERR err = tProtocolModbus.checkReadPackage();
 
 		uint16_t adr = tProtocolModbus.getStartAddress();
 		if (adr != data[i].adr) {
 			uint8_t cnt = sprintf(msg, "1.1 Error in start address on step %d", i);
 			cnt += sprintf(&msg[cnt], "\n adr = %d, need = %d", adr, data[i].adr);
+			cnt += sprintf(&msg[cnt], "\n err = %d", err);
 			CPPUNIT_ASSERT_MESSAGE(msg, false);
 		}
 	}
@@ -506,7 +506,7 @@ void testProtocolModbus::testGetNumOfAddress() {
 		for (uint8_t j = 0; j < data[i].numb; j++) {
 			tProtocolModbus.push(data[i].buf[j]);
 		}
-		tProtocolModbus.setAddress(buf[0]);
+		tProtocolModbus.setAddressLan(buf[0]);
 		tProtocolModbus.checkReadPackage();
 
 		uint16_t num = tProtocolModbus.getNumOfAddress();
@@ -565,13 +565,14 @@ void testProtocolModbus::testGetCoil() {
 		for (uint8_t j = 0; j < data[i].num; j++) {
 			tProtocolModbus.push(data[i].buf[j]);
 		}
-		tProtocolModbus.setAddress(buf[0]);
-		tProtocolModbus.checkReadPackage();
+		tProtocolModbus.setAddressLan(buf[0]);
+		TProtocolModbus::CHECK_ERR err = tProtocolModbus.checkReadPackage();
 
 		uint8_t flag = tProtocolModbus.getCoil(data[i].adr);
 		if (flag != data[i].flag) {
 			uint8_t cnt = sprintf(msg, "1.1 Error read value on step %d", i);
 			cnt += sprintf(&msg[cnt], "\n flag = 0x%X, need = 0x%X", flag, data[i].flag);
+			cnt += sprintf(&msg[cnt], "\n err = %d", err);
 			CPPUNIT_ASSERT_MESSAGE(msg, false);
 		}
 	}
@@ -621,7 +622,7 @@ void testProtocolModbus::testGetRegister() {
 		for (uint8_t j = 0; j < data[i].num; j++) {
 			tProtocolModbus.push(data[i].buf[j]);
 		}
-		tProtocolModbus.setAddress(buf[0]);
+		tProtocolModbus.setAddressLan(buf[0]);
 		tProtocolModbus.checkReadPackage();
 
 		uint16_t val = tProtocolModbus.getRegister(data[i].adr);
@@ -636,62 +637,62 @@ void testProtocolModbus::testGetRegister() {
 /** “естирование функции формировани€ исключени€.
  * 
  */
-void testProtocolModbus::testSetException() {
-	TProtocolModbus tProtocolModbus(buf, sizeof (buf));
-	
-	struct sData{
-		uint8_t bufStart[15]; // исходна€ посылка
-		uint8_t bufStop[10];	// ожидаема€ посылка с исключением
-		uint8_t numTrBytes; // кол-во байт в сформированной посылке
-		TProtocolModbus::EXCEPTION ex; // формируемое исключение
-	};
-	
-	sData data[] = {
-		{{0x12, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8E, 0xA1},
-		{0x12, 0x81, 0x01, 0x70, 0x55}, 
-		5, TProtocolModbus::EXCEPTION_01H_ILLEGAL_FUNCTION},
-		{{0x08, 0x03, 0x00, 0x6B, 0x00, 0x03, 0x8E, 0x74},
-		{0x08, 0x83, 0x02, 0x10, 0xF3}, 
-		5, TProtocolModbus::EXCEPTION_02H_ILLEGAL_DATA_ADR},
-		{{0x76, 0x06, 0x00, 0x01, 0x00, 0x03, 0x92, 0x8C},
-		{0x76, 0x86, 0x03, 0xB2, 0x7B},
-		5, TProtocolModbus::EXCEPTION_03H_ILLEGAL_DATA_VAL},
-		{{0xAA, 0x05, 0x00, 0xAC, 0xFF, 0x00, 0x55, 0xC0},
-		{0xAA, 0x85, 0x04, 0x32, 0xB3}, 
-		5, TProtocolModbus::EXCEPTION_04H_DEVICE_FAILURE},
-		{{0x01, 0x0F, 0x00, 0x13, 0x00, 0x0A, 0x02, 0xCD, 0x01, 0x72, 0xCB},
-		{0x01, 0x8F, 0x10, 0x45, 0xFC},
-		5, TProtocolModbus::EXCEPTION_10H_TEMP_INAC_PARAM},
-		{{0x02, 0x10, 0x00, 0x01, 0x00, 0x02, 0x04, 0x00, 0x0A, 0x01, 0x02, 0x9D, 0x74},
-		{0x02, 0x90, 0x11, 0x7C, 0x0C},
-		5, TProtocolModbus::EXCEPTION_11H_UNCHANG_PARAM}
-	};
-
-	for (uint16_t i = 0; i < (sizeof(data)/sizeof(data[0])); i++) {
-		for (uint8_t j = 0; j < sizeof(data[0].bufStart); j++) {
-			buf[j] = data[i].bufStart[j]; 
-		}
-		
-		tProtocolModbus.setException(data[i].ex);
-		
-		uint8_t numbytes = tProtocolModbus.getNumOfBytes();
-		if (numbytes != data[i].numTrBytes) {
-			uint8_t cnt = sprintf(msg, "1.1 Wrong number of byte for transferring on step %d", i);
-			cnt += sprintf(&msg[cnt], "\n Num of bytes = %d, need = %d", numbytes,  data[i].numTrBytes);
-			CPPUNIT_ASSERT_MESSAGE(msg, false);
-		}
-		
-		for(uint8_t j = 0; j < data[i].numTrBytes; j++) {
-			if (buf[j] != data[i].bufStop[j]) {
-				uint8_t cnt = sprintf(msg, "1.2 Wrong %d byte in package on step %d", j, i);
-				cnt += sprintf(&msg[cnt], "\n Byte[%d] = 0x%X, need 0x%X", j, buf[j], data[i].bufStop[j]);
-				CPPUNIT_ASSERT_MESSAGE(msg, false);
-			}
-		}
-	}
-	
-	// 
-}
+//void testProtocolModbus::testSetException() {
+//	TProtocolModbus tProtocolModbus(buf, sizeof (buf));
+//	
+//	struct sData{
+//		uint8_t bufStart[15]; // исходна€ посылка
+//		uint8_t bufStop[10];	// ожидаема€ посылка с исключением
+//		uint8_t numTrBytes; // кол-во байт в сформированной посылке
+//		TProtocolModbus::EXCEPTION ex; // формируемое исключение
+//	};
+//	
+//	sData data[] = {
+//		{{0x12, 0x01, 0x00, 0x13, 0x00, 0x13, 0x8E, 0xA1},
+//		{0x12, 0x81, 0x01, 0x70, 0x55}, 
+//		5, TProtocolModbus::EXCEPTION_01H_ILLEGAL_FUNCTION},
+//		{{0x08, 0x03, 0x00, 0x6B, 0x00, 0x03, 0x8E, 0x74},
+//		{0x08, 0x83, 0x02, 0x10, 0xF3}, 
+//		5, TProtocolModbus::EXCEPTION_02H_ILLEGAL_DATA_ADR},
+//		{{0x76, 0x06, 0x00, 0x01, 0x00, 0x03, 0x92, 0x8C},
+//		{0x76, 0x86, 0x03, 0xB2, 0x7B},
+//		5, TProtocolModbus::EXCEPTION_03H_ILLEGAL_DATA_VAL},
+//		{{0xAA, 0x05, 0x00, 0xAC, 0xFF, 0x00, 0x55, 0xC0},
+//		{0xAA, 0x85, 0x04, 0x32, 0xB3}, 
+//		5, TProtocolModbus::EXCEPTION_04H_DEVICE_FAILURE},
+//		{{0x01, 0x0F, 0x00, 0x13, 0x00, 0x0A, 0x02, 0xCD, 0x01, 0x72, 0xCB},
+//		{0x01, 0x8F, 0x10, 0x45, 0xFC},
+//		5, TProtocolModbus::EXCEPTION_10H_TEMP_INAC_PARAM},
+//		{{0x02, 0x10, 0x00, 0x01, 0x00, 0x02, 0x04, 0x00, 0x0A, 0x01, 0x02, 0x9D, 0x74},
+//		{0x02, 0x90, 0x11, 0x7C, 0x0C},
+//		5, TProtocolModbus::EXCEPTION_11H_UNCHANG_PARAM}
+//	};
+//
+//	for (uint16_t i = 0; i < (sizeof(data)/sizeof(data[0])); i++) {
+//		for (uint8_t j = 0; j < sizeof(data[0].bufStart); j++) {
+//			buf[j] = data[i].bufStart[j]; 
+//		}
+//		
+//		tProtocolModbus.setException(data[i].ex);
+//		
+//		uint8_t numbytes = tProtocolModbus.getNumOfBytes();
+//		if (numbytes != data[i].numTrBytes) {
+//			uint8_t cnt = sprintf(msg, "1.1 Wrong number of byte for transferring on step %d", i);
+//			cnt += sprintf(&msg[cnt], "\n Num of bytes = %d, need = %d", numbytes,  data[i].numTrBytes);
+//			CPPUNIT_ASSERT_MESSAGE(msg, false);
+//		}
+//		
+//		for(uint8_t j = 0; j < data[i].numTrBytes; j++) {
+//			if (buf[j] != data[i].bufStop[j]) {
+//				uint8_t cnt = sprintf(msg, "1.2 Wrong %d byte in package on step %d", j, i);
+//				cnt += sprintf(&msg[cnt], "\n Byte[%d] = 0x%X, need 0x%X", j, buf[j], data[i].bufStop[j]);
+//				CPPUNIT_ASSERT_MESSAGE(msg, false);
+//			}
+//		}
+//	}
+//	
+//	// 
+//}
 
 void testProtocolModbus::testPush() {
 	TProtocolModbus tProtocolModbus(buf, sizeof (buf));
@@ -802,7 +803,7 @@ void testProtocolModbus::testTrResponse()
 		for (uint8_t j = 0; j < sizeof (pckg); j++) {
 			buf[j] = pckg[j];
 		}
-		tProtocolModbus.setException(TProtocolModbus::EXCEPTION_01H_ILLEGAL_FUNCTION);
+//		tProtocolModbus.setException(TProtocolModbus::EXCEPTION_01H_ILLEGAL_FUNCTION);
 
 		tProtocolModbus.setState(data[i].stateStart);
 		uint8_t num = tProtocolModbus.trResponse();
@@ -1062,14 +1063,14 @@ void testProtocolModbus::testPrepareResponse() {
 		}
 		
 		// ѕроверка правильной тестовой посылки
-		tProtocolModbus.setAddress(buf[0]);
+		tProtocolModbus.setAddressLan(buf[0]);
 		TProtocolModbus::CHECK_ERR err = tProtocolModbus.checkReadPackage();
 		if (TProtocolModbus::CHECK_ERR_NO != err){
 			uint8_t cnt = sprintf(msg, "1.0 Error input data on step %d", i);
 			cnt += sprintf(&msg[cnt], "\n check_error = %d", err);
 			CPPUNIT_ASSERT_MESSAGE(msg, false);	
 		}
-		uint8_t num = tProtocolModbus.prepareResponse(buf[1]);
+		uint8_t num = tProtocolModbus.prepareResponse();
 		
 		// проверка данных подготовленных дл€ передачи
 		for(uint8_t j = 0; j < data[i].numout; j++) {
@@ -1133,14 +1134,14 @@ void testProtocolModbus::testSendRegister() {
 			tProtocolModbus.push(data[i].bufin[j]);
 		}
 		// ѕроверка правильной тестовой посылки
-		tProtocolModbus.setAddress(buf[0]);
+		tProtocolModbus.setAddressLan(buf[0]);
 		TProtocolModbus::CHECK_ERR err = tProtocolModbus.checkReadPackage();
 		if (TProtocolModbus::CHECK_ERR_NO != err){
 			uint8_t cnt = sprintf(msg, "1.0 Error input data on step %d", i);
 			cnt += sprintf(&msg[cnt], "\n check_error = %d", err);
 			CPPUNIT_ASSERT_MESSAGE(msg, false);	
 		}
-		tProtocolModbus.prepareResponse(data[i].bufin[1]);
+		tProtocolModbus.prepareResponse();
 		
 		bool state = tProtocolModbus.sendRegister(data[i].adr, data[i].val);
 		
@@ -1209,14 +1210,14 @@ void testProtocolModbus::testSendCoil() {
 			tProtocolModbus.push(data[i].bufin[j]);
 		}
 		// ѕроверка правильной тестовой посылки
-		tProtocolModbus.setAddress(buf[0]);
+		tProtocolModbus.setAddressLan(buf[0]);
 		TProtocolModbus::CHECK_ERR err = tProtocolModbus.checkReadPackage();
 		if (TProtocolModbus::CHECK_ERR_NO != err){
 			uint8_t cnt = sprintf(msg, "1.0 Error input data on step %d", i);
 			cnt += sprintf(&msg[cnt], "\n check_error = %d", err);
 			CPPUNIT_ASSERT_MESSAGE(msg, false);	
 		}
-		tProtocolModbus.prepareResponse(data[i].bufin[1]);
+		tProtocolModbus.prepareResponse();
 		
 		bool state = tProtocolModbus.sendCoil(data[i].adr, data[i].val);
 		
@@ -1285,14 +1286,14 @@ void testProtocolModbus::testSendCoils() {
 			tProtocolModbus.push(data[i].bufin[j]);
 		}
 		// ѕроверка правильной тестовой посылки
-		tProtocolModbus.setAddress(buf[0]);
+		tProtocolModbus.setAddressLan(buf[0]);
 		TProtocolModbus::CHECK_ERR err = tProtocolModbus.checkReadPackage();
 		if (TProtocolModbus::CHECK_ERR_NO != err){
 			uint8_t cnt = sprintf(msg, "1.0 Error input data on step %d", i);
 			cnt += sprintf(&msg[cnt], "\n check_error = %d", err);
 			CPPUNIT_ASSERT_MESSAGE(msg, false);	
 		}
-		tProtocolModbus.prepareResponse(data[i].bufin[1]);
+		tProtocolModbus.prepareResponse();
 		
 		bool state = tProtocolModbus.sendCoils(data[i].adr, data[i].val);
 		

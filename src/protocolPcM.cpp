@@ -6,37 +6,10 @@
  */
 #include "../inc/protocolPcM.h"
 
+// Конструктор
 TProtocolPcM::TProtocolPcM(stGBparam *sParam, uint8_t *buf, uint8_t size) :
 sParam_(sParam), TProtocolModbus(buf, size) {
 
-}
-
-// Обработка принятых данных
-bool TProtocolPcM::readData() {
-	bool state = false;
-
-	if (checkReadPackage() == CHECK_ERR_NO) {
-		TProtocolModbus::COM com = static_cast<TProtocolModbus::COM> (buf_[1]);
-
-		switch(com) {
-			case COM_01H_READ_COIL:
-				state = readCoilCom();
-				break;
-			case COM_03H_READ_HOLDING_REGISTER:
-				state = readRegisterCom();
-				break;
-			case COM_11H_SLAVE_ID:
-				state = readIdCom();
-				break;
-		}
-
-		// формирование исключения в случае ошибочного адреса
-		if (!state) {
-			setException(EXCEPTION_02H_ILLEGAL_DATA_ADR);
-		}
-	}
-
-	return state;
 }
 
 /**	Обработка принятой коанды чтения флагов.
@@ -56,7 +29,7 @@ bool TProtocolPcM::readCoilCom() {
 
 /**	Обработка принятой команды чтения регистров.
  *
- * 	В посылкку для ответа помещаются запрашиваемые регистры. По-умолчанию
+ * 	В посылку для ответа помещаются запрашиваемые регистры. По-умолчанию
  * 	будет положено значение 0xFFFF.
  *
  * 	Проводится проверка корректности указанных адресов в посылке.
@@ -175,7 +148,8 @@ bool TProtocolPcM::readRegisterCom() {
  *
  * 	В посылкку для ответа помещаются необходимые данные.
  *
- * 	@retval True - всегда.
+ * 	@retval False - в случае отсутствия необходимых данных.
+ * 	@retval True - если команда обработана без ошибок.
  */
 bool TProtocolPcM::readIdCom() {
 
