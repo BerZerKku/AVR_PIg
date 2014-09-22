@@ -38,8 +38,8 @@ class testProtocolModbus : public CPPUNIT_NS::TestFixture {
 	CPPUNIT_TEST(testGetNumOfAddress);
 	CPPUNIT_TEST(testGetCoil);
 	CPPUNIT_TEST(testGetRegister);
-	CPPUNIT_TEST(testTrResponse);
 	CPPUNIT_TEST(testPrepareResponse);
+	CPPUNIT_TEST(testTrResponse);
 	CPPUNIT_TEST(testSendRegister);
 	CPPUNIT_TEST(testSendCoil);
 	CPPUNIT_TEST(testSendCoils);
