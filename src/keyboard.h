@@ -8,7 +8,7 @@
 #ifndef KEYBOARD_H_
 #define KEYBOARD_H_
 
-#include "../inc/glbDefine.h"
+#include "glbDefine.h"
 
 /// Время антидребезга * 10мс
 #define TIME_DELAY 3

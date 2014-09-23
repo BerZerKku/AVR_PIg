@@ -4,10 +4,10 @@
  *  Created on: 15.07.2013
  *      Author: Shcheblykin
  */
-#include "../inc/protocolBspS.h"
+#include "protocolBspS.h"
 
-#include "../inc/glbDefine.h"
-#include "../inc/paramBsp.h"
+#include "glbDefine.h"
+#include "paramBsp.h"
 
 clProtocolBspS::clProtocolBspS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
 clProtocolS(buf, size, sParam) {

@@ -4,21 +4,20 @@
  *  Created on: 03.04.2012
  *      Author: ’оз€ин
  */
-
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
 #include <avr/eeprom.h>
 #include <stdio.h>
-#include "inc/debug.h"
-#include "inc/glbDefine.h"
-#include "inc/ks0108.h"
-#include "inc/menu.h"
-#include "inc/keyboard.h"
-#include "inc/uart.h"
-#include "inc/protocolPcS.h"
-#include "inc/protocolBspS.h"
-#include "inc/protocolPcM.h"
+#include "debug.h"
+#include "glbDefine.h"
+#include "ks0108.h"
+#include "menu.h"
+#include "keyboard.h"
+#include "uart.h"
+#include "protocolPcS.h"
+#include "protocolBspS.h"
+#include "protocolPcM.h"
 
 /// ¬рем€ работы одного цикла (зависит от настройки таймеров), мс
 #define TIME_CYLCE 100
@@ -436,7 +435,7 @@ ISR(USART1_TX_vect) {
 	if (protPCs.isEnable()) {
 		protPCs.setCurrentStatus(PRTS_STATUS_READ);
 	} else if (protPCm.isEnable()) {
-		protPCm.setState(TProtocolModbus::STATE_READ);
+		protPCm.setReadState();
 	}
 }
 

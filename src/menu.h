@@ -20,8 +20,6 @@
 /// время до переинициализации дисплея, мс
 #define TIME_TO_REINIT_LCD (10000 / MENU_TIME_CYLCE)
 
-
-
 /// максимальное кол-во отображаемых на экране параметров
 #define MAX_NUM_MEAS_PARAM 6
 

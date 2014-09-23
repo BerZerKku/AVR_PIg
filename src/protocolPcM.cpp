@@ -4,7 +4,7 @@
  *  Created on: 15.07.2013
  *      Author: Shcheblykin
  */
-#include "../inc/protocolPcM.h"
+#include "protocolPcM.h"
 
 // Конструктор
 TProtocolPcM::TProtocolPcM(stGBparam *sParam, uint8_t *buf, uint8_t size) :

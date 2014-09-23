@@ -6,8 +6,8 @@
  */
 
 #include <avr/io.h>
-#include "../inc/keyboard.h"
-#include "../inc/debug.h"
+#include "keyboard.h"
+#include "debug.h"
 
 // коды кнопок
 // 1R1C - Номер строки (1..3) и стоблца (1..3)

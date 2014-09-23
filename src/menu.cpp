@@ -6,10 +6,10 @@
  */
 #include <stdio.h>
 
-#include "../inc/menu.h"
-#include "../inc/debug.h"
-#include "../inc/ks0108.h"
-#include "../inc/flash.h"
+#include "menu.h"
+#include "debug.h"
+#include "ks0108.h"
+#include "flash.h"
 
 /// режим подсветки по умолчанию
 #define LED_REGIME LED_SWITCH
