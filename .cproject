@@ -41,6 +41,11 @@
 								</option>
 								<option id="de.innot.avreclipse.cppcompiler.option.incpath.418544092" name="Include Paths (-I)" superClass="de.innot.avreclipse.cppcompiler.option.incpath" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/debug}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/menu}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/drivers}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/protocols/modbus}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/protocols/standart}&quot;"/>
 								</option>
 								<inputType id="de.innot.avreclipse.cppcompiler.input.381739633" superClass="de.innot.avreclipse.cppcompiler.input"/>
 							</tool>
@@ -105,6 +110,11 @@
 								</option>
 								<option id="de.innot.avreclipse.cppcompiler.option.incpath.204395973" name="Include Paths (-I)" superClass="de.innot.avreclipse.cppcompiler.option.incpath" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/debug}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/menu}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/drivers}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/protocols/modbus}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/protocols/standart}&quot;"/>
 								</option>
 								<inputType id="de.innot.avreclipse.cppcompiler.input.1626071371" superClass="de.innot.avreclipse.cppcompiler.input"/>
 							</tool>
@@ -188,10 +198,8 @@
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.base.241864418" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.base">
 								<option id="gnu.cpp.compiler.option.include.paths.1500106044" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/external}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/test}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/protocols/modbus}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1738430559" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="MY_TESTS"/>
@@ -237,7 +245,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="main.cpp|src/uart.cpp|src/protocolS.cpp|src/protocolPcS.cpp|src/protocolPcM.cpp|src/protocolBspS.cpp|src/menu.cpp|src/ks0108.cpp|src/keyboard.cpp|src/init.cpp|src/debug.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/debug/debug.cpp|src/init/init.cpp|src/menu/menu.cpp|src/drivers/uart.cpp|src/drivers/ks0108.cpp|src/drivers/keyboard.cpp|src/protocols/standart/protocolS.cpp|src/protocols/standart/protocolPcS.cpp|src/protocols/standart/protocolBspS.cpp|src/protocols/modbus/protocolPcM.cpp|main.cpp|src/uart.cpp|src/protocolS.cpp|src/protocolPcS.cpp|src/protocolPcM.cpp|src/protocolBspS.cpp|src/menu.cpp|src/ks0108.cpp|src/keyboard.cpp|src/init.cpp|src/debug.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

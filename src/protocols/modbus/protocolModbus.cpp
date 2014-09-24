@@ -139,9 +139,6 @@ uint8_t TProtocolModbus::trResponse() {
 	uint8_t cnt = 0;
 
 	if (checkState(STATE_WRITE_READY)) {
-		setState(STATE_WRITE);
-		cnt = cnt_;
-	} else if (checkState(STATE_READ_OK)) {
 		addCRC();
 		setState(STATE_WRITE);
 		cnt = cnt_;
@@ -166,6 +163,22 @@ bool TProtocolModbus::readData() {
 				prepareResponse();
 				state = readRegisterCom();
 				break;
+			case COM_05H_WRITE_SINGLE_COIL :
+				// TODO ќбработка записи флага по MODBUS
+				prepareResponse();
+				break;
+			case COM_06H_WRITE_SINGLE_REGISTER:
+				// TODO ќбработка записи регистра по MODBUS
+				prepareResponse();
+				break;
+			case COM_0FH_WRITE_MULTIPLIE_COILS:
+				// TODO ќбработка записи группы флагов по MODBUS
+				prepareResponse();
+				break;
+			case COM_10H_WRITE_MULITPLIE_REGISTERS:
+				// TODO ќбработка записи группы регистров по MODBUS
+				prepareResponse();
+				break;
 			case COM_11H_SLAVE_ID:
 				prepareResponse();
 				state = readIdCom();
@@ -175,6 +188,8 @@ bool TProtocolModbus::readData() {
 		// формирование исключени€ в случае ошибочного адреса
 		if (!state) {
 			setException(EXCEPTION_02H_ILLEGAL_DATA_ADR);
+		} else {
+			setState(STATE_WRITE_READY);
 		}
 	}
 
@@ -229,12 +244,12 @@ bool TProtocolModbus::sendCoil(uint16_t adr, bool val) {
 	bool state = false;
 
 	if ((adr >= startAdr_) && (adr < (startAdr_ + numOfAdr_))) {
-		// ѕри подготовке посылки в данные были помещены нули
-		// поэтому тут можно обрабатывать только установленные флаги
+		uint8_t a = (adr - startAdr_) / 8;
+		uint8_t n = (adr - startAdr_) % 8;
 		if (val) {
-			uint8_t a = (adr - startAdr_) / 8;
-			uint8_t n = (adr - startAdr_) % 8;
-			buf_[a + 3] |= 1 << n;
+			buf_[a + 3] |= (1 << n);
+		} else {
+			buf_[a + 3] &= ~(1 << n);
 		}
 		state = true;
 	}
@@ -512,24 +527,22 @@ uint8_t TProtocolModbus::prepareResponse() {
 		break;
 		case COM_05H_WRITE_SINGLE_COIL: {
 			// команда возвращаетс€ без изменени€
-			cnt = cnt_;
-			setState(STATE_WRITE_READY);
+			cnt = cnt_ - 2;
 		}
 		break;
 		case COM_06H_WRITE_SINGLE_REGISTER: {
 			// команда возвращаетс€ без изменени€
-			cnt = cnt_;
-			setState(STATE_WRITE_READY);
+			cnt = cnt_ - 2;
 		}
 		break;
 		case COM_0FH_WRITE_MULTIPLIE_COILS: {
+			// возвращаетс€ адрес первого флага и их количество
 			cnt = 6;
-			// TODO рассчет CRC
 		}
 		break;
 		case COM_10H_WRITE_MULITPLIE_REGISTERS: {
+			// возвращаетс€ адрес первого регистра и их количество
 			cnt = 6;
-			// TODO рассчет CRC
 		}
 		break;
 		case COM_11H_SLAVE_ID: {
@@ -540,12 +553,7 @@ uint8_t TProtocolModbus::prepareResponse() {
 	return (cnt_ = cnt);
 }
 
-/**	—мента состо€ни€ работы протокола.
- *
- *	¬ случае ошибочного значени€, протокол останетс€ в текущем состо€нии.
- *
- * 	@param state Ќовое состо€ние работы протокола.
- */
+// 	—мена состо€ни€ работы протокола.
 void TProtocolModbus::setState(TProtocolModbus::STATE state) {
 	if ((state >= STATE_OFF) && (state < STATE_ERROR)) {
 		if (state == STATE_READ) {
@@ -559,3 +567,71 @@ void TProtocolModbus::setState(TProtocolModbus::STATE state) {
 		state_ = state;
 	}
 }
+
+// ќбработка прин€той команды чтени€ флагов.
+bool TProtocolModbus::readCoilCom() {
+	bool state = false;
+	uint16_t adr = getStartAddress();
+	uint8_t  num = getNumOfAddress();
+
+	if ((adr >= 1) && ( adr <= 200)) {
+		for(uint8_t i = 0; i < num; i++, adr++) {
+			// по умолчанию будет записано 0xFFF
+			bool val = false;;
+
+			if (adr <= 100) {
+				val = true;
+			}
+
+			sendCoil(adr, val);
+		}
+		state = true;
+	}
+	return state;
+}
+
+// ќбработка прин€той команды чтени€ регистров.
+bool TProtocolModbus::readRegisterCom() {
+	bool state = false;
+	uint16_t adr = getStartAddress();
+	uint8_t  num = getNumOfAddress();
+
+	if ((adr >= 1) && ( adr <= 200)) {
+		for(uint8_t i = 0; i < num; i++, adr++) {
+			// по умолчанию будет записано 0xFFF
+			uint16_t val = 0xFFFF;
+
+			if (adr <= 100) {
+				val = adr;
+			}
+
+			sendRegister(adr, val);
+		}
+		state = true;
+	}
+	return state;
+}
+
+///	ќбработка прин€той команды чтени€ ID.
+bool TProtocolModbus::readIdCom() {
+	uint8_t cnt = 3;
+
+	// строка данных
+	buf_[cnt++] = 'V';
+	buf_[cnt++] = 'i';
+	buf_[cnt++] = 'r';
+	buf_[cnt++] = 't';
+	buf_[cnt++] = 'u';
+	buf_[cnt++] = 'a';
+	buf_[cnt++] = 'l';
+
+	// последний байт данных - индикатор состо€ни€.
+	buf_[cnt++] = 0x00;
+
+	// количество передаваемых данных
+	buf_[2] = cnt -3;
+
+	cnt_ = cnt;
+	return true;
+}
+
