@@ -253,8 +253,6 @@ bool TProtocolModbus::sendCoil(uint16_t adr, bool val) {
 		}
 		state = true;
 	}
-
-
 	return state;
 }
 
@@ -494,7 +492,6 @@ void TProtocolModbus::setException(TProtocolModbus::EXCEPTION code) {
 	cnt_ = 1;	// адрес остаетс€ прежним
 	buf_[cnt_++] |= 0x80;
 	buf_[cnt_++]  = code;
-	addCRC();
 	setState(STATE_WRITE_READY);
 }
 
@@ -570,46 +567,50 @@ void TProtocolModbus::setState(TProtocolModbus::STATE state) {
 
 // ќбработка прин€той команды чтени€ флагов.
 bool TProtocolModbus::readCoilCom() {
-	bool state = false;
 	uint16_t adr = getStartAddress();
-	uint8_t  num = getNumOfAddress();
+	uint16_t num = getNumOfAddress();
+	bool val = false;
 
-	if ((adr >= 1) && ( adr <= 200)) {
-		for(uint8_t i = 0; i < num; i++, adr++) {
-			// по умолчанию будет записано 0xFFF
-			bool val = false;;
+	for(uint16_t i = 0; i < num; i++, adr++) {
+		if ((adr == 0) || (adr > 300))
+			return false;
 
-			if (adr <= 100) {
-				val = true;
-			}
-
-			sendCoil(adr, val);
+		if (adr <= 100) {
+			val = true;
+		} else if (adr <= 200) {
+			val = false;
+		} else if (adr <= 300) {
+			val = true;
 		}
-		state = true;
+
+		sendCoil(adr, val);
 	}
-	return state;
+
+	return true;
 }
 
 // ќбработка прин€той команды чтени€ регистров.
 bool TProtocolModbus::readRegisterCom() {
-	bool state = false;
 	uint16_t adr = getStartAddress();
 	uint8_t  num = getNumOfAddress();
+	uint16_t val = 0xFFFF;
 
-	if ((adr >= 1) && ( adr <= 200)) {
-		for(uint8_t i = 0; i < num; i++, adr++) {
-			// по умолчанию будет записано 0xFFF
-			uint16_t val = 0xFFFF;
+	for(uint8_t i = 0; i < num; i++, adr++) {
+		if ((adr == 0) || (adr > 300))
+			return false;
 
-			if (adr <= 100) {
-				val = adr;
-			}
-
-			sendRegister(adr, val);
+		if (adr <= 100) {
+			val = adr;
+		} else if (adr <= 200) {
+			val = 0xFFFF;
+		} else if (adr <= 300) {
+			val = adr;
 		}
-		state = true;
+
+		sendRegister(adr, val);
 	}
-	return state;
+
+	return true;
 }
 
 ///	ќбработка прин€той команды чтени€ ID.
