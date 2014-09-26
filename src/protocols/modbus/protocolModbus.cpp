@@ -4,6 +4,8 @@
 #include "debug.h"
 #endif
 
+uint16_t tmp_;			///> переменная для передачи данных по ссылке
+
 const uint8_t TProtocolModbus::CRC_HI[256] = { 0x00, 0xC1, 0x81, 0x40, 0x01,
 		0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x01,
 		0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01,
@@ -52,14 +54,11 @@ const uint8_t TProtocolModbus::CRC_LOW[256] = { 0x00, 0xC0, 0xC1, 0x01, 0xC3,
 
 // Конструктор
 TProtocolModbus::TProtocolModbus(uint8_t *buf, uint8_t size) :
-				buf_(buf), size_(size) {
+						buf_(buf), size_(size) {
 
 	state_ = STATE_OFF;
-
 	address_ = ADDRESS_ERR;
 
-	startAdr_ = 0;
-	numOfAdr_ = 0;
 	cnt_ = 0;
 
 	tick_ = 0;
@@ -107,7 +106,7 @@ void TProtocolModbus::tick() {
 			tick += tickStep_;
 			if (tick >= DELAY_READ) {
 				if (checkState(STATE_READ) && (cnt_ >= 4)) {
-						setState(STATE_READ_OK);
+					setState(STATE_READ_OK);
 				} else {
 					setState(STATE_READ);
 				}
@@ -162,38 +161,34 @@ bool TProtocolModbus::readData() {
 				state = comReadRegisters();
 				break;
 			case COM_05H_WRITE_SINGLE_COIL :
-				state = writeCoilsCom();
-				prepareResponse();
+				state = comWriteCoil();
 				break;
 			case COM_06H_WRITE_SINGLE_REGISTER:
-				state = writeCoilsCom();
-				prepareResponse();
+				state = comWriteRegister();
 				break;
 			case COM_0FH_WRITE_MULTIPLIE_COILS:
-				// TODO Обработка записи группы флагов по MODBUS
-				prepareResponse();
+				state = comWriteCoils();
 				break;
 			case COM_10H_WRITE_MULITPLIE_REGISTERS:
-				// TODO Обработка записи группы регистров по MODBUS
-				prepareResponse();
+				state = comWriteRegisters();
 				break;
 			case COM_11H_SLAVE_ID:
 				state = comReadID();
 				break;
 			default:
-				// данная команда не поддерживается
+				// остальные команды не поддерживаются
 				setException(EXCEPTION_01H_ILLEGAL_FUNCTION);
 		}
 	}
 
-//	if (!state) {
-//		// формирование исключения в случае ошибочного адреса
-//		setException(EXCEPTION_02H_ILLEGAL_DATA_ADR);
-//	} else if (!checkState(STATE_WRITE_READY)) {
-//			// отправка подготовленного сообщения
-//			setState(STATE_WRITE_READY);
-//		}
-//	}
+	//	if (!state) {
+	//		// формирование исключения в случае ошибочного адреса
+	//		setException(EXCEPTION_02H_ILLEGAL_DATA_ADR);
+	//	} else if (!checkState(STATE_WRITE_READY)) {
+	//			// отправка подготовленного сообщения
+	//			setState(STATE_WRITE_READY);
+	//		}
+	//	}
 
 
 	if (state) {
@@ -301,87 +296,87 @@ bool TProtocolModbus::readData() {
  *	@retval CHECK_ERR_FUNCTION_DATA - ошибка данных в команде.
  */
 TProtocolModbus::CHECK_ERR TProtocolModbus::checkCommand(uint8_t com) {
-	TProtocolModbus::CHECK_ERR state = CHECK_ERR_FUNCTION;
+	//	TProtocolModbus::CHECK_ERR state = CHECK_ERR_FUNCTION;
 	uint16_t adr = ((uint16_t) buf_[2] << 8) + buf_[3];	// начальный адрес
 	uint16_t num = ((uint16_t) buf_[4] << 8) + buf_[5];	// кол-во адресов
 
 	switch (static_cast<TProtocolModbus::COM>(com)) {
-//		case COM_01H_READ_COIL: {
-//			// ограничение на минимум/максимум считывемых флагов
-//			if ((num >= 1) && (num <= MAX_NUM_COILS)) {
-//				startAdr_ = adr + 1;
-//				numOfAdr_ = num;
-//				state = CHECK_ERR_NO;
-//			} else
-//				state = CHECK_ERR_FUNCTION_DATA;
-//		}
-//		break;
-//		case COM_03H_READ_HOLDING_REGISTER: {
-//			// ограничение на минимум/максимум считываемых регистров
-//			if ((num >= 1) && (num <= MAX_NUM_REGISTERS)) {
-//				startAdr_ = adr + 1;
-//				numOfAdr_ = num;
-//				state = CHECK_ERR_NO;
-//			} else
-//				state = CHECK_ERR_FUNCTION_DATA;
-//		}
-//		break;
-		case COM_05H_WRITE_SINGLE_COIL: {
-			// допускаются значения флага 0x0000 и 0xFF00 (=1)
-			if ((buf_[5] == 0x00) && ((buf_[4] == 0x00) || (buf_[4] == 0xFF))) {
-				startAdr_ = adr + 1;
-				numOfAdr_ = 1;
-				state = CHECK_ERR_NO;
-			} else
-				state = CHECK_ERR_FUNCTION_DATA;
-		}
-		break;
+		//		case COM_01H_READ_COIL: {
+		//			// ограничение на минимум/максимум считывемых флагов
+		//			if ((num >= 1) && (num <= MAX_NUM_COILS)) {
+		//				startAdr_ = adr + 1;
+		//				numOfAdr_ = num;
+		//				state = CHECK_ERR_NO;
+		//			} else
+		//				state = CHECK_ERR_FUNCTION_DATA;
+		//		}
+		//		break;
+		//		case COM_03H_READ_HOLDING_REGISTER: {
+		//			// ограничение на минимум/максимум считываемых регистров
+		//			if ((num >= 1) && (num <= MAX_NUM_REGISTERS)) {
+		//				startAdr_ = adr + 1;
+		//				numOfAdr_ = num;
+		//				state = CHECK_ERR_NO;
+		//			} else
+		//				state = CHECK_ERR_FUNCTION_DATA;
+		//		}
+		//		break;
+		//		case COM_05H_WRITE_SINGLE_COIL: {
+		////			// допускаются значения флага 0x0000 и 0xFF00 (=1)
+		////			if ((buf_[5] == 0x00) && ((buf_[4] == 0x00) || (buf_[4] == 0xFF))) {
+		//////				startAdr_ = adr + 1;
+		//////				numOfAdr_ = 1;
+		////				state = CHECK_ERR_NO;
+		////			} else
+		////				state = CHECK_ERR_FUNCTION_DATA;
+		//		}
+		//		break;
 		case COM_06H_WRITE_SINGLE_REGISTER: {
-			// допустимое значение адреса для записи от 0х0000 до 0хFFFF
-			startAdr_ = adr + 1;
-			numOfAdr_ = 1;
-			state = CHECK_ERR_NO;
+			//			// допустимое значение адреса для записи от 0х0000 до 0хFFFF
+			////			startAdr_ = adr + 1;
+			////			numOfAdr_ = 1;
+			//			state = CHECK_ERR_NO;
 		}
 		break;
-		case COM_0FH_WRITE_MULTIPLIE_COILS: {
-			// ограничение на минимум/максимум устанавливаемых флагов
-			// а также сравнение с заявленным кол-вом байт данных в посылке
-			if ((num >= 1) && (num <= MAX_NUM_COILS)) {
-				if (((num + 7) / 8) != buf_[6]) {
-					state = CHECK_ERR_FUNCTION_DATA;
-				} else {
-					startAdr_ = adr + 1;
-					numOfAdr_ = num;
-					state = CHECK_ERR_NO;
-				}
-			} else {
-				state = CHECK_ERR_FUNCTION_DATA;
-			}
-		}
-		break;
+		//		case COM_0FH_WRITE_MULTIPLIE_COILS: {
+		////			// ограничение на минимум/максимум устанавливаемых флагов
+		////			// а также сравнение с заявленным кол-вом байт данных в посылке
+		////			if ((num >= 1) && (num <= MAX_NUM_COILS)) {
+		////				if (((num + 7) / 8) != buf_[6]) {
+		////					state = CHECK_ERR_FUNCTION_DATA;
+		////				} else {
+		//////					startAdr_ = adr + 1;
+		//////					numOfAdr_ = num;
+		////					state = CHECK_ERR_NO;
+		////				}
+		////			} else {
+		////				state = CHECK_ERR_FUNCTION_DATA;
+		////			}
+		//		}
+		//		break;
 		case COM_10H_WRITE_MULITPLIE_REGISTERS: {
-			// ограничение на минимум/максимум записываемых регистров
-			// а также сравнение с заявленным кол-вом байт данных в посылке
-			if ((num >= 1) && (num <= MAX_NUM_REGISTERS)) {
-				if ((num * 2) != buf_[6]) {
-					state = CHECK_ERR_FUNCTION_DATA;
-				} else {
-					startAdr_ = adr + 1;
-					numOfAdr_ = num;
-					state = CHECK_ERR_NO;
-				}
-			} else
-				state = CHECK_ERR_FUNCTION_DATA;
+			//			// ограничение на минимум/максимум записываемых регистров
+			//			// а также сравнение с заявленным кол-вом байт данных в посылке
+			//			if ((num >= 1) && (num <= MAX_NUM_REGISTERS)) {
+			//				if ((num * 2) != buf_[6]) {
+			//					state = CHECK_ERR_FUNCTION_DATA;
+			//				} else {
+			////					startAdr_ = adr + 1;
+			////					numOfAdr_ = num;
+			//					state = CHECK_ERR_NO;
+			//				}
+			//			} else
+			//				state = CHECK_ERR_FUNCTION_DATA;
 		}
 		break;
-//		case COM_11H_SLAVE_ID:
-//			// нет ограничений
-//			startAdr_ = 0;
-//			numOfAdr_ = 0;
-//			state = CHECK_ERR_NO;
-//			break;
+		//		case COM_11H_SLAVE_ID:
+		//			// нет ограничений
+		//			startAdr_ = 0;
+		//			numOfAdr_ = 0;
+		//			state = CHECK_ERR_NO;
+		//			break;
 	}
-	return state;
+	return CHECK_ERR_NO;
 }
 
 /**	Проверка адреса устройства на совпадение с установленным
@@ -439,24 +434,10 @@ void TProtocolModbus::addCRC() {
  * 	Проверяются:
  * 	- адрес устройства;
  * 	- контрольная сумма;
- * 	- поддерживаемая команда;
- * 	- корректность данных в принятой команде.
  *
- * 	Не проверяются:
- * 	- корректность адресов регистров и флагов.
- *
- *	В случае обнаружения ошибки подготавливется ответ с кодом исключения.
- *	Иначе в зависимости от кода команды подготавливается подготавливается
- *	основа для ответа.
- *
- *	Так же для команд чтения/записи определяется стартовый адрес и
- *	количество необходимых адресов.
- *
- *	В ходе проверки статус работы протокола может измениться и это надо
- *	проверить в основной программе.
- *
- * 	@return Статус проверки.
- * 	@see CHECK_ERR
+ * 	@retval CHECK_ERR_NO Ошибок в принятой посылке нет.
+ * 	@retval CHECK_ERR_ADR_LAN Неверный адрес устройства.
+ * 	@retval CHECK_ERR_CRC Неверная контрольная сумма.
  */
 TProtocolModbus::CHECK_ERR TProtocolModbus::checkReadPackage() {
 	CHECK_ERR state = CHECK_ERR_NO;
@@ -464,24 +445,12 @@ TProtocolModbus::CHECK_ERR TProtocolModbus::checkReadPackage() {
 	if (!checkAddressLan(buf_[0])) {
 		// Не совпал адрес устройства.
 		setState(STATE_READ);
-		state = CHECK_ERR_ADR_DEVICE;
+		state = CHECK_ERR_ADR_LAN;
 	} else if (getCRC() != calcCRC(cnt_ - 2)) {
 		// не совпала контрольная сумма
 		setState(STATE_READ);
 		state = CHECK_ERR_CRC;
 	}
-//	} else {
-//		state = checkCommand(buf_[1]);
-//		if (state == CHECK_ERR_FUNCTION) {
-//			// ошибочный код команды
-//			setException(EXCEPTION_01H_ILLEGAL_FUNCTION);
-//			state = CHECK_ERR_FUNCTION;
-//		} else if (state == CHECK_ERR_FUNCTION_DATA) {
-//			// ошибочные данные в команде
-//			setException(EXCEPTION_03H_ILLEGAL_DATA_VAL);
-//			state = CHECK_ERR_FUNCTION_DATA;
-//		}
-//	}
 
 	return state;
 }
@@ -503,61 +472,6 @@ void TProtocolModbus::setException(TProtocolModbus::EXCEPTION code) {
 	setState(STATE_WRITE_READY);
 }
 
-/**	Подготовка посылки для ответа на запрос.
- *
- * 	Для команды полученной в запросе формируется заготовка ответа.
- * 	Все необходимые для передачи регистры/флаги записываются нулями.
- *
- * 	@return Кол-во подготовленных байт данных для передачи.
- */
-uint8_t TProtocolModbus::prepareResponse() {
-	uint8_t cnt = 0;
-
-	switch (static_cast<TProtocolModbus::COM>(buf_[1])) {
-//		case COM_01H_READ_COIL: {
-//			cnt = 2;
-//			buf_[cnt++] = (numOfAdr_ + 7) / 8;
-//			for(uint8_t i = 0; i < buf_[2]; i++) {
-//				buf_[cnt++] = 0;
-//			}
-//		}
-//		break;
-//		case COM_03H_READ_HOLDING_REGISTER: {
-//			cnt = 2;
-//			buf_[cnt++] = numOfAdr_ * 2;
-//			for(uint8_t i = 0; i < buf_[2]; i++) {
-//				buf_[cnt++] = 0x00;
-//			}
-//		}
-//		break;
-		case COM_05H_WRITE_SINGLE_COIL: {
-			// команда возвращается без изменения
-			cnt = cnt_ - 2;
-		}
-		break;
-		case COM_06H_WRITE_SINGLE_REGISTER: {
-			// команда возвращается без изменения
-			cnt = cnt_ - 2;
-		}
-		break;
-		case COM_0FH_WRITE_MULTIPLIE_COILS: {
-			// возвращается адрес первого флага и их количество
-			cnt = 6;
-		}
-		break;
-		case COM_10H_WRITE_MULITPLIE_REGISTERS: {
-			// возвращается адрес первого регистра и их количество
-			cnt = 6;
-		}
-		break;
-//		case COM_11H_SLAVE_ID: {
-//			cnt = 2;	// адрес и команда
-//		}
-//		break;
-	}
-	return (cnt_ = cnt);
-}
-
 // 	Смена состояния работы протокола.
 void TProtocolModbus::setState(TProtocolModbus::STATE state) {
 	if ((state >= STATE_OFF) && (state < STATE_ERROR)) {
@@ -566,8 +480,6 @@ void TProtocolModbus::setState(TProtocolModbus::STATE state) {
 			// байт
 			cnt_ = 0;
 			tick_ = 0;
-			startAdr_ = 0;
-			numOfAdr_ = 0;
 		}
 		state_ = state;
 	}
@@ -584,8 +496,8 @@ void TProtocolModbus::setState(TProtocolModbus::STATE state) {
  *	@retval False - если при обработке посылки возникли ошбки.
  */
 bool TProtocolModbus::comReadCoils() {
-	uint16_t adr = ((uint16_t) buf_[2] << 8) + buf_[3] + 1;	// начальный адрес
-	uint16_t num = ((uint16_t) buf_[4] << 8) + buf_[5];		// кол-во адресов
+	uint16_t adr = getStartAddress();	// начальный адрес
+	uint16_t num = getNumOfAddress();	// кол-во адресов
 
 	// проверка количества регистров
 	if ((num == 0) || (num > MAX_NUM_COILS)) {
@@ -593,14 +505,11 @@ bool TProtocolModbus::comReadCoils() {
 		return false;
 	}
 
-	startAdr_ = adr;
-	numOfAdr_ = num;
-
 	// подготовка ответа
-	uint8_t cnt = 2;
-	buf_[cnt++] = (numOfAdr_ + 7) / 8;		// кол-во передаваемыб байт данных
-	for(uint8_t i = 0; i < buf_[2]; i++) {	// обнуление передаваемых данных
-		buf_[cnt++] = 0;
+	uint8_t cnt = 2;						// адрес + команда
+	buf_[cnt++] = (num + 7) / 8;			// кол-во передаваемых байт данных
+	for(uint8_t i = 0; i < buf_[2]; i++) {
+		buf_[cnt++] = 0;					// обнуление передаваемых данных
 	}
 	cnt_ = cnt;
 
@@ -610,23 +519,18 @@ bool TProtocolModbus::comReadCoils() {
 	for(uint16_t i = 0; i < num; i++, adr++) {
 		bool val = false;
 
-		if (!readCoilCom(adr, val)) {
-			// ошибочный адрес
+		TProtocolModbus::CHECK_ERR err = readCoil(adr, val);
+
+		if (err == CHECK_ERR_ADR) {
 			setException(EXCEPTION_02H_ILLEGAL_DATA_ADR);
 			return false;
 		}
 
-		uint8_t a = (adr - startAdr_) / 8;
-		uint8_t n = (adr - startAdr_) % 8;
-
 		// При необходимости устанавливаем текущий флаг. Обнулять не надо
 		// т.к. в ответ изначально записаны 0х00.
 		if (val) {
-			buf_[3 + a] |= (1 << n);
+			buf_[3 + i/8] |= (1 << i%8);
 		}
-
-		// внутренняя ошибка, в даннй реализации не формируется
-		// setException(EXCEPTION_04H_DEVICE_FAILURE);
 	}
 
 	return true;
@@ -643,8 +547,8 @@ bool TProtocolModbus::comReadCoils() {
  *	@retval False - если при обработке посылки возникли ошбки.
  */
 bool TProtocolModbus::comReadRegisters() {
-	uint16_t adr = ((uint16_t) buf_[2] << 8) + buf_[3] + 1;	// начальный адрес
-	uint16_t num = ((uint16_t) buf_[4] << 8) + buf_[5];		// кол-во адресов
+	uint16_t adr = getStartAddress();	// начальный адрес
+	uint16_t num = getNumOfAddress();	// кол-во адресов
 
 	// проверка количества регистров
 	if ((num == 0) || (num > MAX_NUM_REGISTERS)) {
@@ -652,14 +556,11 @@ bool TProtocolModbus::comReadRegisters() {
 		return false;
 	}
 
-	startAdr_ = adr;
-	numOfAdr_ = num;
-
 	// подготовка ответа, изначально все данные заполнены нулями
-	uint8_t cnt = 2;
-	buf_[cnt++] = numOfAdr_ * 2;
+	uint8_t cnt = 2; 						// адрес + команда
+	buf_[cnt++] = num * 2; 			// кол-во передаваемых байт данных
 	for(uint8_t i = 0; i < buf_[2]; i++) {
-		buf_[cnt++] = 0x00;
+		buf_[cnt++] = 0x00;					// обнуление данных
 	}
 	cnt_ = cnt;
 
@@ -669,54 +570,259 @@ bool TProtocolModbus::comReadRegisters() {
 	for(uint16_t i = 0; i < num; i++, adr++) {
 		uint16_t val = 0xFFFF;
 
-		if (!readRegisterCom(adr, val)) {
-			// ошибочный адрес
+		TProtocolModbus::CHECK_ERR err = readRegister(adr, val);
+
+		if (err == CHECK_ERR_ADR) {
 			setException(EXCEPTION_02H_ILLEGAL_DATA_ADR);
 			return false;
 		}
 
-		buf_[(adr - startAdr_)*2 + 3] = val >> 8;
-		buf_[(adr - startAdr_)*2 + 4] = val;
+		buf_[i*2 + 3] = val >> 8;
+		buf_[i*2 + 4] = val;
 
-		// внутренняя ошибка, в даннй реализации не формируется
-		// setException(EXCEPTION_04H_DEVICE_FAILURE);
 	}
+
+	return true;
+}
+
+/**	Обработка команды записи флага 0x05.
+ *
+ * 	В случае обнаружения ошибок в принятой посылке будет сформировано
+ * 	исключение. Если ошибок нет, будет записан треуемый флаг и сформирован
+ * 	ответ без КС.
+ *
+ * 	@retval True - если посылка обработана без ошибок.
+ *	@retval False - если при обработке посылки возникли ошбки.
+ */
+bool TProtocolModbus::comWriteCoil() {
+
+	uint16_t adr = getStartAddress();	// начальный адрес
+	uint16_t val = getNumOfAddress();	// в данном случае это значение флага
+
+	if ((val != 0x0000) && (val != 0xFF00)) {
+		setException(EXCEPTION_03H_ILLEGAL_DATA_VAL);
+		return false;
+	}
+
+	TProtocolModbus::CHECK_ERR err = writeCoil(adr, (val == 0xFF00));
+
+	if (err != CHECK_ERR_NO) {
+		if (err == CHECK_ERR_ADR) {
+			setException(EXCEPTION_02H_ILLEGAL_DATA_ADR);
+			return false;
+		} else if (err == CHECK_ERR_DATA) {
+			setException(EXCEPTION_03H_ILLEGAL_DATA_VAL);
+			return false;
+		} else if (err == CHECK_ERR_DEVICE) {
+			setException(EXCEPTION_04H_DEVICE_FAILURE);
+			return false;
+		}
+	}
+
+	cnt_ = 6; // ответ совпадает с запросом
+
+	return true;
+}
+
+/**	Обработка команды записи регистра 0x06.
+ *
+ * 	В случае обнаружения ошибок в принятой посылке будет сформировано
+ * 	исключение. Если ошибок нет, будет записан треуемый регистр и сформирован
+ * 	ответ без КС.
+ *
+ * 	@retval True - если посылка обработана без ошибок.
+ *	@retval False - если при обработке посылки возникли ошбки.
+ */
+bool TProtocolModbus::comWriteRegister() {
+
+	uint16_t adr = getStartAddress();	// начальный адрес
+	uint16_t val = getNumOfAddress();	// в данном случае это значение регистра
+
+	// по сути лишняя проверка, т.к. используется весь диапазон значений
+	if ((val < 0x0000) || (val > 0xFFFF)) {
+		setException(EXCEPTION_03H_ILLEGAL_DATA_VAL);
+		return false;
+	}
+
+	TProtocolModbus::CHECK_ERR err = writeRegister(adr, val);
+
+	if (err != CHECK_ERR_NO) {
+		if (err == CHECK_ERR_ADR) {
+			setException(EXCEPTION_02H_ILLEGAL_DATA_ADR);
+			return false;
+		} else if (err == CHECK_ERR_DATA) {
+			setException(EXCEPTION_03H_ILLEGAL_DATA_VAL);
+			return false;
+		} else if (err == CHECK_ERR_DEVICE) {
+			setException(EXCEPTION_04H_DEVICE_FAILURE);
+			return false;
+		}
+	}
+
+	cnt_ = 6; // ответ совпадает с запросом
+
+	return true;
+}
+
+/**	Обработка команды записи группы флагов 0x0F.
+ *
+ * 	В случае обнаружения ошибок в принятой посылке будет сформировано
+ * 	исключение. Если ошибок нет, будет записаны треуемые флаги и сформирован
+ * 	ответ без КС.
+ *
+ * 	Запись будет производится до первой встреченной ошибки адреса. Т.е.
+ * 	если доступно для записи 4 флага, а требуется записать 8. Будут записаны
+ * 	4 и затем сформировано исключение. При ошибках устройства, сначала будут
+ * 	записаны все адреса и только потом сформировано исключение.
+ *
+ * 	@retval True - если посылка обработана без ошибок.
+ *	@retval False - если при обработке посылки возникли ошбки.
+ */
+bool TProtocolModbus::comWriteCoils() {
+	uint16_t adr = getStartAddress();	// начальный адрес
+	uint16_t num = getNumOfAddress();	// кол-во флагов
+
+	// ограничение на минимум/максимум устанавливаемых флагов
+	if ((num == 0) || (num > MAX_NUM_COILS)) {
+		setException(EXCEPTION_03H_ILLEGAL_DATA_VAL);
+		return false;
+	}
+
+	// сравнение кол-ва флагов с заявленным кол-вом байт данных в посылке
+	if (((num + 7) / 8) != buf_[6]) {
+		setException(EXCEPTION_03H_ILLEGAL_DATA_VAL);
+		return false;
+	}
+
+	// заполнение ответа теущими сотстояниями флагов
+	// если встретится хотя бы один недопустимый адрес, будет сформировано
+	// исключение
+	TProtocolModbus::CHECK_ERR err_t = CHECK_ERR_NO;
+	for(uint16_t i = 0; i < num; i++, adr++) {
+
+		// состояние текущего флага для записи
+		bool val = ((buf_[7 + i/8] & (1 << i%8)) != 0);
+
+		TProtocolModbus::CHECK_ERR err = writeCoil(adr, val);
+
+		if (err != CHECK_ERR_NO) {
+			// если в процессе записи обнаружена ошибка адреса, сформируем
+			// исключение
+			if (err == CHECK_ERR_ADR) {
+				setException(EXCEPTION_02H_ILLEGAL_DATA_ADR);
+				return false;
+			} else if (err == CHECK_ERR_DEVICE) {
+				err_t = CHECK_ERR_DEVICE;
+			}
+		}
+	}
+
+	// если в процессе записи возникли ошибки устройства, сформируем исключение
+	if (err_t == CHECK_ERR_DEVICE) {
+		setException(EXCEPTION_04H_DEVICE_FAILURE);
+		return false;
+	}
+
+	cnt_ = 6; // возвращаем первые 6 байт посылки
+
+	return true;
+}
+
+/**	Обработка команды записи группы регистров 0x10.
+ *
+ * 	В случае обнаружения ошибок в принятой посылке будет сформировано
+ * 	исключение. Если ошибок нет, будут записаны требуемые регистры и сформирован
+ * 	ответ без КС.
+ *
+ * 	Запись будет производится до первой встреченной ошибки адреса. Т.е.
+ * 	если доступно для записи 4 регистра, а требуется записать 8. Будут записаны
+ * 	4 и затем сформировано исключение. При ошибках устройства, сначала будут
+ * 	записаны все адреса и только потом сформировано исключение.
+ *
+ * 	@retval True - если посылка обработана без ошибок.
+ *	@retval False - если при обработке посылки возникли ошбки.
+ */
+bool TProtocolModbus::comWriteRegisters() {
+	uint16_t adr = getStartAddress();	// начальный адрес
+	uint16_t num = getNumOfAddress();	// кол-во регистров
+
+	// ограничение на минимум/максимум устанавливаемых флагов
+	if ((num == 0) || (num > MAX_NUM_REGISTERS)) {
+		setException(EXCEPTION_03H_ILLEGAL_DATA_VAL);
+		return false;
+	}
+
+	// сравнение кол-ва флагов с заявленным кол-вом байт данных в посылке
+	if (2*num != buf_[6]) {
+		setException(EXCEPTION_03H_ILLEGAL_DATA_VAL);
+		return false;
+	}
+
+	// заполнение ответа теущими сотстояниями флагов
+	// если встретится хотя бы один недопустимый адрес, будет сформировано
+	// исключение
+	TProtocolModbus::CHECK_ERR err_t = CHECK_ERR_NO;
+	for (uint16_t i = 0; i < num; i++, adr++) {
+
+		// значение текущего регистра
+		uint16_t val = (((uint16_t) buf_[7 + i*2]) << 8) + buf_[8 + i*2];
+
+		TProtocolModbus::CHECK_ERR err = writeRegister(adr, val);
+
+		if (err != CHECK_ERR_NO) {
+			// если в процессе записи обнаружена ошибка адреса, сформируем
+			// исключение
+			if (err == CHECK_ERR_ADR) {
+				setException(EXCEPTION_02H_ILLEGAL_DATA_ADR);
+				return false;
+			} else if (err == CHECK_ERR_DEVICE) {
+				err_t = CHECK_ERR_DEVICE;
+			}
+		}
+	}
+
+	// если в процессе записи возникли ошибки устройства, сформируем исключение
+	if (err_t == CHECK_ERR_DEVICE) {
+		setException(EXCEPTION_04H_DEVICE_FAILURE);
+		return false;
+	}
+
+	cnt_ = 6; // возвращаем первые 6 байт посылки
 
 	return true;
 }
 
 /** Обработка команды чтения инфорации об устройстве 0x11.
  *
- * 	В случае обнаружения ошибок в принятом пакете, будет сформировано
- *	исключение.
- *
- *	Если ошибок в принятой посылке нет, будет сформирован ответ без КС.
+ * 	В случае обнаружения ошибок в принятой посылке, будет сформировано
+ *	исключение. Если ошибок  нет, будет сформирован ответ без КС.
  *
  *	@retval True - если посылка обработана без ошибок.
  *	@retval False - если при обработке посылки возникли ошбки.
  */
 bool TProtocolModbus::comReadID() {
 
-	startAdr_ = 0;
-	numOfAdr_ = 0;
-
 	uint8_t num = MAX_ID_CHARS; // максимальное кол-во байт данных на передачу
 
-	if (!readIdCom(&buf_[2], num)) {
+	TProtocolModbus::CHECK_ERR err = readID(&buf_[3], num);
+
+	if (err == CHECK_ERR_DATA) {
 		setException(EXCEPTION_04H_DEVICE_FAILURE);
 		return false;
 	}
-	cnt_ = 2 + num;
+
+	buf_[2] = num;
+	cnt_ = 3 + num; // 3 = адрес + команда + кол-во байт данных
 
 	return true;
 }
 
-// Обработка принятой команды чтения флагов.
-bool TProtocolModbus::readCoilCom(uint16_t adr, bool &val) {
+// Чтение флагов.
+TProtocolModbus::CHECK_ERR TProtocolModbus::readCoil(uint16_t adr, bool &val) {
 
 	// диапазон допустимых адресов
 	if ((adr == 0) || (adr > 300))
-		return false;
+		return CHECK_ERR_ADR;
 
 	// считывание текущего состояния флага
 	if (adr <= 100) {
@@ -727,14 +833,14 @@ bool TProtocolModbus::readCoilCom(uint16_t adr, bool &val) {
 		val = true;
 	}
 
-	return true;
+	return CHECK_ERR_NO;
 }
 
-// Обработка принятой команды чтения регистров.
-bool TProtocolModbus::readRegisterCom(uint16_t adr, uint16_t &val) {
+// Чтение регистров.
+TProtocolModbus::CHECK_ERR TProtocolModbus::readRegister(uint16_t adr, uint16_t &val) {
 
 	if ((adr == 0) || (adr > 300))
-		return false;
+		return CHECK_ERR_ADR;
 
 	if (adr <= 100) {
 		val = adr;
@@ -744,43 +850,64 @@ bool TProtocolModbus::readRegisterCom(uint16_t adr, uint16_t &val) {
 		val = adr;
 	}
 
-	return true;
+	return CHECK_ERR_NO;
 }
 
-///	Обработка принятой команды чтения ID.
-bool TProtocolModbus::readIdCom(uint8_t *buf, uint8_t &size) {
+// Запись флагов.
+TProtocolModbus::CHECK_ERR TProtocolModbus::writeCoil(uint16_t adr, bool val) {
 
-//	static const char ID[] PROGMEM = "Virtual";
+	if ((adr == 0) || (adr > 300))
+		return CHECK_ERR_ADR;
 
-//	uint8_t cnt = 0;
-//	for(; cnt < (sizeof(ID) / sizeof(ID[0])); cnt++) {
-//		if (cnt >= size)
-//			break;
-//		buf[cnt] = pgm_read_byte(&ID[cnt]);
-//	}
-//
-//	// последний байт данных - индикатор состояния.
-//	buf[cnt++] = 0x00;
-//
-//	// количество передаваемых данных
-//	size = cnt;
-	size = 8;
+	if (adr <= 100) {
+		// можно записывать любое значение
+	} else if (adr <= 200) {
+		if (!val)
+			return CHECK_ERR_DEVICE;
+	} else if (adr <= 300) {
+		if (val)
+			return CHECK_ERR_DEVICE;
+	}
 
-	return true;
+	return CHECK_ERR_NO;
 }
 
-/// Обработка команды записи одного флага.
-bool TProtocolModbus::writeCoilsCom() {
-	uint16_t adr = getStartAddress();
-	uint16_t num = getNumOfAddress();
+// Запись регистров.
+TProtocolModbus::CHECK_ERR TProtocolModbus::writeRegister(uint16_t adr, uint16_t val) {
 
-	if ((adr == 0) || ((adr + num)  > 300)) {
-		return false;
+	if ((adr == 0) || (adr > 300))
+		return CHECK_ERR_ADR;
+
+	if (adr <= 100) {
+		// можно записывать любое значение
+	} else if (adr <= 200) {
+		if (val > 100)
+			return CHECK_ERR_DEVICE;
+	} else if (adr <= 300) {
+		if (val < 1000)
+			return CHECK_ERR_DEVICE;
 	}
 
-	for(uint8_t i = 0; i < num; i++, adr++) {
-//		if (getCoil(adr) == 0xFF)
-			return false;
+	return CHECK_ERR_NO;
+}
+
+//	Чтение ID.
+TProtocolModbus::CHECK_ERR TProtocolModbus::readID(uint8_t *buf, uint8_t &size) {
+
+	static const char ID[] PROGMEM = "Virtual";
+
+	uint8_t cnt = 0;
+	for(; cnt < (sizeof(ID) / sizeof(ID[0])); cnt++) {
+		if (cnt >= size)
+			return CHECK_ERR_DEVICE;	// невозможно передать всю иинформацию
+		buf[cnt] = pgm_read_byte(&ID[cnt]);
 	}
-	return true;
+
+	// последний байт данных - индикатор состояния.
+	buf[cnt++] = 0x00;
+
+	// количество передаваемых данных
+	size = cnt;
+
+	return CHECK_ERR_NO;
 }

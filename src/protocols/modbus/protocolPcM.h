@@ -17,6 +17,7 @@ class TProtocolPcM : public TProtocolModbus
 {
 	/// Адреса регистров и флагов устройства
 	enum ADR{
+		ADR_REG_MIN			= 1,
 		// Дата и время
 		ADR_YEAR 			= 1,	///< Год.
 		ADR_MONTH,					///< Месяц.
@@ -146,7 +147,9 @@ class TProtocolPcM : public TProtocolModbus
 		ADR_IC_BSK_PRD1,
 		ADR_IC_BSK_PRM1,
 		ADR_IC_BSK_PRD2,
-		ADR_IC_BSK_PRM2
+		ADR_IC_BSK_PRM2,
+		// Максимальное кол-во используемых адресов регистров
+		ADR_REG_MAX
 	};
 
 public:
@@ -167,13 +170,13 @@ private:
 	stGBparam * const sParam_;	///< Структура параметров
 
 	/// Обработка принятой команды чтения флагов
-	bool readCoilCom();
+//	TProtocolModbus::CHECK_ERR readCoil(uint16_t adr, bool &val);
 
 	/// Обработка принятой команды чтения регистров
-	bool readRegisterCom();
+	TProtocolModbus::CHECK_ERR readRegister(uint16_t adr, uint16_t &val);
 
 	/// Обработка принятой команды чтения ID
-	bool readIdCom();
+//	TProtocolModbus::CHECK_ERR readID(uint8_t *buf, uint8_t &size);
 };
 
 
