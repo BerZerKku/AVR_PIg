@@ -17,7 +17,7 @@ class TProtocolPcM : public TProtocolModbus
 {
 	/// Адреса регистров и флагов устройства
 	enum ADR{
-		ADR_REG_MIN			= 1,
+		ADR_REG_MIN			= 0,
 		// Дата и время
 		ADR_YEAR 			= 1,	///< Год.
 		ADR_MONTH,					///< Месяц.
@@ -130,11 +130,16 @@ class TProtocolPcM : public TProtocolModbus
 		ADR_JRN_DEF_DAY,			///< День.
 		ADR_JRN_DEF_MONTH,			///< Месяц.
 		ADR_JRN_DEF_YEAR,			///< Год.
-		// Измреения
+		// Измрения
 		ADR_MEAS_U_OUT 		= 123,	///< Выходное напряжение.
 		ADR_MEAS_I_OUT,				///< Выходной ток.
-		ADR_MEAS_UC,				///< Запас по КЧ (КЧ1).
-		ADR_MEAS_UD,				///< Запас по Uш.
+		ADR_MEAS_UC1,				///< Запас по Uк (Uк1).
+		ADR_MEAS_UC2,				///< Запас по Uк2.
+		ADR_MEAS_UN1,				///< Уровень шумов Uш (Uш1).
+		ADR_MEAS_UN2,				///< Уровень шумов Uш2.
+		ADR_MEAS_UD1,				///< Запас по Uз (Uз1).
+		ADR_MEAS_UD2,				///< Запас по Uз2.
+		ADR_MEAS_PW,				///< Длительность импульсов ВЧ блокировки.
 		// Индикация команд
 		ADR_IND_COM_PRM_16	= 140,	///< Индикация команд приемника 1-16.
 		ADR_IND_COM_PRM_32,			///< Индикация команд приемника 17-32.
@@ -169,14 +174,28 @@ public:
 private:
 	stGBparam * const sParam_;	///< Структура параметров
 
-	/// Обработка принятой команды чтения флагов
+	// Обработка принятой команды чтения флагов.
 //	TProtocolModbus::CHECK_ERR readCoil(uint16_t adr, bool &val);
 
-	/// Обработка принятой команды чтения регистров
+	// Чтение регистров.
 	TProtocolModbus::CHECK_ERR readRegister(uint16_t adr, uint16_t &val);
 
-	/// Обработка принятой команды чтения ID
-//	TProtocolModbus::CHECK_ERR readID(uint8_t *buf, uint8_t &size);
+	// Обработка принятой команды чтения ID.
+	TProtocolModbus::CHECK_ERR readID(char *buf, uint8_t &size);
+
+	// Считывание из регистров даты и времени.
+	uint16_t readRegDateTime(uint16_t adr);
+
+	// Считывание из регистров состояния.
+	uint16_t readRegState(uint16_t adr);
+
+	// Cчитывание из регистров измеряемых параметров.
+	uint16_t readRegMeasure(uint16_t adr);
+
+	// Cчитывание из регистров версий прошивок.
+	uint16_t readRegVersionIC(uint16_t adr);
+
+
 };
 
 

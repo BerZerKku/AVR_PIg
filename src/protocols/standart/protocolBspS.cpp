@@ -420,12 +420,12 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 
 	switch (com) {
 		case GB_COM_GET_TIME: {
-			sParam_->dataTime.setYear(BCD_TO_BIN(buf[B1]));
-			sParam_->dataTime.setMonth(BCD_TO_BIN(buf[B2]));
-			sParam_->dataTime.setDay(BCD_TO_BIN(buf[B3]));
-			sParam_->dataTime.setHour(BCD_TO_BIN(buf[B4]));
-			sParam_->dataTime.setMinute(BCD_TO_BIN(buf[B5]));
-			sParam_->dataTime.setSecond(BCD_TO_BIN(buf[B6]));
+			sParam_->dateTime.setYear(BCD_TO_BIN(buf[B1]));
+			sParam_->dateTime.setMonth(BCD_TO_BIN(buf[B2]));
+			sParam_->dateTime.setDay(BCD_TO_BIN(buf[B3]));
+			sParam_->dateTime.setHour(BCD_TO_BIN(buf[B4]));
+			sParam_->dateTime.setMinute(BCD_TO_BIN(buf[B5]));
+			sParam_->dateTime.setSecond(BCD_TO_BIN(buf[B6]));
 			stat = true;
 		}
 		break;

@@ -915,7 +915,7 @@ public:
 		readCom(request, size1);
 		mb->setAddressLan(request[0]);
 		mb->readData();
-		mb->trResponse();
+		mb->sendData();
 		return checkArray(response, size2, buf, mb->getNumOfBytes());
 	}
 
@@ -946,7 +946,7 @@ TEST_F(ProtocolModbusTest_trResponse, trResponse) {
 		TPM::STATE t = static_cast<TPM::STATE> (i);
 		mb->setState(t);
 
-		if ((t == TPM::STATE_WRITE_READY) != (mb->trResponse() != 0)) {
+		if ((t == TPM::STATE_WRITE_READY) != (mb->sendData() != 0)) {
 			sprintf(msg, "  >>> Ошибка на шаге %d", t);
 			ASSERT_TRUE(false) << msg;
 		}

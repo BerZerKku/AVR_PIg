@@ -3986,28 +3986,28 @@ void clMenu::lvlSetupDT() {
 					// ввод года, проверим дату, т.к. может быть високосный
 					uint8_t month = BCD_TO_BIN(sParam.txComBuf.getInt8(1));
 					uint8_t day = BCD_TO_BIN(sParam.txComBuf.getInt8(2));
-					if (day > sParam.dataTime.getNumDaysInMonth(month, val)) {
+					if (day > sParam.dateTime.getNumDaysInMonth(month, val)) {
 						sParam.txComBuf.setInt8(0x01, 2);
 					}
 				} else if (t == 1) {
 					// ввод мес€ца, проверим кол-во установленных дней
 					uint8_t day = BCD_TO_BIN(sParam.txComBuf.getInt8(2));
-					if (day > sParam.dataTime.getNumDaysInMonth(val)) {
+					if (day > sParam.dateTime.getNumDaysInMonth(val)) {
 						sParam.txComBuf.setInt8(0x01, 2);
 					}
 				}
 				sParam.txComBuf.setInt8(BIN_TO_BCD(val), t);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getHour()), 3);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getMinute()), 4);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getSecond()), 5);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dateTime.getHour()), 3);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dateTime.getMinute()), 4);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dateTime.getSecond()), 5);
 				sParam.txComBuf.addFastCom(EnterParam.com);
 			} else if (t <= 5) {
 				// ввод времени
 				// подменим сохраненную дату на текущую
 				sParam.txComBuf.setInt8(BIN_TO_BCD(val), t);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getYear()), 0);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getMonth()), 1);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getDay()), 2);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dateTime.getYear()), 0);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dateTime.getMonth()), 1);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dateTime.getDay()), 2);
 				sParam.txComBuf.addFastCom(EnterParam.com);
 			}
 			EnterParam.setDisable();
@@ -4028,33 +4028,33 @@ void clMenu::lvlSetupDT() {
 		if (name == punkt1) {
 			EnterParam.setEnable();
 			EnterParam.setValueRange(0, 99);
-			EnterParam.setValue(sParam.dataTime.getYear());
+			EnterParam.setValue(sParam.dateTime.getYear());
 			EnterParam.setDopValue(0);
 		} else if (name == punkt2) {
 			EnterParam.setEnable();
 			EnterParam.setValueRange(1, 12);
-			EnterParam.setValue(sParam.dataTime.getMonth());
+			EnterParam.setValue(sParam.dateTime.getMonth());
 			EnterParam.setDopValue(1);
 		} else if (name == punkt3) {
 			EnterParam.setEnable();
-			uint8_t max = sParam.dataTime.getNumDaysInMonth();
+			uint8_t max = sParam.dateTime.getNumDaysInMonth();
 			EnterParam.setValueRange(1, max);
-			EnterParam.setValue(sParam.dataTime.getDay());
+			EnterParam.setValue(sParam.dateTime.getDay());
 			EnterParam.setDopValue(2);
 		} else if (name == punkt4) {
 			EnterParam.setEnable();
 			EnterParam.setValueRange(0, 23);
-			EnterParam.setValue(sParam.dataTime.getHour());
+			EnterParam.setValue(sParam.dateTime.getHour());
 			EnterParam.setDopValue(3);
 		} else if (name == punkt5) {
 			EnterParam.setEnable();
 			EnterParam.setValueRange(0, 59);
-			EnterParam.setValue(sParam.dataTime.getMinute());
+			EnterParam.setValue(sParam.dateTime.getMinute());
 			EnterParam.setDopValue(4);
 		} else if (name == punkt6) {
 			EnterParam.setEnable();
 			EnterParam.setValueRange(0, 59);
-			EnterParam.setValue(sParam.dataTime.getSecond());
+			EnterParam.setValue(sParam.dateTime.getSecond());
 			EnterParam.setDopValue(5);
 		}
 		EnterParam.com = GB_COM_SET_TIME;
@@ -4062,12 +4062,12 @@ void clMenu::lvlSetupDT() {
 		EnterParam.setFract(1);
 		// сохраним текущие значени€ даты и времени
 		// байты расположены в пор€дке передачи в Ѕ—ѕ
-		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getYear()), 0);
-		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getMonth()), 1);
-		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getDay()), 2);
-		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getHour()), 3);
-		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getMinute()), 4);
-		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dataTime.getSecond()), 5);
+		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dateTime.getYear()), 0);
+		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dateTime.getMonth()), 1);
+		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dateTime.getDay()), 2);
+		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dateTime.getHour()), 3);
+		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dateTime.getMinute()), 4);
+		sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.dateTime.getSecond()), 5);
 		break;
 
 	case KEY_CANCEL:
@@ -4874,12 +4874,12 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 
 		switch (par) {
 		case MENU_MEAS_PARAM_DATE:
-			snprintf_P(&vLCDbuf[poz], 11, fcDate, sParam.dataTime.getDay(),
-					sParam.dataTime.getMonth(), sParam.dataTime.getYear());
+			snprintf_P(&vLCDbuf[poz], 11, fcDate, sParam.dateTime.getDay(),
+					sParam.dateTime.getMonth(), sParam.dateTime.getYear());
 			break;
 		case MENU_MEAS_PARAM_TIME:
-			snprintf_P(&vLCDbuf[poz], 11, fcTime, sParam.dataTime.getHour(),
-					sParam.dataTime.getMinute(), sParam.dataTime.getSecond());
+			snprintf_P(&vLCDbuf[poz], 11, fcTime, sParam.dateTime.getHour(),
+					sParam.dateTime.getMinute(), sParam.dateTime.getSecond());
 			break;
 		case MENU_MEAS_PARAM_UZ:
 			snprintf_P(&vLCDbuf[poz], 11, fcUz,

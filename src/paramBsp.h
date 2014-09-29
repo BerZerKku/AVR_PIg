@@ -26,7 +26,7 @@ struct stGBparam {
 	TPassword password;
 
 	// дата/время
-	TDataTime dataTime;
+	TDataTime dateTime;
 
 	// измеряемые параметры
 	TMeasuredParameters measParam;
