@@ -55,7 +55,6 @@ const uint8_t TProtocolModbus::CRC_LOW[256] = { 0x00, 0xC0, 0xC1, 0x01, 0xC3,
 // Конструктор
 TProtocolModbus::TProtocolModbus(uint8_t *buf, uint8_t size) :
 						buf_(buf), size_(size) {
-
 	state_ = STATE_OFF;
 	address_ = ADDRESS_ERR;
 
@@ -154,11 +153,17 @@ bool TProtocolModbus::readData() {
 		TProtocolModbus::COM com = static_cast<TProtocolModbus::COM> (buf_[1]);
 
 		switch(com) {
-			case COM_01H_READ_COIL:
+			case COM_01H_READ_COILS:
 				state = comReadCoils();
 				break;
-			case COM_03H_READ_HOLDING_REGISTER:
+			case COM_02H_READ_DISCRETE_INPUTS:
+				state = comReadDInputs();
+				break;
+			case COM_03H_READ_HOLDING_REGISTERS:
 				state = comReadRegisters();
+				break;
+			case COM_04H_READ_INPUT_REGISTERS:
+				state = comReadIRegisters();
 				break;
 			case COM_05H_WRITE_SINGLE_COIL :
 				state = comWriteCoil();
@@ -262,8 +267,6 @@ TProtocolModbus::CHECK_ERR TProtocolModbus::checkReadPackage() {
 		// не совпала контрольная сумма
 		setState(STATE_READ);
 		state = CHECK_ERR_CRC;
-
-
 	}
 
 	return state;
@@ -350,7 +353,58 @@ bool TProtocolModbus::comReadCoils() {
 	return true;
 }
 
-/** Обработка команды чтения регистров 0x03.
+/** Обработка команды чтения флагов 0x01.
+ *
+ * 	В случае обнаружения ошибок в принятом пакете, будет сформировано
+ *	исключение.
+ *
+ *	Если ошибок в принятой посылке нет, будет сформирован ответ без КС.
+ *
+ *	@retval True - если посылка обработана без ошибок.
+ *	@retval False - если при обработке посылки возникли ошбки.
+ */
+bool TProtocolModbus::comReadDInputs() {
+	uint16_t adr = getStartAddress();	// начальный адрес
+	uint16_t num = getNumOfAddress();	// кол-во адресов
+
+	// проверка количества регистров
+	if ((num == 0) || (num > MAX_NUM_COILS)) {
+		setException(EXCEPTION_03H_ILLEGAL_DATA_VAL);
+		return false;
+	}
+
+	// подготовка ответа
+	uint8_t cnt = 2;						// адрес + команда
+	buf_[cnt++] = (num + 7) / 8;			// кол-во передаваемых байт данных
+	for(uint8_t i = 0; i < buf_[2]; i++) {
+		buf_[cnt++] = 0;					// обнуление передаваемых данных
+	}
+	cnt_ = cnt;
+
+	// заполнение ответа теущими сотстояниями флагов
+	// если встретится хотя бы один недопустимый адрес, будет сформировано
+	// исключение
+	for(uint16_t i = 0; i < num; i++, adr++) {
+		bool val = false;
+
+		TProtocolModbus::CHECK_ERR err = readDInput(adr, val);
+
+		if (err == CHECK_ERR_ADR) {
+			setException(EXCEPTION_02H_ILLEGAL_DATA_ADR);
+			return false;
+		}
+
+		// При необходимости устанавливаем текущий флаг. Обнулять не надо
+		// т.к. в ответ изначально записаны 0х00.
+		if (val) {
+			buf_[3 + i/8] |= (1 << i%8);
+		}
+	}
+
+	return true;
+}
+
+/** Обработка команды чтения внутренних регистров 0x03.
  *
  * 	В случае обнаружения ошибок в принятом пакете, будет сформировано
  *	исключение.
@@ -385,6 +439,55 @@ bool TProtocolModbus::comReadRegisters() {
 		uint16_t val = 0xFFFF;
 
 		TProtocolModbus::CHECK_ERR err = readRegister(adr, val);
+
+		if (err == CHECK_ERR_ADR) {
+			setException(EXCEPTION_02H_ILLEGAL_DATA_ADR);
+			return false;
+		}
+
+		buf_[i*2 + 3] = val >> 8;
+		buf_[i*2 + 4] = val;
+
+	}
+
+	return true;
+}
+
+/** Обработка команды чтения входных регистров 0x04.
+ *
+ * 	В случае обнаружения ошибок в принятом пакете, будет сформировано
+ *	исключение.
+ *
+ *	Если ошибок в принятой посылке нет, будет сформирован ответ без КС.
+ *
+ *	@retval True - если посылка обработана без ошибок.
+ *	@retval False - если при обработке посылки возникли ошбки.
+ */
+bool TProtocolModbus::comReadIRegisters() {
+	uint16_t adr = getStartAddress();	// начальный адрес
+	uint16_t num = getNumOfAddress();	// кол-во адресов
+
+	// проверка количества регистров
+	if ((num == 0) || (num > MAX_NUM_REGISTERS)) {
+		setException(EXCEPTION_03H_ILLEGAL_DATA_VAL);
+		return false;
+	}
+
+	// подготовка ответа, изначально все данные заполнены нулями
+	uint8_t cnt = 2; 						// адрес + команда
+	buf_[cnt++] = num * 2; 			// кол-во передаваемых байт данных
+	for(uint8_t i = 0; i < buf_[2]; i++) {
+		buf_[cnt++] = 0x00;					// обнуление данных
+	}
+	cnt_ = cnt;
+
+	// заполнение ответа теущими значениями регистров
+	// если встретится хотя бы один недопустимый адрес, будет сформировано
+	// исключение
+	for(uint16_t i = 0; i < num; i++, adr++) {
+		uint16_t val = 0xFFFF;
+
+		TProtocolModbus::CHECK_ERR err = readIRegister(adr, val);
 
 		if (err == CHECK_ERR_ADR) {
 			setException(EXCEPTION_02H_ILLEGAL_DATA_ADR);
@@ -631,6 +734,7 @@ bool TProtocolModbus::comReadID() {
 	return true;
 }
 
+
 // Чтение флагов.
 TProtocolModbus::CHECK_ERR TProtocolModbus::readCoil(uint16_t adr, bool &val) {
 
@@ -650,8 +754,44 @@ TProtocolModbus::CHECK_ERR TProtocolModbus::readCoil(uint16_t adr, bool &val) {
 	return CHECK_ERR_NO;
 }
 
-// Чтение регистров.
+// Чтение дискретных входов.
+TProtocolModbus::CHECK_ERR TProtocolModbus::readDInput(uint16_t adr, bool &val) {
+
+	// диапазон допустимых адресов
+	if ((adr == 0) || (adr > 300))
+		return CHECK_ERR_ADR;
+
+	// считывание текущего состояния флага
+	if (adr <= 100) {
+		val = true;
+	} else if (adr <= 200) {
+		val = false;
+	} else if (adr <= 300) {
+		val = true;
+	}
+
+	return CHECK_ERR_NO;
+}
+
+// Чтение внутренних регистров.
 TProtocolModbus::CHECK_ERR TProtocolModbus::readRegister(uint16_t adr, uint16_t &val) {
+
+	if ((adr == 0) || (adr > 300))
+		return CHECK_ERR_ADR;
+
+	if (adr <= 100) {
+		val = adr;
+	} else if (adr <= 200) {
+		val = 0xFFFF;
+	} else if (adr <= 300) {
+		val = adr;
+	}
+
+	return CHECK_ERR_NO;
+}
+
+// Чтение входных регистров.
+TProtocolModbus::CHECK_ERR TProtocolModbus::readIRegister(uint16_t adr, uint16_t &val) {
 
 	if ((adr == 0) || (adr > 300))
 		return CHECK_ERR_ADR;

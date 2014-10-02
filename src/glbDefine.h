@@ -638,6 +638,42 @@ public:
 		return numWarnings_;
 	}
 
+	/**	Возвращает текущее состояние указанного номера предупреждения.
+	 *
+	 *	При значении аргумента 0xFF возвращает true если есть хотя бы одно
+	 *	предупреждение. При значениях от 0
+	 *
+	 *	@param shift Номер предупреждения.
+	 *	@return Состояние предупреждения.
+	 */
+	bool isWarning(uint8_t shift=0xFF) const {
+		bool s = false;
+		if (shift == 0xFF) {
+			s = (warnings_ != 0);
+		} else if (shift < 16) {
+			s = ((warnings_ & (1 << shift)) != 0);
+		}
+		return s;
+	}
+
+	/**	Возвращает текущее состояние указанного номера неисправности.
+	 *
+	 *	При значении аргумента 0xFF возвращает true если есть хотя бы одно
+	 *	предупреждение. При значениях от 0
+	 *
+	 *	@param shift Номер неисправности.
+	 *	@return Состояние неисправности.
+	 */
+	bool isFault(uint8_t shift=0xFF) const {
+		bool s = false;
+		if (shift == 0xFF) {
+			s = (faults_ != 0);
+		} else if (shift < 16) {
+			s = ((faults_ & (1 << shift)) != 0);
+		}
+		return s;
+	}
+
 	// режим работы
 	// для GLB возвращается GB_REGIME_DISABLED, в случае если все имеющиеся
 	// устройства выведены, иначе GB_REGIME_MAX

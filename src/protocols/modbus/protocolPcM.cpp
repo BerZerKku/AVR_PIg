@@ -13,6 +13,39 @@ sParam_(sParam), TProtocolModbus(buf, size) {
 
 }
 
+/**	Чтение флагов.
+ *
+ *	Проводится проверка корректности адреса. Если он находится в допустимом
+ *	диапазоне, возвращается текущее значение регистра.
+ *
+ *	C неиспользуемых флагов будет считано false.
+ *
+ *	@param adr Адрес флага.
+ *	@param val [out] Состояние флага.
+ *	@retval CHECK_ERR_NO Ошибок при считывании флага не возникло.
+ *	@retval CHECK_ERR_ADR Недопустимый адрес флага.
+ */
+TProtocolModbus::CHECK_ERR TProtocolPcM::readCoil(uint16_t adr, bool &val) {
+	//  проверка адресов
+	if ((adr <= ADR_C_MIN) || (adr >= ADR_C_MAX))
+		return CHECK_ERR_ADR;
+
+	// по умолчанию будет возвращено false
+	val = false;
+
+	if (adr >= ADR_C_DEF_IS) {
+		val = readCoilDef(adr);
+	} else if (adr >= ADR_C_PRM_IS) {
+		val = readCoilPrm(adr);
+	} else if (adr >= ADR_C_PRD_IS) {
+		val = readCoilPrd(adr);
+	} else if (adr >= ADR_C_FAULT) {
+		val = readCoilGlb(adr);
+	}
+
+	return CHECK_ERR_NO;
+}
+
 /**	Чтение регистров.
  *
  *	Проводится проверка корректности адреса. Если он находится в допустимом
@@ -35,17 +68,17 @@ TProtocolModbus::CHECK_ERR TProtocolPcM::readRegister(uint16_t adr, uint16_t &va
 	if (adr >= ADR_IC_BSP_MCU) {
 		val = readRegVersionIC(adr);
 	} else if (adr >= ADR_IND_COM_PRM_16) {
-
+		// TODO
 	} else if (adr >= ADR_MEAS_U_OUT) {
 		val = readRegMeasure(adr);
 	} else if (adr >= ADR_JRN_DEF_CNT_PWR) {
-
+		// TODO
 	} else if (adr >= ADR_JRN_PRD_CNT_PWR) {
-
+		// TODO
 	} else if (adr >= ADR_JRN_PRM_CNT_PWR) {
-
+		// TODO
 	} else if (adr >= ADR_JRN_EVT_CNT_PWR) {
-
+		// TODO
 	} else if (adr >= ADR_GLB_FAULT) {
 		val = readRegState(adr);
 	} else if (adr >= ADR_PASSWORD) {
@@ -118,6 +151,118 @@ TProtocolModbus::CHECK_ERR TProtocolPcM::readID(char *buf, uint8_t &size) {
 	buf[size++] = (reg == GB_REGIME_DISABLED) ? 0x00 : 0xFF;
 
 	return CHECK_ERR_NO;
+}
+
+/**	Считывание флагов общих.
+ *
+ *	@param adr Адрес флага.
+ * 	@return Состояние флага.
+ */
+bool TProtocolPcM::readCoilGlb(uint16_t adr) {
+	bool val = false;
+
+	if (adr >= ADR_C_GLB_WARNING_1) {
+		if (adr <= ADR_C_GLB_WARNING_16) {
+			val = sParam_->glb.status.isWarning(adr - ADR_C_GLB_WARNING_1);
+		}
+	} else if (adr >= ADR_C_GLB_FAULT_1) {
+		if (adr <= ADR_C_GLB_FAULT_16) {
+			val = sParam_->glb.status.isFault(adr - ADR_C_GLB_FAULT_1);
+		}
+	} else if (adr == ADR_C_IND_PRM) {
+		// TODO
+	} else if (adr == ADR_C_IND_PRD) {
+		// TODO
+	} else if (adr == ADR_C_WARNING) {
+		val = sParam_->glb.status.isWarning();
+		val |= sParam_->def.status.isEnable()&& sParam_->def.status.isWarning();
+		val |= sParam_->prm.status.isEnable()&& sParam_->prm.status.isWarning();
+		val |= sParam_->prd.status.isEnable()&& sParam_->prd.status.isWarning();
+	} else if (adr == ADR_C_FAULT) {
+		val = sParam_->glb.status.isFault();
+		val |= sParam_->def.status.isEnable()&& sParam_->def.status.isFault();
+		val |= sParam_->prm.status.isEnable()&& sParam_->prm.status.isFault();
+		val |= sParam_->prd.status.isEnable()&& sParam_->prd.status.isFault();
+	}
+
+	return val;
+}
+
+/**	Считывание флагов передатчика.
+ *
+ *	@param adr Адрес флага.
+ * 	@return Состояние флага.
+ */
+bool TProtocolPcM::readCoilPrd(uint16_t adr) {
+	bool val = false;
+
+	if (adr >= ADR_C_PRD_IND_1) {
+		if (adr <= ADR_C_PRD_IND_32) {
+			// TODO
+		}
+	} else if (adr >= ADR_C_PRD_WARNING_1) {
+		if (adr <= ADR_C_PRD_WARNING_16) {
+			val = sParam_->prd.status.isWarning(adr - ADR_C_PRD_WARNING_1);
+		}
+	} else if (adr >= ADR_C_PRD_FAULT_1) {
+		if (adr <= ADR_C_PRD_FAULT_16) {
+			val = sParam_->prd.status.isFault(adr - ADR_C_PRD_FAULT_1);
+		}
+	} else if (adr == ADR_C_PRD_IS) {
+		val = sParam_->prd.status.isEnable();
+	}
+
+	return val;
+}
+
+/**	Считывание флагов приемника.
+ *
+ *	@param adr Адрес флага.
+ * 	@return Состояние флага.
+ */
+bool TProtocolPcM::readCoilPrm(uint16_t adr) {
+	bool val = false;
+
+	if (adr >= ADR_C_PRM_IND_1) {
+		if (adr <= ADR_C_PRM_IND_32) {
+			// TODO
+		}
+	} else if (adr >= ADR_C_PRM_WARNING_1) {
+		if (adr <= ADR_C_PRM_WARNING_16) {
+			val = sParam_->prm.status.isWarning(adr - ADR_C_PRM_WARNING_1);
+		}
+	} else if (adr >= ADR_C_PRM_FAULT_1) {
+		if (adr <= ADR_C_PRM_FAULT_16) {
+			val = sParam_->prm.status.isFault(adr - ADR_C_PRM_FAULT_1);
+		}
+	} else if (adr == ADR_C_PRM_IS) {
+		val = sParam_->prm.status.isEnable();
+	}
+
+	return val;
+}
+
+/**	Считывание флагов защиты.
+ *
+ *	@param adr Адрес флага.
+ * 	@return Состояние флага.
+ */
+bool TProtocolPcM::readCoilDef(uint16_t adr) {
+	bool val = false;
+
+	if (adr >= ADR_C_DEF_WARNING_1) {
+		if (adr <= ADR_C_DEF_WARNING_16) {
+			val = sParam_->def.status.isWarning(adr - ADR_C_DEF_WARNING_1);
+		}
+	} else if (adr >= ADR_C_DEF_FAULT_1) {
+		if (adr <= ADR_C_DEF_FAULT_16) {
+			val = sParam_->def.status.isFault(adr - ADR_C_DEF_FAULT_1);
+		}
+	} else if (adr == ADR_C_DEF_IS) {
+		val = sParam_->def.status.isEnable();
+	}
+
+	return val;
 }
 
 /**	Считывание из регистров даты и времени.

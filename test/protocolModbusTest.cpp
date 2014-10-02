@@ -130,7 +130,6 @@ TEST_F(ProtocolModbusTest_State, isEnable) {
 TEST_F(ProtocolModbusTest_State, setReadState) {
 	TPM mb(buf, SIZE_BUF);
 
-
 	mb.setReadState();
 	ASSERT_TRUE(mb.checkState(TPM::STATE_READ));
 }
@@ -138,9 +137,16 @@ TEST_F(ProtocolModbusTest_State, setReadState) {
 TEST_F(ProtocolModbusTest_State, isReadData) {
 	TPM mb(buf, SIZE_BUF);
 
-	// Полноценной првоерки не проводится!
-	// Просто проверяется пара состояний и все.
-	// Работа данной функции будет проверена уже в комплексной проверке.
+	uint8_t min = TPM::STATE_OFF;
+	uint8_t max = TPM::STATE_ERROR;
+	for(uint8_t i = min; i < max; i++) {
+		TPM::STATE t = static_cast<TPM::STATE> (i);
+		mb.setState(t);
+		if ((t == TPM::STATE_READ_OK) != mb.isReadData()) {
+			sprintf(msg, "  >>> Ошибка на шаге %d", t);
+			ASSERT_TRUE(false) << msg;
+		}
+	}
 
 	mb.setDisable();
 	ASSERT_TRUE(!mb.isReadData());
@@ -450,6 +456,18 @@ TEST_F(ProtocolModbusTest_readData, getNumOfBytes) {
 	ASSERT_EQ(0, mb->getNumOfBytes());
 }
 
+// проверка команд с неверной контрольной суммой
+TEST_F(ProtocolModbusTest_readData, com_crc_error) {
+
+	uint8_t req1[] = {0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0xFD, 0x1A};
+	uint8_t res1[] = {};
+	ASSERT_TRUE(test(req1, SIZE_ARRAY(req1), res1, SIZE_ARRAY(res1))) << msg;
+
+	uint8_t req2[] = {0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0xED, 0xCA};
+	uint8_t res2[] = {};
+	ASSERT_TRUE(test(req2, SIZE_ARRAY(req2), res2, SIZE_ARRAY(res2))) << msg;
+}
+
 // проверка команды чтения флагов
 TEST_F(ProtocolModbusTest_readData, com_0x01_read_coil) {
 
@@ -508,7 +526,65 @@ TEST_F(ProtocolModbusTest_readData, com_0x01_read_coil) {
 	ASSERT_TRUE(test(req9, SIZE_ARRAY(req9), res9, SIZE_ARRAY(res9))) << msg;
 }
 
-// проверка команды чтения регистров
+// проверка команды чтения дискретных входов
+TEST_F(ProtocolModbusTest_readData, com_0x02_discrete_inputs) {
+
+	// считывание начального адреса
+	uint8_t req1[] = {0x01, 0x02, 0x00, 0x00, 0x00, 0x01, 0xB9, 0xCA};
+	uint8_t res1[] = {0x01, 0x02, 0x01, 0x01};
+	ASSERT_TRUE(test(req1, SIZE_ARRAY(req1), res1, SIZE_ARRAY(res1))) << msg;
+
+	// считывание промежуточного адреса
+	uint8_t req2[] = {0x01, 0x02, 0x00, 0x65, 0x00, 0x01, 0xA9, 0xD5};
+	uint8_t res2[] = {0x01, 0x02, 0x01, 0x00};
+	ASSERT_TRUE(test(req2, SIZE_ARRAY(req2), res2, SIZE_ARRAY(res2))) << msg;
+
+	// считывание последнего адреса
+	uint8_t req3[] = {0x01, 0x02, 0x01, 0x2B, 0x00, 0x01, 0xC8, 0x3E};
+	uint8_t res3[] = {0x01, 0x02, 0x01, 0x01};
+	ASSERT_TRUE(test(req3, SIZE_ARRAY(req3), res3, SIZE_ARRAY(res3))) << msg;
+
+	// считывание группы адресов
+	uint8_t req4[] = {0x11, 0x02, 0x00, 0x50, 0x00, 0x29, 0xBB, 0x55};
+	uint8_t res4[] = {0x11, 0x02, 0x06, 0xFF, 0xFF, 0x0F, 0x00, 0x00, 0x00};
+	ASSERT_TRUE(test(req4, SIZE_ARRAY(req4), res4, SIZE_ARRAY(res4))) << msg;
+
+	// cчитывание максимально возможного кол-ва адресов
+	uint8_t req5[] = {0x11, 0x02, 0x00, 0x00, 0x01, 0x00, 0x7B, 0x0A};
+	uint8_t res5[] = {0x11, 0x02, 0x20,
+			0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+			0xFF, 0xFF, 0xFF, 0xFF, 0x0F, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+	};
+	ASSERT_TRUE(test(req5, SIZE_ARRAY(req5), res5, SIZE_ARRAY(res5))) << msg;
+
+	// ошибка: количество адресов 0
+	// исключение EXCEPTION_03H_ILLEGAL_DATA_VAL
+	uint8_t req6[] = {0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x78, 0x0A};
+	uint8_t res6[] = {0x01, 0x82, 0x03};
+	ASSERT_TRUE(test(req6, SIZE_ARRAY(req6), res6, SIZE_ARRAY(res6))) << msg;
+
+	// ошибка: превышение кол-ва запрашиваемых адресов 247
+	// исключение EXCEPTION_03H_ILLEGAL_DATA_VAL
+	uint8_t req7[] = {0x01, 0x02, 0x00, 0x00, 0x01, 0x01, 0xB8, 0x5A};
+	uint8_t res7[] = {0x01, 0x82, 0x03};
+	ASSERT_TRUE(test(req7, SIZE_ARRAY(req7), res7, SIZE_ARRAY(res7))) << msg;
+
+	// ошибка: выход за диапазон доступных адресов, при корректном стартовом
+	// исключение EXCEPTION_02H_ILLEGAL_DATA_ADR
+	uint8_t req8[] = {0x01, 0x02, 0x01, 0x21, 0x00, 0x0C, 0x29, 0xF9};
+	uint8_t res8[] = {0x01, 0x82, 0x02};
+	ASSERT_TRUE(test(req8, SIZE_ARRAY(req8), res8, SIZE_ARRAY(res8))) << msg;
+
+	// ошибка: выход за диапазон доступных адресов, при ошибке адреса
+	// исключение EXCEPTION_02H_ILLEGAL_DATA_ADR
+	uint8_t req9[] = {0x01, 0x02, 0x01, 0x2C, 0x00, 0x01, 0x79, 0xFF};
+	uint8_t res9[] = {0x01, 0x82, 0x02};
+	ASSERT_TRUE(test(req9, SIZE_ARRAY(req9), res9, SIZE_ARRAY(res9))) << msg;
+}
+
+// проверка команды чтения внутрених регистров
 TEST_F(ProtocolModbusTest_readData, com_0x03_read_holding_register) {
 
 	// считывание первого
@@ -568,6 +644,69 @@ TEST_F(ProtocolModbusTest_readData, com_0x03_read_holding_register) {
 	// исключение EXCEPTION_02H_ILLEGAL_DATA_ADR
 	uint8_t req9[] = {0x01, 0x03, 0x01, 0x2C, 0x00, 0x01, 0x44, 0x3F};
 	uint8_t res9[] = {0x01, 0x83, 0x02};
+	ASSERT_TRUE(test(req9, SIZE_ARRAY(req9), res9, SIZE_ARRAY(res9))) << msg;
+}
+
+// проверка команды чтения входных регистров
+TEST_F(ProtocolModbusTest_readData, com_0x04_read_input_register) {
+
+	// считывание первого
+	uint8_t req1[] = {0x01, 0x04, 0x00, 0x00, 0x00, 0x01, 0x31, 0xCA};
+	uint8_t res1[] = {0x01, 0x04, 0x02, 0x00, 0x01};
+	ASSERT_TRUE(test(req1, SIZE_ARRAY(req1), res1, SIZE_ARRAY(res1))) << msg;
+
+	// считывание промежуточного адреса
+	uint8_t req2[] = {0x01, 0x04, 0x00, 0x63, 0x00, 0x01, 0xC1, 0xD4};
+	uint8_t res2[] = {0x01, 0x04, 0x02, 0x00, 0x64};
+	ASSERT_TRUE(test(req2, SIZE_ARRAY(req2), res2, SIZE_ARRAY(res2))) << msg;
+
+	// считывание последнего адреса
+	uint8_t req3[] = {0x01, 0x04, 0x01, 0x2B, 0x00, 0x01, 0x40, 0x3E};
+	uint8_t res3[] = {0x01, 0x04, 0x02, 0x01, 0x2C};
+	ASSERT_TRUE(test(req3, SIZE_ARRAY(req3), res3, SIZE_ARRAY(res3))) << msg;
+
+	// считывание группы адресов
+	uint8_t req4[] = {0x01, 0x04, 0x00, 0x60, 0x00, 0x05, 0x30, 0x17};
+	uint8_t res4[] = {0x01, 0x04, 0x0A, 0x00, 0x61, 0x00, 0x62, 0x00, 0x63,
+			0x00, 0x64, 0xFF, 0xFF};
+	ASSERT_TRUE(test(req4, SIZE_ARRAY(req4), res4, SIZE_ARRAY(res4))) << msg;
+
+	// считывание максимального количества адресов
+	uint8_t req5[] = {0x01, 0x04, 0x00, 0x50, 0x00, 0x20, 0xF1, 0xC3};
+	uint8_t res5[] = {0x01, 0x04, 0x40,
+			0x00, 0x51, 0x00, 0x52, 0x00, 0x53, 0x00, 0x54,
+			0x00, 0x55, 0x00, 0x56, 0x00, 0x57, 0x00, 0x58,
+			0x00, 0x59, 0x00, 0x5A, 0x00, 0x5B, 0x00, 0x5C,
+			0x00, 0x5D, 0x00, 0x5E, 0x00, 0x5F, 0x00, 0x60,
+			0x00, 0x61, 0x00, 0x62,	0x00, 0x63, 0x00, 0x64,
+			0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+			0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+			0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+	};
+	ASSERT_TRUE(test(req5, SIZE_ARRAY(req5), res5, SIZE_ARRAY(res5))) << msg;
+
+	// ошибка: количество адресов 0
+	// исключение EXCEPTION_03H_ILLEGAL_DATA_VAL
+	uint8_t req6[] = {0x01, 0x04, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x0A};
+	uint8_t res6[] = {0x01, 0x84, 0x03};
+	ASSERT_TRUE(test(req6, SIZE_ARRAY(req6), res6, SIZE_ARRAY(res6))) << msg;
+
+	// ошибка: превышение кол-ва запрашиваемых адресов 33
+	// исключение EXCEPTION_03H_ILLEGAL_DATA_VAL
+	uint8_t req7[] = {0x01, 0x04, 0x00, 0x00, 0x00, 0x21, 0x30, 0x12};
+	uint8_t res7[] = {0x01, 0x84, 0x03};
+	ASSERT_TRUE(test(req7, SIZE_ARRAY(req7), res7, SIZE_ARRAY(res7))) << msg;
+
+	// ошибка: выход за диапазон доступных адресов, при корректном стартовом
+	// исключение EXCEPTION_02H_ILLEGAL_DATA_ADR
+	uint8_t req8[] = {0x01, 0x04, 0x01, 0x2A, 0x00, 0x03, 0x90, 0x3F};
+	uint8_t res8[] = {0x01, 0x84, 0x02};
+	ASSERT_TRUE(test(req8, SIZE_ARRAY(req8), res8, SIZE_ARRAY(res8))) << msg;
+
+	// ошибка: выход за диапазон доступных адресов, при ошибке адреса
+	// исключение EXCEPTION_02H_ILLEGAL_DATA_ADR
+	uint8_t req9[] = {0x01, 0x04, 0x01, 0x2C, 0x00, 0x01, 0xF1, 0xFF};
+	uint8_t res9[] = {0x01, 0x84, 0x02};
 	ASSERT_TRUE(test(req9, SIZE_ARRAY(req9), res9, SIZE_ARRAY(res9))) << msg;
 }
 
@@ -996,4 +1135,15 @@ TEST_F(ProtocolModbusTest_trResponse, trResponse) {
 	uint8_t req9[] = {0x11, 0x10, 0x00, 0x01, 0x00, 0x00, 0x00, 0x19, 0x6D};
 	uint8_t res9[] = {0x11, 0x90, 0x03, 0x0D, 0xC4};
 	ASSERT_TRUE(test(req9, SIZE_ARRAY(req9), res9, SIZE_ARRAY(res9))) << msg;
+
+	// проверка подсчета контрольной суммы в ответе команды 0x02
+	uint8_t req10[] = {0x01, 0x02, 0x01, 0x2B, 0x00, 0x01, 0xC8, 0x3E};
+	uint8_t res10[] = {0x01, 0x02, 0x01, 0x01, 0x60, 0x48};
+	ASSERT_TRUE(test(req10, SIZE_ARRAY(req10), res10, SIZE_ARRAY(res10))) << msg;
+
+	// проверка подсчета контрольной суммы в ответе команды 0x04
+	uint8_t req11[] = {0x01, 0x04, 0x00, 0x60, 0x00, 0x05, 0x30, 0x17};
+	uint8_t res11[] = {0x01, 0x04, 0x0A, 0x00, 0x61, 0x00, 0x62, 0x00, 0x63,
+			0x00, 0x64, 0xFF, 0xFF, 0xB3, 0x4E};
+	ASSERT_TRUE(test(req11, SIZE_ARRAY(req11), res11, SIZE_ARRAY(res11))) << msg;
 }

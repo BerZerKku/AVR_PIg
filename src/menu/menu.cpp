@@ -809,6 +809,10 @@ void clMenu::lvlStart() {
 			printMeasParam(i, measParam[i + MAX_NUM_MEAS_PARAM]);
 	}
 
+	uint16_t val = sParam.glb.status.getWarnings();
+	sDebug.byte1 = val >> 8;
+	sDebug.byte2 = val;
+
 	uint8_t poz = lineParam_ * 20;
 	if (sParam.def.status.isEnable()) {
 		printDevicesStatus(poz, &sParam.def.status);
