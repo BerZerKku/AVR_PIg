@@ -810,8 +810,6 @@ void clMenu::lvlStart() {
 	}
 
 	uint16_t val = sParam.glb.status.getWarnings();
-	sDebug.byte1 = val >> 8;
-	sDebug.byte2 = val;
 
 	uint8_t poz = lineParam_ * 20;
 	if (sParam.def.status.isEnable()) {
@@ -1268,17 +1266,17 @@ void clMenu::lvlJournalEvent() {
 		poz += 20;
 		// вывод даты
 		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
-				sParam.jrnEntry.dataTime.getDay(),
-				sParam.jrnEntry.dataTime.getMonth(),
-				sParam.jrnEntry.dataTime.getYear());
+				sParam.jrnEntry.dateTime.getDay(),
+				sParam.jrnEntry.dateTime.getMonth(),
+				sParam.jrnEntry.dateTime.getYear());
 		poz += 20;
 //	    snprintf_P(&vLCDbuf[poz],4,fcDevices[sParam.journalEntry.getDevice()]);
 		// вывод времени
 		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
-				sParam.jrnEntry.dataTime.getHour(),
-				sParam.jrnEntry.dataTime.getMinute(),
-				sParam.jrnEntry.dataTime.getSecond(),
-				sParam.jrnEntry.dataTime.getMsSecond());
+				sParam.jrnEntry.dateTime.getHour(),
+				sParam.jrnEntry.dateTime.getMinute(),
+				sParam.jrnEntry.dateTime.getSecond(),
+				sParam.jrnEntry.dateTime.getMsSecond());
 		poz += 20;
 
 		// вывод события
@@ -1427,17 +1425,17 @@ void clMenu::lvlJournalDef() {
 		poz += 20;
 		// вывод даты
 		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
-				sParam.jrnEntry.dataTime.getDay(),
-				sParam.jrnEntry.dataTime.getMonth(),
-				sParam.jrnEntry.dataTime.getYear());
+				sParam.jrnEntry.dateTime.getDay(),
+				sParam.jrnEntry.dateTime.getMonth(),
+				sParam.jrnEntry.dateTime.getYear());
 		poz += 20;
 		//	    snprintf_P(&vLCDbuf[poz],4,fcDevices[sParam.journalEntry.getDevice()]);
 		// вывод времени
 		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
-				sParam.jrnEntry.dataTime.getHour(),
-				sParam.jrnEntry.dataTime.getMinute(),
-				sParam.jrnEntry.dataTime.getSecond(),
-				sParam.jrnEntry.dataTime.getMsSecond());
+				sParam.jrnEntry.dateTime.getHour(),
+				sParam.jrnEntry.dateTime.getMinute(),
+				sParam.jrnEntry.dateTime.getSecond(),
+				sParam.jrnEntry.dateTime.getMsSecond());
 
 		poz += 20;
 //		uint8_t signals = sParam.jrnEntry.getSignalDef();
@@ -1555,16 +1553,16 @@ void clMenu::lvlJournalPrm() {
 		poz += 20;
 		// вывод даты
 		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
-				sParam.jrnEntry.dataTime.getDay(),
-				sParam.jrnEntry.dataTime.getMonth(),
-				sParam.jrnEntry.dataTime.getYear());
+				sParam.jrnEntry.dateTime.getDay(),
+				sParam.jrnEntry.dateTime.getMonth(),
+				sParam.jrnEntry.dateTime.getYear());
 		poz += 20;
 		// вывод времени
 		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
-				sParam.jrnEntry.dataTime.getHour(),
-				sParam.jrnEntry.dataTime.getMinute(),
-				sParam.jrnEntry.dataTime.getSecond(),
-				sParam.jrnEntry.dataTime.getMsSecond());
+				sParam.jrnEntry.dateTime.getHour(),
+				sParam.jrnEntry.dateTime.getMinute(),
+				sParam.jrnEntry.dateTime.getSecond(),
+				sParam.jrnEntry.dateTime.getMsSecond());
 		poz += 20;
 		// вывод события
 		if (device == AVANT_OPTO) {
@@ -1720,16 +1718,16 @@ void clMenu::lvlJournalPrd() {
 		poz += 20;
 		// вывод даты
 		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
-				sParam.jrnEntry.dataTime.getDay(),
-				sParam.jrnEntry.dataTime.getMonth(),
-				sParam.jrnEntry.dataTime.getYear());
+				sParam.jrnEntry.dateTime.getDay(),
+				sParam.jrnEntry.dateTime.getMonth(),
+				sParam.jrnEntry.dateTime.getYear());
 		poz += 20;
 		// вывод времени
 		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
-				sParam.jrnEntry.dataTime.getHour(),
-				sParam.jrnEntry.dataTime.getMinute(),
-				sParam.jrnEntry.dataTime.getSecond(),
-				sParam.jrnEntry.dataTime.getMsSecond());
+				sParam.jrnEntry.dateTime.getHour(),
+				sParam.jrnEntry.dateTime.getMinute(),
+				sParam.jrnEntry.dateTime.getSecond(),
+				sParam.jrnEntry.dateTime.getMsSecond());
 		poz += 20;
 		// вывод события
 		if (device == AVANT_OPTO) {

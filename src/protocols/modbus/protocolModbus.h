@@ -507,7 +507,7 @@ private:
 	 *
 	 *	@param adr Адрес флага.
 	 *	@param val Состояние флага.
-	 * 	@retval CHECK_ERR_NO Ошибок при считывании флага не возникло.
+	 * 	@retval CHECK_ERR_NO Ошибок при записи флага не возникло.
 	 * 	@retval CHECK_ERR_ADR Недопустимый адрес флага.
 	 *	@retval CHECK_ERR_DEVICE Возникла внутренняя ошибка.
 	 */
@@ -526,7 +526,7 @@ private:
 	 *
 	 *	@param adr Адрес регистра.
 	 *	@param val Состояние регистра.
-	 * 	@retval CHECK_ERR_NO Ошибок при считывании регистра не возникло.
+	 * 	@retval CHECK_ERR_NO Ошибок при записи регистра не возникло.
 	 * 	@retval CHECK_ERR_ADR Недопустимый адрес регистра.
 	 *	@retval CHECK_ERR_DEVICE Возникла внутренняя ошибка.
 	 */

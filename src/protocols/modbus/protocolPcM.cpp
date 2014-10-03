@@ -10,7 +10,17 @@
 // Конструктор
 TProtocolPcM::TProtocolPcM(stGBparam *sParam, uint8_t *buf, uint8_t size) :
 sParam_(sParam), TProtocolModbus(buf, size) {
+	wait_ = false;
+}
 
+//	Функция отправки сообщения.
+uint8_t TProtocolPcM::send() {
+	if (wait_ > 0) {
+		wait_--;
+		return 0;
+	}
+
+	return sendData();
 }
 
 /**	Чтение флагов.
@@ -46,6 +56,37 @@ TProtocolModbus::CHECK_ERR TProtocolPcM::readCoil(uint16_t adr, bool &val) {
 	return CHECK_ERR_NO;
 }
 
+/**	Запись флагов.
+ *
+ *	Проводится проверка корректности адреса. Выход за максимальный или
+ *	минимальный адреса считается ошибкой.
+ *
+ *	Доступные адреса для записи:
+ *	- ADR_C_IND_PRD;
+ *	- ADR_C_IND_PRM.
+ *	При записи 0 (т.е. false) в любой из этих флагов, происходит сброс индикации
+ *	команд приемника и передатчика.
+ *
+ *	@param adr Адрес флага.
+ *	@param val Состояние флага.
+ * 	@retval CHECK_ERR_NO Ошибок при записи флага не возникло.
+ * 	@retval CHECK_ERR_ADR Недопустимый адрес флага.
+ *	@retval CHECK_ERR_DEVICE Возникла внутренняя ошибка.
+ */
+TProtocolModbus::CHECK_ERR TProtocolPcM::writeCoil(uint16_t adr, bool val) {
+
+	if ((adr <= ADR_C_MIN) || (adr >= ADR_C_MAX))
+		return CHECK_ERR_ADR;
+
+	if ((adr == ADR_C_IND_PRD) || (adr == ADR_C_IND_PRM))  {
+		if (!val)
+			sParam_->txComBuf.addFastCom(GB_COM_PRM_RES_IND);
+	}
+
+	return CHECK_ERR_NO;
+}
+
+
 /**	Чтение регистров.
  *
  *	Проводится проверка корректности адреса. Если он находится в допустимом
@@ -72,19 +113,71 @@ TProtocolModbus::CHECK_ERR TProtocolPcM::readRegister(uint16_t adr, uint16_t &va
 	} else if (adr >= ADR_MEAS_U_OUT) {
 		val = readRegMeasure(adr);
 	} else if (adr >= ADR_JRN_DEF_CNT_PWR) {
-		// TODO
+		val = readJournalDef(adr);
 	} else if (adr >= ADR_JRN_PRD_CNT_PWR) {
-		// TODO
+		val = readJournalPrd(adr);
 	} else if (adr >= ADR_JRN_PRM_CNT_PWR) {
-		// TODO
+		val = readJournalPrm(adr);
 	} else if (adr >= ADR_JRN_EVT_CNT_PWR) {
-		// TODO
+		val = readJournalEvent(adr);
 	} else if (adr >= ADR_GLB_FAULT) {
 		val = readRegState(adr);
 	} else if (adr >= ADR_PASSWORD) {
 		// пароли не считываются
 	} else if (adr >= ADR_YEAR ) {
 		val = readRegDateTime(adr);
+	}
+
+	return CHECK_ERR_NO;
+}
+
+/**	Запись внутренних регистров.
+ *
+ * 	Проводится проверка корректности адреса. Выход за максимальный или
+ *	минимальный адреса считается ошибкой.
+ *
+ *	Доступные адреса для записи:
+ *	- ADR_JRN_EVT_NUM Выбор номера записи журнала событий.
+ *	- ADR_JRN_PRM_NUM Выбор номера записи журнала приемника.
+ *	- ADR JRN_PRD_NUM Выбор номера записи журнала передатчика.
+ *	- ADR_JRN_DEF_NUM Выбор номера записи журнала защиты.
+ *	- ADR_IND_COM_PRM_16 Сброс индикации всех команд приемника и передатчика.
+ *	- ADR_IND_COM_PRM_32 Сброс индикации всех команд приемника и передатчика.
+ *	- ADR_IND_COM_PRD_16 Сброс индикации всех команд приемника и передатчика.
+ *	- ADR_IND_COM_PRD_32 Сброс индикации всех команд приемника и передатчика.
+ *
+ *	Сброс индикации осуществляется записью 0 в любой из регистров индикации.
+ *
+ *	@param adr Адрес регистра.
+ *	@param val Состояние регистра.
+ * 	@retval CHECK_ERR_NO Ошибок при считывании регистра не возникло.
+ * 	@retval CHECK_ERR_ADR Недопустимый адрес регистра.
+ *	@retval CHECK_ERR_DEVICE Возникла внутренняя ошибка.
+ */
+TProtocolModbus::CHECK_ERR TProtocolPcM::writeRegister(uint16_t adr, uint16_t val) {
+
+	if ((adr <= ADR_REG_MIN	) || (adr >= ADR_REG_MAX))
+		return CHECK_ERR_ADR;
+
+	if (adr == ADR_JRN_EVT_NUM) {
+		sParam_->jrnEntry.setNumEntry(val);
+		sParam_->txComBuf.setInt16(sParam_->jrnEntry.getEntryAdress());
+		sParam_->txComBuf.addFastCom(GB_COM_GET_JRN_ENTRY);
+	} else if (adr == ADR_JRN_PRM_NUM) {
+		sParam_->jrnEntry.setNumEntry(val);
+		sParam_->txComBuf.setInt16(sParam_->jrnEntry.getEntryAdress());
+		sParam_->txComBuf.addFastCom(GB_COM_PRM_GET_JRN_ENTRY);
+	} else if (adr == ADR_JRN_PRD_NUM) {
+		sParam_->jrnEntry.setNumEntry(val);
+		sParam_->txComBuf.setInt16(sParam_->jrnEntry.getEntryAdress());
+		sParam_->txComBuf.addFastCom(GB_COM_PRD_GET_JRN_ENTRY);
+	} else if (adr == ADR_JRN_DEF_NUM) {
+		sParam_->jrnEntry.setNumEntry(val);
+		sParam_->txComBuf.setInt16(sParam_->jrnEntry.getEntryAdress());
+		sParam_->txComBuf.addFastCom(GB_COM_DEF_GET_JRN_ENTRY);
+	} else if ((adr >= ADR_IND_COM_PRM_16) && (adr <= ADR_IND_COM_PRD_32)) {
+		if (val == 0)
+			sParam_->txComBuf.addFastCom(GB_COM_PRM_RES_IND);
 	}
 
 	return CHECK_ERR_NO;
@@ -397,4 +490,264 @@ uint16_t TProtocolPcM::readRegVersionIC(uint16_t adr) {
 	return val;
 }
 
+/**	Считывание журнала событий.
+ *
+ * 	@param adr Адрес регистра.
+ * 	@return Значние регистра.
+ */
+uint16_t TProtocolPcM::readJournalEvent(uint16_t adr) {
+	uint16_t val = 0xFFFF;
+	TJournalEntry *jrn = &sParam_->jrnEntry;
 
+	if (sParam_->jrnEntry.getCurrentDevice() != GB_DEVICE_GLB) {
+		sParam_->jrnEntry.clear();
+		sParam_->jrnEntry.setCurrentDevice(GB_DEVICE_GLB);
+		uint16_t t = 0;
+		eGB_TYPE_DEVICE device = sParam_->typeDevice;
+		if (device == AVANT_K400) {
+			t = GLB_JRN_EVENT_K400_MAX;
+		} else if (device == AVANT_R400M) {
+			t = GLB_JRN_EVENT_R400M_MAX;
+		} else if (device == AVANT_RZSK) {
+			t = GLB_JRN_EVENT_RZSK_MAX;
+		} else if (device == AVANT_OPTO) {
+			t = GLB_JRN_EVENT_OPTO_MAX;
+		}
+		sParam_->jrnEntry.setMaxNumJrnEntries(t);
+		sParam_->txComBuf.addFastCom(GB_COM_GET_JRN_CNT);
+	} else {
+		if (adr == ADR_JRN_EVT_CNT_PWR) {
+			sParam_->txComBuf.addFastCom(GB_COM_GET_JRN_CNT);
+		} else if (adr == ADR_JRN_EVT_CNT) {
+			val = jrn->getNumJrnEntries();
+			sParam_->txComBuf.addFastCom(GB_COM_GET_JRN_CNT);
+		} else {
+			if (jrn->isReady()) {
+				if (adr == ADR_JRN_EVT_NUM) {
+					val = jrn->getCurrentEntry();
+				} else if (adr == ADR_JRN_EVT_DEV) {
+					val = jrn->getDeviceJrn();
+				} else if (adr == ADR_JRN_EVT_TYPE) {
+					val = jrn->getEventType();
+				} else if (adr == ADR_JRN_EVT_REG) {
+					val = jrn->getRegime();
+				} else if (adr == ADR_JRN_EVT_MSECOND) {
+					val = jrn->dateTime.getMsSecond();
+				} else if (adr == ADR_JRN_EVT_SECOND) {
+					val = jrn->dateTime.getSecond();
+				} else if (adr == ADR_JRN_EVT_MINUTE) {
+					val = jrn->dateTime.getMinute();
+				} else if (adr == ADR_JRN_EVT_HOUR) {
+					val = jrn->dateTime.getHour();
+				} else if (adr == ADR_JRN_EVT_WDAY) {
+					val = jrn->dateTime.getDayOfWeek();
+				} else if (adr == ADR_JRN_EVT_DAY) {
+					val = jrn->dateTime.getDay();
+				} else if (adr == ADR_JRN_EVT_MONTH) {
+					val = jrn->dateTime.getMonth();
+				} else if (adr == ADR_JRN_EVT_YEAR) {
+					val = jrn->dateTime.getYear();
+				}
+			}
+		}
+	}
+
+	return val;
+}
+
+/**	Считывание журнала приемника.
+ *
+ * 	@param adr Адрес регистра.
+ * 	@return Значние регистра.
+ */
+uint16_t TProtocolPcM::readJournalPrm(uint16_t adr) {
+	uint16_t val = 0xFFFF;
+	TJournalEntry *jrn = &sParam_->jrnEntry;
+
+	if (sParam_->jrnEntry.getCurrentDevice() != GB_DEVICE_PRM) {
+		sParam_->jrnEntry.clear();
+		sParam_->jrnEntry.setCurrentDevice(GB_DEVICE_PRM);
+		uint16_t t = 0;
+		eGB_TYPE_DEVICE device = sParam_->typeDevice;
+		if (device == AVANT_K400) {
+			t = GLB_JRN_PRM_K400_MAX;
+		} else if (device == AVANT_R400M) {
+			t = 0;
+		} else if (device == AVANT_RZSK) {
+			t = GLB_JRN_PRM_RZSK_MAX;
+		} else if (device == AVANT_OPTO) {
+			t = GLB_JRN_PRM_OPTO_MAX;
+		}
+		sParam_->jrnEntry.setMaxNumJrnEntries(t);
+		sParam_->txComBuf.addFastCom(GB_COM_PRM_GET_JRN_CNT);
+	} else {
+		if (adr == ADR_JRN_PRM_CNT_PWR) {
+			sParam_->txComBuf.addFastCom(GB_COM_PRM_GET_JRN_CNT );
+		} else if (adr == ADR_JRN_PRM_CNT) {
+			val = jrn->getNumJrnEntries();
+			sParam_->txComBuf.addFastCom(GB_COM_PRM_GET_JRN_CNT );
+		} else {
+			if (jrn->isReady()) {
+				if (adr == ADR_JRN_PRM_NUM) {
+					val = jrn->getCurrentEntry();
+				} else if (adr == ADR_JRN_PRM_DEV) {
+					val = jrn->getDeviceJrn();
+				} else if (adr == ADR_JRN_PRD_NUM_COM) {
+					val = jrn->getNumCom();
+				} else if (adr == ADR_JRN_PRM_EVENT) {
+					val = jrn->getEventType();
+				} else if (adr == ADR_JRN_PRM_MSECOND) {
+					val = jrn->dateTime.getMsSecond();
+				} else if (adr == ADR_JRN_PRM_SECOND) {
+					val = jrn->dateTime.getSecond();
+				} else if (adr == ADR_JRN_PRM_MINUTE) {
+					val = jrn->dateTime.getMinute();
+				} else if (adr == ADR_JRN_PRM_HOUR) {
+					val = jrn->dateTime.getHour();
+				} else if (adr == ADR_JRN_PRM_WDAY) {
+					val = jrn->dateTime.getDayOfWeek();
+				} else if (adr == ADR_JRN_PRM_DAY) {
+					val = jrn->dateTime.getDay();
+				} else if (adr == ADR_JRN_PRM_MONTH) {
+					val = jrn->dateTime.getMonth();
+				} else if (adr == ADR_JRN_PRM_YEAR) {
+					val = jrn->dateTime.getYear();
+				}
+			}
+		}
+	}
+
+	return val;
+}
+
+/**	Считывание журнала передатчика.
+ *
+ * 	@param adr Адрес регистра.
+ * 	@return Значние регистра.
+ */
+uint16_t TProtocolPcM::readJournalPrd(uint16_t adr) {
+	uint16_t val = 0xFFFF;
+	TJournalEntry *jrn = &sParam_->jrnEntry;
+
+	if (sParam_->jrnEntry.getCurrentDevice() != GB_DEVICE_PRD) {
+		sParam_->jrnEntry.clear();
+		sParam_->jrnEntry.setCurrentDevice(GB_DEVICE_PRD);
+		uint16_t t = 0;
+		eGB_TYPE_DEVICE device = sParam_->typeDevice;
+		if (device == AVANT_K400) {
+			t = GLB_JRN_PRD_K400_MAX;
+		} else if (device == AVANT_R400M) {
+			t = 0;
+		} else if (device == AVANT_RZSK) {
+			t = GLB_JRN_PRD_RZSK_MAX;
+		} else if (device == AVANT_OPTO) {
+			t = GLB_JRN_PRD_OPTO_MAX;
+		}
+		sParam_->jrnEntry.setMaxNumJrnEntries(t);
+		sParam_->txComBuf.addFastCom(GB_COM_PRD_GET_JRN_CNT);
+	} else {
+		if (adr == ADR_JRN_PRD_CNT_PWR) {
+			sParam_->txComBuf.addFastCom(GB_COM_PRD_GET_JRN_CNT );
+		} else if (adr == ADR_JRN_PRD_CNT) {
+			val = jrn->getNumJrnEntries();
+			sParam_->txComBuf.addFastCom(GB_COM_PRD_GET_JRN_CNT );
+		} else {
+			if (jrn->isReady()) {
+				if (adr == ADR_JRN_PRD_NUM) {
+					val = jrn->getCurrentEntry();
+				} else if (adr == ADR_JRN_PRD_DEV) {
+					val = jrn->getDeviceJrn();
+				} else if (adr == ADR_JRN_PRD_NUM_COM) {
+					val = jrn->getNumCom();
+				} else if (adr == ADR_JRN_PRD_EVENT) {
+					val = jrn->getEventType();
+				} else if (adr == ADR_JRN_PRD_SOURCE) {
+					val = jrn->getSourceCom();
+				} else if (adr == ADR_JRN_PRD_MSECOND) {
+					val = jrn->dateTime.getMsSecond();
+				} else if (adr == ADR_JRN_PRD_SECOND) {
+					val = jrn->dateTime.getSecond();
+				} else if (adr == ADR_JRN_PRD_MINUTE) {
+					val = jrn->dateTime.getMinute();
+				} else if (adr == ADR_JRN_PRD_HOUR) {
+					val = jrn->dateTime.getHour();
+				} else if (adr == ADR_JRN_PRD_WDAY) {
+					val = jrn->dateTime.getDayOfWeek();
+				} else if (adr == ADR_JRN_PRD_DAY) {
+					val = jrn->dateTime.getDay();
+				} else if (adr == ADR_JRN_PRD_MONTH) {
+					val = jrn->dateTime.getMonth();
+				} else if (adr == ADR_JRN_PRD_YEAR) {
+					val = jrn->dateTime.getYear();
+				}
+			}
+		}
+	}
+
+	return val;
+}
+
+/**	Считывание журнала защиты.
+ *
+ * 	@param adr Адрес регистра.
+ * 	@return Значние регистра.
+ */
+uint16_t TProtocolPcM::readJournalDef(uint16_t adr) {
+	uint16_t val = 0xFFFF;
+	TJournalEntry *jrn = &sParam_->jrnEntry;
+
+	if (sParam_->jrnEntry.getCurrentDevice() != GB_DEVICE_DEF) {
+		sParam_->jrnEntry.clear();
+		sParam_->jrnEntry.setCurrentDevice(GB_DEVICE_DEF);
+		uint16_t t = 0;
+		eGB_TYPE_DEVICE device = sParam_->typeDevice;
+		if (device == AVANT_K400) {
+			t =  GLB_JRN_DEF_K400_MAX;
+		} else if (device == AVANT_R400M) {
+			t = GLB_JRN_DEF_R400M_MAX;
+		} else if (device == AVANT_RZSK) {
+			t = GLB_JRN_DEF_RZSK_MAX;
+		} else if (device == AVANT_OPTO) {
+			t = GLB_JRN_DEF_OPTO_MAX;
+		}
+		sParam_->jrnEntry.setMaxNumJrnEntries(t);
+		sParam_->txComBuf.addFastCom(GB_COM_DEF_GET_JRN_CNT);
+	} else {
+		if (adr == ADR_JRN_DEF_CNT_PWR) {
+			sParam_->txComBuf.addFastCom(GB_COM_DEF_GET_JRN_CNT );
+		} else if (adr == ADR_JRN_DEF_CNT) {
+			val = jrn->getNumJrnEntries();
+			sParam_->txComBuf.addFastCom(GB_COM_DEF_GET_JRN_CNT );
+		} else {
+			if (jrn->isReady()) {
+				if (adr == ADR_JRN_DEF_NUM) {
+					val = jrn->getCurrentEntry();
+				} else if (adr == ADR_JRN_DEF_DEV) {
+					val = jrn->getDeviceJrn();
+				} else if (adr == ADR_JRN_DEF_TYPE) {
+					val = jrn->getSignals();
+				} else if (adr == ADR_JRN_DEF_REG) {
+					val = jrn->getRegime();
+				} else if (adr == ADR_JRN_DEF_MSECOND) {
+					val = jrn->dateTime.getMsSecond();
+				} else if (adr == ADR_JRN_DEF_SECOND) {
+					val = jrn->dateTime.getSecond();
+				} else if (adr == ADR_JRN_DEF_MINUTE) {
+					val = jrn->dateTime.getMinute();
+				} else if (adr == ADR_JRN_DEF_HOUR) {
+					val = jrn->dateTime.getHour();
+				} else if (adr == ADR_JRN_DEF_WDAY) {
+					val = jrn->dateTime.getDayOfWeek();
+				} else if (adr == ADR_JRN_DEF_DAY) {
+					val = jrn->dateTime.getDay();
+				} else if (adr == ADR_JRN_DEF_MONTH) {
+					val = jrn->dateTime.getMonth();
+				} else if (adr == ADR_JRN_DEF_YEAR) {
+					val = jrn->dateTime.getYear();
+				}
+			}
+		}
+	}
+
+	return val;
+}

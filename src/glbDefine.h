@@ -532,11 +532,27 @@ public:
 		return stat;
 	}
 
+	// день недели
+	uint8_t getDayOfWeek() const {
+		return dayWeek_;
+	}
+	bool setDayWeek(uint8_t val) {
+		bool stat = false;
+		if ((val >= 1) || (val <= 7)) {
+			dayWeek_ = val;
+			stat = true;
+		} else {
+			dayWeek_ = 8;
+		}
+		return stat;
+	}
+
 private:
 	uint16_t msSecond_;
 	uint8_t second_;
 	uint8_t minute_;
 	uint8_t hour_;
+	uint8_t dayWeek_;
 	uint8_t day_;
 	uint8_t month_;
 	uint8_t year_;
@@ -1176,6 +1192,7 @@ public:
 		signalPrm_ = false;
 		signalPrd_ = false;
 		signalOut_ = false;
+		signals_ = 0;
 
 		numJrnEntries_ = 0;
 		maxNumJrnEntry_ = 0;
@@ -1186,7 +1203,7 @@ public:
 		ready_ = false;
 	}
 
-	TDataTime dataTime;
+	TDataTime dateTime;
 
 	bool setCurrentDevice(eGB_DEVICE device) {
 		bool stat = false;
@@ -1336,6 +1353,7 @@ public:
 		signalPrm_ = (val & 0x01) ? 1 : 0;
 		signalPrd_ = (val & 0x02) ? 1 : 0;
 		signalOut_ = (val & 0x03) ? 1 : 0;
+		signals_ = val;
 
 		return state;
 	}
@@ -1356,6 +1374,9 @@ public:
 	}
 	uint8_t getSignalOut() const {
 		return signalOut_;
+	}
+	uint8_t getSignals() const {
+		return signals_;
 	}
 
 	// номер команды
@@ -1483,6 +1504,17 @@ public:
 		return stat;
 	}
 
+	// Установка номера записи
+	bool setNumEntry(uint16_t num) {
+		bool stat = false;
+		if (num <= numJrnEntries_) {
+			currentEntry_ = num;
+			ready_ = false;
+			stat = true;
+		}
+		return stat;
+	}
+
 	// утстановка и считывание флага получения информации о текущей записи
 	bool setReady() {
 		return (ready_ = true);
@@ -1511,6 +1543,7 @@ private:
 	bool signalPrm_;
 	bool signalPrd_;
 	bool signalOut_;
+	uint8_t signals_;
 
 	// буфер записи для журналов ОПТИКИ
 	uint8_t opticEntry_[4];

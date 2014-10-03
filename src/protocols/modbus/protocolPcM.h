@@ -74,8 +74,8 @@ class TProtocolPcM : public TProtocolModbus
 		ADR_JRN_PRM_REZ1,			///< Резерв.
 		ADR_JRN_PRM_REZ2,			///< Резерв.
 		ADR_JRN_PRM_DEV,			///< Имя устройства.
-		ADR_JRN_PRM_TYPE,			///< Номер команды.
-		ADR_JRN_PRM_REG,			///< Событие.
+		ADR_JRN_PRM_NUM_COM,		///< Номер команды.
+		ADR_JRN_PRM_EVENT,			///< Событие.
 		ADR_JRN_PRM_REZ3,			///< Резерв.
 		ADR_JRN_PRM_REZ4,			///< Резерв.
 		ADR_JRN_PRM_REZ5,			///< Резерв.
@@ -95,9 +95,9 @@ class TProtocolPcM : public TProtocolModbus
 		ADR_JRN_PRD_REZ1,			///< Резерв.
 		ADR_JRN_PRD_REZ2,			///< Резерв.
 		ADR_JRN_PRD_DEV,			///< Имя устройства.
-		ADR_JRN_PRD_TYPE,			///< Номер команды.
-		ADR_JRN_PRD_REG,			///< Событие.
-		ADR_JRN_PRD_REZ3,			///< Резерв.
+		ADR_JRN_PRD_NUM_COM,		///< Номер команды.
+		ADR_JRN_PRD_EVENT,			///< Событие.
+		ADR_JRN_PRD_SOURCE,			///< Источник команды.
 		ADR_JRN_PRD_REZ4,			///< Резерв.
 		ADR_JRN_PRD_REZ5,			///< Резерв.
 		ADR_JRN_PRD_REZ6,			///< Резерв.
@@ -207,6 +207,7 @@ class TProtocolPcM : public TProtocolModbus
 		ADR_C_MAX
 	};
 
+
 public:
 	/**	Конструктор.
 	 *
@@ -221,14 +222,30 @@ public:
 	 */
 //	~TProtocolPcM() {};
 
+	/**	Функция отправки сообщения.
+	 *
+	 * 	Используется дополнительная проверка на ожидание ответа от блока БСП.
+	 *
+	 * 	@return Кол-во байт данных для передачи.
+	 */
+	uint8_t send();
+
 private:
+	uint8_t wait_;	///< Кол-во команд запроса в БСП, необходимое для ответа.
+
 	stGBparam * const sParam_;	///< Структура параметров
 
-	// Обработка принятой команды чтения флагов.
+	// Чтение флагов.
 	TProtocolModbus::CHECK_ERR readCoil(uint16_t adr, bool &val);
+
+	// Запись флагов.
+	TProtocolModbus::CHECK_ERR writeCoil(uint16_t adr, bool val);
 
 	// Чтение регистров.
 	TProtocolModbus::CHECK_ERR readRegister(uint16_t adr, uint16_t &val);
+
+	// Запись регистров
+	TProtocolModbus::CHECK_ERR writeRegister(uint16_t adr, uint16_t val);
 
 	// Обработка принятой команды чтения ID.
 	TProtocolModbus::CHECK_ERR readID(char *buf, uint8_t &size);
@@ -256,6 +273,19 @@ private:
 
 	// Cчитывание из регистров версий прошивок.
 	uint16_t readRegVersionIC(uint16_t adr);
+
+	// Считывание журнала событий.
+	uint16_t readJournalEvent(uint16_t adr);
+
+	// Считывание журнала приемника.
+	uint16_t readJournalPrm(uint16_t adr);
+
+	// Считывание журнала передатчика.
+	uint16_t readJournalPrd(uint16_t adr);
+
+	// Считывание журнала защиты.
+	uint16_t readJournalDef(uint16_t adr);
+
 };
 
 

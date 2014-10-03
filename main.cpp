@@ -160,7 +160,7 @@ static bool uartWrite() {
 			uartPC.trData(protPCs.trCom());
 		}
 	} else if (protPCm.isEnable()) {
-		uartPC.trData((protPCm.sendData()));
+		uartPC.trData(protPCm.sendData());
 	}
 
 	// Перед передачей проверим статус протокола на залипание.
