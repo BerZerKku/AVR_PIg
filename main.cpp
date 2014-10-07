@@ -3,7 +3,7 @@
  *
  *  Created on: 03.04.2012
  *      Author: ’оз€ин
- */
+ */ 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/wdt.h>

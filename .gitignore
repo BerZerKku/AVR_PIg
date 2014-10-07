@@ -1,5 +1,5 @@
-html/
-man/
-Release/
-Debug/
-MyTests/
+/html
+/man
+/Release
+/MyTests
+/Debug
