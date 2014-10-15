@@ -597,10 +597,10 @@ public:
 	 */
 	bool setNOut(uint8_t val) {
 		bool stat = false;
-		if (val <= 9) {
-			parNOut_ = val;
-			stat = true;
-		}
+
+		parNOut_ = val;
+		stat = true;
+
 		return stat;
 	}
 
@@ -617,12 +617,12 @@ public:
 	 *	@retval True В случае корректного значния.
 	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
 	 */
-	bool setNIn(uint8_t val) {
+	bool setNIn(int8_t val) {
 		bool stat = false;
-		if (val <= 9) {
-			parNin_ = val;
-			stat = true;
-		}
+
+		parNin_ = val;
+		stat = true;
+
 		return stat;
 	}
 
@@ -848,8 +848,8 @@ private:
 	uint8_t	 parPOut_;		///<  Pout	(   0 .. 50  )дБм
 	int8_t	 parUCtrl_;		///<  Uctrl ( -50 .. 50  )дБ
 	int8_t	 parSN_;		///<  S_N   ( -50 .. 50  )дБ
-	uint8_t	 parNOut_;		///<  N_out (   0 .. 9   )
-	uint8_t	 parNin_;		///<  N_in  (   0 .. 9   )
+	int8_t	 parNOut_;		///<  N_out (-128 .. 127 )
+	int8_t	 parNin_;		///<  N_in  (-128 .. 127 )
 	int16_t  parFazA_;		///<  FazA  (-180 .. 179 )град.
 	int16_t  parFazB_;		///<  FazB  (-180 .. 179 )град.
 	int16_t  parFazC_;		///<  FazC  (-180 .. 179 )град.
