@@ -608,7 +608,7 @@ public:
 	 *
 	 * 	@return Значение параметра.
 	 */
-	uint8_t getNOut() const {
+	int8_t getNOut() const {
 		return parNOut_;
 	}
 
@@ -630,7 +630,7 @@ public:
 	 *
 	 * 	@return Значение параметра.
 	 */
-	uint8_t getNIn() const {
+	int8_t getNIn() const {
 		return parNin_;
 	}
 
