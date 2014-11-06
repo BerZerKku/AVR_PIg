@@ -533,6 +533,10 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 			TDeviceGlb *glb = &sParam_->glb;
 			glb->setVersProgIC16(TO_INT16(buf[B7], buf[B8]) , GB_IC_BSP_MCU);
 			glb->setVersProgIC16(TO_INT16(buf[B9], buf[B10]), GB_IC_BSP_DSP);
+
+			// совместимость, только в Р400м
+			act |= sParam_->glb.setCompatibility((eGB_COMPATIBILITY) buf[B11]);
+
 			glb->setVersProgIC16(VERS, GB_IC_PI_MCU);
 			glb->setVersProgIC8(buf[B12], GB_IC_BSK_PLIS_PRD1);
 			glb->setVersProgIC8(buf[B13], GB_IC_BSK_PLIS_PRD2);
@@ -540,13 +544,12 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 			glb->setVersProgIC8(buf[B15], GB_IC_BSK_PLIS_PRM2);
 			glb->setVersProgIC8(buf[B16], GB_IC_BSZ_PLIS);
 
-			if (buf[3] >= 16) {
+			if (buf[3] > 16) {
 				// Тип аппарата, в сентябре 2014 появился у РЗСК и Р400
 				act |= glb->setTypeDevice((eGB_TYPE_DEVICE) buf[B17]);
+			} else {
+				glb->setTypeDevice(AVANT_NO);
 			}
-
-			// совместимость, только в Р400м
-			act |= sParam_->glb.setCompatibility((eGB_COMPATIBILITY) buf[B11]);
 
 			// проверим необходимость обновления типа аппарата
 			if (act & GB_ACT_NEW)

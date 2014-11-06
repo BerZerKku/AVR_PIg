@@ -98,10 +98,11 @@
 /// Тип аппарата
 enum eGB_TYPE_DEVICE {
 	AVANT_NO = 0,	// ошибочное значение
-	AVANT_R400M,	//
+	AVANT_R400,		//
 	AVANT_RZSK,		//
-	AVANT_OPTO,		//
 	AVANT_K400,		//
+	AVANT_R400M,	//
+	AVANT_OPTO,		//
 	AVANT_MAX
 };
 
