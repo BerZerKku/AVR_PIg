@@ -126,6 +126,7 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
  */
 bool clProtocolBspS::getDefCommand(eGB_COM com) {
 	bool stat = false;
+	eGB_TYPE_DEVICE device = sParam_->typeDevice;
 
 	if (com == GB_COM_DEF_GET_DEF_TYPE) {
 		stat = sParam_->def.setDefType(buf[B1]);
@@ -140,7 +141,14 @@ bool clProtocolBspS::getDefCommand(eGB_COM com) {
 		stat = sParam_->def.setDelay(1, buf[B1]);
 		sParam_->def.setDelay(2, buf[B2]);
 	} else if (com == GB_COM_DEF_GET_OVERLAP) {
-		stat = sParam_->def.setOverlap(buf[B1]);
+		if ((device == AVANT_R400M) || (device == AVANT_R400)) {
+			stat  = sParam_->def.setShiftFront(buf[B1]);
+			stat |= sParam_->def.setShiftBack(buf[B2]);
+			stat |= sParam_->def.setShiftPrm(buf[B3]);
+			stat |= sParam_->def.setShiftPrd(buf[B4]);
+		} else {
+			stat = sParam_->def.setOverlap(buf[B1]);
+		}
 	} else if (com == GB_COM_DEF_GET_RZ_DEC) {
 		stat = sParam_->def.setRzDec(1, buf[B1]);
 		sParam_->def.setRzDec(2, buf[B2]);
@@ -734,6 +742,7 @@ uint8_t clProtocolBspS::sendModifDefCommand(eGB_COM com) {
 	uint8_t num = 0;
 	uint8_t b1 = sParam_->txComBuf.getInt8(0);
 	uint8_t b2 = sParam_->txComBuf.getInt8(1);
+	eGB_TYPE_DEVICE device = sParam_->typeDevice;
 
 	if (com == GB_COM_DEF_SET_DELAY) {
 		// Р400м трех-концевая версия может быть два параметра,
@@ -742,7 +751,13 @@ uint8_t clProtocolBspS::sendModifDefCommand(eGB_COM com) {
 		num = addCom(com, b1, b2);
 	} else if (com == GB_COM_DEF_SET_RZ_DEC) {
 		num = addCom(com, b1, b2);
-	} else {
+	} else if (com == GB_COM_DEF_SET_OVERLAP) {
+		if ((device == AVANT_R400M) || (device == AVANT_R400)) {
+			num = addCom(com, b1, b2);
+		} else {
+			num = addCom(com, b1);
+		}
+	}else {
 		// по умолчанию передается один байт
 		num = addCom(com, b1);
 	}

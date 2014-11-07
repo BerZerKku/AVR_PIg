@@ -59,6 +59,39 @@
 /// тип приемника
 #define DEF_PRM_TYPE_MIN	0
 #define DEF_PRM_TYPE_MAX	3
+/// сдвиг переднего фронта ПРД относительно сигнала МАН (пуск)
+#define DEF_SH_FRONT_MIN	0
+#define DEF_SH_FRONT_MAX	72
+#define DEF_SH_FRONT_DISC	1
+#define DEF_SH_FRONT_FRACT	1
+#define DEF_SH_FRONT_MIN_F	(DEF_SH_FRONT_MIN / DEF_SH_FRONT_FRACT)
+#define DEF_SH_FRONT_MAX_F	(DEF_SH_FRONT_MAX / DEF_SH_FRONT_FRACT)
+#define DEF_SH_FRONT_DISC_F	(DEF_SH_FRONT_DISC / DEF_SH_FRONT_FRACT)
+/// сдвиг заднего фронта ПРД относительно сигнала МАН (пуск)
+#define DEF_SH_BACK_MIN		0
+#define DEF_SH_BACK_MAX		72
+#define DEF_SH_BACK_DISC	1
+#define DEF_SH_BACK_FRACT	1
+#define DEF_SH_BACK_MIN_F	(DEF_SH_BACK_MIN / DEF_SH_BACK_FRACT)
+#define DEF_SH_BACK_MAX_F	(DEF_SH_BACK_MAX / DEF_SH_BACK_FRACT)
+#define DEF_SH_BACK_DISC_F	(DEF_SH_BACK_DISC / DEF_SH_BACK_FRACT)
+/// сдвиг ПРМ
+#define DEF_SH_PRM_MIN		0
+#define DEF_SH_PRM_MAX		72
+#define DEF_SH_PRM_DISC	1
+#define DEF_SH_PRM_FRACT	1
+#define DEF_SH_PRM_MIN_F	(DEF_SH_PRM_MIN / DEF_SH_PRM_FRACT)
+#define DEF_SH_PRM_MAX_F	(DEF_SH_PRM_MAX / DEF_SH_PRM_FRACT)
+#define DEF_SH_PRM_DISC_F	(DEF_SH_PRM_DISC / DEF_SH_PRM_FRACT)
+/// сдвиг ВЧ ПРД от пуска
+#define DEF_SH_PRD_MIN		0
+#define DEF_SH_PRD_MAX		72
+#define DEF_SH_PRD_DISC	1
+#define DEF_SH_PRD_FRACT	1
+#define DEF_SH_PRD_MIN_F	(DEF_SH_PRD_MIN / DEF_SH_PRD_FRACT)
+#define DEF_SH_PRD_MAX_F	(DEF_SH_PRD_MAX / DEF_SH_PRD_FRACT)
+#define DEF_SH_PRD_DISC_F	(DEF_SH_PRD_DISC / DEF_SH_PRD_FRACT)
+
 
 /// Тип автоконтроля
 enum eGB_TYPE_AC {
@@ -108,6 +141,10 @@ public:
 		overflow_ = false;
 		freqPrm_ = GB_PVZL_FREQ_MAX;
 		freqPrd_ = GB_PVZL_FREQ_MAX;
+		shFront_ = DEF_SH_FRONT_MIN_F;
+		shBack_ = DEF_SH_BACK_MIN_F;
+		shPrm_ = DEF_SH_PRM_MIN_F;
+		shPrd_ = DEF_SH_PRD_MIN_F;
 	}
 
 	TDeviceStatus status;
@@ -374,6 +411,78 @@ public:
 		return freqPrd_;
 	}
 
+	// сдвиг переднего фронта ПРД относительно сигнала МАН (пуск)
+	bool setShiftFront(uint8_t val) {
+		bool stat = false;
+		val = (val / DEF_SH_FRONT_DISC_F) * DEF_SH_FRONT_DISC_F;
+
+		// записано в таком виде т.к. иначе портится автоформат в Eclipse
+		if (val >= DEF_SH_FRONT_MIN_F) {
+			if (val <= DEF_SH_FRONT_MAX_F) {
+				shFront_ = val;
+				stat = true;
+			}
+		}
+		return stat;
+	}
+	uint8_t getShiftFront() const {
+		return shFront_;
+	}
+
+	// сдвиг заднего фронта ПРД относительно сигнала МАН (пуск)
+	bool setShiftBack(uint8_t val) {
+		bool stat = false;
+		val = (val / DEF_SH_BACK_DISC_F) * DEF_SH_BACK_DISC_F;
+
+		// записано в таком виде т.к. иначе портится автоформат в Eclipse
+		if (val >= DEF_SH_BACK_MIN_F) {
+			if (val <= DEF_SH_BACK_MAX_F) {
+				shBack_ = val;
+				stat = true;
+			}
+		}
+		return stat;
+	}
+	uint8_t getShiftBack() const {
+		return shBack_;
+	}
+
+	// сдвиг ПРМ
+	bool setShiftPrm(uint8_t val) {
+		bool stat = false;
+		val = (val / DEF_SH_PRM_DISC_F) * DEF_SH_PRM_DISC_F;
+
+		// записано в таком виде т.к. иначе портится автоформат в Eclipse
+		if (val >= DEF_SH_PRM_MIN_F) {
+			if (val <= DEF_SH_PRM_MAX_F) {
+				shPrm_ = val;
+				stat = true;
+			}
+		}
+		return stat;
+	}
+	uint8_t getShiftPrm() const {
+		return shPrm_;
+	}
+
+	// сдвиг ВЧ ПРД от пуска
+	bool setShiftPrd(uint8_t val) {
+		bool stat = false;
+		val = (val / DEF_SH_PRD_DISC_F) * DEF_SH_PRD_DISC_F;
+
+		// записано в таком виде т.к. иначе портится автоформат в Eclipse
+		if (val >= DEF_SH_PRD_MIN_F) {
+			if (val <= DEF_SH_PRD_MAX_F) {
+				shPrd_ = val;
+				stat = true;
+			}
+		}
+		return stat;
+	}
+	uint8_t getShiftPrd() const {
+		return shPrd_;
+	}
+
 	// количество записей в журнале
 	// количество записей в журнале
 	bool setNumJrnEntry(uint16_t val) {
@@ -453,6 +562,18 @@ private:
 
 	// частота ПРД (ПВЗЛ)
 	eGB_PVZL_FREQ freqPrd_;
+
+	// сдвиг переднего фронта ПРД относительно сигнала МАН (пуск)
+	uint8_t shFront_;
+
+	// сдвиг заднего фронта ПРД относительно сигнала МАН (пуск)
+	uint8_t shBack_;
+
+	// сдвиг ПРМ
+	uint8_t shPrm_;
+
+	// сдвиг ВЧ ПРД от пуска
+	uint8_t shPrd_;
 };
 
 

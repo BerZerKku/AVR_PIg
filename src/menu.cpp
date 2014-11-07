@@ -2564,6 +2564,11 @@ void clMenu::lvlSetupParamDef() {
 	static char punkt10[] PROGMEM = "Частота ПРД";
 	static char punkt11[] PROGMEM = "Частота ПРМ";
 	static char punkt12[] PROGMEM = "Загрубл. чувств. РЗ";	// ==punkt7 для РЗСК
+	static char punkt13[] PROGMEM = "Сдвиг пер.фронта ПРД";
+	static char punkt14[] PROGMEM = "Сдвиг зад.фронта ПРД";
+	static char punkt15[] PROGMEM = "Сдвиг ПРМ";
+	static char punkt16[] PROGMEM = "Сдвиг ВЧ ПРД от ПУСК";
+
 
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
@@ -2604,8 +2609,12 @@ void clMenu::lvlSetupParamDef() {
 			Punkts_.add(punkt1, GB_COM_DEF_GET_DEF_TYPE);
 			Punkts_.add(punkt2, GB_COM_DEF_GET_LINE_TYPE);
 			Punkts_.add(punkt3, GB_COM_DEF_GET_T_NO_MAN);
-			Punkts_.add(punkt4, GB_COM_DEF_GET_OVERLAP);
-			Punkts_.add(punkt5, GB_COM_DEF_GET_DELAY);
+//			Punkts_.add(punkt4, GB_COM_DEF_GET_OVERLAP);
+//			Punkts_.add(punkt5, GB_COM_DEF_GET_DELAY);
+			Punkts_.add(punkt13, GB_COM_DEF_GET_OVERLAP);
+			Punkts_.add(punkt14, GB_COM_DEF_GET_OVERLAP);
+			Punkts_.add(punkt15, GB_COM_DEF_GET_OVERLAP);
+			Punkts_.add(punkt16, GB_COM_DEF_GET_OVERLAP);
 			Punkts_.add(punkt7, GB_COM_DEF_GET_RZ_DEC);
 			if (comp == GB_COMPATIBILITY_AVANT) {
 				// Снижение уровня АК есть только в совместимости АВАНТ
@@ -2680,7 +2689,20 @@ void clMenu::lvlSetupParamDef() {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
 	} else if (name == punkt11) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
+	} else if (name == punkt13) {
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, DEF_SH_FRONT_MIN,
+				DEF_SH_FRONT_MAX, "град");
+	} else if (name == punkt14) {
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, DEF_SH_BACK_MIN,
+				DEF_SH_BACK_MAX, "град");
+	} else if (name == punkt15) {
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, DEF_SH_PRM_MIN,
+				DEF_SH_PRM_MAX, "град");
+	} else if (name == punkt16) {
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, DEF_SH_PRD_MIN,
+				DEF_SH_PRD_MAX, "град");
 	}
+
 
 	if (EnterParam.isEnable()) {
 		// ввод нового значения параметра
@@ -2712,6 +2734,10 @@ void clMenu::lvlSetupParamDef() {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if (name == punkt11) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+			} else if ((name == punkt13) || (name == punkt14) ||
+					(name == punkt15) || (name == punkt16)) {
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
 			}
 
 			sParam.txComBuf.addFastCom(EnterParam.com);
@@ -2748,6 +2774,14 @@ void clMenu::lvlSetupParamDef() {
 			snprintf_P(&vLCDbuf[poz], 11, fcPvzlFreq[sParam.def.getFreqPrd()]);
 		} else if (name == punkt11) {
 			snprintf_P(&vLCDbuf[poz], 11, fcPvzlFreq[sParam.def.getFreqPrm()]);
+		} else if (name == punkt13) {
+			snprintf(&vLCDbuf[poz], 11, "%dград", sParam.def.getShiftFront());
+		} else if (name == punkt14) {
+			snprintf(&vLCDbuf[poz], 11, "%dград", sParam.def.getShiftBack());
+		} else if (name == punkt15) {
+			snprintf(&vLCDbuf[poz], 11, "%dград", sParam.def.getShiftPrm());
+		} else if (name == punkt16) {
+			snprintf(&vLCDbuf[poz], 11, "%dград", sParam.def.getShiftPrd());
 		}
 	}
 
@@ -2866,6 +2900,38 @@ void clMenu::lvlSetupParamDef() {
 				EnterParam.setValue(sParam.def.getFreqPrm());
 				EnterParam.list = fcPvzlFreq[0];
 				EnterParam.com = GB_COM_DEF_SET_RZ_THRESH;
+			} else if (name == punkt13) {
+				EnterParam.setEnable();
+				EnterParam.setValueRange(DEF_SH_FRONT_MIN, DEF_SH_FRONT_MAX);
+				EnterParam.setValue(sParam.def.getShiftFront());
+				EnterParam.setDopValue(1);
+				EnterParam.setDisc(DEF_SH_FRONT_DISC);
+				EnterParam.setFract(DEF_SH_FRONT_FRACT);
+				EnterParam.com = GB_COM_DEF_SET_OVERLAP;
+			} else if (name == punkt14) {
+				EnterParam.setEnable();
+				EnterParam.setValueRange(DEF_SH_BACK_MIN, DEF_SH_BACK_MAX);
+				EnterParam.setValue(sParam.def.getShiftBack());
+				EnterParam.setDopValue(2);
+				EnterParam.setDisc(DEF_SH_BACK_DISC);
+				EnterParam.setFract(DEF_SH_BACK_FRACT);
+				EnterParam.com = GB_COM_DEF_SET_OVERLAP;
+			} else if (name == punkt15) {
+				EnterParam.setEnable();
+				EnterParam.setValueRange(DEF_SH_PRM_MIN, DEF_SH_PRM_MAX);
+				EnterParam.setValue(sParam.def.getShiftPrm());
+				EnterParam.setDopValue(3);
+				EnterParam.setDisc(DEF_SH_PRM_DISC);
+				EnterParam.setFract(DEF_SH_PRM_FRACT);
+				EnterParam.com = GB_COM_DEF_SET_OVERLAP;
+			} else if (name == punkt16) {
+				EnterParam.setEnable();
+				EnterParam.setValueRange(DEF_SH_PRD_MIN, DEF_SH_PRD_MAX);
+				EnterParam.setValue(sParam.def.getShiftPrd());
+				EnterParam.setDopValue(4);
+				EnterParam.setDisc(DEF_SH_PRD_DISC);
+				EnterParam.setFract(DEF_SH_PRD_FRACT);
+				EnterParam.com = GB_COM_DEF_SET_OVERLAP;
 			}
 		}
 		break;
