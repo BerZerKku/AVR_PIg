@@ -34,8 +34,8 @@ TUart::TUart(TUart::ePORT port, uint8_t * const buf, uint8_t size) :
 }
 
 // открывает порт
-bool TUart::open(eUART_BAUD_RATE baud, eUART_DATA_BITS databits,
-		eUART_PARITY parity, eUART_STOP_BITS stopbits) {
+bool TUart::open(uint16_t baud, TDataBits::DATA_BITS databits,
+		TParity::PARITY parity, TStopBits::STOP_BITS stopbits) {
 	bool sost = true;
 
 	uint8_t ucsra = 0;
@@ -43,94 +43,69 @@ bool TUart::open(eUART_BAUD_RATE baud, eUART_DATA_BITS databits,
 	uint8_t ucsrc = 0;
 
 	// установка скорости работы
-	uint32_t ibaud = 0;
 
-	if (baud >= UART_BAUD_RATE_MAX) {
-		baud = UART_BAUD_RATE_19200;
+
+	if (baud > 19200) {
+		baud = 19200;
 		sost = false;
-	}
-
-	switch(baud) {
-		case UART_BAUD_RATE_300:
-			ibaud = 300;
-			break;
-		case UART_BAUD_RATE_600:
-			ibaud = 600;
-			break;
-		case UART_BAUD_RATE_1200:
-			ibaud = 1200;
-			break;
-		case UART_BAUD_RATE_2400:
-			ibaud = 2400;
-			break;
-		case UART_BAUD_RATE_4800:
-			ibaud = 4800;
-			break;
-		case UART_BAUD_RATE_9600:
-			ibaud = 9600;
-			break;
-		case UART_BAUD_RATE_19200:
-			ibaud = 19200;
-			break;
-		case UART_BAUD_RATE_MAX:	// заглушка
-			break;
 	}
 
 	// при условии установленного бита U2X
 	// UBBRH = F_CPU / (8 * baudrate) - 1
 	// для округления в большую сторону добавим 4*baudrate
+	uint32_t ibaud = baud;
 	ibaud = ((F_CPU + 4*ibaud) / (8*ibaud)) - 1;
 	ucsra |= (1 << U2X);					// вкл. удвоения скорости работы
 
-	if (parity >= UART_PARITY_MAX) {
-		parity = UART_PARITY_NONE;
+	if (parity >= TParity::MAX) {
+		parity = TParity::NONE;
 		sost = false;
 	}
 
 	switch(parity)
 	{
-		case UART_PARITY_NONE:
+		case TParity::NONE:
 			ucsrc |= (0 << UPM1) | (0 << UPM0);
 			break;
-		case UART_PARITY_EVEN:
+		case TParity::EVEN:
 			ucsrc |= (1 << UPM1) | (0 << UPM0);
 			break;
-		case UART_PARITY_ODD:
+		case TParity::ODD:
 			ucsrc |= (1 << UPM1) | (1 << UPM0);
 			break;
-		case UART_PARITY_MAX:		// заглушка
+		case TParity::MAX:		// заглушка
 			break;
 	}
 
-	if (stopbits >= UART_STOP_BITS_MAX) {
-		stopbits = UART_STOP_BITS_TWO;
+	if (stopbits >= TStopBits::MAX) {
+		stopbits = TStopBits::TWO;
 		sost = false;
 	}
 
 	switch(stopbits)
 	{
-		case UART_STOP_BITS_ONE:
+		case TStopBits::ONE:
 			ucsrc |= (0 << USBS);
 			break;
-		case UART_STOP_BITS_TWO:
+		case TStopBits::TWO:
 			ucsrc |= (1 << USBS);
 			break;
-		case UART_STOP_BITS_MAX:	// заглушка
+		case TStopBits::MAX:	// заглушка
 			break;
 	}
 
-	if (databits >= UART_DATA_BITS_MAX) {
-		databits = UART_DATA_BITS_8;
+	if (databits >= TDataBits::MAX) {
+		databits = TDataBits::_8;
 		sost = false;
 	}
 
 	switch(databits)
 	{
-		case UART_DATA_BITS_8:
+		case TDataBits::_8:
 			ucsrb |= (0 << UCSZ2);
 			ucsrc |= (1 << UCSZ1) | (1 << UCSZ0);
 			break;
-		case UART_DATA_BITS_MAX:	// заглушка
+		case TDataBits::MAX:	// заглушка
 			break;
 	}
 

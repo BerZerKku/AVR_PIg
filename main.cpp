@@ -31,6 +31,20 @@
 /// Максимальное кол-во неполученных сообщений от БСП для ошибки связи
 #define MAX_LOST_COM_FROM_BSP 10
 
+/// пароль пользователя
+#define EEPROM_START_ADDRESS 0x10
+
+/// Структура параметров хранящихся в EEPROM
+struct sEeprom {
+	uint16_t 				password;	/// Пароль.
+	TInterface::INTERFACE 	interface;	/// Интерфейс.
+	TProtocol::PROTOCOL		protocol;	/// Протокол.
+	TBaudRate::BAUD_RATE 	baudRate;	/// Скорость.
+	TDataBits::DATA_BITS 	dataBits;	/// Кол-во бит данных.
+	TParity::PARITY 	 	parity;		/// Четность.
+	TStopBits::STOP_BITS 	stopBits;	/// Кол-во стоп-бит.
+};
+
 // Обработка принятых сообщений по последовательным портам
 static bool uartRead();
 
@@ -40,13 +54,13 @@ static bool uartWrite();
 /// Флаг, устанавливается каждые 100мс
 static volatile bool b100ms = false;
 
-/// пароль пользователя
-#define EEPROM_START_ADDRESS 0x10
-
 /// Буфер для связи с ПК по последовательному порту
 uint8_t uBufUartPc[BUFF_SIZE_PC];
 /// Буфер для свящи с БСП по последовательному порту
 uint8_t uBufUartBsp[BUFF_SIZE_BSP];
+
+// параметры хранимые в ЕЕПРОМ
+static sEeprom eeprom;
 
 /// Класс меню
 clMenu menu;
@@ -61,11 +75,11 @@ TProtocolPcM protPCm(&menu.sParam, uBufUartPc, BUFF_SIZE_PC);
 /// Класс стандартного протокола работающего с БСП
 clProtocolBspS protBSPs(uBufUartBsp, BUFF_SIZE_BSP, &menu.sParam);
 
-
 static bool uartRead();
 static bool uartWrite();
-static void setInterface(eGB_INTERFACE val);
-
+static void setInterface(TInterface::INTERFACE val);
+static bool isUartPcReinit(sEeprom *current, TUartData *newparam);
+static void setProtocol(TProtocol::PROTOCOL protocol, uint16_t baud);
 
 /**	Работа с принятыми данными по UART
  *
@@ -189,10 +203,10 @@ static bool uartWrite() {
  * 	@param val Текущий интерфейс
  * 	@return Нет
  */
-static void setInterface(eGB_INTERFACE val) {
-	if (val == GB_INTERFACE_USB) {
+static void setInterface(TInterface::INTERFACE val) {
+	if (val == TInterface::USB) {
 		PORTD &= ~(1 << PD4);
-	} else if (val == GB_INTERFACE_RS485) {
+	} else if (val == TInterface::RS485) {
 		PORTD |= (1 << PD4);
 	}
 }
@@ -207,7 +221,7 @@ static void setInterface(eGB_INTERFACE val) {
  * 	@retval True, если настройки отличаются.
  * 	@retval False, если настройки совпадают.
  */
-bool isUartPcReinit(sEeprom *current, TUartData *newparam) {
+static bool isUartPcReinit(sEeprom *current, TUartData *newparam) {
 	bool stat = false;
 
 	if (current->interface != newparam->Interface.get()) {
@@ -238,23 +252,23 @@ bool isUartPcReinit(sEeprom *current, TUartData *newparam) {
 	return stat;
 }
 
-void setProtocol(eGB_PROTOCOL protocol) {
+static void setProtocol(TProtocol::PROTOCOL protocol, uint16_t baud) {
 
 	switch(protocol) {
-		case GB_PROTOCOL_STANDART:
+		case TProtocol::STANDART:
 			protPCs.setEnable(PRTS_STATUS_READ);
 			protPCm.setDisable();
 			break;
-		case GB_PROTOCOL_MODBUS:
-			protPCm.setTick(19200, 50);
+		case TProtocol::MODBUS:
+			protPCm.setTick(baud, 50);
 			protPCm.setAddressLan(1);
 			protPCm.setEnable();
 			protPCs.setDisable();
 			break;
-		case GB_PROTOCOL_IEC_101:
+		case TProtocol::IEC_101:
 			// TODO МЭК 101
 			break;
-		case GB_PROTOCOL_MAX:		// заглушка
+		case TProtocol::MAX:		// заглушка
 			break;
 	}
 }
@@ -266,9 +280,6 @@ void setProtocol(eGB_PROTOCOL protocol) {
  */
 int __attribute__ ((OS_main))
 main(void) {
-	// параметры хранимые в ЕЕПРОМ
-	sEeprom eeprom;
-
 	// счетчик для обновления ЖКИ
 	uint8_t cnt_lcd = 0;
 	uint8_t cnt_1s = 0;
@@ -289,19 +300,17 @@ main(void) {
 	// выбор интерфейса связи
 	setInterface(menu.sParam.Uart.Interface.get());
 
-
 	// запуск последовательного порта для связи с БСП
 	// все настройки фиксированы
-	uartBSP.open(UART_BAUD_RATE_4800, UART_DATA_BITS_8, UART_PARITY_NONE,
-			UART_STOP_BITS_TWO);
+	uartBSP.open(4800,TDataBits::_8,TParity::NONE,TStopBits::TWO);
 	protBSPs.setEnable(PRTS_STATUS_NO);
 
 	// запуск последовательного порта для связи с ПК/Локальной сети.
 	TUartData *uart = &menu.sParam.Uart;
-	uartPC.open(uart->BaudRate.get(), uart->DataBits.get(), uart->Parity.get(),
-			uart->StopBits.get());
+	uartPC.open(uart->BaudRate.getValue(), uart->DataBits.get(),
+			uart->Parity.get(),	uart->StopBits.get());
 	// выбор необходимого протокола работы с внешним миром
-	setProtocol(uart->Protocol.get());
+	setProtocol(uart->Protocol.get(), uart->BaudRate.getValue());
 
 	sei();
 
@@ -353,28 +362,36 @@ main(void) {
 					// если идет связь с ПК, то настройки фиксированные
 					// если идет связь по Лок.сети, то настройки пользователя
 					switch (uart->Interface.get()) {
-					case GB_INTERFACE_USB:
+					case TInterface::USB:
 						// во время отладки интерфейс USB можно настраивать
 #ifndef DEBUG
-						uartPC.open(UART_BAUD_RATE_19200, UART_DATA_BITS_8,
+						uartPC.open(19200, UART_DATA_BITS_8,
 								UART_PARITY_NONE, UART_STOP_BITS_TWO);
 #else
-						uartPC.open(uart->BaudRate.get(), uart->DataBits.get(),
-								uart->Parity.get(), uart->StopBits.get());
+						uartPC.open(uart->BaudRate.getValue(),
+								uart->DataBits.get(),
+								uart->Parity.get(),
+								uart->StopBits.get());
 #endif
 						protPCs.setEnable(PRTS_STATUS_READ);
 						break;
-					case GB_INTERFACE_RS485:
-						uartPC.open(uart->BaudRate.get(), uart->DataBits.get(),
-								uart->Parity.get(), uart->StopBits.get());
+					case TInterface::RS485:
+						uartPC.open(uart->BaudRate.getValue(),
+								uart->DataBits.get(),
+								uart->Parity.get(),
+								uart->StopBits.get());
 						protPCs.setEnable(PRTS_STATUS_READ);
 						break;
-					case GB_INTERFACE_MAX:		// заглушка
+					case TInterface::MAX:		// заглушка
 						break;
 					}
 
 					// установка интерфейса связи с АВАНТом
 					setInterface(menu.sParam.Uart.Interface.get());
+
+					// при смене скорости работы, обновим и протокол
+					setProtocol(menu.sParam.Uart.Protocol.get(),
+							menu.sParam.Uart.BaudRate.getValue());
 				}
 
 				// считывание текущего пароля в буфер ЕЕПРОМ
@@ -383,7 +400,8 @@ main(void) {
 				// проверка Протокола связи
 				if (eeprom.protocol != menu.sParam.Uart.Protocol.get()) {
 					eeprom.protocol = menu.sParam.Uart.Protocol.get();
-					setProtocol(menu.sParam.Uart.Protocol.get());
+					setProtocol(menu.sParam.Uart.Protocol.get(),
+							menu.sParam.Uart.BaudRate.getValue());
 				}
 
 				// обновление настроек пользователя в ЕЕПРОМ

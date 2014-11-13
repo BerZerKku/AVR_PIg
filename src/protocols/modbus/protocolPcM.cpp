@@ -137,6 +137,12 @@ TProtocolModbus::CHECK_ERR TProtocolPcM::readRegister(uint16_t adr, uint16_t &va
  *	минимальный адреса считается ошибкой.
  *
  *	Доступные адреса для записи:
+ *	- ADR_YEAR Установка года.
+ *	- ADR_MONTH Установка месяца.
+ *	- ADR_DAY Установка дня.
+ *	- ADR_HOUR Установка часа.
+ *	- ADR_MINUTE Установка минут.
+ *	- ADR_SECOND Установка секунд.
  *	- ADR_JRN_EVT_NUM Выбор номера записи журнала событий.
  *	- ADR_JRN_PRM_NUM Выбор номера записи журнала приемника.
  *	- ADR JRN_PRD_NUM Выбор номера записи журнала передатчика.
@@ -147,6 +153,10 @@ TProtocolModbus::CHECK_ERR TProtocolPcM::readRegister(uint16_t adr, uint16_t &va
  *	- ADR_IND_COM_PRD_32 Сброс индикации всех команд приемника и передатчика.
  *
  *	Сброс индикации осуществляется записью 0 в любой из регистров индикации.
+ *	Запись всех регистров времени должна осуществляется одной командой.
+ *	В момент записи регистра ADR_SECOND команда на изменение времени помещается
+ *	в буфер отправки в БСП.
+ *
  *
  *	@param adr Адрес регистра.
  *	@param val Состояние регистра.
@@ -176,8 +186,14 @@ TProtocolModbus::CHECK_ERR TProtocolPcM::writeRegister(uint16_t adr, uint16_t va
 		sParam_->txComBuf.setInt16(sParam_->jrnEntry.getEntryAdress());
 		sParam_->txComBuf.addFastCom(GB_COM_DEF_GET_JRN_ENTRY);
 	} else if ((adr >= ADR_IND_COM_PRM_16) && (adr <= ADR_IND_COM_PRD_32)) {
-		if (val == 0)
+		if (val == 0) {
 			sParam_->txComBuf.addFastCom(GB_COM_PRM_RES_IND);
+		}
+	} else if ((adr >= ADR_YEAR) && (adr <= ADR_SECOND)) {
+		sParam_->txComBuf.setInt8(val, adr - ADR_YEAR);
+		if (adr == ADR_SECOND) {
+			sParam_->txComBuf.addFastCom(GB_COM_SET_TIME);
+		}
 	}
 
 	return CHECK_ERR_NO;

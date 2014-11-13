@@ -4164,28 +4164,39 @@ void clMenu::lvlSetupInterface() {
 
 		if (stat == MENU_ENTER_PARAM_READY) {
 			if (name == punkt1) {
-				eGB_INTERFACE val =
-						static_cast<eGB_INTERFACE>(EnterParam.getValueEnter());
+				uint8_t tmp = EnterParam.getValueEnter();
+				TInterface::INTERFACE val;
+				val = static_cast<TInterface::INTERFACE> (tmp);
 				// если интерфейс сменился, обновим меню
 				if (val != sParam.Uart.Interface.get()) {
 					sParam.Uart.Interface.set(val);
 					lvlCreate_ = true;
 				}
 			} else if (name == punkt2) {
-				uint8_t val = EnterParam.getValueEnter();
-				sParam.Uart.Protocol.set(static_cast<eGB_PROTOCOL>(val));
+				uint8_t tmp = EnterParam.getValueEnter();
+				TProtocol::PROTOCOL val;
+				val = static_cast<TProtocol::PROTOCOL> (tmp);
+				sParam.Uart.Protocol.set(val);
 			} else if (name == punkt3) {
-				uint8_t val = EnterParam.getValueEnter();
-				sParam.Uart.BaudRate.set(static_cast<eUART_BAUD_RATE>(val));
+				uint8_t tmp = EnterParam.getValueEnter();
+				TBaudRate::BAUD_RATE val;
+				val = static_cast<TBaudRate::BAUD_RATE> (tmp);
+				sParam.Uart.BaudRate.set(val);
 			} else if (name == punkt4) {
-				uint8_t val = EnterParam.getValueEnter();
-				sParam.Uart.DataBits.set(static_cast<eUART_DATA_BITS>(val));
+				uint8_t tmp = EnterParam.getValueEnter();
+				TDataBits::DATA_BITS val;
+				val = static_cast<TDataBits::DATA_BITS> (tmp);
+				sParam.Uart.DataBits.set(val);
 			} else if (name == punkt5) {
-				uint8_t val = EnterParam.getValueEnter();
-				sParam.Uart.Parity.set(static_cast<eUART_PARITY>(val));
+				uint8_t tmp = EnterParam.getValueEnter();
+				TParity::PARITY val;
+				val = static_cast<TParity::PARITY> (tmp);
+				sParam.Uart.Parity.set(val);
 			} else if (name == punkt6) {
-				uint8_t val = EnterParam.getValueEnter();
-				sParam.Uart.StopBits.set(static_cast<eUART_STOP_BITS>(val));
+				uint8_t tmp = EnterParam.getValueEnter();
+				TStopBits::STOP_BITS val;
+				val = static_cast<TStopBits::STOP_BITS> (tmp);
+				sParam.Uart.StopBits.set(val);
 			}
 			EnterParam.setDisable();
 		}
@@ -4238,40 +4249,37 @@ void clMenu::lvlSetupInterface() {
 		if (name == punkt1) {
 			// интерфейс связи
 			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-			EnterParam.setValueRange(GB_INTERFACE_MIN, GB_INTERFACE_MAX - 1);
+			EnterParam.setValueRange(TInterface::MIN, TInterface::MAX - 1);
 			EnterParam.setValue(sParam.Uart.Interface.get());
 			EnterParam.list = fcInterface[0];
 			EnterParam.com = GB_COM_NO;
 		} else if (name == punkt2) {
 			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-			EnterParam.setValueRange(GB_PROTOCOL_MIN, GB_PROTOCOL_MAX - 1);
+			EnterParam.setValueRange(TProtocol::MIN, TProtocol::MAX - 1);
 			EnterParam.setValue(sParam.Uart.Protocol.get());
 			EnterParam.list = fcProtocol[0];
 			EnterParam.com = GB_COM_NO;
 		} else if (name == punkt3) {
 			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-			EnterParam.setValueRange(UART_BAUD_RATE_MIN,
-					UART_BAUD_RATE_MAX - 1);
+			EnterParam.setValueRange(TBaudRate::MIN, TBaudRate::MAX - 1);
 			EnterParam.setValue(sParam.Uart.BaudRate.get());
 			EnterParam.list = fcBaudRate[0];
 			EnterParam.com = GB_COM_NO;
 		} else if (name == punkt4) {
 			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-			EnterParam.setValueRange(UART_DATA_BITS_MIN,
-					UART_DATA_BITS_MAX - 1);
+			EnterParam.setValueRange(TDataBits::MIN, TDataBits::MAX - 1);
 			EnterParam.setValue(sParam.Uart.DataBits.get());
 			EnterParam.list = fcDataBits[0];
 			EnterParam.com = GB_COM_NO;
 		} else if (name == punkt5) {
 			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-			EnterParam.setValueRange(UART_PARITY_MIN, UART_PARITY_MAX - 1);
+			EnterParam.setValueRange(TParity::MIN, TParity::MAX - 1);
 			EnterParam.setValue(sParam.Uart.Parity.get());
 			EnterParam.list = fcParity[0];
 			EnterParam.com = GB_COM_NO;
 		} else if (name == punkt6) {
 			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-			EnterParam.setValueRange(UART_STOP_BITS_MIN,
-					UART_STOP_BITS_MAX - 1);
+			EnterParam.setValueRange(TStopBits::MIN, TStopBits::MAX - 1);
 			EnterParam.setValue(sParam.Uart.StopBits.get());
 			EnterParam.list = fcStopBits[0];
 			EnterParam.com = GB_COM_NO;

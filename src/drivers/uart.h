@@ -60,10 +60,10 @@ public:
 	 *
 	 *	¬ случае ошибочных данных настроек порта, будут применены параметры
 	 *	по умолчанию:
-	 *	- UART_BAUD_RATE_19200
-	 *	- UART_DATA_BITS_8
-	 *	- UART_PARITY_NONE
-	 *	- UART_STOP_BITS_TWO
+	 *	- скорость 19200
+	 *	- байт данных 8
+	 *	- проверки четности нет
+	 *	- два стоп байта
 	 *
 	 * 	@param baud	—корость работы порта.
 	 * 	@param databits	 оличество битов данных.
@@ -71,8 +71,8 @@ public:
 	 * 	@param stopbits  оличество стоп битов.
 	 * 	@return True - в случае успешного открыти€
 	 */
-	bool open(eUART_BAUD_RATE baud, eUART_DATA_BITS databits,
-			eUART_PARITY parity, eUART_STOP_BITS stopbits);
+	bool open(uint16_t baud, TDataBits::DATA_BITS databits,
+			TParity::PARITY parity, TStopBits::STOP_BITS stopbits);
 
 	/** «акрывает порт.
 	 *

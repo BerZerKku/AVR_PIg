@@ -205,7 +205,7 @@ static char fcPvzueParity[GB_PVZUE_PARITY_MAX + 1][STRING_LENGHT] PROGMEM = {
 };
 
 /// Интерфейс (параметр вкладки Интерфейс).
-static char fcInterface[GB_INTERFACE_MAX + 1][STRING_LENGHT] PROGMEM = {
+static char fcInterface[TInterface::MAX+1][STRING_LENGHT] PROGMEM = {
 //	 	 1234567890
 		"USB",			///<
 		"RS485",		///<
@@ -213,7 +213,7 @@ static char fcInterface[GB_INTERFACE_MAX + 1][STRING_LENGHT] PROGMEM = {
 };
 
 /// Протокол (параметр вкладки Интерфейс).
-static char fcProtocol[GB_PROTOCOL_MAX + 1][STRING_LENGHT] PROGMEM = {
+static char fcProtocol[TProtocol::MAX + 1][STRING_LENGHT] PROGMEM = {
 //	 	 1234567890
 		"СТАНДАРТ",		///<
 		"MODBUS",		///<
@@ -222,7 +222,7 @@ static char fcProtocol[GB_PROTOCOL_MAX + 1][STRING_LENGHT] PROGMEM = {
 };
 
 /// Скорость, бит/с (параметр вкладки Интерфейс).
-static char fcBaudRate[UART_BAUD_RATE_MAX + 1][STRING_LENGHT] PROGMEM = {
+static char fcBaudRate[TBaudRate::MAX + 1][STRING_LENGHT] PROGMEM = {
 //		 1234567890
 		"300",			///<
 		"600",			///<
@@ -235,14 +235,14 @@ static char fcBaudRate[UART_BAUD_RATE_MAX + 1][STRING_LENGHT] PROGMEM = {
 };
 
 /// Количество бит данных (параметр вкладки Интерфейс).
-static char fcDataBits[UART_DATA_BITS_MAX + 1][STRING_LENGHT] PROGMEM = {
+static char fcDataBits[TDataBits::MAX + 1][STRING_LENGHT] PROGMEM = {
 //		 1234567890
 		"8",			///<
 		"ошибка"		///< ошбочное значение
 };
 
 /// Четность (параметр вкладки Интерфейс).
-static char fcParity[UART_PARITY_MAX + 1][STRING_LENGHT] PROGMEM = {
+static char fcParity[TParity::MAX + 1][STRING_LENGHT] PROGMEM = {
 //		 1234567890
 		"нет",			///<
 		"чет",			///<
@@ -251,7 +251,7 @@ static char fcParity[UART_PARITY_MAX + 1][STRING_LENGHT] PROGMEM = {
 };
 
 /// Стоповые биты (параметр вкладки Интерфейс).
-static char fcStopBits[UART_STOP_BITS_MAX + 1][STRING_LENGHT] PROGMEM = {
+static char fcStopBits[TStopBits::MAX + 1][STRING_LENGHT] PROGMEM = {
 //		 1234567890
 		"1",			///<
 		"2",			///<
