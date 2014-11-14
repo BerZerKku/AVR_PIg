@@ -6,6 +6,7 @@
  */
 #include <stdio.h>
 #include "protocolPcM.h"
+#include "glbDefine.h"
 
 // Конструктор
 TProtocolPcM::TProtocolPcM(stGBparam *sParam, uint8_t *buf, uint8_t size) :
@@ -190,10 +191,21 @@ TProtocolModbus::CHECK_ERR TProtocolPcM::writeRegister(uint16_t adr, uint16_t va
 			sParam_->txComBuf.addFastCom(GB_COM_PRM_RES_IND);
 		}
 	} else if ((adr >= ADR_YEAR) && (adr <= ADR_SECOND)) {
-		sParam_->txComBuf.setInt8(val, adr - ADR_YEAR);
-		if (adr == ADR_SECOND) {
+		if (adr == ADR_YEAR) {
+			val = BIN_TO_BCD(val);
+		} else if (adr == ADR_MONTH) {
+			val = ((val >= 1) && (val <= 12)) ? BIN_TO_BCD(val) : 1;
+		} else if (adr ==  ADR_DAY) {
+			val = ((val >= 1) && (val <= 31)) ? BIN_TO_BCD(val) : 1;
+		} else if (adr == ADR_HOUR) {
+			val = (val <= 23) ? BIN_TO_BCD(val) : 1;
+		} else if (adr == ADR_MINUTE) {
+			val = (val <= 59) ? BIN_TO_BCD(val) : 1;
+		} else if (adr == ADR_SECOND) {
+			val = (val <= 59) ? BIN_TO_BCD(val) : 1;
 			sParam_->txComBuf.addFastCom(GB_COM_SET_TIME);
 		}
+		sParam_->txComBuf.setInt8(val, adr - ADR_YEAR);
 	}
 
 	return CHECK_ERR_NO;

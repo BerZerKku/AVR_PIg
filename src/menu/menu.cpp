@@ -193,7 +193,7 @@ void clMenu::main(void) {
 		// если связь с БСП только восстановилась
 		// дважды пошлем команду опроса версии
 		sParam.txComBuf.addFastCom(GB_COM_GET_VERS);
-		sParam.txComBuf.addFastCom(GB_COM_GET_VERS);
+//		sParam.txComBuf.addFastCom(GB_COM_GET_VERS);
 	}
 	lastConnection = connection;
 
