@@ -110,7 +110,20 @@ TProtocolModbus::CHECK_ERR TProtocolPcM::readRegister(uint16_t adr, uint16_t &va
 	if (adr >= ADR_IC_BSP_MCU) {
 		val = readRegVersionIC(adr);
 	} else if (adr >= ADR_IND_COM_PRM_16) {
-		// TODO
+		uint16_t com = 0;
+		if (adr == ADR_IND_COM_PRM_16) {
+			com = ((uint16_t) sParam_->prm.getIndCom8(1)) << 8;
+			com += sParam_->prm.getIndCom8(0);
+		} else if (adr == ADR_IND_COM_PRM_32) {
+			com = ((uint16_t) sParam_->prm.getIndCom8(3)) << 8;
+			com += sParam_->prm.getIndCom8(2);
+		} else if (adr == ADR_IND_COM_PRD_16) {
+			com = ((uint16_t) sParam_->prd.getIndCom8(1)) << 8;
+			com += sParam_->prd.getIndCom8(0);
+		} else if (adr == ADR_IND_COM_PRD_32) {
+			com = ((uint16_t) sParam_->prd.getIndCom8(3)) << 8;
+			com += sParam_->prd.getIndCom8(2);
+		}
 	} else if (adr >= ADR_MEAS_U_OUT) {
 		val = readRegMeasure(adr);
 	} else if (adr >= ADR_JRN_DEF_CNT_PWR) {
@@ -291,9 +304,9 @@ bool TProtocolPcM::readCoilGlb(uint16_t adr) {
 			val = sParam_->glb.status.isFault(adr - ADR_C_GLB_FAULT_1);
 		}
 	} else if (adr == ADR_C_IND_PRM) {
-		// TODO
+		val = sParam_->prm.isIndCom();
 	} else if (adr == ADR_C_IND_PRD) {
-		// TODO
+		val = sParam_->prd.isIndCom();
 	} else if (adr == ADR_C_WARNING) {
 		val = sParam_->glb.status.isWarning();
 		val |= sParam_->def.status.isEnable()&& sParam_->def.status.isWarning();
@@ -319,7 +332,7 @@ bool TProtocolPcM::readCoilPrd(uint16_t adr) {
 
 	if (adr >= ADR_C_PRD_IND_1) {
 		if (adr <= ADR_C_PRD_IND_32) {
-			// TODO
+			val = sParam_->prd.getIndCom(adr - ADR_C_PRD_IND_1);
 		}
 	} else if (adr >= ADR_C_PRD_WARNING_1) {
 		if (adr <= ADR_C_PRD_WARNING_16) {
@@ -346,7 +359,7 @@ bool TProtocolPcM::readCoilPrm(uint16_t adr) {
 
 	if (adr >= ADR_C_PRM_IND_1) {
 		if (adr <= ADR_C_PRM_IND_32) {
-			// TODO
+			val = sParam_->prm.getIndCom(adr - ADR_C_PRM_IND_1);
 		}
 	} else if (adr >= ADR_C_PRM_WARNING_1) {
 		if (adr <= ADR_C_PRM_WARNING_16) {

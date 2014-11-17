@@ -210,6 +210,51 @@ bool clMenu::setDeviceK400() {
 
 	sParam.typeDevice = AVANT_K400;
 
+	// включение/отключение параметров в зависимости от текущей совместимости
+	eGB_COMP_K400 comp = sParam.glb.getCompK400();
+	bool prm = false;
+	bool prd = false;
+	switch(comp) {
+		case GB_COMP_K400_AVANT:
+			prm = true;
+			prd = true;
+			break;
+		case GB_COMP_K400_AVANT_PRD:
+			prd = true;
+			break;
+		case GB_COMP_K400_AVANT_PRM:
+			prm = true;
+			break;
+		case GB_COMP_K400_ANKA_PRD:
+			prd = true;
+			break;
+		case GB_COMP_K400_ANKA_PRM:
+			prm = true;
+			break;
+		case GB_COMP_K400_KEDR_PRD:
+			prd = true;
+			break;
+		case GB_COMP_K400_KEDR_PRM:
+			prm = true;
+			break;
+		case GB_COMP_K400_UPKC_PRD:
+			prd = true;
+			break;
+		case GB_COMP_K400_UPKC_PRM:
+			prm = true;
+			break;
+		case GB_COMP_K400_VCTO_PRD:
+			prd = true;
+			break;
+		case GB_COMP_K400_VCTO_PRM:
+			prm = true;
+			break;
+		case GB_COMP_K400_MAX:	// заглушка !!!
+		break;
+	}
+	sParam.prd.status.setEnable(prd);
+	sParam.prm.status.setEnable(prm);
+
 	// дата и время выводятся во всех вариантах
 	measParam[0] = MENU_MEAS_PARAM_TIME; // дата <-> время
 	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TIME;
@@ -297,6 +342,7 @@ bool clMenu::setDeviceK400() {
 	sParam.prm.status.warningText[1] = fcPrmWarning02k400;
 	sParam.prm.status.warningText[2] = fcPrmWarning04k400;
 	// 3-15 нет
+
 
 	// ПЕРЕДАТЧИК
 	// заполнение массива неисправностей передатчика
@@ -2787,12 +2833,17 @@ void clMenu::lvlSetupParamPrm() {
 		sParam.txComBuf.clear();
 		Punkts_.clear();
 		if (device == AVANT_K400) {
+			uint8_t numcom = sParam.prm.getNumCom();
 			Punkts_.add(punkt1, GB_COM_PRM_GET_TIME_ON);
-			Punkts_.add(punkt2, GB_COM_PRM_GET_BLOCK_COM);
-			Punkts_.add(punkt3, GB_COM_PRM_GET_TIME_OFF);
+			if (numcom != 0) {
+				Punkts_.add(punkt2, GB_COM_PRM_GET_BLOCK_COM);
+				Punkts_.add(punkt3, GB_COM_PRM_GET_TIME_OFF);
+			}
 			Punkts_.add(punkt4, GB_COM_PRM_GET_DR_STATE);
-			Punkts_.add(punkt5, GB_COM_PRM_GET_DR_BLOCK);
-			Punkts_.add(punkt6, GB_COM_PRM_GET_DR_COM);
+			if (numcom != 0) {
+				Punkts_.add(punkt5, GB_COM_PRM_GET_DR_BLOCK);
+				Punkts_.add(punkt6, GB_COM_PRM_GET_DR_COM);
+			}
 		} else if (device == AVANT_RZSK) {
 			Punkts_.add(punkt1, GB_COM_PRM_GET_TIME_ON);
 			Punkts_.add(punkt2, GB_COM_PRM_GET_BLOCK_COM);
@@ -3026,14 +3077,19 @@ void clMenu::lvlSetupParamPrd() {
 		sParam.txComBuf.clear();
 		Punkts_.clear();
 		if (device == AVANT_K400) {
+			uint8_t numcom = sParam.prd.getNumCom();
 			Punkts_.add(punkt1, GB_COM_PRD_GET_TIME_ON);
 			Punkts_.add(punkt2, GB_COM_PRD_GET_DURATION);
 			Punkts_.add(punkt3, GB_COM_PRD_GET_TEST_COM);
-			Punkts_.add(punkt4, GB_COM_PRD_GET_LONG_COM);
-			Punkts_.add(punkt5, GB_COM_PRD_GET_BLOCK_COM);
+			if (numcom != 0) {
+				Punkts_.add(punkt4, GB_COM_PRD_GET_LONG_COM);
+				Punkts_.add(punkt5, GB_COM_PRD_GET_BLOCK_COM);
+			}
 			Punkts_.add(punkt8, GB_COM_PRD_GET_COM_A);
 			Punkts_.add(punkt6, GB_COM_PRD_GET_DR_STATE);
-			Punkts_.add(punkt7, GB_COM_PRD_GET_DR_BLOCK);
+			if (numcom != 0) {
+				Punkts_.add(punkt7, GB_COM_PRD_GET_DR_BLOCK);
+			}
 		} else if (device == AVANT_RZSK) {
 			Punkts_.add(punkt1, GB_COM_PRD_GET_TIME_ON);
 			Punkts_.add(punkt2, GB_COM_PRD_GET_DURATION);
@@ -3310,7 +3366,7 @@ void clMenu::lvlSetupParamGlb() {
 	static char punkt21[] PROGMEM 	= "Допустимая помеха";
 	static char punkt22[] PROGMEM 	= "Тип автоконтроля";
 	static char punkt23[] PROGMEM 	= "Резервирование";
-	static char punkt24[] PROGMEM 	= "Совместимость";
+	static char punkt24[] PROGMEM 	= "Совместимость";	// к400
 	static char punkt25[] PROGMEM 	= "Тип линии";
 
 	if (lvlCreate_) {
@@ -3331,6 +3387,7 @@ void clMenu::lvlSetupParamGlb() {
 		if (type == AVANT_K400) {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 
+			Punkts_.add(punkt24, GB_COM_GET_COM_PRD_KEEP);
 			Punkts_.add(punkt1, GB_COM_GET_TIME_SINCHR);
 			Punkts_.add(punkt2, GB_COM_GET_DEVICE_NUM);
 			if (sParam.prd.status.isEnable()) {
@@ -3349,7 +3406,6 @@ void clMenu::lvlSetupParamGlb() {
 			}
 			Punkts_.add(punkt9, GB_COM_GET_NET_ADR);
 			Punkts_.add(punkt11, GB_COM_GET_FREQ);
-//			Punkts_.add(punkt24, GB_COM_GET_COM_PRD_KEEP);	// TODO К400 команда "Совместимость"
 			if (sParam.prd.status.isEnable()) {
 				Punkts_.add(punkt15, GB_COM_GET_COR_U_I);
 				Punkts_.add(punkt16, GB_COM_GET_COR_U_I);
@@ -3514,7 +3570,7 @@ void clMenu::lvlSetupParamGlb() {
 	} else if (name == punkt23) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
 	} else if (name == punkt24) {
-		// TODO K400 диапазон для параметра "Совместимость"
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
 	} else if (name == punkt25) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
 	}
@@ -3553,8 +3609,8 @@ void clMenu::lvlSetupParamGlb() {
 				sParam.txComBuf.setInt8(static_cast<uint8_t>(t >> 8), 0);
 				sParam.txComBuf.setInt8(static_cast<uint8_t>(t), 1);
 			} else if (name == punkt12) {
-				uint8_t t = EnterParam.getValueEnter();
-				sParam.txComBuf.setInt8(t);
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
+				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
 			} else if (name == punkt13) {
 				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
@@ -3616,7 +3672,8 @@ void clMenu::lvlSetupParamGlb() {
 				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
 			} else if (name == punkt24) {
-				// TODO K400 команда на передачу для параметра "Совместимость"
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
+				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
 			} else if (name == punkt25) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			}
@@ -3691,7 +3748,8 @@ void clMenu::lvlSetupParamGlb() {
 			uint8_t val = sParam.glb.getBackup() ? 1 : 0;
 			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
 		} else if (name == punkt24) {
-			// TODO K400 вывод параметра "Совместимость"
+			uint8_t val = sParam.glb.getCompK400();
+			snprintf_P(&vLCDbuf[poz], 11, fcCompK400[val]);
 		} else if (name == punkt25) {
 			snprintf_P(&vLCDbuf[poz], 11,
 					fcNumDevices[sParam.def.getNumDevices()]);
@@ -3795,6 +3853,7 @@ void clMenu::lvlSetupParamGlb() {
 			uint8_t val = sParam.glb.getComPrdKeep() ? 1 : 0;
 			EnterParam.setValue(val);
 			EnterParam.list = fcOnOff[0];
+			EnterParam.setDopValue(0);
 			EnterParam.com = GB_COM_SET_COM_PRD_KEEP;
 		} else if (name == punkt7) {
 			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
@@ -3839,6 +3898,7 @@ void clMenu::lvlSetupParamGlb() {
 			uint8_t val = (uint8_t) sParam.glb.getCompatibility();
 			EnterParam.setValue(val);
 			EnterParam.list = fcCompatibility[0];
+			EnterParam.setDopValue(1);
 			EnterParam.com = GB_COM_SET_COM_PRD_KEEP;
 		} else if (name == punkt13) {
 			EnterParam.setEnable();
@@ -3913,7 +3973,12 @@ void clMenu::lvlSetupParamGlb() {
 			EnterParam.setDopValue(1);
 			EnterParam.com = GB_COM_SET_COR_U_I;
 		} else if (name == punkt24) {
-			// TODO K400 ввод параметра с клавиатуры "Совместимость"
+			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
+			EnterParam.setValueRange(GB_COMP_K400_MIN, GB_COMP_K400_MAX - 1);
+			EnterParam.setValue(sParam.glb.getCompK400());
+			EnterParam.list = fcCompK400[0];
+			EnterParam.setDopValue(2);
+			EnterParam.com = GB_COM_SET_COM_PRD_KEEP;
 		} else if (name == punkt25) {
 			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
 			EnterParam.setValueRange(GB_NUM_DEVICES_MIN,

@@ -149,20 +149,37 @@ enum eGB_COMPATIBILITY {
 	GB_COMPATIBILITY_MAX
 };
 
+/// Совместимость для К400
+enum eGB_COMP_K400 {
+	GB_COMP_K400_MIN 		= 0,
+	GB_COMP_K400_AVANT 		= 0,
+	GB_COMP_K400_AVANT_PRD 	= 1,
+	GB_COMP_K400_AVANT_PRM	= 2,
+	GB_COMP_K400_ANKA_PRD 	= 3,
+	GB_COMP_K400_ANKA_PRM 	= 4,
+	GB_COMP_K400_KEDR_PRD	= 5,
+	GB_COMP_K400_KEDR_PRM 	= 6,
+	GB_COMP_K400_UPKC_PRD	= 7,
+	GB_COMP_K400_UPKC_PRM	= 8,
+	GB_COMP_K400_VCTO_PRD	= 9,
+	GB_COMP_K400_VCTO_PRM	= 10,
+	GB_COMP_K400_MAX
+};
+
 // Протокол обмена (ПВЗУ-Е)
 enum eGB_PVZUE_PROTOCOL {
-	GB_PVZUE_PROTOCOL_MIN = 1,
-	GB_PVZUE_PROTOCOL_FAST = 1,
-	GB_PVZUE_PROTOCOL_SLOW = 2,
+	GB_PVZUE_PROTOCOL_MIN 	= 1,
+	GB_PVZUE_PROTOCOL_FAST	= 1,
+	GB_PVZUE_PROTOCOL_SLOW 	= 2,
 	GB_PVZUE_PROTOCOL_MAX
 };
 
 // Тип автоконтроля (ПВЗУ-Е)
 enum eGB_PVZUE_TYPE_AC {
-	GB_PVZUE_TYPE_AC_MIN = 1,
-	GB_PVZUE_TYPE_AC_ALARM = 1,
-	GB_PVZUE_TYPE_AC_NORM = 2,
-	GB_PVZUE_TYPE_AC_CALM = 3,
+	GB_PVZUE_TYPE_AC_MIN 	= 1,
+	GB_PVZUE_TYPE_AC_ALARM 	= 1,
+	GB_PVZUE_TYPE_AC_NORM 	= 2,
+	GB_PVZUE_TYPE_AC_CALM 	= 3,
 	GB_PVZUE_TYPE_AC_MAX
 };
 
@@ -181,8 +198,7 @@ public:
 		numDevices_ = GB_NUM_DEVICES_MAX;
 		typeLine_ = GB_TYPE_LINE_MAX;
 		compatibility_ = GB_COMPATIBILITY_MAX;
-		versBsp_ = 0;
-		versDsp_ = 0;
+		compK400_ = GB_COMP_K400_MAX;
 
 		timeSinchr_ = false;
 		backup_ = false;
@@ -281,38 +297,6 @@ public:
 		return act;
 	}
 
-//	// версия прошивки AtMega BSP
-//	void setVersBsp(uint16_t versBsp) {
-//		versBsp_ = versBsp;
-//	}
-//	uint16_t getVersBsp() const {
-//		return versBsp_;
-//	}
-//
-//	//  версия прошивки DSP
-//	void setVersDsp(uint16_t versDsp) {
-//		versDsp_ = versDsp;
-//	}
-//	uint16_t getVersDsp() const {
-//		return versDsp_;
-//	}
-//
-//	// версия прошивки БСК ПРД1
-//	void setVersBskPrd1(uint8_t vers) {
-//		versBskPrd1_ = vers;
-//	}
-//	uint16_t getVersBskPrd1() const {
-//		return versBskPrd1_;
-//	}
-//
-//	// версия прошивки БСК ПРД2
-//	void setVersBskPrd2(uint8_t vers) {
-//		versBskPrd2_ = vers;
-//	}
-//	uint16_t getVersBskPrd2() const {
-//		return versBskPrd2_;
-//	}
-
 	/**	Запись версии прошивки для микросхем АВАНТа.
 	 * 	Данные хранятся в переменной int16_t.
 	 * 	Старший байт - версия прошивки. Младший - ревизия.
@@ -380,6 +364,37 @@ public:
 	eGB_COMPATIBILITY getCompatibility() const {
 		return compatibility_;
 	}
+
+	/**	Установка совместимости для К400 (тип удаленного аппарата).
+	 * 	@param val Совместимость.
+	 * 	@return Статус установки (eGB_ACT - побитные значения).
+	 */
+	uint8_t setCompK400(eGB_COMP_K400 val) {
+		uint8_t act = GB_ACT_NO;
+
+		if ((val < GB_COMP_K400_MIN) || (val >= GB_COMP_K400_MAX)) {
+			val = GB_COMP_K400_MAX;
+			act = GB_ACT_ERROR;
+		}
+
+		if (compK400_ == val) {
+			act |= GB_ACT_OLD;
+		} else {
+			compK400_ = val;
+			act |= GB_ACT_NEW;
+		}
+
+		return act;
+	}
+
+	/**	Возвращает текущую совместимость в К400ю
+	 *
+	 * 	@return Совместимость в К400.
+	 */
+	eGB_COMP_K400 getCompK400() const {
+		return compK400_;
+	}
+
 
 	// синхронизация часов
 	// True - включена, False - выключена
@@ -809,14 +824,11 @@ private:
 	// тип линии
 	eGB_TYPE_LINE typeLine_;
 
-	// версия прошивки БСП
-	uint16_t versBsp_;
-
-	// версия прошивки DSP
-	uint16_t versDsp_;
-
 	// совместимость
 	eGB_COMPATIBILITY compatibility_;
+
+	// совместимость в К400
+	eGB_COMP_K400 compK400_;
 
 	// синхронизация часов
 	bool timeSinchr_;

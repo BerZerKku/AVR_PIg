@@ -1,5 +1,5 @@
 /*
- * protocolBspS.cpp
+ * protocolBspS.cppGB_COM_GET_SOST
  *
  *  Created on: 15.07.2013
  *      Author: Shcheblykin
@@ -443,6 +443,22 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 			sParam_->prd.status.setState(buf[B8]);
 			sParam_->prd.status.setDopByte(buf[B9]);
 
+			if (sParam_->typeDevice == AVANT_K400) {
+				uint8_t num = buf[NUM];
+				if (sParam_->prm.status.isEnable()) {
+					if (num >= 13) 	sParam_->prm.setIndCom8(0, buf[13]);
+					if (num >= 14)  sParam_->prm.setIndCom8(1, buf[14]);
+					if (num >= 15)  sParam_->prm.setIndCom8(2, buf[15]);
+					if (num >= 16)  sParam_->prm.setIndCom8(3, buf[16]);
+				}
+				if (sParam_->prd.status.isEnable()) {
+					if (num >= 17) 	sParam_->prd.setIndCom8(0, buf[17]);
+					if (num >= 18)  sParam_->prd.setIndCom8(1, buf[18]);
+					if (num >= 19)  sParam_->prd.setIndCom8(2, buf[19]);
+					if (num >= 20)  sParam_->prd.setIndCom8(3, buf[20]);
+				}
+			}
+
 			eGB_REGIME reg = GB_REGIME_MAX;
 			eGB_REGIME regTmp = GB_REGIME_MAX;
 			// определение общего режима аппарата
@@ -540,12 +556,21 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 			glb->setVersProgIC8(buf[B15], GB_IC_BSK_PLIS_PRM2);
 			glb->setVersProgIC8(buf[B16], GB_IC_BSZ_PLIS);
 
-			// совместимость, только в Р400м
-			act |= sParam_->glb.setCompatibility((eGB_COMPATIBILITY) buf[B11]);
+			// совместимость, для Р400/Р400м и К400 отличаются
+			if (sParam_->def.status.isEnable()) {
+				eGB_COMPATIBILITY comp;
+				comp = static_cast<eGB_COMPATIBILITY>(buf[B11]);
+				act |= sParam_->glb.setCompatibility(comp);
+			} else {
+				eGB_COMP_K400 comp;
+				comp = static_cast<eGB_COMP_K400> (buf[B11]);
+				act |= sParam_->glb.setCompK400(comp);
+			}
 
 			// проверим необходимость обновления типа аппарата
-			if (act & GB_ACT_NEW)
+			if (act & GB_ACT_NEW) {
 				sParam_->device = false;
+			}
 
 			stat = ((act & GB_ACT_ERROR) != GB_ACT_ERROR);
 		}
@@ -617,16 +642,20 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 		break;
 
 		case GB_COM_GET_COM_PRD_KEEP: {
+			uint8_t act = GB_ACT_NO;
 			if (sParam_->typeDevice == AVANT_R400M) {
-				// в Р400м это Своместимость (тип удаленного аппарата)
-				uint8_t act = GB_ACT_NO;
+				// в Р400м/Р400 это Своместимость (тип удаленного аппарата)
 				act = sParam_->glb.setCompatibility((eGB_COMPATIBILITY)buf[B1]);
-				// в случае записи нового значения, сбросим флаг конфигурации
-				if (act & GB_ACT_NEW)
-					sParam_->device = false;
+			} else if (sParam_->typeDevice == AVANT_K400) {
+				stat = sParam_->glb.setComPrdKeep(buf[B1]);
+				// в К400 добавлена совместимость К400
+				act = sParam_->glb.setCompK400((eGB_COMP_K400) buf[B2]);
 			} else {
 				stat = sParam_->glb.setComPrdKeep(buf[B1]);
 			}
+			// в случае записи нового значения, сбросим флаг конфигурации
+			if (act & GB_ACT_NEW)
+				sParam_->device = false;
 		}
 		break;
 
@@ -821,7 +850,13 @@ uint8_t clProtocolBspS::sendModifGlbCommand(eGB_COM com) {
 		} else {
 			num = addCom(com, b1);
 		}
-	} else {
+	} else if (com == GB_COM_SET_COM_PRD_KEEP) {
+		if (sParam_->typeDevice == AVANT_K400) {
+			num = addCom(com, b1, b2);
+		} else {
+			num = addCom(com, b1);
+		}
+	}else {
 		// по умолчанию передается один байт
 		num = addCom(com, b1);
 	}

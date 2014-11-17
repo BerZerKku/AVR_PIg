@@ -47,7 +47,7 @@ public:
 		for (uint_fast8_t i = 0; i < (MAX_NUM_COM_PRM / 8); i++) {
 			blockCom_[i] = false;
 			timeOff_[i] = PRM_TIME_OFF_MIN_F;
-			comDR_[i] = i + 1;
+			indCom_[i] = 0;
 		}
 
 		for(uint_fast8_t i = 0; i < MAX_NUM_COM_PRM; i++) {
@@ -273,6 +273,64 @@ public:
 		return com;
 	}
 
+	/** Установка текущего стостояния светодиодов на блоке БСК
+	 *
+	 *	@param num Номер восьмерки команд (0 - 8..1 команды, 1 - 16..9 и т.д.).
+	 *	@param val Состояние светодиодов.
+	 *	@return True - в случае успешной записи, False - иначе.
+	 */
+	bool setIndCom8(uint8_t num, uint8_t val) {
+		bool stat = false;
+		if (num < (MAX_NUM_COM_PRD / 8)) {
+			indCom_[num] = val;
+			stat = true;
+		}
+		return stat;
+	}
+
+	/**	Возвращает текущее состояние светодиода комадны на блоке БСК.
+	 *
+	 * 	@param num Номер команды.
+	 * 	@return True- светодиод горит, False - иначе.
+	 */
+	bool getIndCom(uint8_t num) const {
+		// номер восьмерки
+		uint8_t pl = num / 8;
+		// номер внутри восьмерки
+		num = num % 8;
+		return (indCom_[pl] & (1 << num)) != 0;
+	}
+
+	/**	Устанавливает текущее состояние светодиодов команд на блоке БСК.
+	 *
+	 * 	Каждый бит является флагом для соответствующей команды, младший бит -
+	 * 	младшая команда. Установленный бит означает что светодиод горит.
+	 *
+	 * 	@param num Номер восьмерки команд (0 - 8..1 команды, 1 - 16..9 и т.д.).
+	 * 	@return Текущее состояние флагов блокировки команд.
+	 */
+	uint8_t getIndCom8(uint8_t num) const {
+		uint8_t val = 0;
+		if (num < (MAX_NUM_COM_PRD / 8))
+			val = indCom_[num];
+		return val;
+	}
+
+	/**	Провекра наличия горящих светодиодов индикации команд на блоке БСК,
+	 *
+	 * 	@retval True - если горит светодиорд хотя бы одной команда.
+	 * 	@retval False - горящих светодиодов команд нет.
+	 */
+	bool isIndCom() const {
+		uint8_t ind = 0;
+
+		for(uint8_t i = 0; i < (MAX_NUM_COM_PRM / 8); i++) {
+			ind |= indCom_[i];
+		}
+
+		return (ind != 0);
+	}
+
 	// количество записей в журнале
 	bool setNumJrnEntry(uint16_t val) {
 		bool stat = false;
@@ -326,6 +384,9 @@ private:
 
 	// команда ВЧ в ЦС
 	uint8_t comDR_[MAX_NUM_COM_PRM];
+
+	// состояние индикации светодиодов на блоке БСК
+	uint8_t indCom_[MAX_NUM_COM_PRM / 8];
 
 	// кол-во записей в журнале
 	uint16_t numJrnEntry_;

@@ -163,6 +163,23 @@ const char fcCompatibility[GB_COMPATIBILITY_MAX + 1][STRING_LENGHT] PROGMEM = {
 		"ошибка"		///< ошибочное значение
 };
 
+/// Тип совместимости (параметр К400).
+static const char fcCompK400[GB_COMP_K400_MAX + 1][STRING_LENGHT] PROGMEM = {
+// 		 1234567890
+		"АВАНТ",
+		"АВАНТ ПРД",
+		"АВАНТ ПРМ",
+		"АКПА ПРД",
+		"АНКА ПРМ",
+		"КЕДР ПРД",
+		"КЕДР ПРМ",
+		"УПК-Ц ПРД",
+		"УПК-Ц ПРМ",
+		"ВЧТО ПРД",
+		"ВЧТО ПРМ",
+		"ошибка"
+};
+
 /// Частота ПРД / ПРМ (параметр Защиты).
 static const char fcPvzlFreq[GB_PVZL_FREQ_MAX + 1][STRING_LENGHT] PROGMEM = {
 //		 1234567890
