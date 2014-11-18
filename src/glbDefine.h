@@ -188,6 +188,7 @@ enum eGB_COM {
 	GB_COM_PRM_GET_DR_STATE 	= 0x17, // +
 	GB_COM_PRM_GET_DR_BLOCK		= 0x18,	// +
 	GB_COM_PRM_GET_DR_COM		= 0x19,	// +
+	GB_COM_PRM_GET_COM			= 0x1B, // +
 	GB_COM_PRD_GET_TIME_ON 		= 0x21,	// +
 	GB_COM_PRD_GET_DURATION 	= 0x22,	// +
 	GB_COM_PRD_GET_BLOCK_COM 	= 0x24,	// +
@@ -196,6 +197,7 @@ enum eGB_COM {
 	GB_COM_PRD_GET_DR_STATE 	= 0x27, // +
 	GB_COM_PRD_GET_DR_BLOCK		= 0x28,	// +
 	GB_COM_PRD_GET_COM_A		= 0x29,	// +
+	GB_COM_PRD_GET_COM			= 0x2B,	// +
 	GB_COM_GET_SOST 			= 0x30,	// +
 	GB_COM_GET_FAULT 			= 0x31,	// +
 	GB_COM_GET_TIME 			= 0x32,	// +
@@ -233,10 +235,11 @@ enum eGB_COM {
 	GB_COM_PRM_SET_TIME_ON 		= 0x91,	// +
 	GB_COM_PRM_SET_TIME_OFF 	= 0x93,	// +
 	GB_COM_PRM_SET_BLOCK_COM 	= 0x94,	// +
-	GB_COM_PRM_RES_IND 			= 0x9A,	// +
 	GB_COM_PRM_SET_DR_STATE 	= 0x97, // +
 	GB_COM_PRM_SET_DR_BLOCK		= 0x98,	// +
 	GB_COM_PRM_SET_DR_COM		= 0x99,	// +
+	GB_COM_PRM_RES_IND			= 0x9A,	// +
+	GB_COM_PRM_SET_COM			= 0x9B,	// +
 	GB_COM_PRD_SET_TIME_ON 		= 0xA1,	// +
 	GB_COM_PRD_SET_DURATION 	= 0xA2,	// +
 	GB_COM_PRD_SET_BLOCK_COM 	= 0xA4,	// +
@@ -246,6 +249,7 @@ enum eGB_COM {
 	GB_COM_PRD_SET_DR_BLOCK		= 0xA8,	// +
 	GB_COM_PRD_SET_COM_A		= 0xA9,	// +
 	GB_COM_PRD_RES_IND 			= 0xAA,	// +
+	GB_COM_PRD_SET_COM			= 0xAB,	// +
 	GB_COM_SET_TIME 			= 0xB2,	// +
 	GB_COM_SET_COR_U_I 			= 0xB3,	// +
 	GB_COM_SET_TIME_SINCHR 		= 0xB5,	// +
@@ -387,7 +391,7 @@ enum eGB_TEST_SIGNAL {
 
 
 
-///
+/// Состояние обработки принятого значения параметра.
 enum eGB_ACT {
 	GB_ACT_NO 		= 0,		// значение по умолчанию
 	GB_ACT_OLD		= 0x01,		// новое значение совпадает с предыдущим
@@ -395,6 +399,19 @@ enum eGB_ACT {
 	GB_ACT_ERROR	= 0x04		// ошибочное значение
 };
 
+
+/// Количество команда в К400
+enum eGB_K400_NUM_COM {
+	GB_K400_NUM_COM_MIN = 0,	///< минимальное значение
+	GB_K400_NUM_COM_0	= 0,	///<
+	GB_K400_NUM_COM_4	= 1,	///<
+	GB_K400_NUM_COM_8	= 2,	///<
+	GB_K400_NUM_COM_12	= 3,	///<
+	GB_K400_NUM_COM_16	= 4,	///<
+	GB_K400_NUM_COM_24	= 5,	///<
+	GB_K400_NUM_COM_32	= 6,	///<
+	GB_K400_NUM_COM_MAX			///< кол-во пунктов в списке
+};
 
 
 

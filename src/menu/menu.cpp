@@ -2817,6 +2817,7 @@ void clMenu::lvlSetupParamPrm() {
 	static char punkt4[] PROGMEM = "Трансляция ЦС";
 	static char punkt5[] PROGMEM = "Блокиров. команды ЦС";
 	static char punkt6[] PROGMEM = "Команда ВЧ в ЦС";
+	static char punkt7[] PROGMEM = "Количество команд";		// К400
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -2839,6 +2840,7 @@ void clMenu::lvlSetupParamPrm() {
 				Punkts_.add(punkt2, GB_COM_PRM_GET_BLOCK_COM);
 				Punkts_.add(punkt3, GB_COM_PRM_GET_TIME_OFF);
 			}
+			Punkts_.add(punkt7, GB_COM_PRM_GET_COM);
 			Punkts_.add(punkt4, GB_COM_PRM_GET_DR_STATE);
 			if (numcom != 0) {
 				Punkts_.add(punkt5, GB_COM_PRM_GET_DR_BLOCK);
@@ -2893,6 +2895,8 @@ void clMenu::lvlSetupParamPrm() {
 	} else if (name == punkt6) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, PRM_COM_DR_MIN,
 				PRM_COM_DR_MAX, "ком");
+	} else if (name == punkt7) {
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
 	}
 
 	if (EnterParam.isEnable()) {
@@ -2930,6 +2934,20 @@ void clMenu::lvlSetupParamPrm() {
 			} else if (name == punkt6) {
 				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
+			} else if (name == punkt7) {
+				eGB_K400_NUM_COM val;
+				uint8_t num = 0;
+				val = (eGB_K400_NUM_COM) EnterParam.getValueEnter();
+				if (val <= GB_K400_NUM_COM_32) {
+					if (val == GB_K400_NUM_COM_32) {
+						num = 8;
+					} else if (val == GB_K400_NUM_COM_24) {
+						num = 6;
+					} else {
+						num = static_cast<uint8_t> (val);
+					}
+					sParam.txComBuf.setInt8(num);
+				}
 			}
 			sParam.txComBuf.addFastCom(EnterParam.com);
 			EnterParam.setDisable();
@@ -2955,6 +2973,8 @@ void clMenu::lvlSetupParamPrm() {
 		} else if (name == punkt6) {
 			snprintf(&vLCDbuf[poz], 11, "%dком",
 					sParam.prm.getComDR(curCom_ - 1));
+		} else if (name == punkt7) {
+			snprintf(&vLCDbuf[poz], 11, "%d", sParam.prm.getNumCom());
 		}
 	}
 
@@ -3036,6 +3056,13 @@ void clMenu::lvlSetupParamPrm() {
 				EnterParam.setDisc(PRM_COM_DR_DISC);
 				EnterParam.setFract(PRM_COM_DR_FRACT);
 				EnterParam.com = GB_COM_PRM_SET_DR_COM;
+			} else if (name == punkt7) {
+				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
+				EnterParam.setValueRange(GB_K400_NUM_COM_MIN,
+						GB_K400_NUM_COM_MAX - 1);
+				EnterParam.setValue(GB_K400_NUM_COM_MAX - 1);
+				EnterParam.list = fcK400NumCom[0];
+				EnterParam.com = GB_COM_PRM_SET_COM;
 			}
 		}
 		break;
@@ -3059,7 +3086,8 @@ void clMenu::lvlSetupParamPrd() {
 	static char punkt5[] PROGMEM = "Блокиров. команды";
 	static char punkt6[] PROGMEM = "Трансляция ЦС";
 	static char punkt7[] PROGMEM = "Блокиров. команды ЦС";
-	static char punkt8[] PROGMEM = "Количество команд А";
+	static char punkt8[] PROGMEM = "Количество команд А";	// К400
+	static char punkt9[] PROGMEM = "Количество команд";		// К400
 
 
 	if (lvlCreate_) {
@@ -3085,6 +3113,7 @@ void clMenu::lvlSetupParamPrd() {
 				Punkts_.add(punkt4, GB_COM_PRD_GET_LONG_COM);
 				Punkts_.add(punkt5, GB_COM_PRD_GET_BLOCK_COM);
 			}
+			Punkts_.add(punkt9, GB_COM_PRD_GET_COM);
 			Punkts_.add(punkt8, GB_COM_PRD_GET_COM_A);
 			Punkts_.add(punkt6, GB_COM_PRD_GET_DR_STATE);
 			if (numcom != 0) {
@@ -3147,6 +3176,8 @@ void clMenu::lvlSetupParamPrd() {
 	} else if (name == punkt8) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, PRD_COM_A_MIN,
 				PRD_COM_A_MAX, "");
+	} else if (name == punkt9) {
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
 	}
 
 	if (EnterParam.isEnable()) {
@@ -3193,6 +3224,20 @@ void clMenu::lvlSetupParamPrd() {
 				sParam.txComBuf.setInt8(val, 1);
 			} else if (name == punkt8) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+			} else if (name == punkt9) {
+				eGB_K400_NUM_COM val;
+				uint8_t num = 0;
+				val = (eGB_K400_NUM_COM) EnterParam.getValueEnter();
+				if (val <= GB_K400_NUM_COM_32) {
+					if (val == GB_K400_NUM_COM_32) {
+						num = 8;
+					} else if (val == GB_K400_NUM_COM_24) {
+						num = 6;
+					} else {
+						num = static_cast<uint8_t> (val);
+					}
+					sParam.txComBuf.setInt8(num);
+				}
 			}
 			sParam.txComBuf.addFastCom(EnterParam.com);
 			EnterParam.setDisable();
@@ -3224,6 +3269,8 @@ void clMenu::lvlSetupParamPrd() {
 			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
 		} else if (name == punkt8) {
 			snprintf(&vLCDbuf[poz], 11, "%d", sParam.prd.getNumComA());
+		} else if (name == punkt9) {
+			snprintf(&vLCDbuf[poz], 11, "%d", sParam.prd.getNumCom());
 		}
 	}
 
@@ -3326,6 +3373,13 @@ void clMenu::lvlSetupParamPrd() {
 				EnterParam.setDisc(PRD_COM_A_DISC);
 				EnterParam.setFract(PRD_COM_A_FRACT);
 				EnterParam.com = GB_COM_PRD_SET_COM_A;
+			} else if (name == punkt9) {
+				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
+				EnterParam.setValueRange(GB_K400_NUM_COM_MIN,
+						GB_K400_NUM_COM_MAX - 1);
+				EnterParam.setValue(GB_K400_NUM_COM_MAX - 1);
+				EnterParam.list = fcK400NumCom[0];
+				EnterParam.com = GB_COM_PRD_SET_COM;
 			}
 		}
 		break;

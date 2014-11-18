@@ -243,6 +243,17 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com) {
 		}
 		break;
 
+		case GB_COM_PRM_GET_COM: {
+			uint8_t act = GB_ACT_NO;
+			if (sParam_->typeDevice == AVANT_K400) {
+				act = sParam_->prm.setNumCom(buf[B1] * 4);
+			}
+			// в случае записи нового значения, сбросим флаг конфигурации
+			if (act & GB_ACT_NEW)
+				sParam_->device = false;
+		}
+		break;
+
 		case GB_COM_PRM_GET_JRN_CNT: {
 			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRM) {
 				uint16_t t = TO_INT16(buf[B2], buf[B1]);
@@ -355,6 +366,17 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com) {
 
 		case GB_COM_PRD_GET_COM_A: {
 			stat = sParam_->prd.setNumComA(buf[B1]);
+		}
+		break;
+
+		case GB_COM_PRD_GET_COM: {
+			uint8_t act = GB_ACT_NO;
+			if (sParam_->typeDevice == AVANT_K400) {
+				act = sParam_->prd.setNumCom(buf[B1] * 4);
+			}
+			// в случае записи нового значения, сбросим флаг конфигурации
+			if (act & GB_ACT_NEW)
+				sParam_->device = false;
 		}
 		break;
 

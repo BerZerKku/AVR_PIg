@@ -97,6 +97,11 @@ public:
 
 		return act;
 	}
+
+	/**	Возвращает текущее кол-во команд в ПРД.
+	 *
+	 * 	@return Кол-во команд ПРД.
+	 */
 	uint8_t getNumCom() const {
 		return numCom_;
 	}
