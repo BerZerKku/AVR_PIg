@@ -3,21 +3,21 @@
  *
  *  Created on: 03.04.2012
  *      Author: Хозяин
- */
-
+ */ 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
 #include <avr/eeprom.h>
 #include <stdio.h>
-#include "inc/debug.h"
-#include "inc/glbDefine.h"
-#include "inc/ks0108.h"
-#include "inc/menu.h"
-#include "inc/keyboard.h"
-#include "inc/uart.h"
-#include "inc/protocolPcS.h"
-#include "inc/protocolBspS.h"
+#include "debug.h"
+#include "glbDefine.h"
+#include "ks0108.h"
+#include "menu.h"
+#include "keyboard.h"
+#include "uart.h"
+#include "protocolPcS.h"
+#include "protocolBspS.h"
+#include "protocolPcM.h"
 
 /// Время работы одного цикла (зависит от настройки таймеров), мс
 #define TIME_CYLCE 100
@@ -31,6 +31,20 @@
 /// Максимальное кол-во неполученных сообщений от БСП для ошибки связи
 #define MAX_LOST_COM_FROM_BSP 10
 
+/// пароль пользователя
+#define EEPROM_START_ADDRESS 0x10
+
+/// Структура параметров хранящихся в EEPROM
+struct sEeprom {
+	uint16_t 				password;	/// Пароль.
+	TInterface::INTERFACE 	interface;	/// Интерфейс.
+	TProtocol::PROTOCOL		protocol;	/// Протокол.
+	TBaudRate::BAUD_RATE 	baudRate;	/// Скорость.
+	TDataBits::DATA_BITS 	dataBits;	/// Кол-во бит данных.
+	TParity::PARITY 	 	parity;		/// Четность.
+	TStopBits::STOP_BITS 	stopBits;	/// Кол-во стоп-бит.
+};
+
 // Обработка принятых сообщений по последовательным портам
 static bool uartRead();
 
@@ -40,30 +54,35 @@ static bool uartWrite();
 /// Флаг, устанавливается каждые 100мс
 static volatile bool b100ms = false;
 
-/// пароль пользователя
-#define EEPROM_START_ADDRESS 0x10
-
 /// Буфер для связи с ПК по последовательному порту
 uint8_t uBufUartPc[BUFF_SIZE_PC];
 /// Буфер для свящи с БСП по последовательному порту
 uint8_t uBufUartBsp[BUFF_SIZE_BSP];
 
+// параметры хранимые в ЕЕПРОМ
+static sEeprom eeprom;
+
 /// Класс меню
 clMenu menu;
 /// Класс последовательного порта работающего с ПК
-TUart uartPC(UART_UART1, uBufUartPc, BUFF_SIZE_PC);
+TUart uartPC(TUart::PORT_UART1, uBufUartPc, BUFF_SIZE_PC);
 /// Класc последовательного порта работающего с БСП
-TUart uartBSP(UART_UART0, uBufUartBsp, BUFF_SIZE_BSP);
+TUart uartBSP(TUart::PORT_UART0, uBufUartBsp, BUFF_SIZE_BSP);
 /// Класс стандартного протокола работающего с ПК
 clProtocolPcS protPCs(uBufUartPc, BUFF_SIZE_PC, &menu.sParam);
+/// Класс работы протокола MODBUS
+TProtocolPcM protPCm(&menu.sParam, uBufUartPc, BUFF_SIZE_PC);
 /// Класс стандартного протокола работающего с БСП
 clProtocolBspS protBSPs(uBufUartBsp, BUFF_SIZE_BSP, &menu.sParam);
 
 static bool uartRead();
 static bool uartWrite();
-static void setInterface(eGB_INTERFACE val);
+static void setInterface(TInterface::INTERFACE val);
+static bool isUartPcReinit(sEeprom *current, TUartData *newparam);
+static void setProtocol(TProtocol::PROTOCOL protocol, uint16_t baud);
 
 /**	Работа с принятыми данными по UART
+ *
  * 	@param Нет
  * 	@return False - в случае 5-и неполученных сообщений от БСП подряд
  */
@@ -87,7 +106,9 @@ static bool uartRead() {
 			// проверка соответствия команды запрошенной с ПК и команды
 			// полученной от БСП и если совпадают пересылка сообщения на ПК
 			if (lastPcCom == protBSPs.getCurrentCom()) {
-				protPCs.copyCommandFrom(protBSPs.buf);
+				if (protPCs.isEnable()) {
+					protPCs.copyCommandFrom(protBSPs.buf);
+				}
 			}
 		}
 
@@ -105,23 +126,29 @@ static bool uartRead() {
 			stat = false;
 	}
 
-	// перед приемом проверим статус на залипание
-	protPCs.checkStat();
-	// проверка наличия команды с ПК и ее обработка
-	if (protPCs.getCurrentStatus() == PRTS_STATUS_READ_OK) {
-		// проверка контрольной суммы полученного сообщения и
-		// обработка данных если она соответствует полученной
-		if (protPCs.checkReadData()) {
-			// обработка принятого сообщения
-			// если сообщение небыло обработано, перешлем его в БСП
-			// (т.е. если это не запрос/изменение пароля)
-			if (!protPCs.getData()) {
-				// сохранение запрашиваемой ПК команды
-				lastPcCom = protPCs.getCurrentCom();
+	if (protPCs.isEnable()) {
+		// перед приемом проверим статус на залипание
+		protPCs.checkStat();
+		// проверка наличия команды с ПК и ее обработка
+		if (protPCs.getCurrentStatus() == PRTS_STATUS_READ_OK) {
+			// проверка контрольной суммы полученного сообщения и
+			// обработка данных если она соответствует полученной
+			if (protPCs.checkReadData()) {
+				// обработка принятого сообщения
+				// если сообщение небыло обработано, перешлем его в БСП
+				// (т.е. если это не запрос/изменение пароля)
+				if (!protPCs.getData()) {
+					// сохранение запрашиваемой ПК команды
+					lastPcCom = protPCs.getCurrentCom();
 
-				// пересылка сообщения в БСП
-				protBSPs.copyCommandFrom(protPCs.buf);
+					// пересылка сообщения в БСП
+					protBSPs.copyCommandFrom(protPCs.buf);
+				}
 			}
+		}
+	} else if (protPCm.isEnable()) {
+		if (protPCm.isReadData()) {
+			protPCm.readData();
 		}
 	}
 
@@ -129,26 +156,32 @@ static bool uartRead() {
 }
 
 /**	Передача данных по UART.
+ *
  * 	@retval True - всегда.
  */
 static bool uartWrite() {
-	// Перед передачей проверим статус протокола на залипание.
-	protPCs.checkStat();
-	// проверка необходимости передачи команды на ПК и ее отправка
-	ePRTS_STATUS stat = protPCs.getCurrentStatus();
-	if (stat == PRTS_STATUS_WRITE_PC) {
-		// пересылка ответа БСП
-		uartPC.trData(protPCs.trCom());
-	} else if (stat == PRTS_STATUS_WRITE) {
-		// отправка ответа ПИ
-		uartPC.trData(protPCs.trCom());
+
+	if (protPCs.isEnable()) {
+		// Перед передачей проверим статус протокола на залипание.
+		protPCs.checkStat();
+		// проверка необходимости передачи команды на ПК и ее отправка
+		ePRTS_STATUS stat = protPCs.getCurrentStatus();
+		if (stat == PRTS_STATUS_WRITE_PC) {
+			// пересылка ответа БСП
+			uartPC.trData(protPCs.trCom());
+		} else if (stat == PRTS_STATUS_WRITE) {
+			// отправка ответа ПИ
+			uartPC.trData(protPCs.trCom());
+		}
+	} else if (protPCm.isEnable()) {
+		uartPC.trData(protPCm.sendData());
 	}
 
 	// Перед передачей проверим статус протокола на залипание.
 	protBSPs.checkStat();
 	// проверим нет ли необходимости передачи команды с ПК
 	// если нет, то возьмем команду с МЕНЮ
-	stat = protBSPs.getCurrentStatus();
+	ePRTS_STATUS stat = protBSPs.getCurrentStatus();
 	if (stat == PRTS_STATUS_WRITE_PC) {
 		// пересылка запроса ПК
 		uartBSP.trData(protBSPs.trCom());
@@ -166,44 +199,51 @@ static bool uartWrite() {
 }
 
 /**	Установка интерфейса связи с АВАНТом.
+ *
  * 	@param val Текущий интерфейс
  * 	@return Нет
  */
-static void setInterface(eGB_INTERFACE val) {
-	if (val == GB_INTERFACE_USB) {
+static void setInterface(TInterface::INTERFACE val) {
+	if (val == TInterface::USB) {
 		PORTD &= ~(1 << PD4);
-	} else if (val == GB_INTERFACE_RS485) {
+	} else if (val == TInterface::RS485) {
 		PORTD |= (1 << PD4);
 	}
 }
 
 /** Проверка необходимости переинициализации порта.
+ *
  * 	Сравниваются текущие настройки, с необходимыми. И если они не совпадают
  * 	происходит сохранение новых значений.
+ *
  * 	@param *current Текущие настройки порта.
  * 	@param *newparam Необходимые настройки порта.
  * 	@retval True, если настройки отличаются.
  * 	@retval False, если настройки совпадают.
  */
-bool isUartPcReinit(sEeprom *current, TUartData *newparam) {
+static bool isUartPcReinit(sEeprom *current, TUartData *newparam) {
 	bool stat = false;
 
 	if (current->interface != newparam->Interface.get()) {
 		current->interface = newparam->Interface.get();
 		stat = true;
 	}
+
 	if (current->baudRate != newparam->BaudRate.get()) {
 		current->baudRate = newparam->BaudRate.get();
 		stat = true;
 	}
+
 	if (current->dataBits != newparam->DataBits.get()) {
 		current->dataBits = newparam->DataBits.get();
 		stat = true;
 	}
+
 	if (current->parity != newparam->Parity.get()) {
 		current->parity = newparam->Parity.get();
 		stat = true;
 	}
+
 	if (current->stopBits != newparam->StopBits.get()) {
 		current->stopBits = newparam->StopBits.get();
 		stat = true;
@@ -212,15 +252,34 @@ bool isUartPcReinit(sEeprom *current, TUartData *newparam) {
 	return stat;
 }
 
+static void setProtocol(TProtocol::PROTOCOL protocol, uint16_t baud) {
+
+	switch(protocol) {
+		case TProtocol::STANDART:
+			protPCs.setEnable(PRTS_STATUS_READ);
+			protPCm.setDisable();
+			break;
+		case TProtocol::MODBUS:
+			protPCm.setTick(baud, 50);
+			protPCm.setAddressLan(1);
+			protPCm.setEnable();
+			protPCs.setDisable();
+			break;
+		case TProtocol::IEC_101:
+			// TODO МЭК 101
+			break;
+		case TProtocol::MAX:		// заглушка
+			break;
+	}
+}
+
 /**	main.c
+ *
  * 	@param Нет
  * 	@return Нет
  */
 int __attribute__ ((OS_main))
 main(void) {
-	// параметры хранимые в ЕЕПРОМ
-	sEeprom eeprom;
-
 	// счетчик для обновления ЖКИ
 	uint8_t cnt_lcd = 0;
 	uint8_t cnt_1s = 0;
@@ -237,20 +296,21 @@ main(void) {
 	menu.sParam.Uart.DataBits.set(eeprom.dataBits);
 	menu.sParam.Uart.Parity.set(eeprom.parity);
 	menu.sParam.Uart.StopBits.set(eeprom.stopBits);
+
 	// выбор интерфейса связи
 	setInterface(menu.sParam.Uart.Interface.get());
 
 	// запуск последовательного порта для связи с БСП
 	// все настройки фиксированы
-	uartBSP.open(UART_BAUD_RATE_4800, UART_DATA_BITS_8, UART_PARITY_NONE,
-			UART_STOP_BITS_TWO);
+	uartBSP.open(4800,TDataBits::_8,TParity::NONE,TStopBits::TWO);
 	protBSPs.setEnable(PRTS_STATUS_NO);
 
 	// запуск последовательного порта для связи с ПК/Локальной сети.
 	TUartData *uart = &menu.sParam.Uart;
-	uartPC.open(uart->BaudRate.get(), uart->DataBits.get(), uart->Parity.get(),
-			uart->StopBits.get());
-	protPCs.setEnable(PRTS_STATUS_READ);
+	uartPC.open(uart->BaudRate.getValue(), uart->DataBits.get(),
+			uart->Parity.get(),	uart->StopBits.get());
+	// выбор необходимого протокола работы с внешним миром
+	setProtocol(uart->Protocol.get(), uart->BaudRate.getValue());
 
 	sei();
 
@@ -302,31 +362,46 @@ main(void) {
 					// если идет связь с ПК, то настройки фиксированные
 					// если идет связь по Лок.сети, то настройки пользователя
 					switch (uart->Interface.get()) {
-					case GB_INTERFACE_USB:
-						uartPC.open(UART_BAUD_RATE_19200, UART_DATA_BITS_8,
-								UART_PARITY_NONE, UART_STOP_BITS_TWO);
+					case TInterface::USB:
+						// во время отладки интерфейс USB можно настраивать
+#ifndef DEBUG
+						uartPC.open(19200, TDataBits::_8, TParity::NONE,
+								TStopBits::TWO);
+#else
+						uartPC.open(uart->BaudRate.getValue(),
+								uart->DataBits.get(),
+								uart->Parity.get(),
+								uart->StopBits.get());
+#endif
 						protPCs.setEnable(PRTS_STATUS_READ);
 						break;
-					case GB_INTERFACE_RS485:
-						uartPC.open(uart->BaudRate.get(), uart->DataBits.get(),
-								uart->Parity.get(), uart->StopBits.get());
+					case TInterface::RS485:
+						uartPC.open(uart->BaudRate.getValue(),
+								uart->DataBits.get(),
+								uart->Parity.get(),
+								uart->StopBits.get());
 						protPCs.setEnable(PRTS_STATUS_READ);
 						break;
-					case GB_INTERFACE_MAX:
-						// ошибочное значение
+					case TInterface::MAX:		// заглушка
 						break;
 					}
 
 					// установка интерфейса связи с АВАНТом
 					setInterface(menu.sParam.Uart.Interface.get());
+
+					// при смене скорости работы, обновим и протокол
+					setProtocol(menu.sParam.Uart.Protocol.get(),
+							menu.sParam.Uart.BaudRate.getValue());
 				}
 
 				// считывание текущего пароля в буфер ЕЕПРОМ
 				eeprom.password = menu.sParam.password.get();
 
-				// проверка Протокола связи с записанным в еепром значением
+				// проверка Протокола связи
 				if (eeprom.protocol != menu.sParam.Uart.Protocol.get()) {
 					eeprom.protocol = menu.sParam.Uart.Protocol.get();
+					setProtocol(menu.sParam.Uart.Protocol.get(),
+							menu.sParam.Uart.BaudRate.getValue());
 				}
 
 				// обновление настроек пользователя в ЕЕПРОМ
@@ -349,6 +424,11 @@ ISR(TIMER0_COMP_vect) {
 	vLCDmain();
 	// подсветка ЖКИ
 	vLCDled();
+
+	// для работы протокола MODBUS
+	if (protPCm.isEnable()) {
+		protPCm.tick();
+	}
 }
 
 ///	Прерывание по совпадению А Таймер1. Срабатывает раз в 10 мс.
@@ -359,12 +439,7 @@ ISR(TIMER1_COMPA_vect) {
 	vKEYmain();
 
 	// установка флага раз в 100мс
-	if (cnt > 0)
-		cnt--;
-	else {
-		cnt = 10 - 1;
-		b100ms = true;
-	}
+	cnt = (cnt > 0) ? cnt - 1 : (b100ms = true, 10 - 1);
 }
 
 ///Прерывание по опустошению передающего буфера UART1
@@ -375,7 +450,11 @@ ISR(USART1_UDRE_vect) {
 /// Прерывание по окончанию передачи данных UART1
 ISR(USART1_TX_vect) {
 	uartPC.isrTX();
-	protPCs.setCurrentStatus(PRTS_STATUS_READ);
+	if (protPCs.isEnable()) {
+		protPCs.setCurrentStatus(PRTS_STATUS_READ);
+	} else if (protPCm.isEnable()) {
+		protPCm.setReadState();
+	}
 }
 
 /// Прерывание по получению данных UART1
@@ -386,14 +465,14 @@ ISR(USART1_RX_vect) {
 	if (state & ((1 << FE) | (1 << DOR) | (1 << UPE))) {
 		// в случае ошибки сброс счетчика принятых данных
 		// и текущего статуса работы протокола
-		uartPC.clrCnt();
 		protPCs.setCurrentStatus(PRTS_STATUS_NO);
 	} else {
-		// обработчик протокола "Стандартный"
 		if (protPCs.isEnable()) {
-			if (protPCs.getCurrentStatus() == PRTS_STATUS_READ) {
-				protPCs.checkByte(byte);
-			}
+			// протокол "Стандартный"
+			protPCs.checkByte(byte);
+		} else if (protPCm.isEnable()) {
+			// протокол MODBUS
+			protPCm.push(byte);
 		}
 	}
 }
@@ -418,13 +497,9 @@ ISR(USART0_RX_vect) {
 	if (state & ((1 << FE) | (1 << DOR) | (1 << UPE))) {
 		// в случае ошибки сброс счетчика принятых данных
 		// и текущего статуса работы протокола
-		uartBSP.clrCnt();
 		protBSPs.setCurrentStatus(PRTS_STATUS_NO);
 	} else {
 		// обработчик протокола "Стандартный"
-		if (protBSPs.isEnable()) {
-			if (protBSPs.getCurrentStatus() == PRTS_STATUS_READ)
-				protBSPs.checkByte(byte);
-		}
+		protBSPs.checkByte(byte);
 	}
 }
