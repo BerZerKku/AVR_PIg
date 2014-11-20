@@ -12,8 +12,8 @@
 
 /// ПРД
 /// время включения (задержка срабатывания дискретного входа)
-/// было от 5 до 20, изменено по требованию АГ
-#define PRD_TIME_ON_MIN		5
+/// было от 0 до 20
+#define PRD_TIME_ON_MIN		0
 #define PRD_TIME_ON_MAX		20
 #define PRD_TIME_ON_DISC	1
 #define PRD_TIME_ON_FRACT	1
