@@ -596,6 +596,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 			}
 			if (buf[3] > 16) {
 				// Тип аппарата, в сентябре 2014 появился у РЗСК и Р400
+				// в ноябре 2014 появился  у К400
 				act |= glb->setTypeDevice((eGB_TYPE_DEVICE) buf[B17]);
 			} else {
 				glb->setTypeDevice(AVANT_NO);

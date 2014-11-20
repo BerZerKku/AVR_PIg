@@ -189,7 +189,7 @@ enum eGB_COM {
 	GB_COM_PRM_GET_DR_STATE 	= 0x17, // +
 	GB_COM_PRM_GET_DR_BLOCK		= 0x18,	// +
 	GB_COM_PRM_GET_DR_COM		= 0x19,	// +
-	GB_COM_PRM_GET_COM			= 0x1B, // +
+	GB_COM_PRM_GET_COM			= 0x1C, // +
 	GB_COM_PRD_GET_TIME_ON 		= 0x21,	// +
 	GB_COM_PRD_GET_DURATION 	= 0x22,	// +
 	GB_COM_PRD_GET_BLOCK_COM 	= 0x24,	// +
@@ -198,7 +198,7 @@ enum eGB_COM {
 	GB_COM_PRD_GET_DR_STATE 	= 0x27, // +
 	GB_COM_PRD_GET_DR_BLOCK		= 0x28,	// +
 	GB_COM_PRD_GET_COM_A		= 0x29,	// +
-	GB_COM_PRD_GET_COM			= 0x2B,	// +
+	GB_COM_PRD_GET_COM			= 0x2C,	// +
 	GB_COM_GET_SOST 			= 0x30,	// +
 	GB_COM_GET_FAULT 			= 0x31,	// +
 	GB_COM_GET_TIME 			= 0x32,	// +
@@ -240,7 +240,7 @@ enum eGB_COM {
 	GB_COM_PRM_SET_DR_BLOCK		= 0x98,	// +
 	GB_COM_PRM_SET_DR_COM		= 0x99,	// +
 	GB_COM_PRM_RES_IND			= 0x9A,	// +
-	GB_COM_PRM_SET_COM			= 0x9B,	// +
+	GB_COM_PRM_SET_COM			= 0x9C,	// +
 	GB_COM_PRD_SET_TIME_ON 		= 0xA1,	// +
 	GB_COM_PRD_SET_DURATION 	= 0xA2,	// +
 	GB_COM_PRD_SET_BLOCK_COM 	= 0xA4,	// +
@@ -250,12 +250,12 @@ enum eGB_COM {
 	GB_COM_PRD_SET_DR_BLOCK		= 0xA8,	// +
 	GB_COM_PRD_SET_COM_A		= 0xA9,	// +
 	GB_COM_PRD_RES_IND 			= 0xAA,	// +
-	GB_COM_PRD_SET_COM			= 0xAB,	// +
+	GB_COM_PRD_SET_COM			= 0xAC,	// +
 	GB_COM_SET_TIME 			= 0xB2,	// +
 	GB_COM_SET_COR_U_I 			= 0xB3,	// +
 	GB_COM_SET_TIME_SINCHR 		= 0xB5,	// +
 	GB_COM_SET_COM_PRM_KEEP 	= 0xB6, // + ! в Р400М это Uвых номинальное
-	GB_COM_SET_COM_PRD_KEEP 	= 0xB7, // + ! в Р400М это тип удаленного аппарата
+	GB_COM_SET_COM_PRD_KEEP 	= 0xB7, // + ! дополнительно тип удаленного аппарата
 	GB_COM_SET_NET_ADR 			= 0xB8,	// +
 	GB_COM_SET_TIME_RERUN 		= 0xB9,	// +
 	GB_COM_SET_FREQ 			= 0xBA,	// +

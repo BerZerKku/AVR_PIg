@@ -70,11 +70,10 @@ public:
 	 * 	@param val Количество команд на ПРМ.
 	 * 	@return Статус установки (eGB_ACT - побитные значения).
 	 */
-	bool setNumCom(uint8_t val) {
+	uint8_t setNumCom(uint8_t val) {
 		uint8_t act = GB_ACT_NO;
 
 		if (val > MAX_NUM_COM_PRM) {
-			val = 0;
 			act = GB_ACT_ERROR;
 		}
 
@@ -83,10 +82,9 @@ public:
 		} else {
 			numCom_ = val;
 			// если кол-во команд не равно 0, то включается ПРМ
-
+			this->status.setEnable(val != 0);
 			act |= GB_ACT_NEW;
 		}
-		this->status.setEnable(val != 0);
 
 		return act;
 	}

@@ -67,7 +67,7 @@ public:
 	 * 	По умолчанию устанавливает MODBUS.
 	 */
 	TProtocol() {
-		protocol_ = MODBUS;
+		protocol_ = STANDART;
 	}
 
 	/**	Запись.
@@ -238,7 +238,7 @@ public:
 	 * 	По умолчанию проверка четности отключена.
 	 */
 	TParity() {
-		parity_ = EVEN;
+		parity_ = NONE;
 	}
 
 	/**	Запись
@@ -282,7 +282,7 @@ public:
 	 * 	По умолчанию 2 стоп бита.
 	 */
 	TStopBits() {
-		stopBits_ = ONE;
+		stopBits_ = TWO;
 	}
 
 	/**	Запись
@@ -315,6 +315,15 @@ private:
 /// структура параметров работы с последовательным портом
 class TUartData {
 public:
+	TUartData() {
+		Interface.set(TInterface::USB);
+		Protocol.set(TProtocol::MODBUS);
+		BaudRate.set(TBaudRate::_19200);
+		DataBits.set(TDataBits::_8);
+		Parity.set(TParity::EVEN);
+		StopBits.set(TStopBits::ONE);
+	}
+
 	/// Интерфейс связи
 	TInterface Interface;
 	/// Протокол связи
