@@ -408,17 +408,17 @@ uint16_t TProtocolPcM::readRegDateTime(uint16_t adr) {
 	uint16_t val = 0xFFFF;
 
 	if (adr == ADR_YEAR) {
-		val = sParam_->dateTime.getYear();
+		val = sParam_->DateTime.getYear();
 	} else if (adr == ADR_MONTH) {
-		val = sParam_->dateTime.getMonth();
+		val = sParam_->DateTime.getMonth();
 	} else if (adr == ADR_DAY) {
-		val = sParam_->dateTime.getDay();
+		val = sParam_->DateTime.getDay();
 	} else if (adr == ADR_HOUR) {
-		val = sParam_->dateTime.getHour();
+		val = sParam_->DateTime.getHour();
 	} else if (adr == ADR_MINUTE) {
-		val = sParam_->dateTime.getMinute();
+		val = sParam_->DateTime.getMinute();
 	} else if (adr == ADR_SECOND) {
-		val = sParam_->dateTime.getSecond();
+		val = sParam_->DateTime.getSecond();
 	}
 
 	return val;
