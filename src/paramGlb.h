@@ -204,6 +204,7 @@ public:
 
 		timeSinchr_ = false;
 		backup_ = false;
+		tmK400_ = false;
 		deviceNum_ = GLB_DEV_NUM_MIN_F;
 		outCheck_ = false;
 		cfThreshold_ = GLB_CF_THRESH_MIN_F;
@@ -448,6 +449,29 @@ public:
 	}
 	bool getTimeSinchr() const {
 		return timeSinchr_;
+	}
+
+	/**	Установка параметра Телемеханика (К400).
+	 *
+	 * 	@param val Телемеханика.
+	 * 	@retval True - в случае успешной остановки.
+	 * 	@retval False - если установка нового значения не удалась.
+	 */
+	bool setTmK400(uint8_t val) {
+		bool stat = false;
+		if (val <= 1) {
+			tmK400_ = (bool) val;
+			stat = true;
+		}
+		return stat;
+	}
+
+	/** Возвращает значение параметра Телемеханика (К400).
+	 *
+	 * 	@return Телемеханика.
+	 */
+	bool getTmK400() const {
+		return tmK400_;
 	}
 
 	/** Установка параметра Резервирование.
@@ -878,6 +902,9 @@ private:
 
 	// резервирование
 	bool backup_;
+
+	// телемеханика
+	bool tmK400_;
 
 	// номер аппарата
 	uint8_t deviceNum_;

@@ -206,7 +206,7 @@ enum eGB_COM {
 	GB_COM_GET_MEAS 			= 0x34,	// +
 	GB_COM_GET_TIME_SINCHR 		= 0x35,	// +
 	GB_COM_GET_COM_PRM_KEEP 	= 0x36, // + ! в Р400М это Uвых номинальное
-	GB_COM_GET_COM_PRD_KEEP 	= 0x37,	// + ! в Р400М это тип удаленного аппарата
+	GB_COM_GET_COM_PRD_KEEP 	= 0x37,	// + ! дополнительно тип удаленного аппарата, телемеханика
 	GB_COM_GET_NET_ADR 			= 0x38,	// +
 	GB_COM_GET_TIME_RERUN 		= 0x39,	// + ! в Р400М это параметры для совместимостей
 	GB_COM_GET_FREQ 			= 0x3A,	// +
@@ -255,7 +255,7 @@ enum eGB_COM {
 	GB_COM_SET_COR_U_I 			= 0xB3,	// +
 	GB_COM_SET_TIME_SINCHR 		= 0xB5,	// +
 	GB_COM_SET_COM_PRM_KEEP 	= 0xB6, // + ! в Р400М это Uвых номинальное
-	GB_COM_SET_COM_PRD_KEEP 	= 0xB7, // + ! дополнительно тип удаленного аппарата
+	GB_COM_SET_COM_PRD_KEEP 	= 0xB7, // + ! дополнительно тип удаленного аппарата, телемеханика
 	GB_COM_SET_NET_ADR 			= 0xB8,	// +
 	GB_COM_SET_TIME_RERUN 		= 0xB9,	// +
 	GB_COM_SET_FREQ 			= 0xBA,	// +

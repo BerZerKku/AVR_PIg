@@ -3631,6 +3631,7 @@ void clMenu::lvlSetupParamGlb() {
 	static char punkt23[] PROGMEM 	= "Резервирование";
 	static char punkt24[] PROGMEM 	= "Совместимость";	// к400
 	static char punkt25[] PROGMEM 	= "Тип линии";
+	static char punkt26[] PROGMEM 	= "Телемеханика"; // к400
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3649,6 +3650,7 @@ void clMenu::lvlSetupParamGlb() {
 		Punkts_.clear();
 		if (type == AVANT_K400) {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
+			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
 
 			Punkts_.add(punkt24, GB_COM_GET_COM_PRD_KEEP);
 			Punkts_.add(punkt1, GB_COM_GET_TIME_SINCHR);
@@ -3674,6 +3676,9 @@ void clMenu::lvlSetupParamGlb() {
 				Punkts_.add(punkt16, GB_COM_GET_COR_U_I);
 			}
 			Punkts_.add(punkt25, GB_COM_DEF_GET_LINE_TYPE);
+			if (sParam.glb.getCompK400() == GB_COMP_K400_UPKC_PRD) {
+				Punkts_.add(punkt26, GB_COM_GET_COM_PRD_KEEP);
+			}
 		} else if (type == AVANT_RZSK) {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 
@@ -3837,6 +3842,8 @@ void clMenu::lvlSetupParamGlb() {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
 	} else if (name == punkt25) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
+	} else if (name == punkt26) {
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
 	}
 
 	if (EnterParam.isEnable()) {
@@ -3940,6 +3947,9 @@ void clMenu::lvlSetupParamGlb() {
 				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
 			} else if (name == punkt25) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+			} else if (name == punkt26) {
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
+				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
 			}
 			sParam.txComBuf.addFastCom(EnterParam.com);
 			EnterParam.setDisable();
@@ -4017,6 +4027,9 @@ void clMenu::lvlSetupParamGlb() {
 		} else if (name == punkt25) {
 			snprintf_P(&vLCDbuf[poz], 11,
 					fcNumDevices[sParam.def.getNumDevices()]);
+		} else if (name == punkt26) {
+			uint8_t val = sParam.glb.getTmK400() ? 1 : 0;
+			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
 		}
 	}
 
@@ -4250,6 +4263,14 @@ void clMenu::lvlSetupParamGlb() {
 				EnterParam.setValue(sParam.def.getNumDevices());
 				EnterParam.list = fcNumDevices[0];
 				EnterParam.com = GB_COM_DEF_SET_LINE_TYPE;
+			} else if (name == punkt26) {
+				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
+				EnterParam.setValueRange(0, 1);
+				uint8_t val = sParam.glb.getTmK400()? 1 : 0;
+				EnterParam.setValue(val);
+				EnterParam.list = fcOnOff[0];
+				EnterParam.setDopValue(3);
+				EnterParam.com = GB_COM_SET_COM_PRD_KEEP;
 			}
 			break;
 		default:

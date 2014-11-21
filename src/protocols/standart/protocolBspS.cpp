@@ -689,8 +689,9 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 				act = sParam_->glb.setCompatibility((eGB_COMPATIBILITY)buf[B1]);
 			} else if (sParam_->typeDevice == AVANT_K400) {
 				stat = sParam_->glb.setComPrdKeep(buf[B1]);
-				// в К400 добавлена совместимость К400
+				// совместимость К400
 				act = sParam_->glb.setCompK400((eGB_COMP_K400) buf[B2]);
+				stat |= sParam_->glb.setTmK400(buf[B3]);
 			} else {
 				stat = sParam_->glb.setComPrdKeep(buf[B1]);
 			}
