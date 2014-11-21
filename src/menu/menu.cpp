@@ -3865,7 +3865,8 @@ void clMenu::lvlSetupParamGlb() {
 			} else if (name == punkt5) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if (name == punkt6) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
+				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
 			} else if (name == punkt7) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if (name == punkt8) {
@@ -4130,7 +4131,7 @@ void clMenu::lvlSetupParamGlb() {
 				uint8_t val = sParam.glb.getComPrdKeep() ? 1 : 0;
 				EnterParam.setValue(val);
 				EnterParam.list = fcOnOff[0];
-				EnterParam.setDopValue(0);
+				EnterParam.setDopValue(1);
 				EnterParam.com = GB_COM_SET_COM_PRD_KEEP;
 			} else if (name == punkt7) {
 				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
