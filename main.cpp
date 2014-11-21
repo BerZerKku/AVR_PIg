@@ -216,7 +216,6 @@ static void setInterface(TUartData *uart) {
 			uartPC.open(19200, TDataBits::_8, TParity::NONE,
 					TStopBits::TWO);
 			protPCs.setEnable(PRTS_STATUS_READ);
-
 			break;
 		case TInterface::RS485:
 			setProtocol(uart->Protocol.get(), uart->BaudRate.getValue());
@@ -230,7 +229,7 @@ static void setInterface(TUartData *uart) {
 			break;
 	}
 
-
+	setProtocol(uart->Protocol.get(), uart->BaudRate.getValue());
 
 	if (val == TInterface::USB) {
 		PORTD &= ~(1 << PD4);
@@ -274,6 +273,11 @@ static bool isUartPcReinit(sEeprom *current, TUartData *newparam) {
 
 	if (current->stopBits != newparam->StopBits.get()) {
 		current->stopBits = newparam->StopBits.get();
+		stat = true;
+	}
+
+	if (current->protocol != newparam->Protocol.get()) {
+		current->protocol = newparam->Protocol.get();
 		stat = true;
 	}
 
@@ -325,16 +329,12 @@ main(void) {
 	menu.sParam.Uart.Parity.set(eeprom.parity);
 	menu.sParam.Uart.StopBits.set(eeprom.stopBits);
 
-	// выбор интерфейса связи
-
-
 	// запуск последовательного порта для связи с БСП
 	// все настройки фиксированы
 	uartBSP.open(4800,TDataBits::_8,TParity::NONE,TStopBits::TWO);
 	protBSPs.setEnable(PRTS_STATUS_NO);
 
 	// запуск последовательного порта для связи с ПК/Локальной сети
-	// по умолчанию запустим связь с ПК по стандартному протоколу
 	setInterface(&menu.sParam.Uart);
 
 	sei();

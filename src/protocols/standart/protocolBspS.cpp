@@ -476,16 +476,16 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 			if (sParam_->typeDevice == AVANT_K400) {
 				uint8_t num = buf[NUM];
 				if (sParam_->prm.status.isEnable()) {
-					if (num >= 13) 	sParam_->prm.setIndCom8(0, buf[13]);
-					if (num >= 14)  sParam_->prm.setIndCom8(1, buf[14]);
-					if (num >= 15)  sParam_->prm.setIndCom8(2, buf[15]);
-					if (num >= 16)  sParam_->prm.setIndCom8(3, buf[16]);
+					if (num >= 13) 	sParam_->prm.setIndCom8(0, buf[B13]);
+					if (num >= 14)  sParam_->prm.setIndCom8(1, buf[B14]);
+					if (num >= 15)  sParam_->prm.setIndCom8(2, buf[B15]);
+					if (num >= 16)  sParam_->prm.setIndCom8(3, buf[B16]);
 				}
 				if (sParam_->prd.status.isEnable()) {
-					if (num >= 17) 	sParam_->prd.setIndCom8(0, buf[17]);
-					if (num >= 18)  sParam_->prd.setIndCom8(1, buf[18]);
-					if (num >= 19)  sParam_->prd.setIndCom8(2, buf[19]);
-					if (num >= 20)  sParam_->prd.setIndCom8(3, buf[20]);
+					if (num >= 17) 	sParam_->prd.setIndCom8(0, buf[B17]);
+					if (num >= 18)  sParam_->prd.setIndCom8(1, buf[B18]);
+					if (num >= 19)  sParam_->prd.setIndCom8(2, buf[B19]);
+					if (num >= 20)  sParam_->prd.setIndCom8(3, buf[B20]);
 				}
 			}
 

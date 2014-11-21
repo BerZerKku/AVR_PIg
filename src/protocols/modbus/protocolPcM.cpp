@@ -110,19 +110,18 @@ TProtocolModbus::CHECK_ERR TProtocolPcM::readRegister(uint16_t adr, uint16_t &va
 	if (adr >= ADR_IC_BSP_MCU) {
 		val = readRegVersionIC(adr);
 	} else if (adr >= ADR_IND_COM_PRM_16) {
-		uint16_t com = 0;
 		if (adr == ADR_IND_COM_PRM_16) {
-			com = ((uint16_t) sParam_->prm.getIndCom8(1)) << 8;
-			com += sParam_->prm.getIndCom8(0);
+			val = ((uint16_t) sParam_->prm.getIndCom8(1)) << 8;
+			val += sParam_->prm.getIndCom8(0);
 		} else if (adr == ADR_IND_COM_PRM_32) {
-			com = ((uint16_t) sParam_->prm.getIndCom8(3)) << 8;
-			com += sParam_->prm.getIndCom8(2);
+			val = ((uint16_t) sParam_->prm.getIndCom8(3)) << 8;
+			val += sParam_->prm.getIndCom8(2);
 		} else if (adr == ADR_IND_COM_PRD_16) {
-			com = ((uint16_t) sParam_->prd.getIndCom8(1)) << 8;
-			com += sParam_->prd.getIndCom8(0);
+			val = ((uint16_t) sParam_->prd.getIndCom8(1)) << 8;
+			val += sParam_->prd.getIndCom8(0);
 		} else if (adr == ADR_IND_COM_PRD_32) {
-			com = ((uint16_t) sParam_->prd.getIndCom8(3)) << 8;
-			com += sParam_->prd.getIndCom8(2);
+			val = ((uint16_t) sParam_->prd.getIndCom8(3)) << 8;
+			val += sParam_->prd.getIndCom8(2);
 		}
 	} else if (adr >= ADR_MEAS_U_OUT) {
 		val = readRegMeasure(adr);

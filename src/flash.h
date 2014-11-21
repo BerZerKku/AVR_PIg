@@ -256,7 +256,6 @@ static char fcProtocol[TProtocol::MAX + 1][STRING_LENGHT] PROGMEM = {
 /// Скорость, бит/с (параметр вкладки Интерфейс).
 static char fcBaudRate[TBaudRate::MAX + 1][STRING_LENGHT] PROGMEM = {
 //		 1234567890
-		"300",			///<
 		"600",			///<
 		"1200",			///<
 		"2400",			///<

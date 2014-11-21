@@ -101,8 +101,7 @@ public:
 	/// скорость передачи
 	enum BAUD_RATE {
 		MIN = 0,	//
-		_300 = 0,	//
-		_600,		//
+		_600 = 0,	//
 		_1200,		//
 		_2400,		//
 		_4800,		//
@@ -146,9 +145,6 @@ public:
 	uint16_t getValue() const {
 		uint16_t ibaud = 0;
 		switch(baudRate_) {
-			case TBaudRate::_300:
-				ibaud = 300;
-				break;
 			case TBaudRate::_600:
 				ibaud = 600;
 				break;
