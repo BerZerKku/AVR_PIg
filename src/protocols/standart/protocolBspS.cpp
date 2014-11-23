@@ -14,10 +14,11 @@ clProtocolS(buf, size, sParam) {
 }
 
 /**	Обработка принятого сообщения.
- * 	@param Нет
+ *
+ * 	@param pc True - команда запрошенная с ПК, False - запрошенная с ПИ-БСП.
  * 	@return True - в случае успешной обработки, False - в случае ошибки.
  */
-bool clProtocolBspS::getData() {
+bool clProtocolBspS::getData(bool pc) {
 	bool stat = false;
 	uint8_t mask = 0;
 	eGB_COM com = (eGB_COM) buf[2];
@@ -34,13 +35,13 @@ bool clProtocolBspS::getData() {
 		mask = com & GB_COM_MASK_DEVICE;
 
 		if (mask == GB_COM_MASK_DEVICE_DEF)
-			stat = getDefCommand(com);				// команды защиты
+			stat = getDefCommand(com, pc);				// команды защиты
 		else if (mask == GB_COM_MASK_DEVICE_PRM)
-			stat = getPrmCommand(com);				// команды приемника
+			stat = getPrmCommand(com, pc);				// команды приемника
 		else if (mask == GB_COM_MASK_DEVICE_PRD)
-			stat = getPrdCommand(com);				// команды передатчика
+			stat = getPrdCommand(com, pc);				// команды передатчика
 		else
-			stat = getGlbCommand(com);				// команды общие
+			stat = getGlbCommand(com, pc);				// команды общие
 	}
 
 	return stat;
@@ -120,10 +121,12 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 }
 
 /**	Обработка принятой команды Защиты.
+ *
  * 	@param com	Код команды
+ * 	@param pc True - команда запрошенная с ПК, False - запрошенная с ПИ-БСП.
  * 	@return True - в случае успешной обработки, False - в случае ошибки.
  */
-bool clProtocolBspS::getDefCommand(eGB_COM com) {
+bool clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
 	bool stat = false;
 	eGB_TYPE_DEVICE device = sParam_->typeDevice;
 
@@ -182,7 +185,7 @@ bool clProtocolBspS::getDefCommand(eGB_COM com) {
 		uint16_t t = TO_INT16(buf[B2], buf[B1]);
 		stat = sParam_->jrnEntry.setNumJrnEntry(t);
 	} else if (com == GB_COM_DEF_GET_JRN_ENTRY) {
-		if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_DEF) {
+		if ((sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_DEF) && (!pc)){
 			sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B16]));
 			sParam_->jrnEntry.dateTime.setMonth(BCD_TO_BIN(buf[B15]));
 			sParam_->jrnEntry.dateTime.setDay(BCD_TO_BIN(buf[B14]));
@@ -205,11 +208,13 @@ bool clProtocolBspS::getDefCommand(eGB_COM com) {
 }
 
 /**	Обработка принятой команды Приемника.
+ *
  * 	@param com	Код команды
+ * 	@param pc True - команда запрошенная с ПК, False - запрошенная с ПИ-БСП.
  * 	@retval True - в случае успешной обработки
  * 	@retval False - в случае ошибки.
  */
-bool clProtocolBspS::getPrmCommand(eGB_COM com) {
+bool clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
 	bool stat = false;
 
 	switch(com) {
@@ -270,7 +275,7 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com) {
 		break;
 
 		case GB_COM_PRM_GET_JRN_ENTRY: {
-			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRM) {
+			if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_PRM)&& (!pc)){
 				if (sParam_->typeDevice == AVANT_OPTO) {
 					// дата
 					sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B5]));
@@ -314,10 +319,12 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com) {
 }
 
 /**	Обработка принятой команды Передатчика.
+ *
  * 	@param com	Код команды
+ * 	@param pc True - команда запрошенная с ПК, False - запрошенная с ПИ-БСП.
  * 	@return True - в случае успешной обработки, False - в случае ошибки.
  */
-bool clProtocolBspS::getPrdCommand(eGB_COM com) {
+bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 	bool stat = false;
 
 	switch (com) {
@@ -396,7 +403,7 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com) {
 		break;
 
 		case GB_COM_PRD_GET_JRN_ENTRY: {
-			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRD) {
+			if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_PRD)&& (!pc)) {
 				if (sParam_->typeDevice == AVANT_OPTO) {
 					// дата
 					sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B5]));
@@ -441,10 +448,12 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com) {
 }
 
 /**	Обработка принятой Общей команды.
+ *
  * 	@param com	Код команды
+ * 	@param pc True - команда запрошенная с ПК, False - запрошенная с ПИ-БСП.
  * 	@return True - в случае успешной обработки, False - в случае ошибки.
  */
-bool clProtocolBspS::getGlbCommand(eGB_COM com) {
+bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 	bool stat = false;
 
 	switch (com) {
@@ -741,7 +750,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 		break;
 
 		case GB_COM_GET_JRN_ENTRY: {
-			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_GLB) {
+			if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_GLB)&& (!pc)) {
 				if (sParam_->typeDevice == AVANT_OPTO) {
 					// дата
 					sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B6]));

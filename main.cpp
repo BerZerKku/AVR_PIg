@@ -101,7 +101,7 @@ static bool uartRead() {
 		// обработка данных если она соответствует полученной
 		if (protBSPs.checkReadData()) {
 			// обработка принятого сообщения
-			protBSPs.getData();
+			protBSPs.getData(lastPcCom == protBSPs.getCurrentCom());
 
 			// проверка соответствия команды запрошенной с ПК и команды
 			// полученной от БСП и если совпадают пересылка сообщения на ПК
@@ -211,7 +211,7 @@ static void setInterface(TUartData *uart) {
 	// если идет связь по Лок.сети, то настройки пользователя
 	switch (val) {
 		case TInterface::USB:
-			setProtocol(TProtocol::STANDART, uart->BaudRate.getValue());
+			setProtocol(TProtocol::STANDART, 19200);
 			// во время отладки интерфейс USB можно настраивать
 			uartPC.open(19200, TDataBits::_8, TParity::NONE,
 					TStopBits::TWO);
@@ -228,8 +228,6 @@ static void setInterface(TUartData *uart) {
 		case TInterface::MAX:		// заглушка
 			break;
 	}
-
-	setProtocol(uart->Protocol.get(), uart->BaudRate.getValue());
 
 	if (val == TInterface::USB) {
 		PORTD &= ~(1 << PD4);
