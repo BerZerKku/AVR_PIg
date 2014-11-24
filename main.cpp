@@ -216,6 +216,7 @@ static void setInterface(TUartData *uart) {
 			uartPC.open(19200, TDataBits::_8, TParity::NONE,
 					TStopBits::TWO);
 			protPCs.setEnable(PRTS_STATUS_READ);
+			protPCm.setDisable();
 			break;
 		case TInterface::RS485:
 			setProtocol(uart->Protocol.get(), uart->BaudRate.getValue());
@@ -223,7 +224,8 @@ static void setInterface(TUartData *uart) {
 					uart->DataBits.get(),
 					uart->Parity.get(),
 					uart->StopBits.get());
-			protPCs.setEnable(PRTS_STATUS_READ);
+			protPCm.setEnable();
+			protPCs.setDisable();
 			break;
 		case TInterface::MAX:		// заглушка
 			break;
@@ -291,7 +293,6 @@ static void setProtocol(TProtocol::PROTOCOL protocol, uint16_t baud) {
 			break;
 		case TProtocol::MODBUS:
 			protPCm.setTick(baud, 50);
-			protPCm.setAddressLan(1);
 			protPCm.setEnable();
 			protPCs.setDisable();
 			break;
@@ -385,6 +386,12 @@ main(void) {
 
 				// считывание текущего пароля в буфер ЕЕПРОМ
 				eeprom.password = menu.sParam.password.get();
+
+				// установка сетевого адреса
+				uint8_t nadr = menu.sParam.glb.getNetAddress();
+				if (protPCm.getAddressLan() != nadr) {
+					protPCm.setAddressLan(nadr);
+				}
 
 				// обновление настроек пользователя в ЕЕПРОМ
 				eeprom_update_block(&eeprom, (sEeprom*) EEPROM_START_ADDRESS,

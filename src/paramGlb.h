@@ -42,8 +42,8 @@
 #define GLB_IN_DEC_MAX_F	(GLB_IN_DEC_MAX / GLB_IN_DEC_FRACT)
 #define GLB_IN_DEC_DISC_F	(GLB_IN_DEC_DISC / GLB_IN_DEC_FRACT)
 /// сетевой адрес
-#define GLB_NET_ADR_MIN		0
-#define GLB_NET_ADR_MAX		255
+#define GLB_NET_ADR_MIN		1
+#define GLB_NET_ADR_MAX		247
 #define GLB_NET_ADR_DISC 	1
 #define GLB_NET_ADR_FRACT	1
 #define GLB_NET_ADR_MIN_F	(GLB_NET_ADR_MIN / GLB_NET_ADR_FRACT)
@@ -215,7 +215,7 @@ public:
 		inDecrease_[1] = GLB_IN_DEC_MIN_F;
 		freq_ = GLB_FREQ_MIN_F;
 		uOutNom_ = GLB_U_OUT_NOM_MIN_F;
-		netAdr_ = GLB_NET_ADR_MIN_F;
+		netAdr_ = 0;
 		acInDec_ = GLB_AC_IN_DEC_MIN_F;
 		pvzueProtocol_ = GB_PVZUE_PROTOCOL_MAX;
 		pvzueParity_ = GB_PVZUE_PARITY_MAX;

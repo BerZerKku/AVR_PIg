@@ -853,12 +853,13 @@ void clMenu::lvlStart() {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 
 		// буфер 2
-		// неисправности + кол-во аппаратов в линии
+		// неисправности + кол-во аппаратов в линии + сетевой адрес
 		// в Р400м + АК + совместимость
 		// в К400  + совместимость
 
 		sParam.txComBuf.addCom1(GB_COM_GET_FAULT);
 		sParam.txComBuf.addCom1(GB_COM_DEF_GET_LINE_TYPE);
+		sParam.txComBuf.addCom1(GB_COM_GET_NET_ADR);
 		if (sParam.typeDevice == AVANT_R400M) {
 			sParam.txComBuf.addCom1(GB_COM_DEF_GET_TYPE_AC);
 			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
@@ -3614,7 +3615,7 @@ void clMenu::lvlSetupParamGlb() {
 	static char punkt6[] PROGMEM 	= "Удерж. реле ком. ПРД";
 	static char punkt7[] PROGMEM 	= "Удерж. реле ком. ПРМ";
 	static char punkt8[] PROGMEM 	= "Загрубл. чувств. ПРМ";
-	static char punkt9[] PROGMEM 	= "Сетевой адрес";
+//	static char punkt9[] PROGMEM 	= ""; // на текущий момент свободно
 	static char punkt10[] PROGMEM 	= "Uвых номинальное";
 	static char punkt11[] PROGMEM 	= "Частота";
 	static char punkt12[] PROGMEM 	= "Совместимость";			// защита
@@ -3669,7 +3670,6 @@ void clMenu::lvlSetupParamGlb() {
 				Punkts_.add(punkt7, GB_COM_GET_COM_PRM_KEEP);
 				Punkts_.add(punkt8, GB_COM_GET_CF_THRESHOLD);
 			}
-			Punkts_.add(punkt9, GB_COM_GET_NET_ADR);
 			Punkts_.add(punkt11, GB_COM_GET_FREQ);
 			if (sParam.prd.status.isEnable()) {
 				Punkts_.add(punkt15, GB_COM_GET_COR_U_I);
@@ -3691,7 +3691,6 @@ void clMenu::lvlSetupParamGlb() {
 			Punkts_.add(punkt6, GB_COM_GET_COM_PRD_KEEP);
 			Punkts_.add(punkt7, GB_COM_GET_COM_PRM_KEEP);
 			Punkts_.add(punkt8, GB_COM_GET_CF_THRESHOLD);
-			Punkts_.add(punkt9, GB_COM_GET_NET_ADR);
 			Punkts_.add(punkt11, GB_COM_GET_FREQ);
 			Punkts_.add(punkt14, GB_COM_GET_TIME_SINCHR);
 			Punkts_.add(punkt15, GB_COM_GET_COR_U_I);
@@ -3712,7 +3711,6 @@ void clMenu::lvlSetupParamGlb() {
 			Punkts_.add(punkt2, GB_COM_GET_DEVICE_NUM);
 			Punkts_.add(punkt3, GB_COM_GET_OUT_CHECK);
 			Punkts_.add(punkt4, GB_COM_GET_CF_THRESHOLD);
-			Punkts_.add(punkt9, GB_COM_GET_NET_ADR);
 			Punkts_.add(punkt10, GB_COM_GET_COM_PRM_KEEP);
 			Punkts_.add(punkt11, GB_COM_GET_FREQ);
 			Punkts_.add(punkt12, GB_COM_GET_COM_PRD_KEEP);
@@ -3731,7 +3729,6 @@ void clMenu::lvlSetupParamGlb() {
 			}
 		} else if (type == AVANT_OPTO) {
 			Punkts_.add(punkt1, GB_COM_GET_TIME_SINCHR);
-			Punkts_.add(punkt9, GB_COM_GET_NET_ADR);
 			Punkts_.add(punkt2, GB_COM_GET_DEVICE_NUM);
 			if (sParam.prm.status.isEnable()) {
 				Punkts_.add(punkt5, GB_COM_GET_TIME_RERUN);
@@ -3799,9 +3796,6 @@ void clMenu::lvlSetupParamGlb() {
 	} else if (name == punkt8) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_IN_DEC_MIN,
 				GLB_IN_DEC_MAX, "дБ");
-	} else if (name == punkt9) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_NET_ADR_MIN,
-				GLB_NET_ADR_MAX, "");
 	} else if (name == punkt10) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_U_OUT_NOM_MIN,
 				GLB_U_OUT_NOM_MAX, "В");
@@ -3872,8 +3866,6 @@ void clMenu::lvlSetupParamGlb() {
 			} else if (name == punkt8) {
 				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
-			} else if (name == punkt9) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if (name == punkt10) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			} else if (name == punkt11) {
@@ -3980,8 +3972,6 @@ void clMenu::lvlSetupParamGlb() {
 		} else if (name == punkt8) {
 			uint8_t val = sParam.glb.getInDecrease(curCom_);
 			snprintf(&vLCDbuf[poz], 11, "%dдБ", val);
-		} else if (name == punkt9) {
-			snprintf(&vLCDbuf[poz], 11, "%u", sParam.glb.getNetAddress());
 		} else if (name == punkt10) {
 			snprintf(&vLCDbuf[poz], 11, "%uВ", sParam.glb.getUoutNom());
 		} else if (name == punkt11) {
@@ -4148,13 +4138,6 @@ void clMenu::lvlSetupParamGlb() {
 				EnterParam.setFract(GLB_IN_DEC_FRACT);
 				EnterParam.setDopValue(curCom_ + 1);
 				EnterParam.com = GB_COM_SET_CF_THRESHOLD;
-			} else if (name == punkt9) {
-				EnterParam.setEnable();
-				EnterParam.setValueRange(GLB_NET_ADR_MIN, GLB_NET_ADR_MAX);
-				EnterParam.setValue(sParam.glb.getNetAddress());
-				EnterParam.setDisc(GLB_NET_ADR_DISC);
-				EnterParam.setFract(GLB_NET_ADR_FRACT);
-				EnterParam.com = GB_COM_SET_NET_ADR;
 			} else if (name == punkt10) {
 				EnterParam.setEnable();
 				EnterParam.setValueRange(GLB_U_OUT_NOM_MIN, GLB_U_OUT_NOM_MAX);
@@ -4444,18 +4427,13 @@ void clMenu::lvlSetupDT() {
 void clMenu::lvlSetupInterface() {
 	static char title[] PROGMEM = "Настройка\\Интерфейс";
 	static char punkt1[] PROGMEM = "Интерфейс связи";
-	// Для RS-485 возможны следующие настройки:
-	// протокола: стандарт, modbus...
-	// скорость бит/с: 1200, 4800, 9600, 19200, 38400, 57600
-	// биты данных: всегда 8
-	// четность: нет,нечет, чет, маркер(1), пробел(0)
-	// стоповые биты: 2, 1.5, 1
-	// в RS-232 всегда: стандарт, 19200 бит/с, 8 бит, 2 стоп-бита, четность-нет
+
 	static char punkt2[] PROGMEM = "Протокол";
 	static char punkt3[] PROGMEM = "Скорость передачи";
 	static char punkt4[] PROGMEM = "Биты данных";
 	static char punkt5[] PROGMEM = "Четность";
 	static char punkt6[] PROGMEM = "Стоповые биты";
+	static char punkt7[] PROGMEM = "Сетевой адрес";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -4474,6 +4452,7 @@ void clMenu::lvlSetupInterface() {
 		// в RS-232 всегда: 19200 бит/с, 8 бит, 2 стоп-бита, четность-нет
 		if (sParam.Uart.Interface.get() == TInterface::RS485) {
 			Punkts_.add(punkt2);
+			Punkts_.add(punkt7, GB_COM_GET_NET_ADR);
 			Punkts_.add(punkt3);
 			Punkts_.add(punkt4);
 			Punkts_.add(punkt5);
@@ -4483,6 +4462,9 @@ void clMenu::lvlSetupInterface() {
 		// дополнительные команды
 		sParam.txComBuf.clear();
 	}
+
+	// подмена команды, на команду текущего уровня меню.
+	sParam.txComBuf.addCom1(Punkts_.getCom(cursorLine_ - 1), 0);
 
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
 
@@ -4498,7 +4480,14 @@ void clMenu::lvlSetupInterface() {
 	// ВСЕ СПИСКИ
 	poz = 80;
 	poz += snprintf_P(&vLCDbuf[poz], 11, fcRange);
-	snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
+
+	if (name == punkt7) {
+			snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_NET_ADR_MIN,
+					GLB_NET_ADR_MAX, "");
+	} else {
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
+	}
+
 
 	if (EnterParam.isEnable()) {
 		// ввод нового значения параметра
@@ -4539,6 +4528,8 @@ void clMenu::lvlSetupInterface() {
 				TStopBits::STOP_BITS val;
 				val = static_cast<TStopBits::STOP_BITS> (tmp);
 				sParam.Uart.StopBits.set(val);
+			} else if (name == punkt7) {
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 			}
 			EnterParam.setDisable();
 		}
@@ -4564,6 +4555,8 @@ void clMenu::lvlSetupInterface() {
 		} else if (name == punkt6) {
 			uint8_t val = static_cast<uint8_t>(sParam.Uart.StopBits.get());
 			snprintf_P(&vLCDbuf[poz], 11, fcStopBits[val]);
+		} else if (name == punkt7) {
+			snprintf(&vLCDbuf[poz], 11, "%u", sParam.glb.getNetAddress());
 		}
 	}
 
@@ -4625,6 +4618,13 @@ void clMenu::lvlSetupInterface() {
 				EnterParam.setValue(sParam.Uart.StopBits.get());
 				EnterParam.list = fcStopBits[0];
 				EnterParam.com = GB_COM_NO;
+			} else if (name == punkt7) {
+				EnterParam.setEnable();
+				EnterParam.setValueRange(GLB_NET_ADR_MIN, GLB_NET_ADR_MAX);
+				EnterParam.setValue(sParam.glb.getNetAddress());
+				EnterParam.setDisc(GLB_NET_ADR_DISC);
+				EnterParam.setFract(GLB_NET_ADR_FRACT);
+				EnterParam.com = GB_COM_SET_NET_ADR;
 			}
 			break;
 		default:
