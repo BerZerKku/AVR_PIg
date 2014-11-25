@@ -4449,7 +4449,7 @@ void clMenu::lvlSetupInterface() {
 		Punkts_.add(punkt1);
 		// если установлена св€зь по Ћокальной сети
 		// по€вл€ютс€ настройки портов
-		// в RS-232 всегда: 19200 бит/с, 8 бит, 2 стоп-бита, четность-нет
+		// в USB всегда: 19200 бит/с, 8 бит, 2 стоп-бита, четность-нет
 		if (sParam.Uart.Interface.get() == TInterface::RS485) {
 			Punkts_.add(punkt2);
 			Punkts_.add(punkt7, GB_COM_GET_NET_ADR);
@@ -4530,6 +4530,7 @@ void clMenu::lvlSetupInterface() {
 				sParam.Uart.StopBits.set(val);
 			} else if (name == punkt7) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+				sParam.txComBuf.addFastCom(EnterParam.com);
 			}
 			EnterParam.setDisable();
 		}
