@@ -13,7 +13,7 @@
 /// ПРМ
 /// время включения
 #define PRM_TIME_ON_MIN		0
-#define PRM_TIME_ON_MAX		10
+#define PRM_TIME_ON_MAX		5
 #define PRM_TIME_ON_DISC	1
 #define PRM_TIME_ON_FRACT	1
 #define PRM_TIME_ON_MIN_F	(PRM_TIME_ON_MIN / PRM_TIME_ON_FRACT)
@@ -72,6 +72,9 @@ public:
 	 */
 	uint8_t setNumCom(uint8_t val) {
 		uint8_t act = GB_ACT_NO;
+
+		// FIXME Установка 16 команд по умолчанию
+		val = 16;
 
 		if (val > MAX_NUM_COM_PRM) {
 			act = GB_ACT_ERROR;

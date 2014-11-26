@@ -413,10 +413,13 @@ public:
 	uint8_t setCompK400(eGB_COMP_K400 val) {
 		uint8_t act = GB_ACT_NO;
 
-		if ((val < GB_COMP_K400_MIN) || (val >= GB_COMP_K400_MAX)) {
-			val = GB_COMP_K400_MAX;
-			act = GB_ACT_ERROR;
-		}
+//		if ((val < GB_COMP_K400_MIN) || (val >= GB_COMP_K400_MAX)) {
+//			val = GB_COMP_K400_MAX;
+//			act = GB_ACT_ERROR;
+//		}
+
+		// FIXME Установка своместимости с К400 по умолчанию
+		val = GB_COMP_K400_AVANT;
 
 		if (compK400_ == val) {
 			act |= GB_ACT_OLD;

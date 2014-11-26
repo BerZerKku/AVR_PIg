@@ -3036,10 +3036,12 @@ void clMenu::lvlSetupParamPrm() {
 		Punkts_.clear();
 		if (device == AVANT_K400) {
 			// для переформирования меню добавим опрос кол-ва команд
-			sParam.txComBuf.addCom2(GB_COM_PRM_GET_COM);
+			// FIXME delete
+//			sParam.txComBuf.addCom2(GB_COM_PRM_GET_COM);
 
 			uint8_t numcom = sParam.prm.getNumCom();
-			Punkts_.add(punkt7, GB_COM_PRM_GET_COM);
+			// FIXME delete
+//			Punkts_.add(punkt7, GB_COM_PRM_GET_COM);
 			Punkts_.add(punkt1, GB_COM_PRM_GET_TIME_ON);
 			if (numcom != 0) {
 				Punkts_.add(punkt2, GB_COM_PRM_GET_BLOCK_COM);
@@ -3311,12 +3313,15 @@ void clMenu::lvlSetupParamPrd() {
 		Punkts_.clear();
 		if (device == AVANT_K400) {
 			// для переформирования меню добавим опрос кол-ва команд
-			sParam.txComBuf.addCom2(GB_COM_PRD_GET_COM);
+			// FIXME delete
+//			sParam.txComBuf.addCom2(GB_COM_PRD_GET_COM);
 			// совместимость
+			// FIXME delete
 			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
 
 			uint8_t numcom = sParam.prd.getNumCom();
-			Punkts_.add(punkt9, GB_COM_PRD_GET_COM);
+			// FIXME delete
+//			Punkts_.add(punkt9, GB_COM_PRD_GET_COM);
 			Punkts_.add(punkt1, GB_COM_PRD_GET_TIME_ON);
 			Punkts_.add(punkt2, GB_COM_PRD_GET_DURATION);
 			Punkts_.add(punkt3, GB_COM_PRD_GET_TEST_COM);
@@ -3651,9 +3656,11 @@ void clMenu::lvlSetupParamGlb() {
 		Punkts_.clear();
 		if (type == AVANT_K400) {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
-			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
+			// FIXME delete
+//			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
 
-			Punkts_.add(punkt24, GB_COM_GET_COM_PRD_KEEP);
+			// FIXME delete
+//			Punkts_.add(punkt24, GB_COM_GET_COM_PRD_KEEP);
 			Punkts_.add(punkt1, GB_COM_GET_TIME_SINCHR);
 			Punkts_.add(punkt2, GB_COM_GET_DEVICE_NUM);
 			if (sParam.prd.status.isEnable()) {

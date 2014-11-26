@@ -83,6 +83,9 @@ public:
 	uint8_t setNumCom(uint8_t val) {
 		uint8_t act = GB_ACT_NO;
 
+		// FIXME Установка 16 команд по умолчанию
+		val = 16;
+
 		if (val > MAX_NUM_COM_PRD) {
 			val = 0;
 			act = GB_ACT_ERROR;
