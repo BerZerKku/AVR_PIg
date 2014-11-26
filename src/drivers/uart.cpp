@@ -140,7 +140,7 @@ void TUart::trData(uint8_t size) {
 
 		// Разрешим прерывание по опустошению буфера UART и окончанию передачи
 		*ucsrb_ |= (1 << UDRIE1) | (1 << TXCIE1);
-	}
 
-	numTrByte_ = size;
+		numTrByte_ = size;
+	}
 }
