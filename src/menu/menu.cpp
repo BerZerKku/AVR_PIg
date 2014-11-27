@@ -3385,7 +3385,7 @@ void clMenu::lvlSetupParamPrd() {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
 	} else if (name == punkt8) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, PRD_COM_A_MIN,
-				PRD_COM_A_MAX, "");
+				sParam.prd.getNumCom(), "");
 	} else if (name == punkt9) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
 	}
@@ -3578,7 +3578,8 @@ void clMenu::lvlSetupParamPrd() {
 					EnterParam.com = GB_COM_PRD_SET_DR_BLOCK;
 				} else if (name == punkt8) {
 					EnterParam.setEnable();
-					EnterParam.setValueRange(PRD_COM_A_MIN, PRD_COM_A_MAX);
+					uint8_t max = sParam.prd.getNumCom();
+					EnterParam.setValueRange(PRD_COM_A_MIN, max);
 					EnterParam.setValue(sParam.prd.getNumComA());
 					EnterParam.setDisc(PRD_COM_A_DISC);
 					EnterParam.setFract(PRD_COM_A_FRACT);
