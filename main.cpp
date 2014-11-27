@@ -215,8 +215,6 @@ static void setInterface(TUartData *uart) {
 			// во время отладки интерфейс USB можно настраивать
 			uartPC.open(19200, TDataBits::_8, TParity::NONE,
 					TStopBits::TWO);
-			protPCs.setEnable(PRTS_STATUS_READ);
-			protPCm.setDisable();
 			break;
 		case TInterface::RS485:
 			setProtocol(uart->Protocol.get(), uart->BaudRate.getValue());
@@ -224,8 +222,6 @@ static void setInterface(TUartData *uart) {
 					uart->DataBits.get(),
 					uart->Parity.get(),
 					uart->StopBits.get());
-			protPCm.setEnable();
-			protPCs.setDisable();
 			break;
 		case TInterface::MAX:		// заглушка
 			break;
