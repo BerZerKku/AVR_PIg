@@ -21,7 +21,7 @@
 #define PRD_TIME_ON_MAX_F	(PRD_TIME_ON_MAX / PRD_TIME_ON_FRACT)
 #define PRD_TIME_ON_DISC_F	(PRD_TIME_ON_DISC / PRD_TIME_ON_FRACT)
 /// длительность команды для ВЧ
-#define PRD_DURAT_L_MIN		20
+#define PRD_DURAT_L_MIN		30
 #define PRD_DURAT_L_MAX		100
 #define PRD_DURAT_L_DISC	1
 #define PRD_DURAT_L_FRACT	1
@@ -29,7 +29,7 @@
 #define PRD_DURAT_L_MAX_F	(PRD_DURAT_L_MAX / PRD_DURAT_L_FRACT)
 #define PRD_DURAT_L_DISC_F	(PRD_DURAT_L_DISC / PRD_DURAT_L_FRACT)
 /// длительность команды для ОПТИКИ
-#define PRD_DURAT_O_MIN		20
+#define PRD_DURAT_O_MIN		30
 #define PRD_DURAT_O_MAX		500
 #define PRD_DURAT_O_DISC	10
 #define PRD_DURAT_O_FRACT	10
