@@ -123,6 +123,22 @@
 #define GLB_PVZUE_N_LVL_MIN_F	(GLB_PVZUE_N_LVL_MIN / GLB_PVZUE_N_LVL_FRACT)
 #define GLB_PVZUE_N_LVL_MAX_F	(GLB_PVZUE_N_LVL_MAX / GLB_PVZUE_N_LVL_FRACT)
 #define GLB_PVZUE_N_LVL_DISC_F	(GLB_PVZUE_N_LVL_DISC / GLB_PVZUE_N_LVL_FRACT)
+// период беглого режима АК
+#define GLB_PVZUE_P_BAC_MIN 	1
+#define GLB_PVZUE_P_BAC_MAX 	255
+#define GLB_PVZUE_P_BAC_DISC 	1
+#define GLB_PVZUE_P_BAC_FRACT 	1
+#define GLB_PVZUE_P_BAC_MIN_F	(GLB_PVZUE_P_BAC_MIN / GLB_PVZUE_P_BAC_FRACT)
+#define GLB_PVZUE_P_BAC_MAX_F	(GLB_PVZUE_P_BAC_MAX / GLB_PVZUE_P_BAC_FRACT)
+#define GLB_PVZUE_P_BAC_DISC_F	(GLB_PVZUE_P_BAC_DISC / GLB_PVZUE_P_BAC_FRACT)
+// период повтора беглого режима АК
+#define GLB_PVZUE_PR_BAC_MIN 	1
+#define GLB_PVZUE_PR_BAC_MAX 	255
+#define GLB_PVZUE_PR_BAC_DISC 	1
+#define GLB_PVZUE_PR_BAC_FRACT 	1
+#define GLB_PVZUE_PR_BAC_MIN_F	(GLB_PVZUE_PR_BAC_MIN / GLB_PVZUE_PR_BAC_FRACT)
+#define GLB_PVZUE_PR_BAC_MAX_F	(GLB_PVZUE_PR_BAC_MAX / GLB_PVZUE_PR_BAC_FRACT)
+#define GLB_PVZUE_PR_BAC_DISC_F	(GLB_PVZUE_PR_BAC_DISC / GLB_PVZUE_PR_BAC_FRACT)
 
 /// Микросхемы имеющие прошивку
 enum eGB_IC {
@@ -223,6 +239,8 @@ public:
 		pvzueNoiseTH_ = GLB_PVZUE_N_TH_MIN_F;
 		pvzueNoiseLvl_ = GLB_PVZUE_N_LVL_MIN_F;
 		pvzueTypeAC_ = GB_PVZUE_TYPE_AC_MAX;
+		pvzuePeriodBAC_ = GLB_PVZUE_P_BAC_MIN_F;
+		pvzuePeriodRepBAC_ = GLB_PVZUE_PR_BAC_MIN_F;
 		detector_ = GLB_DETECTOR_MIN_F;
 		corI_ = GLB_COR_I_DEC_MIN_F;
 		corU_ = GLB_COR_U_DEC_MIN_F;
@@ -817,6 +835,66 @@ public:
 		return pvzueTypeAC_;
 	}
 
+	/**	Установка параметра Период беглого режима АК.
+	 *
+	 *	@param val Период.
+	 *	@retval True - в случае успешной установки.
+	 *	@retval False - если было передано значение с ошибкой.
+	 */
+	bool setPvzuePeriodBAC(uint8_t val) {
+		bool stat = false;
+
+		val = (val / GLB_PVZUE_P_BAC_DISC_F) * GLB_PVZUE_P_BAC_DISC_F;
+
+		// записано в таком виде т.к. иначе портится автоформат в Eclipse
+		if (val >= GLB_PVZUE_P_BAC_MIN_F) {
+			if (val <= GLB_PVZUE_P_BAC_MAX_F) {
+				pvzuePeriodBAC_ = val;
+				stat = true;
+			}
+		}
+
+		return stat;
+	}
+
+	/**	Возвращает текущее значение параметра Период беглого режима АК.
+	 *
+	 *	@retval Период.
+	 */
+	uint8_t getPvzuePeriodBAC() const {
+		return pvzuePeriodBAC_;
+	}
+
+	/**	Установка параметра Период повтора беглого режима АК.
+	 *
+	 *	@param val Период.
+	 *	@retval True - в случае успешной установки.
+	 *	@retval False - если было передано значение с ошибкой.
+	 */
+	bool setPvzuePeriodRepBAC(uint8_t val) {
+		bool stat = false;
+
+		val = (val / GLB_PVZUE_PR_BAC_DISC_F) * GLB_PVZUE_PR_BAC_DISC_F;
+
+		// записано в таком виде т.к. иначе портится автоформат в Eclipse
+		if (val >= GLB_PVZUE_PR_BAC_MIN_F) {
+			if (val <= GLB_PVZUE_PR_BAC_MAX_F) {
+				pvzuePeriodRepBAC_ = val;
+				stat = true;
+			}
+		}
+
+		return stat;
+	}
+
+	/**	Возвращает текущее значение параметра Период повтора беглого режима АК.
+	 *
+	 *	@retval Период.
+	 */
+	uint8_t getPvzuePeriodRepBAC() const {
+		return pvzuePeriodRepBAC_;
+	}
+
 	/** Установка параметра Тип детектора.
 	 * 	@param val Тип детектора.
 	 * 	@retval True - в случае успешной остановки.
@@ -956,6 +1034,12 @@ private:
 
 	// Тип автоконтроля (ПВЗУ-Е)
 	eGB_PVZUE_TYPE_AC pvzueTypeAC_;
+
+	// Период беглого режима АК (ПВЗУ-Е)
+	uint8_t pvzuePeriodBAC_;
+
+	// Период повтора беглого режима АК (ПВЗУ-Е)
+	uint8_t pvzuePeriodRepBAC_;
 
 	// Тип детектора
 	uint8_t detector_;

@@ -667,6 +667,8 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 					stat |= glb->setPvzueNoiseTH(buf[B4]);
 					stat |= glb->setPvzueNoiseLvl(buf[B5]);
 					stat |= glb->setPvzueTypeAC((eGB_PVZUE_TYPE_AC) buf[B6]);
+					stat |= glb->setPvzuePeriodBAC(buf[B7]);
+					stat |= glb->setPvzuePeriodRepBAC(buf[B8]);
 				}
 			} else {
 				// в командной аппаратуре "Время перезапуска"

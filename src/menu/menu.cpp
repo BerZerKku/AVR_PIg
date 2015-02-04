@@ -3634,6 +3634,8 @@ void clMenu::lvlSetupParamGlb() {
 	static char punkt24[] PROGMEM 	= "Совместимость";	// к400
 	static char punkt25[] PROGMEM 	= "Тип линии";
 	static char punkt26[] PROGMEM 	= "Телемеханика"; // к400
+	static char punkt27[] PROGMEM 	= "Период беглого АК";
+	static char punkt28[] PROGMEM	= "Период повт.бегл. АК";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3727,6 +3729,8 @@ void clMenu::lvlSetupParamGlb() {
 				Punkts_.add(punkt20, GB_COM_GET_TIME_RERUN);
 				Punkts_.add(punkt21, GB_COM_GET_TIME_RERUN);
 				Punkts_.add(punkt22, GB_COM_GET_TIME_RERUN);
+				Punkts_.add(punkt27, GB_COM_GET_TIME_RERUN);
+				Punkts_.add(punkt28, GB_COM_GET_TIME_RERUN);
 			}
 		} else if (type == AVANT_OPTO) {
 			Punkts_.add(punkt1, GB_COM_GET_TIME_SINCHR);
@@ -3839,6 +3843,12 @@ void clMenu::lvlSetupParamGlb() {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
 	} else if (name == punkt26) {
 		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
+	} else if (name == punkt27) {
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_PVZUE_P_BAC_MIN,
+				GLB_PVZUE_P_BAC_MAX, "сек");
+	} else if (name == punkt28) {
+		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_PVZUE_PR_BAC_MIN,
+				GLB_PVZUE_PR_BAC_MAX, "сек");
 	}
 
 	if (EnterParam.isEnable()) {
@@ -3944,6 +3954,12 @@ void clMenu::lvlSetupParamGlb() {
 			} else if (name == punkt26) {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
 				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
+			} else if (name == punkt27) {
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
+				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
+			} else if (name == punkt28) {
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
+				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
 			}
 			sParam.txComBuf.addFastCom(EnterParam.com);
 			EnterParam.setDisable();
@@ -4022,6 +4038,12 @@ void clMenu::lvlSetupParamGlb() {
 		} else if (name == punkt26) {
 			uint8_t val = sParam.glb.getTmK400() ? 1 : 0;
 			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
+		} else if (name == punkt27) {
+			uint8_t val = sParam.glb.getPvzuePeriodBAC();
+			snprintf_P(&vLCDbuf[poz], 11, "%uсек", val);
+		} else if (name == punkt28) {
+			uint8_t val = sParam.glb.getPvzuePeriodRepBAC();
+			snprintf_P(&vLCDbuf[poz], 11, "%uсек", val);
 		}
 	}
 
@@ -4256,6 +4278,22 @@ void clMenu::lvlSetupParamGlb() {
 				EnterParam.list = fcOnOff[0];
 				EnterParam.setDopValue(3);
 				EnterParam.com = GB_COM_SET_COM_PRD_KEEP;
+			} else if (name == punkt27) {
+				EnterParam.setEnable();
+				EnterParam.setValueRange(GLB_PVZUE_P_BAC_MIN, GLB_PVZUE_P_BAC_MAX);
+				EnterParam.setValue(sParam.glb.getPvzuePeriodBAC());
+				EnterParam.setDisc(GLB_PVZUE_P_BAC_DISC);
+				EnterParam.setFract(GLB_PVZUE_P_BAC_FRACT);
+				EnterParam.setDopValue(7);
+				EnterParam.com = GB_COM_SET_TIME_RERUN;
+			} else if (name == punkt28) {
+				EnterParam.setEnable();
+				EnterParam.setValueRange(GLB_PVZUE_PR_BAC_MIN, GLB_PVZUE_PR_BAC_MAX);
+				EnterParam.setValue(sParam.glb.getPvzuePeriodRepBAC());
+				EnterParam.setDisc(GLB_PVZUE_PR_BAC_DISC);
+				EnterParam.setFract(GLB_PVZUE_PR_BAC_FRACT);
+				EnterParam.setDopValue(8);
+				EnterParam.com = GB_COM_SET_TIME_RERUN;
 			}
 			break;
 		default:
