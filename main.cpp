@@ -8,6 +8,7 @@
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
 #include <avr/eeprom.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include "debug.h"
 #include "glbDefine.h"
@@ -31,7 +32,7 @@
 /// Максимальное кол-во неполученных сообщений от БСП для ошибки связи
 #define MAX_LOST_COM_FROM_BSP 10
 
-/// пароль пользователя
+/// адрес пароля пользователя
 #define EEPROM_START_ADDRESS 0x10
 
 /// Структура параметров хранящихся в EEPROM
@@ -105,9 +106,11 @@ static bool uartRead() {
 
 			// проверка соответствия команды запрошенной с ПК и команды
 			// полученной от БСП и если совпадают пересылка сообщения на ПК
+			// для команды GB_COM_GET_VERS происходит добавление версии БСП-ПИ
 			if (lastPcCom == protBSPs.getCurrentCom()) {
 				if (protPCs.isEnable()) {
-					protPCs.copyCommandFrom(protBSPs.buf);
+					if (protPCs.copyCommandFrom(protBSPs.buf))
+						protPCs.modifyVersionCom();
 				}
 			}
 		}

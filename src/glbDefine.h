@@ -431,6 +431,7 @@ public:
 		day_ = 1;
 		month_ = 1;
 		year_ = 0;
+		dayWeek_ = 0;
 	}
 
 	// Считывание и установка секунд
@@ -636,6 +637,11 @@ private:
 /// Класс для текущего состояния аппарата
 class TDeviceStatus {
 public:
+	/// Максимальное кол-во вариантов для номеров удаленных аппаратов
+	// т.е. используются 3 бита, 0 бит - 1 аппарат, ... 2 биит - 3 аппарат.
+	// если установлены все три - ошибка.
+	static const uint8_t GB_MAX_REM_NUM = 7;
+
 	TDeviceStatus() {
 		// присваивание иемени по умолчанию
 		static const char nameDev[] PROGMEM = "НЕТ";
@@ -647,9 +653,44 @@ public:
 		warning_ = 0;
 		warnings_ = 0;
 		numWarnings_ = 0;
+		remoteNumber_ = 0;
 		regime_ = GB_REGIME_MAX;
 		state_ = MAX_NUM_DEVICE_STATE;
 		dopByte_ = 0;
+	}
+
+	/**	Установка номера удаленного аппарата.
+	 *
+	 * 	Используется для вывода номеров удаленных аппаратов, для которых
+	 * 	сформировалась ошибка (АВАНТ Р400(М) совместимость с ПВЗУ-Е).
+	 *
+	 * 	@param val Номер аппарата(ов). Три младших бита отвечают за соответсвую-
+	 * 	щий аппарат.
+	 * 	@retval True - в случае успешной записи параметра.
+	 * 	@retval False - если была обнаружена ошибка данных
+	 */
+	bool setRemoteNumber(uint8_t val) {
+		bool state = false;
+
+		if (val > GB_MAX_REM_NUM) {
+			remoteNumber_ = GB_MAX_REM_NUM;
+		} else {
+			remoteNumber_ = val;
+			state = true;
+		}
+
+		return state;
+	}
+
+	/** Возвращает номер удаленного аппарата.
+	 *
+	 * 	Используется для вывода номеров удаленных аппаратов, для которых
+	 * 	сформировалась ошибка (АВАНТ Р400(М) совместимость с ПВЗУ-Е).
+	 *
+	 * 	@param Номер аппарата(ов), а точнее строка в массиве  fcRemoteNum.
+	 */
+	uint8_t getRemoteNumber() const {
+		return remoteNumber_;
 	}
 
 	// аварии
@@ -795,6 +836,10 @@ private:
 	uint8_t warning_;
 	uint16_t warnings_;
 	uint8_t numWarnings_;
+
+	// Номер удаленного аппарата для которого была сформирована ошибка/предупр.
+	// используется в Р400(М) в совместимости с ПВЗУ-Е
+	uint8_t remoteNumber_;
 
 	eGB_REGIME regime_;
 	uint8_t state_;

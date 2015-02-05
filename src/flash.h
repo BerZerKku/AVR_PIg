@@ -289,6 +289,19 @@ static char fcStopBits[TStopBits::MAX + 1][STRING_LENGHT] PROGMEM = {
 		"ошибка"		///< ошибочное значение
 };
 
+/// Номера удаленного(ых) аппарата
+static char fcRemoteNum[TDeviceStatus::GB_MAX_REM_NUM + 1][STRING_LENGHT] PROGMEM = {
+//		 1234567890
+		"   ",			///< 000
+		" 1 ",			///< 001
+		" 2 ",			///< 010
+		"1 2",			///< 011
+		" 3 ",			///< 100
+		"1 3",			///< 101
+		"2 3",			///< 110
+		" ? "			///< 111
+};
+
 //Состояния устройств
 // 	Количество состояний для всех устройств должно совпадать с MAX_NUM_DEVICE_STATE
 static const char fcUnknownSost[] PROGMEM = "Ошибка";		///< Неизвестное состояние
@@ -335,6 +348,8 @@ static const char fcPrdSost10[] PROGMEM =	"Речь";			///<
 static const char fcPrdSost11[] PROGMEM =	"ПРД";			///<
 static const char fcPrdSost12[] PROGMEM =	"ПРМ";			///<
 
+///
+
 /// Надпись Несиправность для неиспользуемых кодов неисправности.
 static const char fcUnknownFault[]		PROGMEM = "Неисправность";
 /// Надпись Предупреждение для неиспользуемых кодо предупреждений.
@@ -376,23 +391,23 @@ static const char fcDefFault0001[] 		PROGMEM = "Нет блока БСЗ";		///<
 static const char fcDefFault0002[] 		PROGMEM = "Неиспр.верс.БСЗ";	///<
 static const char fcDefFault0004[] 		PROGMEM = "Неиспр.перекл.";		///<
 static const char fcDefFault0008[] 		PROGMEM = "Неиспр.зап. БСЗ";	///<
-static const char fcDefFault0010[] 		PROGMEM = "АК-Нет ответа";		///<
+static const char fcDefFault0010[] 		PROGMEM = "АК-Нет ответа%S";	///<
 static const char fcDefFault0010rzsko[]	PROGMEM = "Нет сигнала ПРМ";	///<
 static const char fcDefFault0020[] 		PROGMEM = "Низкий ур. РЗ";		///<
-static const char fcDefFault0040[] 		PROGMEM = "Неиспр.удал. ДФЗ";	///<
-static const char fcDefFault0080[] 		PROGMEM = "Неиспр.удал. ВЫХ";	///<
+static const char fcDefFault0040[] 		PROGMEM = "Неиспр.уд.ДФЗ%S";	///<
+static const char fcDefFault0080[] 		PROGMEM = "Неиспр.уд.ВЫХ%S";	///<
 static const char fcDefFault0100[] 		PROGMEM = "Неиспр.вход.ПУСК";	///<
 static const char fcDefFault0200[] 		PROGMEM = "Неиспр.вход.СТОП";	///<
-static const char fcDefFault0400[] 		PROGMEM = "Уд.ПОСТ без отв.";	///<
+static const char fcDefFault0400[] 		PROGMEM = "Удал.без отв.%S";	///<
 static const char fcDefFault0800[] 		PROGMEM = "Неиспр.цепь. ВЫХ";	///<
-static const char fcDefFault1000[] 		PROGMEM = "Уд.ПОСТ обн.пом.";	///<
+static const char fcDefFault1000[] 		PROGMEM = "Удал.обн.пом.%S";	///<
 static const char fcDefFault2000[] 		PROGMEM = "Неиспр.зап. ВЫХ";	///<
 static const char fcDefFault4000[] 		PROGMEM = "Длительн. помеха";	///<
 static const char fcDefFault4000rzsk[]	PROGMEM = "Нет сигнала РЗ";		///<
 static const char fcDefFault8000[] 		PROGMEM = "Неиспр. ДФЗ";		///<
 
 // предупреждения защиты
-static const char fcDefWarning01[] 		PROGMEM = "АК-Снижен.запаса";	///<
+static const char fcDefWarning01[] 		PROGMEM = "АК-Сн.запаса %S";	///<
 static const char fcDefWarning01rzsk[] 	PROGMEM = "Низкий уров. РЗ";	///<
 static const char fcDefWarning01rzsko[] PROGMEM = "Нет КЧ";				///<
 static const char fcDefWarning02[] 		PROGMEM = "Нет сигнала МАН";	///<

@@ -455,6 +455,7 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
  */
 bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 	bool stat = false;
+	eGB_TYPE_DEVICE device = sParam_->typeDevice;
 
 	switch (com) {
 		case GB_COM_GET_TIME: {
@@ -536,6 +537,14 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 		case GB_COM_GET_FAULT: {
 			sParam_->def.status.setFault(TO_INT16(buf[B1], buf[B2]));
 			sParam_->def.status.setWarning(TO_INT16(buf[B3], buf[B4]));
+			// установка номера(ов) уд.аппаратов ддля Р400(М) в режиме ПВЗУ-Е
+			uint8_t n = 0;
+			if ((device == AVANT_R400) || (device == AVANT_R400M)) {
+				if (sParam_->glb.getCompatibility() == GB_COMPATIBILITY_PVZUE) {
+					n = buf[B5];
+				}
+			}
+			sParam_->def.status.setRemoteNumber(n);
 
 			sParam_->prm.status.setFault(TO_INT16(buf[B5], buf[B6]));
 			sParam_->prm.status.setWarning(TO_INT16(buf[B7], buf[B8]));

@@ -1982,6 +1982,7 @@ void clMenu::lvlControl() {
 				if (numDevices == GB_NUM_DEVICES_2) {
 					Punkts_.add(punkt02);
 					Punkts_.add(punkt09);
+					Punkts_.add(punkt30);
 					Punkts_.add(punkt19);
 					Punkts_.add(punkt16);
 					Punkts_.add(punkt20);
@@ -1990,7 +1991,6 @@ void clMenu::lvlControl() {
 				} else if (numDevices == GB_NUM_DEVICES_3) {
 					Punkts_.add(punkt23);
 					Punkts_.add(punkt24);
-					Punkts_.add(punkt26);
 					Punkts_.add(punkt27);
 					Punkts_.add(punkt28);
 					Punkts_.add(punkt30);
@@ -3955,11 +3955,11 @@ void clMenu::lvlSetupParamGlb() {
 				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
 				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
 			} else if (name == punkt27) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
-				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
+				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
 			} else if (name == punkt28) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
-				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
+				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
+				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
 			}
 			sParam.txComBuf.addFastCom(EnterParam.com);
 			EnterParam.setDisable();
@@ -4040,10 +4040,10 @@ void clMenu::lvlSetupParamGlb() {
 			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
 		} else if (name == punkt27) {
 			uint8_t val = sParam.glb.getPvzuePeriodBAC();
-			snprintf_P(&vLCDbuf[poz], 11, "%uсек", val);
+			snprintf(&vLCDbuf[poz], 11, "%uсек", val);
 		} else if (name == punkt28) {
 			uint8_t val = sParam.glb.getPvzuePeriodRepBAC();
-			snprintf_P(&vLCDbuf[poz], 11, "%uсек", val);
+			snprintf(&vLCDbuf[poz], 11, "%uсек", val);
 		}
 	}
 
@@ -5428,7 +5428,8 @@ void clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device) {
 		{
 			text = device->faultText;
 			x = device->getFault();
-			snprintf_P(&vLCDbuf[poz], 17, text[x]);
+			y = device->getRemoteNumber();
+			snprintf_P(&vLCDbuf[poz], 17, text[x], fcRemoteNum[y]);
 		}
 		else
 		{
@@ -5456,7 +5457,8 @@ void clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device) {
 		{
 			text = device->warningText;
 			x = device->getWarning();
-			snprintf_P(&vLCDbuf[poz], 17, text[x]);
+			y = device->getRemoteNumber();
+			snprintf_P(&vLCDbuf[poz], 17, text[x], fcRemoteNum[y]);
 		}
 		else
 		{
