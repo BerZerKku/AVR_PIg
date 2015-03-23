@@ -934,6 +934,7 @@ uint8_t clProtocolBspS::sendModifGlbCommand(eGB_COM com) {
 }
 
 /**	Формирование сообщения команды считавания кол-ва и самих записей журнала.
+ *
  * 	@param com Команда на передачу
  * 	@return Кол-во передаваемых бйт
  */

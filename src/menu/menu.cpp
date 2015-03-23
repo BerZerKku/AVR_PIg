@@ -571,7 +571,8 @@ bool clMenu::setDeviceOPTO() {
 	// заполнение массива общих предупреждений
 	sParam.glb.status.warningText[0] = fcGlbWarning01;
 	sParam.glb.status.warningText[1] = fcGlbWarning02;
-	// 2-3 нет
+	sParam.glb.status.warningText[2] = fcGlbWarning04;
+	sParam.glb.status.warningText[3] = fcGlbWarning08;
 	sParam.glb.status.warningText[4] = fcGlbWarning10;
 	sParam.glb.status.warningText[5] = fcGlbWarning20;
 	sParam.glb.status.warningText[6] = fcGlbWarning40;

@@ -382,9 +382,12 @@ static const char fcGlbFault4000[] 		PROGMEM = "ВЧ тракт восст.";	///<
 // общие предупреждения
 static const char fcGlbWarning01[] 		PROGMEM = "Установите часы";	///<
 static const char fcGlbWarning02[] 		PROGMEM = "Отказ резерв.лин";	///<
+static const char fcGlbWarning04[]		PROGMEM = "Кольцо 1 наруш.";	///<
+static const char fcGlbWarning08[]		PROGMEM = "Кольцо 2 наруш.";	///<
 static const char fcGlbWarning10[] 		PROGMEM = "Удал.ПОСТ неиспр";	///<
 static const char fcGlbWarning20[] 		PROGMEM = "Удал.ПРД неиспр";	///<
 static const char fcGlbWarning40[] 		PROGMEM = "Удал.ПРМ неиспр";	///<
+
 
 // неисправности защиты
 static const char fcDefFault0001[] 		PROGMEM = "Нет блока БСЗ";		///<

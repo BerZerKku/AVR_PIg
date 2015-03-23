@@ -273,6 +273,10 @@ public:
 		if ((val < AVANT_NO) || (val > AVANT_MAX)) {
 			act = GB_ACT_ERROR;
 		} else {
+			if ((val == AVANT_K400) && (typeLine_ == GB_TYPE_LINE_OPTO)) {
+				val = AVANT_OPTO;
+			}
+
 			if (typeDevice_ == val) {
 				act = GB_ACT_OLD;
 			} else {

@@ -11,15 +11,11 @@
 // Конструктор
 TProtocolPcM::TProtocolPcM(stGBparam *sParam, uint8_t *buf, uint8_t size) :
 sParam_(sParam), TProtocolModbus(buf, size) {
-	wait_ = false;
+	// NONE
 }
 
 //	Функция отправки сообщения.
 uint8_t TProtocolPcM::send() {
-	if (wait_ > 0) {
-		wait_--;
-		return 0;
-	}
 
 	return sendData();
 }
@@ -525,6 +521,8 @@ uint16_t TProtocolPcM::readRegVersionIC(uint16_t adr) {
 		val = sParam_->glb.getVersProgIC(GB_IC_BSK_PLIS_PRD2);
 	} else if (adr == ADR_IC_BSK_PRM2) {
 		val = sParam_->glb.getVersProgIC(GB_IC_BSK_PLIS_PRM2);
+	} else if (adr == ADR_IC_BSZ) {
+		val = sParam_->glb.getVersProgIC(GB_IC_BSZ_PLIS);
 	}
 
 	return val;
@@ -766,8 +764,8 @@ uint16_t TProtocolPcM::readJournalDef(uint16_t adr) {
 					val = jrn->getDeviceJrn();
 				} else if (adr == ADR_JRN_DEF_TYPE) {
 					val = jrn->getSignals();
-				} else if (adr == ADR_JRN_DEF_REG) {
-					val = jrn->getRegime();
+				} else if (adr == ADR_JRN_DEF_STATE) {
+					val = jrn->getEventType();
 				} else if (adr == ADR_JRN_DEF_MSECOND) {
 					val = jrn->dateTime.getMsSecond();
 				} else if (adr == ADR_JRN_DEF_SECOND) {
