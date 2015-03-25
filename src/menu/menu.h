@@ -11,6 +11,7 @@
 #include "keyboard.h"
 #include "glbDefine.h"
 #include "paramBsp.h"
+#include "LocalParams.h"
 
 /// время одно цикла работы с меню, мс
 #define MENU_TIME_CYLCE 200
@@ -530,6 +531,9 @@ private:
 
 	// параметры для ввода новых значений
 	TEnterParam EnterParam;
+
+	// локальные параметры
+	LocalParams localParams;
 
 	//  настройки для соответствующих аппаратов
 	bool setDeviceK400();
