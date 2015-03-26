@@ -239,6 +239,14 @@ public:
 		fp = ptr;
 	};
 
+	/**	Возвращает текущий параметр.
+	 *
+	 * 	@return Текущий параметр.
+	 */
+	eGB_PARAM getParam() const {
+		return param[currParam];
+	}
+
 private:
 
 	const Param* fp;		///< Массив значений параметров.
@@ -270,7 +278,7 @@ private:
 	 * 	@param val Новое значение параметра.
 	 *
 	 */
-	void check(uint16_t val);
+	void check(int16_t val);
 
 	/**	Обновление параметра.
 	 *

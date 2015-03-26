@@ -314,18 +314,18 @@ enum eGB_PARAM {
 	GB_PARAM_DETECTOR,			///< тип детектора
 	GB_PARAM_COR_U,				///< коррекция напряжения
 	GB_PARAM_COR_I,				///< коррекция тока
-	GB_PARAM_PVUZE_PROTOCOL,	///< протокол обмена (ПВЗУ-Е)
+	GB_PARAM_PVZUE_PROTOCOL,	///< протокол обмена (ПВЗУ-Е)
 	GB_PARAM_PVZUE_PARITY,		///< признак четности (ПВЗУ-Е)
 	GB_PARAM_PVZUE_FAIL,		///< допустимые провалы (ПВЗУ-Е)
 	GB_PARAM_PVZUE_NOISE_TH,	///< порог по помехе (ПВЗУ-Е)
 	GB_PARAM_PVZUE_NOISE_LVL,	///< допустимая помеха (ПВЗУ-Е)
 	GB_PARAM_PVZUE_AC_TYPE,		///< тип автоконтроля (ПВЗУ-Е)
+	GB_PARAM_PVZUE_PERIOD_AC,	///< период беглого режима АК (ПВЗУ-Е)
+	GB_PARAM_PVZUE_PER_RE_AC,	///< период повтора беглого режима АК (ПЗВУ-Е)
 	GB_PARAM_BACKUP,			///< резервирование
 	GB_PARAM_COMP_K400,			///< совместимость К400
 	GB_PARAM_NUM_OF_DEVICES,	///< тип линии (кол-во аппаратов в линии)
-	GB_PARAM_TM_K400,			///< телемеханика
-	GB_PARAM_PVZUE_PERIOD_AC,	///< период беглого режима АК (ПВЗУ-Е)
-	GB_PARAM_PVZUE_PER_RE_AC	///< период повтора беглого режима АК (ПЗВУ-Е)
+	GB_PARAM_TM_K400			///< телемеханика
 };
 
 /// Значения команд управления

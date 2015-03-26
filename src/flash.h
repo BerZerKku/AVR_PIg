@@ -108,10 +108,8 @@ static const char fcDefType[DEF_TYPE_MAX + 1][STRING_LENGHT] PROGMEM = {
 static
 const char fcNumDevices[GB_NUM_DEVICES_MAX + 1][STRING_LENGHT] PROGMEM = {
 // 		 1234567890
-		"ошибка",		///<
 		"2 концевая",	///<
 		"3 концевая",	///<
-		"ошибка"		///< ошибочное значение
 };
 
 /// Тип детектора (параметр Общий).
@@ -842,6 +840,10 @@ static const Param fcParams[] PROGMEM = {
 		{namePvzueNoiseLvl,		GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DEG,		fcNullBuf,			1,		20,		80,		20,		1},
 		// тип автоконтроля (ПВЗУ-Е)
 		{namePvzueAcType,		GB_COM_GET_TIME_RERUN,		Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcPvzueTypeAC[0],	1,		1,		3,		1,		1},
+		// период беглого режима АК (ПВЗУ-Е)
+		{namePvzuePeriodAC,		GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_SEC, 	fcNullBuf,			1,		1,		255,	1,		1},
+		//	период повтора беглого режима АК (ПЗВУ-Е)
+		{namePvzuePeriodReAC,	GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_SEC, 	fcNullBuf,			1,		1,		255,	1,		1},
 		// резервирование
 		{nameBackup,			GB_COM_GET_COR_U_I,			Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcNullBuf,			1,		0,		1,		1,		1},
 		// совместимость К400
@@ -849,9 +851,5 @@ static const Param fcParams[] PROGMEM = {
 		// тип линии (кол-во аппаратов в линии) !!! передается на 1 меньше
 		{nameNumOfDevices,		GB_COM_DEF_GET_LINE_TYPE,	Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcNumDevices[0],	1,		2,		3,		1,		1},
 		// телемеханика
-		{nameTmK400,			GB_COM_GET_COM_PRD_KEEP,	Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
-		// период беглого режима АК (ПВЗУ-Е)
-		{namePvzuePeriodAC,		GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_SEC, 	fcNullBuf,			1,		1,		255,	1,		1},
-		//	период повтора беглого режима АК (ПЗВУ-Е)
-		{namePvzuePeriodReAC,	GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_SEC, 	fcNullBuf,			1,		1,		255,	1,		1}
+		{nameTmK400,			GB_COM_GET_COM_PRD_KEEP,	Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1}
 };

@@ -628,6 +628,11 @@ private:
 	 */
 	void printValue(uint8_t pos);
 
+	/**
+	 *
+	 */
+	void enterParameter();
+
 	// текущая функция ввода
 	eMENU_ENTER_PARAM (clMenu::*enterFunc)();
 

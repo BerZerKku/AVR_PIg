@@ -42,6 +42,106 @@ bool clProtocolBspS::getData(bool pc) {
 			stat = getPrdCommand(com, pc);				// команды передатчика
 		else
 			stat = getGlbCommand(com, pc);				// команды общие
+
+		LocalParams *lp = &sParam_->local;
+		if (com == lp->getCom()) {
+			int16_t val = -10000;
+			switch(lp->getParam()) {
+				case GB_PARAM_TIME_SYNCH:
+					val = buf[B1];
+					break;
+				case GB_PARAM_NUM_OF_DEVICE_2:	// DOWN
+				case GB_PARAM_NUM_OF_DEVICE_3:
+					val = buf[B1];
+					break;
+				case GB_PARAM_OUT_CHECK:
+					val = buf[B1];
+					break;
+				case GB_PARAM_WARN_THD:
+				case GB_PARAM_WARN_THD_CF:	// DOWN
+					val = buf[B1];
+					break;
+				case GB_PARAM_TIME_RERUN:
+					val = buf[B1];
+					break;
+				case GB_PARAM_COM_PRD_KEEP:
+					val = buf[B1];
+					break;
+				case GB_PARAM_COM_PRM_KEEP:
+					val = buf[B1];
+					break;
+				case GB_PARAM_IN_DEC_2:
+				case GB_PARAM_IN_DEC_3:
+					val = buf[B2 + lp->getNumOfCurrSameParam() - 1];
+					break;
+				case GB_PARAM_NET_ADDRESS:
+					val = buf[B1];
+					break;
+				case GB_PARAM_U_OUT_NOM:
+					val = buf[B1];
+					break;
+				case GB_PARAM_FREQ:
+					val = TO_INT16(buf[B1], buf[B2]);
+					break;
+				case GB_PARAM_COMP_P400:
+					val = buf[B1];
+					break;
+				case GB_PARAM_IN_DEC_AC:
+					val = buf[B1];
+					break;
+				case GB_PARAM_DETECTOR:
+					val = buf[B2];
+					break;
+				case GB_PARAM_COR_U:
+					val = buf[B1]*10 + buf[B2]/10;
+					break;
+				case GB_PARAM_COR_I:
+					val = TO_INT16(buf[B3], buf[B4]);
+					break;
+				case GB_PARAM_PVZUE_PROTOCOL:
+					val = buf[B1];
+					break;
+				case GB_PARAM_PVZUE_PARITY:
+					val = buf[B2];
+					break;
+				case GB_PARAM_PVZUE_FAIL:
+					val = buf[B3];
+					break;
+				case GB_PARAM_PVZUE_NOISE_TH:
+					val = buf[B4];
+					break;
+				case GB_PARAM_PVZUE_NOISE_LVL:
+					val = buf[B5];
+					break;
+				case GB_PARAM_PVZUE_AC_TYPE:
+					val = buf[B6];
+					break;
+				case GB_PARAM_PVZUE_PERIOD_AC:
+					val = buf[B7];
+					break;
+				case GB_PARAM_PVZUE_PER_RE_AC:
+					val = buf[B8];
+					break;
+				case GB_PARAM_BACKUP:
+					val = buf[B1];
+					break;
+				case GB_PARAM_COMP_K400:
+					val = buf[B2];
+					break;
+				case GB_PARAM_NUM_OF_DEVICES:
+					val = buf[B1] + 1;
+					break;
+				case GB_PARAM_TM_K400:
+					val = buf[B3];
+					break;
+			}
+			lp->setValue(val);
+//			if (sParam_->local.getParam() == GB_PARAM_COMP_K400) {
+//				sParam_->local.setValue(buf[B2]);
+//			} else if (sParam_->local.getParam() == GB_PARAM_TIME_SYNCH) {
+//
+//			}
+		}
 	}
 
 	return stat;
@@ -805,6 +905,9 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			break;
 
 	}
+
+
+
 
 	return stat;
 }

@@ -93,11 +93,11 @@ void  LocalParams::clearParams() {
 }
 
 //	Проверка установленного значения параметра на корректность.
-void LocalParams::check(uint16_t val) {
+void LocalParams::check(int16_t val) {
 	if ((val >= getMin()) && (val <= getMax())) {
-		state = STATE_ERROR;
-	} else {
 		state = STATE_NO_ERROR;
+	} else {
+		state = STATE_ERROR;
 	}
 }
 
