@@ -60,7 +60,7 @@ void LocalParams::prevSameParam() {
 }
 
 // Добавление в список нового параметра.
-bool LocalParams::addParam(const Param *newParam) {
+bool LocalParams::addParam(eGB_PARAM newParam) {
 	if (numOfParams >= (MAX_NUM_OF_PARAMS - 1))
 		return false;
 
@@ -70,7 +70,7 @@ bool LocalParams::addParam(const Param *newParam) {
 
 //  Установка нового значения параметра и его проверка на корректность.
 void LocalParams::setValue(int16_t val) {
-		uint8_t fract = pgm_read_byte(&param[currParam]->fract);
+		uint8_t fract = pgm_read_byte(&fp[param[currParam]].fract);
 		uint8_t disc = getDisc();
 
 		val = val * fract;
@@ -83,7 +83,7 @@ void LocalParams::setValue(int16_t val) {
 
 //	Очистка списка параметров.
 void  LocalParams::clearParams() {
-	param[0] = 0;
+	param[0] = GB_PARAM_TIME_SYNCH;
 	val = 0;
 	currParam = 0;
 	numOfParams = 0;
@@ -104,7 +104,7 @@ void LocalParams::check(uint16_t val) {
 //	Обновление параметра.
 void LocalParams::refreshParam() {
 	val = 0;
-	numOfSameParam = pgm_read_byte(&param[currParam]->num);
+	numOfSameParam = pgm_read_byte(&fp[param[currParam]].num);
 	currSameParam = 0;
 	state = STATE_READ_PARAM;
 }

@@ -102,6 +102,8 @@ clMenu::clMenu() {
 	// установка режима работы подсветки
 	vLCDsetLed(LED_REGIME);
 #endif
+
+	sParam.local.setFlashParams(&fcParams[0]);
 }
 
 void clMenu::main(void) {
@@ -3679,31 +3681,31 @@ void clMenu::lvlSetupParamGlb() {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
 
-			sParam.local.addParam(&fcParams[GB_PARAM_COMP_K400]);
-			sParam.local.addParam(&fcParams[GB_PARAM_TIME_SYNCH]);
-			sParam.local.addParam(&fcParams[GB_PARAM_NUM_OF_DEVICE_2]); // TODO 2-х, 3-х концевя
+			sParam.local.addParam(GB_PARAM_COMP_K400);
+			sParam.local.addParam(GB_PARAM_TIME_SYNCH);
+			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE_2); // TODO 2-х, 3-х концевя
 			if (sParam.prd.status.isEnable()) {
-				sParam.local.addParam(&fcParams[GB_PARAM_OUT_CHECK]);
+				sParam.local.addParam(GB_PARAM_OUT_CHECK);
 			}
 			if (sParam.prm.status.isEnable()) {
-				sParam.local.addParam(&fcParams[GB_PARAM_WARN_THD]);
-				sParam.local.addParam(&fcParams[GB_PARAM_TIME_RERUN]);
+				sParam.local.addParam(GB_PARAM_WARN_THD);
+				sParam.local.addParam(GB_PARAM_TIME_RERUN);
 			}
 			if (sParam.prd.status.isEnable()) {
-				sParam.local.addParam(&fcParams[GB_PARAM_COM_PRD_KEEP]);
+				sParam.local.addParam(GB_PARAM_COM_PRD_KEEP);
 			}
 			if (sParam.prm.status.isEnable()) {
-				sParam.local.addParam(&fcParams[GB_PARAM_COM_PRM_KEEP]);
-				sParam.local.addParam(&fcParams[GB_PARAM_IN_DEC_2]); 	// TODO 2-х, 3-х концевя
+				sParam.local.addParam(GB_PARAM_COM_PRM_KEEP);
+				sParam.local.addParam(GB_PARAM_IN_DEC_2); 	// TODO 2-х, 3-х концевя
 			}
-			sParam.local.addParam(&fcParams[GB_PARAM_FREQ]);
+			sParam.local.addParam(GB_PARAM_FREQ);
 			if (sParam.prd.status.isEnable()) {
-				sParam.local.addParam(&fcParams[GB_PARAM_COR_U]);
-				sParam.local.addParam(&fcParams[GB_PARAM_COR_I]);
+				sParam.local.addParam(GB_PARAM_COR_U);
+				sParam.local.addParam(GB_PARAM_COR_I);
 			}
-			sParam.local.addParam(&fcParams[GB_PARAM_NUM_OF_DEVICES]);
+			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES);
 			if (sParam.glb.getCompK400() == GB_COMP_K400_UPKC_PRD) {
-				sParam.local.addParam(&fcParams[GB_PARAM_TM_K400]);
+				sParam.local.addParam(GB_PARAM_TM_K400);
 			}
 		} else if (type == AVANT_RZSK) {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);

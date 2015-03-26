@@ -87,7 +87,7 @@ public:
 	 * 	@retval False Буфер переполнен, параметр небыл добавлен.
 	 *
 	 */
-	bool addParam(const Param *newParam);
+	bool addParam(eGB_PARAM newParam);
 
 	///	Очистка списка параметров.
 	void clearParams();
@@ -96,25 +96,25 @@ public:
 	 *
 	 * 	@return Минимальное значение параметра.
 	 */
-	int16_t getMin() const { return pgm_read_word(&param[currParam]->min);	}
+	int16_t getMin() const { return pgm_read_word(&fp[param[currParam]].min);	}
 
 	/**	Возвращает максимальное значение параметра ?!
 	 *
 	 * 	@return Максимальное значение параметра.
 	 */
-	int16_t getMax() const { return pgm_read_word(&param[currParam]->max); }
+	int16_t getMax() const { return pgm_read_word(&fp[param[currParam]].max); }
 
 	/**	Возвращает дискретность параметра ?!
 	 *
 	 * 	@param Дискретность параметра.
 	 */
-	uint8_t getDisc() const { return pgm_read_byte(&param[currParam]->disc); }
+	uint8_t getDisc() const { return pgm_read_byte(&fp[param[currParam]].disc); }
 
 	/**	Возвращает множитель параметра.
 	 *
 	 * 	@param Множитель параметра.
 	 */
-	uint8_t getFract() const { return pgm_read_byte(&param[currParam]->fract); }
+	uint8_t getFract() const { return pgm_read_byte(&fp[param[currParam]].fract); }
 
 	/** Отправка команды на считывание по стандартному протоколу.
 	 *
@@ -139,41 +139,113 @@ public:
 	 */
 	uint16_t (*rxParamByProtocolS) (uint8_t *buf);
 
-	uint8_t getNumOfCurrParam() const { return currParam + 1; }
+	/**	Возвращает номер текущего параметра.
+	 *
+	 * 	@return Номер текущего параметра.
+	 */
+	uint8_t getNumOfCurrParam() const {
+		return currParam + 1;
+	}
 
-	uint8_t getNumOfParams() const { return numOfParams; }
+	/**	Возвращает количество текущих параметров.
+	 *
+	 * 	@return Количество текущих параметров.
+	 */
+	uint8_t getNumOfParams() const {
+		return numOfParams;
+	}
 
+	/**	Возвращает указатель на сторку с названием параметра.
+	 *
+	 * 	Строка находится во FLASH.
+	 *
+	 * 	@return Указатель на строку с названием параметра.
+	 *
+	 */
 	PGM_P getNameOfParam() const {
-		return (PGM_P) pgm_read_word(&param[currParam]->name);
+		return (PGM_P) pgm_read_word(&fp[param[currParam]].name);
 	}
 
+	/**	Возвращает указатель на первую строку массива значений параметра.
+	 *
+	 * 	Актуально для переменных значение которых выбирается из списка. Сам
+	 * 	список находится во FLASH.
+	 *
+	 * 	@return Указатель на первую строку массива значений параметра.
+	 *
+	 */
 	PGM_P getListOfValues() const {
-		return (PGM_P) pgm_read_word(&param[currParam]->listValues);
+		return (PGM_P) pgm_read_word(&fp[param[currParam]].listValues);
 	}
 
-	uint8_t getNumOfCurrSameParam() const { return currSameParam + 1; }
+	/**	Возвращает количество однотипных парметров.
+	 *
+	 * 	Например, если для каждой из команд возможно установить свое значение
+	 * 	"Длительность команды", то тут будет количество команд.
+	 *
+	 * 	@return Количество однотипных параметров.
+	 */
+	uint8_t getNumOfCurrSameParam() const {
+		return currSameParam + 1;
+	}
 
-	uint8_t getNumOfSameParams() const { return numOfSameParam; }
+	/**	Возвращает текущий номер однотипного параметра.
+	 *
+	 * 	@return Текущий номер однотипного параметра.
+	 */
+	uint8_t getNumOfSameParams() const {
+		return numOfSameParam;
+	}
 
+	/**	Возвращает тип текущего параметра.
+	 *
+	 * 	@return Тип текущего параметра.
+	 */
 	Param::PARAM_TYPE getParamType() const {
-		return (Param::PARAM_TYPE) pgm_read_byte(&param[currParam]->param);
+		return (Param::PARAM_TYPE) pgm_read_byte(&fp[param[currParam]].param);
 	}
 
+	/**	Возвращает тип диапазона значений декущего параметра.
+	 *
+	 * 	@return Тип диапазона значений текущего параметра.
+	 */
 	Param::RANGE_TYPE getRangeType() const {
-		return (Param::RANGE_TYPE) pgm_read_byte(&param[currParam]->range);
+		return (Param::RANGE_TYPE) pgm_read_byte(&fp[param[currParam]].range);
 	}
 
+	/**	Возвращает размерность текущего параметра.
+	 *
+	 * 	@return Размерность текущего параметра.
+	 */
 	Param::DIMENSION getDim() const {
-		return (Param::DIMENSION) pgm_read_byte(&param[currParam]->dim);
+		return (Param::DIMENSION) pgm_read_byte(&fp[param[currParam]].dim);
 	}
 
+	/**	Возвращает команду стандартного протокола для текущего параметра.
+	 *
+	 * 	@return Команда стандартного протокола для текущего параметра.
+	 */
 	eGB_COM getCom() const {
-		return (eGB_COM) pgm_read_byte(&param[currParam]->com);
+		return (eGB_COM) pgm_read_byte(&fp[param[currParam]].com);
 	}
+
+	/**	Установка массива значений параметров.
+	 *
+	 * 	Сам массив находится во FLASH, но это учитывается далее.
+	 *
+	 * 	@param *ptr Указатель на массив значений параметров.
+	 */
+	void setFlashParams(const Param *ptr) {
+		fp = ptr;
+	};
 
 private:
 
-	const Param* param[MAX_NUM_OF_PARAMS];	///< Массив параметров.
+	const Param* fp;		///< Массив значений параметров.
+
+	eGB_PARAM param[MAX_NUM_OF_PARAMS]; ///< Массив параметров.
+
+//	const Param* param[MAX_NUM_OF_PARAMS];	///< Массив параметров.
 
 	uint16_t val;			///< Значение текущего параметра.
 
