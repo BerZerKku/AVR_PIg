@@ -458,9 +458,9 @@ static const char fcRange[] 			PROGMEM = "Диапазон: ";
 /// Номер команды, для которой устанавливается параметр.
 static const char fcNumCom[] 			PROGMEM = "Номер команды: %u/%u";
 /// Номер приемника (для 3-ж концевой линии).
-static const char fcNumPrm[]			PROGMEM = "Номер ПРМ: %u/%u";
+//static const char fcNumPrm[]			PROGMEM = "Номер ПРМ: %u/%u";
 /// Диапазон допустимых значений параметра.
-static const char fcRangeDec[] 			PROGMEM = "%d..%d%s";
+static const char fcRangeDec[] 			PROGMEM = "%d..%d%S";
 /// Диапазон допустимых значений параметра: для списков.
 static const char fcRangeList[] 		PROGMEM = "список";
 /// Диапазон допустимых значений параметров: для вкл./выкл.
@@ -730,46 +730,128 @@ static const char fcTest1K400[GB_SIGNAL_MAX + 1][STRING_LENGHT] PROGMEM = {
 //static const Param parameters[] PROGMEM {
 //	// ОБЩИЕ ПАРАМЕТРЫ
 //	//min,	max,	disc,	fract
-//	{ 0,	1,		1,		1}, // синхронизация часов
-//	{ 1,	3,		1,		1},	// номер аппарата
-//	{ 0,	1,		1,		1}, // контроль выходного сигнала
-//	{ 0, 	22,		1,		1},	// порог предупреждения
-//	{ 0, 	22,		1,		1},	// порог предупреждения по КЧ (РЗСК)
-//	{ 0,	5,		1,		1},	// время перезапуска
-//	{ 0,	1,		1,		1},	// удержание реле ком. ПРД
-//	{ 0,	1,		1,		1},	// удержание реле ком. ПРМ
-//	{ 0,	22,		1,		1},	// загрубление чувствительности ПРМ
-//	{ 1,	247,	1,		1},	// адрес в локальной сети
-//	{ 18,	50,		1,		1},	// номинальное выходное напряжение
-//	{ 16,	1000,	1,		1},	// частота
-//	{ 0,	5,		1,		1},	// совместимость Р400м
-//	{ 0,	20,		1,		1},	// снижение ответа АК (ПВЗЛ)
-//	{ 1,	3,		1,		1},	// тип детектора
-//	{ -400,	400,	1,		1},	// коррекция напряжения !!! При вооде мин = 0
-//	{ -999,	999,	1,		1},	// коррекция тока !!! При вооде мин = 0
-//	{ 1,	2,		1,		1},	// протокол обмена (ПВЗУ-Е)
-//	{ 1,	2,		1,		1}, // признак четности (ПВЗУ-Е)
-//	{ 0,	80,		2,		1},	// допустимые провалы (ПВЗУ-Е)
-//	{ 0,	255,	1,		1},	// порог по помехе (ПВЗУ-Е)
-//	{ 20,	80,		20,		1},	// допустимая помеха (ПВЗУ-Е)
-//	{ 1,	3,		1,		1},	// тип автоконтроля
-//	{ 0,	1,		1,		1}, // резервирование
-//	{ 0,	10,		1,		1},	// совместимость К400
-//	{ 2,	3,		1,		1}, // Тип линии (кол-во аппаратов в линии) !!! передается на 1 меньше
-//	{ 0,	1,		1,		1}, // телемеханика
-//	{ 1,	255,	1,		1},	// период беглого режима АК (ПВЗУ-Е)
-//	{ 1,	255,	1,		1}	// период повтора беглого режима АК (ПЗВУ-Е)
+//
+//
+//
+//
+//
 //	//min,	max,	disc,	fract
 //};
 
-static const char flashNullBuf[] PROGMEM= "NULL";
+static const char fcNullBuf[] PROGMEM= "";
 
-char nameTimeSynch[] 	PROGMEM = "Синхронизация часов";
-char nameNumOfDevices[] PROGMEM = "Номер аппарата";
+/// массив строк размерностей, связан с Param::DIMENSION
+static const char fcDimension[] [5] PROGMEM = {
+		"",		// Param::DIM_NO
+		"мА",	// Param::DIM_MA
+		"А",	// Param::DIM_A
+		"кА",	// Param::DIM_KA
+		"В",	// Param::DIM_V
+		"кВ",	// Param::DIM_KV
+		"c",	// Param::DIM_SEC
+		"дБ",	// Param::DIM_DB
+		"Гц",	// Param::DIM_HZ
+		"кГц",	// Param::DIM_KHZ
+		"град"	// Param::DIM_DEG
+};
 
-static const Param params[] PROGMEM = {
-	//name				com						param				range				dim					listValues		num		min		max		disc	fract
-	{nameTimeSynch,		GB_COM_GET_TIME_SINCHR,	Param::PARAM_LIST,	Param::RANGE_LIST,	Param::DIM_SEC,		flashNullBuf,	1,		0,		1,		1,		1},	// синхронизация часов
-	{nameNumOfDevices,	GB_COM_GET_DEVICE_NUM,	Param::PARAM_LIST,	Param::RANGE_LIST,	Param::DIM_NO,		flashNullBuf,	1,		1,		2,		1,		1},	// номер аппарата (2-х концевая)
-	{nameNumOfDevices,	GB_COM_GET_DEVICE_NUM,	Param::PARAM_LIST,	Param::RANGE_LIST,	Param::DIM_NO,		flashNullBuf,	1,		1,		3,		1,		1} 	// номер аппарата (3-х концевая)
+//								   				   12345678901234567890
+static const char nameBackup[]			PROGMEM = "Резервирование";
+static const char nameCompK400[]		PROGMEM = "Совместимость";
+static const char nameCompP400[]		PROGMEM = "Совместимость";
+static const char nameComPrdKeep[]		PROGMEM = "Удерж. реле ком. ПРД";
+static const char nameComPrmKeep[] 		PROGMEM = "Удерж. реле ком. ПРМ";
+static const char nameCorI[]			PROGMEM = "Коррекция тока";
+static const char nameCorU[]			PROGMEM = "Коррекция напряжения";
+static const char nameDetector[]		PROGMEM = "Тип детектора";
+static const char nameFreq[]			PROGMEM = "Частота";
+static const char nameInDec[]			PROGMEM = "Загрубл. чувств. ПРМ";
+static const char nameInDecAC[]			PROGMEM = "Снижение ответа АК";
+static const char nameNumOfDevice[] 	PROGMEM = "Номер аппарата";
+static const char nameNumOfDevices[]	PROGMEM = "Тип линии";
+static const char nameNetAddress[]		PROGMEM = "Сетевой адрес";
+static const char nameOutCheck[] 		PROGMEM = "Контроль вых.сигнала";
+static const char namePvzueAcType[]		PROGMEM = "Тип автоконтроля";
+static const char namePvzueFail[]		PROGMEM = "Допустимые провалы";
+static const char namePvzueNoiseLvl[]	PROGMEM = "Допустимая помеха";
+static const char namePvzueNoiseTh[]	PROGMEM = "Порог по помехе";
+static const char namePvzueParity[]		PROGMEM = "Признак четности";
+static const char namePvzuePeriodAC[]	PROGMEM = "Период беглого АК";
+static const char namePvzuePeriodReAC[]	PROGMEM = "Период повт.бегл. АК";
+static const char namePvzueProtocol[]	PROGMEM = "Протокол обмена";
+static const char nameTimeRerun[]		PROGMEM = "Время перезапуска";
+static const char nameTimeSynch[] 		PROGMEM = "Синхронизация часов";
+static const char nameTmK400[]			PROGMEM = "Телемеханика";
+static const char nameUOutNom[]			PROGMEM = "Uвых номинальное";
+static const char nameWarnThresholdCf[]	PROGMEM = "Порог предупр. по КЧ";
+static const char nameWarnThreshold[]	PROGMEM = "Порог предупреждения";
+
+
+/// Параметры (связаны с eGB_PARAM)
+static const Param fcParams[] PROGMEM = {
+		//name					com							param				range					dim					listValues			num		min		max		disc	fract
+		// ---------------------------------------------------------------------
+		// ОБЩИЕ ПАРМЕТРЫ
+		// синхронизация часов
+		{nameTimeSynch,			GB_COM_GET_TIME_SINCHR,		Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
+		// номер аппарата (2-х концевая)
+		{nameNumOfDevice,		GB_COM_GET_DEVICE_NUM,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_NO,		fcNullBuf,			1,		1,		2,		1,		1},
+		// номер аппарата (3-х концевая)
+		{nameNumOfDevice,		GB_COM_GET_DEVICE_NUM,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_NO,		fcNullBuf,			1,		1,		3,		1,		1},
+		// контроль выходного сигнала
+		{nameOutCheck, 			GB_COM_GET_OUT_CHECK,		Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
+		// порог предупреждения
+		{nameWarnThreshold,		GB_COM_GET_CF_THRESHOLD,	Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DB,		fcNullBuf,			1,		0, 		22,		1,		1},
+		// порог предупреждения по КЧ (для РЗСК)
+		{nameWarnThresholdCf,	GB_COM_GET_CF_THRESHOLD,	Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DB,		fcNullBuf,			1,		0, 		22,		1,		1},
+		// время перезапуска
+		{nameTimeRerun,			GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_SEC,		fcNullBuf,			1,	 	0,		5,		1,		1},
+		// удержание реле команд ПРД
+		{nameComPrdKeep,		GB_COM_GET_COM_PRD_KEEP,	Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
+		// удержание реле команд ПРМ
+		{nameComPrmKeep,		GB_COM_GET_COM_PRM_KEEP,	Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
+		// загрубление чувствительности ПРМ (2-х концевая)
+		{nameInDec,				GB_COM_GET_CF_THRESHOLD,	Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DB,		fcNullBuf,			1,		0,		22,		1,		1},
+		// загрубление чувствительности ПРМ (3-х концевая)
+		{nameInDec,				GB_COM_GET_CF_THRESHOLD,	Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DB,		fcNullBuf,			2,		0,		22,		1,		1},
+		// адрес в локальной сети
+		{nameNetAddress,		GB_COM_GET_NET_ADR,			Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_NO,		fcNullBuf,			1,		1,		247,	1,		1},
+		// номинальноые выходное напряжение
+		{nameUOutNom,			GB_COM_GET_COM_PRM_KEEP,	Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_V,		fcNullBuf,			1,		18,		50,		1,		1},
+		// частота
+		{nameFreq,				GB_COM_GET_FREQ,			Param::PARAM_INT,	Param::RANGE_INT_NO_DIM,Param::DIM_KHZ,		fcNullBuf,			1,		16,		1000,	1,		1},
+		// совместимость (Р400, Р400м)
+		{nameCompP400,			GB_COM_GET_COM_PRD_KEEP,	Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcCompatibility[0],	1,		0,		5,		1,		1},
+		// снижение ответа АК (ПВЗЛ)
+		{nameInDecAC,			GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DB,		fcNullBuf,			1,		0,		20,		1,		1},
+		// тип детектора
+		{nameDetector,			GB_COM_GET_TIME_SINCHR,		Param::PARAM_INT,  	Param::RANGE_INT,		Param::DIM_NO,		fcNullBuf,			1,		1,		3,		1,		1},
+		// коррекция напряжения !!! При ввооде мин = 0, а значение в 10 раз больше исходного!
+		{nameCorU,				GB_COM_GET_COR_U_I,			Param::PARAM_U,		Param::RANGE_INT_DIV_10,Param::DIM_V,		fcNullBuf,			1,		-400,	400,	1,		1},
+		// коррекция тока !!! При вооде мин = 0
+		{nameCorI,				GB_COM_GET_COR_U_I,			Param::PARAM_INT,	Param::RANGE_INT_NO_DIM,Param::DIM_MA,		fcNullBuf,			1,		-999,	999,	1,		1},
+		// протокол обмена (ПВЗУ-Е)
+		{namePvzueProtocol,		GB_COM_GET_TIME_RERUN,		Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcPvzueProtocol[0],	1,		1,		2,		1,		1},
+		// признак четности (ПВЗУ-Е)
+		{namePvzueParity,		GB_COM_GET_TIME_RERUN,		Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcPvzueParity[0],	1,		1,		2,		1,		1},
+		// допустимые провалы (ПВЗУ-Е)
+		{namePvzueFail,			GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DEG,		fcNullBuf,			1,		0,		80,		2,		1},
+		// порог по помехе (ПВЗУ-Е)
+		{namePvzueNoiseTh, 		GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_SEC,		fcNullBuf,			1,		0,		255,	1,		1},
+		// допустимая помеха (ПВЗУ-Е)
+		{namePvzueNoiseLvl,		GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DEG,		fcNullBuf,			1,		20,		80,		20,		1},
+		// тип автоконтроля (ПВЗУ-Е)
+		{namePvzueAcType,		GB_COM_GET_TIME_RERUN,		Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcPvzueTypeAC[0],	1,		1,		3,		1,		1},
+		// резервирование
+		{nameBackup,			GB_COM_GET_COR_U_I,			Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcNullBuf,			1,		0,		1,		1,		1},
+		// совместимость К400
+		{nameCompK400,			GB_COM_GET_COM_PRD_KEEP,	Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcCompK400[0],		1, 		0,		10,		1,		1},
+		// тип линии (кол-во аппаратов в линии) !!! передается на 1 меньше
+		{nameNumOfDevices,		GB_COM_DEF_GET_LINE_TYPE,	Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcNumDevices[0],	1,		2,		3,		1,		1},
+		// телемеханика
+		{nameTmK400,			GB_COM_GET_COM_PRD_KEEP,	Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
+		// период беглого режима АК (ПВЗУ-Е)
+		{namePvzuePeriodAC,		GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_SEC, 	fcNullBuf,			1,		1,		255,	1,		1},
+		//	период повтора беглого режима АК (ПЗВУ-Е)
+		{namePvzuePeriodReAC,	GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_SEC, 	fcNullBuf,			1,		1,		255,	1,		1}
 };

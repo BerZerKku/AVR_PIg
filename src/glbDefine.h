@@ -293,6 +293,41 @@ enum eGB_COM_MASK {
 	GB_COM_MASK_GROUP_READ_JOURNAL = 0xC0
 };
 
+/// Параметры (связаны с fcParams)
+enum eGB_PARAM {
+	GB_PARAM_TIME_SYNCH = 0,	///< синхронизация часов
+	GB_PARAM_NUM_OF_DEVICE_2,	///< номер аппарата (2-х концевая)
+	GB_PARAM_NUM_OF_DEVICE_3,	///< номер аппарата (3-х концевая)
+	GB_PARAM_OUT_CHECK,			///< контроль выходного сигнала
+	GB_PARAM_WARN_THD, 			///< порог предупреждения
+	GB_PARAM_WARN_THD_CF,		///< порог предупреждения по КЧ (для РЗСК)
+	GB_PARAM_TIME_RERUN,		///< время перезапуска
+	GB_PARAM_COM_PRD_KEEP,		///< удержание реле команд ПРД
+	GB_PARAM_COM_PRM_KEEP,		///< удержание реле команд ПРМ
+	GB_PARAM_IN_DEC_2,			///< загрубление чувствительности ПРМ (2-х концевая)
+	GB_PARAM_IN_DEC_3,			///< загрубление чувствительности ПРМ (3-х концевая)
+	GB_PARAM_NET_ADDRESS,		///< адрес в локальной сети
+	GB_PARAM_U_OUT_NOM,			///< номинальноые выходное напряжение
+	GB_PARAM_FREQ,				///< частота
+	GB_PARAM_COMP_P400,			///< совместимость (Р400, Р400м)
+	GB_PARAM_IN_DEC_AC,			///< снижение ответа АК (ПВЗЛ)
+	GB_PARAM_DETECTOR,			///< тип детектора
+	GB_PARAM_COR_U,				///< коррекция напряжения
+	GB_PARAM_COR_I,				///< коррекция тока
+	GB_PARAM_PVUZE_PROTOCOL,	///< протокол обмена (ПВЗУ-Е)
+	GB_PARAM_PVZUE_PARITY,		///< признак четности (ПВЗУ-Е)
+	GB_PARAM_PVZUE_FAIL,		///< допустимые провалы (ПВЗУ-Е)
+	GB_PARAM_PVZUE_NOISE_TH,	///< порог по помехе (ПВЗУ-Е)
+	GB_PARAM_PVZUE_NOISE_LVL,	///< допустимая помеха (ПВЗУ-Е)
+	GB_PARAM_PVZUE_AC_TYPE,		///< тип автоконтроля (ПВЗУ-Е)
+	GB_PARAM_BACKUP,			///< резервирование
+	GB_PARAM_COMP_K400,			///< совместимость К400
+	GB_PARAM_NUM_OF_DEVICES,	///< тип линии (кол-во аппаратов в линии)
+	GB_PARAM_TM_K400,			///< телемеханика
+	GB_PARAM_PVZUE_PERIOD_AC,	///< период беглого режима АК (ПВЗУ-Е)
+	GB_PARAM_PVZUE_PER_RE_AC	///< период повтора беглого режима АК (ПЗВУ-Е)
+};
+
 /// Значения команд управления
 enum eGB_CONTROL {
 	GB_CONTROL_RESET_SELF 	= 1,	// сброс своего

@@ -14,6 +14,7 @@
 #include "paramDef.h"
 #include "paramGlb.h"
 #include "paramUart.h"
+#include "LocalParams.h"
 
 
 /// Структура параметров БСП
@@ -36,6 +37,9 @@ struct stGBparam {
 	TDevicePrm prm;
 	TDevicePrd prd;
 	TDeviceGlb glb;
+
+	// локальные параметры
+	LocalParams local;
 
 	// параметры для работы с последовательным портом
 	TUartData Uart;

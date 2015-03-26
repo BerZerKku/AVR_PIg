@@ -532,9 +532,6 @@ private:
 	// параметры для ввода новых значений
 	TEnterParam EnterParam;
 
-	// локальные параметры
-	LocalParams localParams;
-
 	//  настройки для соответствующих аппаратов
 	bool setDeviceK400();
 	bool setDeviceRZSK();
@@ -608,8 +605,28 @@ private:
 	// вывод на экран текущих пунктов меню и курсора
 	void printPunkts();
 
-	// возвращает текущий номер неисправности/предупреждения
-//	uint8_t getNumError(uint16_t val);
+	/// Вывод на экран текущего параметра.
+	void printParam();
+
+	/// Вывод на экран названия параметра.
+	void printName();
+
+	///	Вывод на экран текущего номера и их колчиество для однотипных пар-ов.
+	void printSameNumber(uint8_t pos);
+
+	///	Вывод на экран диапазона значений параметра.
+	void printRange(uint8_t pos);
+
+	/**	Вывод на экран текущего значения параметра.
+	 *
+	 * 	Если значение параметра записано с ошибкой, будет поочердено выводится
+	 * 	предупреждающая надпись и текущее значение параметра.
+	 *
+	 * 	Для строковых параметров учитывается минимальное значение. Т.е. из
+	 * 	текущего значения параметра вычитается минимальное значение, а затем
+	 * 	осуществляется выбор из массива строк значений параметра.
+	 */
+	void printValue(uint8_t pos);
 
 	// текущая функция ввода
 	eMENU_ENTER_PARAM (clMenu::*enterFunc)();
@@ -617,5 +634,35 @@ private:
 	// текущий уровень меню
 	void (clMenu::*lvlMenu)();
 };
+
+//	static char punkt1[] PROGMEM 	= "Синхронизация часов";
+//	static char punkt2[] PROGMEM 	= "Номер аппарата";
+//	static char punkt3[] PROGMEM 	= "Контроль вых.сигнала";
+//	static char punkt4[] PROGMEM 	= "Порог предупреждения";
+//	static char punkt4rzsk[] PROGMEM= "Порог предупр. по КЧ";
+//	static char punkt5[] PROGMEM 	= "Время перезапуска";
+//	static char punkt6[] PROGMEM 	= "Удерж. реле ком. ПРД";
+//	static char punkt7[] PROGMEM 	= "Удерж. реле ком. ПРМ";
+//	static char punkt8[] PROGMEM 	= "Загрубл. чувств. ПРМ";
+////	static char punkt9[] PROGMEM 	= ""; // на текущий момент свободно
+//	static char punkt10[] PROGMEM 	= "Uвых номинальное";
+//	static char punkt11[] PROGMEM 	= "Частота";
+//	static char punkt12[] PROGMEM 	= "Совместимость";			// защита
+//	static char punkt13[] PROGMEM 	= "Снижение ответа АК";
+//	static char punkt14[] PROGMEM 	= "Тип детектора";
+//	static char punkt15[] PROGMEM 	= "Коррекция напряжения";
+//	static char punkt16[] PROGMEM 	= "Коррекция тока";
+//	static char punkt17[] PROGMEM 	= "Протокол обмена";
+//	static char punkt18[] PROGMEM 	= "Признак четности";
+//	static char punkt19[] PROGMEM 	= "Допустимые провалы";
+//	static char punkt20[] PROGMEM 	= "Порог по помехе";
+//	static char punkt21[] PROGMEM 	= "Допустимая помеха";
+//	static char punkt22[] PROGMEM 	= "Тип автоконтроля";
+//	static char punkt23[] PROGMEM 	= "Резервирование";
+//	static char punkt24[] PROGMEM 	= "Совместимость";	// к400
+//	static char punkt25[] PROGMEM 	= "Тип линии";
+//	static char punkt26[] PROGMEM 	= "Телемеханика"; // к400
+//	static char punkt27[] PROGMEM 	= "Период беглого АК";
+//	static char punkt28[] PROGMEM	= "Период повт.бегл. АК";
 
 #endif /* MENU_H_ */
