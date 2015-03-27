@@ -68,20 +68,43 @@ bool LocalParams::addParam(eGB_PARAM newParam) {
 	return true;
 }
 
-//  Установка нового значения параметра и его проверка на корректность.
+// Установка нового значения параметра и его проверка на корректность.
 void LocalParams::setValue(int16_t val) {
-		uint8_t fract = pgm_read_byte(&fp[param[currParam]].fract);
-		uint8_t disc = getDisc();
+	uint8_t fract = pgm_read_byte(&fp[param[currParam]].fract);
+	uint8_t disc = getDisc();
 
-		val = val * fract;
-		val = (val / disc) * disc;
+	val = val * fract;
+	val = (val / disc) * disc;
 
-		check(val);
+	check(val);
 
-		this->val = val;
+	this->val = val;
+}
+
+// Установка нового значения параметра содержащего набор бит
+void LocalParams::setValueBits(uint8_t *ptr) {
+	for(uint8_t i = 0; i < MAX_BUF_BITS_VALUES; i++) {
+		this->valB[i] = *ptr++;
 	}
 
-//	Очистка списка параметров.
+	state = STATE_NO_ERROR;
+}
+
+int16_t LocalParams::getValue() const {
+	int16_t v = val;
+
+	if (getParamType() == Param::PARAM_BITES) {
+		uint8_t byte = currSameParam / 8;
+		uint8_t bite = currSameParam % 8;
+
+		v = ((valB[byte] & (1 << bite)) > 0) ? 1 : 0;
+	}
+
+	return v;
+}
+
+
+// Очистка списка параметров.
 void  LocalParams::clearParams() {
 	param[0] = GB_PARAM_TIME_SYNCH;
 	val = 0;

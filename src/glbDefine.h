@@ -295,6 +295,7 @@ enum eGB_COM_MASK {
 
 /// Параметры (связаны с fcParams)
 enum eGB_PARAM {
+	// общие параметры
 	GB_PARAM_TIME_SYNCH = 0,	///< синхронизация часов
 	GB_PARAM_NUM_OF_DEVICE_2,	///< номер аппарата (2-х концевая)
 	GB_PARAM_NUM_OF_DEVICE_3,	///< номер аппарата (3-х концевая)
@@ -310,7 +311,7 @@ enum eGB_PARAM {
 	GB_PARAM_U_OUT_NOM,			///< номинальноые выходное напряжение
 	GB_PARAM_FREQ,				///< частота
 	GB_PARAM_COMP_P400,			///< совместимость (Р400, Р400м)
-	GB_PARAM_IN_DEC_AC,			///< снижение ответа АК (ПВЗЛ)
+	GB_PARAM_IN_DEC_AC_ANSWER,	///< снижение ответа АК (ПВЗЛ)
 	GB_PARAM_DETECTOR,			///< тип детектора
 	GB_PARAM_COR_U,				///< коррекция напряжения
 	GB_PARAM_COR_I,				///< коррекция тока
@@ -325,7 +326,37 @@ enum eGB_PARAM {
 	GB_PARAM_BACKUP,			///< резервирование
 	GB_PARAM_COMP_K400,			///< совместимость К400
 	GB_PARAM_NUM_OF_DEVICES,	///< тип линии (кол-во аппаратов в линии)
-	GB_PARAM_TM_K400			///< телемеханика
+	GB_PARAM_TM_K400,			///< телемеханика
+	// параметры защиты
+	GB_PARAM_DEF_TYPE,			///< тип защиты
+	GB_PARAM_T_NO_MAN,			///< дополнительное время без манипуляции
+	GB_PARAM_OVERLAP,			///< перекрытие импульсов (кроме Р400/Р400м)
+	GB_PARAM_OVERLAP_P400,		///< перекрытие импульсов (Р400/Р400м)
+	GB_PARAM_DELAY_2,			///< компенсация задержки (2-х концевая)
+	GB_PARAM_DELAY_3,			///< компенсация задержки (3-х концевая)
+	GB_PARAM_WARN_THD_RZ,		///< порог предупреждения по РЗ (для РЗСК)
+	GB_PARAM_SENS_DEC,			///< загрубленеи чувствительности
+	GB_PARAM_SENS_DEC_RZ_2,		///< загрубленеи чувствительности по РЗ (2-х концевая)
+	GB_PARAM_SENS_DEC_RZ_3,		///< загрубленеи чувствительности по РЗ (3-х концевая)
+	GB_PARAM_PRM_TYPE,			///< тип приемника
+	GB_PARAM_IN_DEC_AC,			///< снижение уровня АК
+	GB_PARAM_FREQ_PRD,			///< частота ПРД
+	GB_PARAM_FREQ_PRM,			///< частота ПРМ
+	GB_PARAM_SHIFT_FRONT,		///< сдвиг переднего фронта ПРД
+	GB_PARAM_SHIFT_BACK,		///< сдвиг заднего фронта ПРД
+	GB_PARAM_SHIFT_PRM,			///< сдвиг ПРМ
+	GB_PARAM_SHIFT_PRD,			///< сдвиг ВЧ ПРД от ПУСК
+	// параметры передатчика
+	GB_PARAM_PRD_IN_DELAY,		///< время включения (задержка срабатывания дискретного входа)
+	GB_PARAM_PRD_DURATION_L,	///< длительность команды ВЧ
+	GB_PARAM_PRD_DURATION_O,	///< длительность команды ОПТИКА
+	GB_PARAM_TEST_COM,			///< тестовая команда
+	GB_PARAM_PRD_COM_LONG,		///< следящие команды
+	GB_PARAM_PRD_COM_BLOCK,		///< блокированные команды
+	GB_PARAM_PRD_DR_ENABLE,		///< трансляция ЦС
+	GB_PARAM_PRD_DR_COM_BLOCK,	///< блокированные команды ЦС
+	GB_PARAM_PRD_COM_NUMS,		///< количество команд
+	GB_PARAM_PRD_COM_NUMS_A,	///< количество команд группы А
 };
 
 /// Значения команд управления

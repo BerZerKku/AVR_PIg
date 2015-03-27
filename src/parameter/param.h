@@ -22,7 +22,9 @@ struct Param {
 		DIM_KA,			///< кА
 		DIM_V,			///< В
 		DIM_KV,			///< кВ
+		DIM_MSEC,		///< мс
 		DIM_SEC,		///< с
+		DIM_HOUR,		///< час
 		DIM_DB,			///< дБ
 		DIM_HZ,			///< Гц
 		DIM_KHZ,		///< кГц
@@ -35,14 +37,15 @@ struct Param {
 		RANGE_ON_OFF,	///< Список вкл./выкл.
 		RANGE_INT,		///< <min>..<max><dim>
 		RANGE_INT_NO_DIM,///< <min>..<max>
-		RANGE_INT_DIV_10///< <min/10>..<max/10>
+		RANGE_U_COR///< <min/10>..<max/10>
 	};
 
 	/// Тип параметра, в плане ввода / отображения.
 	enum PARAM_TYPE {
 		PARAM_LIST = 0,	///< Список.
 		PARAM_INT,		///< Целое значение jn -32768..32767.
-		PARAM_U,		///< Выходное напряжение ±ХХ.Х.
+		PARAM_U,		///< Коррекция напряжения ±ХХ.Х.
+		PARAM_BITES		///< Намор битовых значений.
 	};
 
 	PGM_P name;			///< Имя параметра.

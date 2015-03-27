@@ -2616,31 +2616,11 @@ void clMenu::lvlSetupParam() {
 void clMenu::lvlSetupParamDef() {
 	//								 12345678901234567890
 	static char title[] PROGMEM = "Параметры\\Защита";
-	static char punkt1[] PROGMEM = "Тип защиты";
-	static char punkt2[] PROGMEM = "Тип линии";
-	static char punkt3[] PROGMEM = "Доп. время без ман.";
-	static char punkt4[] PROGMEM = "Перекрытие импульсов";
-	static char punkt5[] PROGMEM = "Компенсация задержки";
-	static char punkt6[] PROGMEM = "Порог предупр. по РЗ";
-	static char punkt7[] PROGMEM = "Загрубление чувствит";
-	static char punkt8[] PROGMEM = "Тип приемника";
-	static char punkt9[] PROGMEM = "Снижение уровня АК";
-	static char punkt10[] PROGMEM = "Частота ПРД";
-	static char punkt11[] PROGMEM = "Частота ПРМ";
-	static char punkt12[] PROGMEM = "Загрубл. чувств. РЗ";	// ==punkt7 для РЗСК
-	static char punkt13[] PROGMEM = "Сдвиг пер.фронта ПРД";
-	static char punkt14[] PROGMEM = "Сдвиг зад.фронта ПРД";
-	static char punkt15[] PROGMEM = "Сдвиг ПРМ";
-	static char punkt16[] PROGMEM = "Сдвиг ВЧ ПРД от ПУСК";
 
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
-		cursorLine_ = 1;
-		cursorEnable_ = true;
-		lineParam_ = 1;
-		curCom_ = 1;
 		EnterParam.setDisable();
 
 		vLCDclear();
@@ -2648,367 +2628,140 @@ void clMenu::lvlSetupParamDef() {
 
 		// заполнение массивов параметров и команд
 		sParam.txComBuf.clear();
-		Punkts_.clear();
 
 		// для переформирования меню добавляется команда опроса:
 		// кол-ва аппаратов в линии
 		sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
 
+		sParam.local.clearParams();
 		if (device == AVANT_RZSK) {
-			Punkts_.add(punkt1, GB_COM_DEF_GET_DEF_TYPE);
-			//			Punkts_.add(punkt2, GB_COM_DEF_GET_LINE_TYPE);
-			Punkts_.add(punkt3, GB_COM_DEF_GET_T_NO_MAN);
-			Punkts_.add(punkt4, GB_COM_DEF_GET_OVERLAP);
-			Punkts_.add(punkt5, GB_COM_DEF_GET_DELAY);
-			Punkts_.add(punkt6, GB_COM_DEF_GET_RZ_THRESH);
-			Punkts_.add(punkt12, GB_COM_DEF_GET_RZ_DEC);
-			Punkts_.add(punkt8, GB_COM_DEF_GET_PRM_TYPE);
+			sParam.local.addParam(GB_PARAM_DEF_TYPE);
+			sParam.local.addParam(GB_PARAM_T_NO_MAN);
+			sParam.local.addParam(GB_PARAM_OVERLAP);
+			if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_2) {
+				sParam.local.addParam(GB_PARAM_DELAY_2);
+			} else {
+				sParam.local.addParam(GB_PARAM_DELAY_3);
+			}
+			sParam.local.addParam(GB_PARAM_WARN_THD_RZ);
+			if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_2) {
+				sParam.local.addParam(GB_PARAM_SENS_DEC_RZ_2);
+			} else {
+				sParam.local.addParam(GB_PARAM_SENS_DEC_RZ_3);
+			}
+			sParam.local.addParam(GB_PARAM_PRM_TYPE);
 		} else if (device == AVANT_R400M) {
 			eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
 			// для переформирования меню добавляется команда опроса:
 			// совместимости
 			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
 
-			Punkts_.add(punkt1, GB_COM_DEF_GET_DEF_TYPE);
-			Punkts_.add(punkt2, GB_COM_DEF_GET_LINE_TYPE);
-			Punkts_.add(punkt3, GB_COM_DEF_GET_T_NO_MAN);
-			//			Punkts_.add(punkt4, GB_COM_DEF_GET_OVERLAP);
-			//			Punkts_.add(punkt5, GB_COM_DEF_GET_DELAY);
-			Punkts_.add(punkt13, GB_COM_DEF_GET_OVERLAP);
-			Punkts_.add(punkt14, GB_COM_DEF_GET_OVERLAP);
-			Punkts_.add(punkt15, GB_COM_DEF_GET_OVERLAP);
-			Punkts_.add(punkt16, GB_COM_DEF_GET_OVERLAP);
-			Punkts_.add(punkt7, GB_COM_DEF_GET_RZ_DEC);
+			sParam.local.addParam(GB_PARAM_DEF_TYPE);
+			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES);
+			sParam.local.addParam(GB_PARAM_T_NO_MAN);
+			sParam.local.addParam(GB_PARAM_SHIFT_FRONT);
+			sParam.local.addParam(GB_PARAM_SHIFT_BACK);
+			sParam.local.addParam(GB_PARAM_SHIFT_PRM);
+			sParam.local.addParam(GB_PARAM_SHIFT_PRD);
+			sParam.local.addParam(GB_PARAM_SENS_DEC);
 			if (comp == GB_COMPATIBILITY_AVANT) {
 				// Снижение уровня АК есть только в совместимости АВАНТ
-				Punkts_.add(punkt9, GB_COM_DEF_GET_PRM_TYPE);
+				sParam.local.addParam(GB_PARAM_IN_DEC_AC);
 			}
-			Punkts_.add(punkt10, GB_COM_DEF_GET_FREQ_PRD);
-			Punkts_.add(punkt11, GB_COM_DEF_GET_RZ_THRESH);
+			sParam.local.addParam(GB_PARAM_FREQ_PRD);
+			sParam.local.addParam(GB_PARAM_FREQ_PRM);
 		}
+
+		// подмена команды, на команду текущего уровня меню.
+		sParam.txComBuf.addCom1(sParam.local.getCom(), 0);
 	}
-
-	// подмена команды, на команду текущего уровня меню.
-	sParam.txComBuf.addCom1(Punkts_.getCom(cursorLine_ - 1), 0);
-
-	PGM_P name = Punkts_.getName(cursorLine_ - 1);
 
 	snprintf_P(&vLCDbuf[0], 21, title);
-
-	// номер текущего параметра и их количество
-	uint8_t poz = 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_,
-			Punkts_.getMaxNumPunkts());
-
-	// название параметра
-	poz = 40;
-	snprintf_P(&vLCDbuf[poz], 21, name);
-
-	// отображение доп.номера, для однотипных параметров
-	poz = 60;
-	if (device == AVANT_R400M) {
-		if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
-			if (name == punkt5) {
-				if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_AVANT) {
-					snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_, 2);
-				}
-			}
-		}
-	} else if (device == AVANT_RZSK) {
-		if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
-			if ((name == punkt5) || (name == punkt12)) {
-				snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_, 2);
-			}
-		}
-	}
-
-	//  диапазон значений параметра
-	poz = 80;
-	poz += snprintf_P(&vLCDbuf[poz], 11, fcRange);
-	if (name == punkt1) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
-	} else if (name == punkt2) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
-	} else if (name == punkt3) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, DEF_T_NO_MAN_MIN,
-				DEF_T_NO_MAN_MAX, "час");
-	} else if (name == punkt4) {
-		uint8_t min =
-				(sParam.typeDevice == AVANT_R400M) ?
-						DEF_OVERLAP_MIN2 : DEF_OVERLAP_MIN;
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, min, DEF_OVERLAP_MAX, "град");
-	} else if (name == punkt5) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, DEF_DELAY_MIN, DEF_DELAY_MAX,
-				"град");
-	} else if (name == punkt6) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, DEF_RZ_THRESH_MIN,
-				DEF_RZ_THRESH_MAX, "дБ");
-	} else if ((name == punkt7) || (name == punkt12)) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, DEF_RZ_DEC_MIN,
-				DEF_RZ_DEC_MAX, "дБ");
-	} else if (name == punkt8) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
-	} else if (name == punkt9) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
-	} else if (name == punkt10) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
-	} else if (name == punkt11) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
-	} else if (name == punkt13) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, DEF_SH_FRONT_MIN,
-				DEF_SH_FRONT_MAX, "град");
-	} else if (name == punkt14) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, DEF_SH_BACK_MIN,
-				DEF_SH_BACK_MAX, "град");
-	} else if (name == punkt15) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, DEF_SH_PRM_MIN,
-				DEF_SH_PRM_MAX, "град");
-	} else if (name == punkt16) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, DEF_SH_PRD_MIN,
-				DEF_SH_PRD_MAX, "град");
-	}
+	printParam();
 
 	if (EnterParam.isEnable()) {
-		// ввод нового значения параметра
 		eMENU_ENTER_PARAM stat = enterValue();
 
 		if (stat == MENU_ENTER_PARAM_READY) {
-			// новое значение введено, надо передать в БСП
-			if (name == punkt1) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-			} else if (name == punkt2) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-			} else if (name == punkt3) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-			} else if (name == punkt4) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-			} else if (name == punkt5) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
-				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
-			} else if (name == punkt6) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-			} else if ((name == punkt7) || (name == punkt12)) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
-			} else if (name == punkt8) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-			} else if (name == punkt9) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-			} else if (name == punkt10) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-			} else if (name == punkt11) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-			} else if ((name == punkt13) || (name == punkt14)
-					|| (name == punkt15) || (name == punkt16)) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
-			}
-
-			sParam.txComBuf.addFastCom(EnterParam.com);
 			EnterParam.setDisable();
 		}
-	} else {
-
-		// вывод надписи "Значение:" и переход к выводу самого значения
-		poz = 100;
-		poz += snprintf_P(&vLCDbuf[poz], 11, fcValue);
-		if (name == punkt1) {
-			uint8_t val = sParam.def.getDefType();
-			snprintf_P(&vLCDbuf[poz], 11, fcDefType[val]);
-		} else if (name == punkt2) {
-			snprintf_P(&vLCDbuf[poz], 11,
-					fcNumDevices[sParam.def.getNumDevices()]);
-		} else if (name == punkt3) {
-			snprintf(&vLCDbuf[poz], 11, "%dчас", sParam.def.getTimeNoMan());
-		} else if (name == punkt4) {
-			snprintf(&vLCDbuf[poz], 11, "%dград", sParam.def.getOverlap());
-		} else if (name == punkt5) {
-			uint8_t val = sParam.def.getDelay(curCom_);
-			snprintf(&vLCDbuf[poz], 11, "%dград", val);
-		} else if (name == punkt6) {
-			snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.def.getRzThreshold());
-		} else if ((name == punkt7) || (name == punkt12)) {
-			snprintf(&vLCDbuf[poz], 11, "%dдБ", sParam.def.getRzDec(curCom_));
-		} else if (name == punkt8) {
-			snprintf_P(&vLCDbuf[poz], 11, fcPrmType[sParam.def.getPrmType()]);
-		} else if (name == punkt9) {
-			uint8_t val = sParam.def.getAcDec() ? 1 : 0;
-			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
-		} else if (name == punkt10) {
-			snprintf_P(&vLCDbuf[poz], 11, fcPvzlFreq[sParam.def.getFreqPrd()]);
-		} else if (name == punkt11) {
-			snprintf_P(&vLCDbuf[poz], 11, fcPvzlFreq[sParam.def.getFreqPrm()]);
-		} else if (name == punkt13) {
-			snprintf(&vLCDbuf[poz], 11, "%dград", sParam.def.getShiftFront());
-		} else if (name == punkt14) {
-			snprintf(&vLCDbuf[poz], 11, "%dград", sParam.def.getShiftBack());
-		} else if (name == punkt15) {
-			snprintf(&vLCDbuf[poz], 11, "%dград", sParam.def.getShiftPrm());
-		} else if (name == punkt16) {
-			snprintf(&vLCDbuf[poz], 11, "%dград", sParam.def.getShiftPrd());
-		}
 	}
+
+//	if (EnterParam.isEnable()) {
+//		// ввод нового значения параметра
+//		eMENU_ENTER_PARAM stat = enterValue();
+//
+//		if (stat == MENU_ENTER_PARAM_READY) {
+//			// новое значение введено, надо передать в БСП
+//			if (name == punkt1) {
+//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+//			} else if (name == punkt2) {
+//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+//			} else if (name == punkt3) {
+//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+//			} else if (name == punkt4) {
+//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+//			} else if (name == punkt5) {
+//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
+//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
+//			} else if (name == punkt6) {
+//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+//			} else if ((name == punkt7) || (name == punkt12)) {
+//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
+//			} else if (name == punkt8) {
+//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+//			} else if (name == punkt9) {
+//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+//			} else if (name == punkt10) {
+//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+//			} else if (name == punkt11) {
+//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+//			} else if ((name == punkt13) || (name == punkt14)
+//					|| (name == punkt15) || (name == punkt16)) {
+//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
+//			}
+//
+//			sParam.txComBuf.addFastCom(EnterParam.com);
+//			EnterParam.setDisable();
+//		}
+//	}
 
 	switch(key_) {
-		case KEY_UP:
-			curCom_ = 1;
-			cursorLineUp();
-			break;
-		case KEY_DOWN:
-			curCom_ = 1;
-			cursorLineDown();
-			break;
-		case KEY_LEFT:
-			curCom_ = curCom_ <= 1 ? sParam.glb.getNumDevices() : curCom_ - 1;
-			break;
-		case KEY_RIGHT:
-			curCom_ = curCom_ >= sParam.glb.getNumDevices() ? 1 : curCom_ + 1;
+			case KEY_UP:
+				sParam.local.prevParam();
+				break;
+			case KEY_DOWN:
+				sParam.local.nextParam();
+				break;
+
+			case KEY_LEFT:
+				sParam.local.prevSameParam();
+				break;
+			case KEY_RIGHT:
+				sParam.local.nextSameParam();
+				break;
+
+			case KEY_CANCEL:
+				lvlMenu = &clMenu::lvlSetupParam;
+				lvlCreate_ = true;
+				break;
+			case KEY_MENU:
+				lvlMenu = &clMenu::lvlStart;
+				lvlCreate_ = true;
+				break;
+
+			case KEY_ENTER:
+				enterParameter();
 			break;
 
-		case KEY_CANCEL:
-			lvlMenu = &clMenu::lvlSetupParam;
-			lvlCreate_ = true;
-			break;
-		case KEY_MENU:
-			lvlMenu = &clMenu::lvlStart;
-			lvlCreate_ = true;
-			break;
+			default:
+				break;
+		}
 
-		case KEY_ENTER:
-			enterFunc = &clMenu::enterValue;
-			if (sParam.def.status.getRegime() != GB_REGIME_DISABLED) {
-				// если хоть одно из имеющихся устройств введено
-				// изменение параметров запрещено
-				EnterParam.printMessage();
-			} else {
-
-				if (name == punkt1) {
-					EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-					EnterParam.setValueRange(DEF_TYPE_MIN, DEF_TYPE_MAX - 1);
-					EnterParam.setValue(sParam.def.getDefType());
-					EnterParam.list = fcDefType[0];
-					EnterParam.com = GB_COM_DEF_SET_DEF_TYPE;
-				} else if (name == punkt2) {
-					EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-					EnterParam.setValueRange(GB_NUM_DEVICES_MIN,
-							GB_NUM_DEVICES_MAX - 1);
-					EnterParam.setValue(sParam.def.getNumDevices());
-					EnterParam.list = fcNumDevices[0];
-					EnterParam.com = GB_COM_DEF_SET_LINE_TYPE;
-				} else if (name == punkt3) {
-					EnterParam.setEnable();
-					EnterParam.setValueRange(DEF_T_NO_MAN_MIN,
-							DEF_T_NO_MAN_MAX);
-					EnterParam.setValue(sParam.def.getTimeNoMan());
-					EnterParam.setDisc(DEF_T_NO_MAN_DISC);
-					EnterParam.setFract(DEF_T_NO_MAN_FRACT);
-					EnterParam.com = GB_COM_DEF_SET_T_NO_MAN;
-				} else if (name == punkt4) {
-					EnterParam.setEnable();
-					if (sParam.typeDevice == AVANT_R400M) {
-						EnterParam.setValueRange(DEF_OVERLAP_MIN2,
-								DEF_OVERLAP_MAX);
-					} else {
-						EnterParam.setValueRange(DEF_OVERLAP_MIN,
-								DEF_OVERLAP_MAX);
-					}
-					EnterParam.setValue(sParam.def.getOverlap());
-					EnterParam.setDisc(DEF_OVERLAP_DISC);
-					EnterParam.setFract(DEF_OVERLAP_FRACT);
-					EnterParam.com = GB_COM_DEF_SET_OVERLAP;
-				} else if (name == punkt5) {
-					EnterParam.setEnable();
-					EnterParam.setValueRange(DEF_DELAY_MIN, DEF_DELAY_MAX);
-					EnterParam.setValue(sParam.def.getDelay(curCom_));
-					EnterParam.setDopValue(curCom_);
-					EnterParam.setDisc(DEF_DELAY_DISC);
-					EnterParam.setFract(DEF_DELAY_FRACT);
-					EnterParam.com = GB_COM_DEF_SET_DELAY;
-				} else if (name == punkt6) {
-					EnterParam.setEnable();
-					EnterParam.setValueRange(DEF_RZ_THRESH_MIN,
-							DEF_RZ_THRESH_MAX);
-					EnterParam.setValue(sParam.def.getRzDec(curCom_));
-					EnterParam.setDisc(DEF_RZ_THRESH_DISC);
-					EnterParam.setFract(DEF_RZ_THRESH_FRACT);
-					EnterParam.com = GB_COM_DEF_SET_RZ_THRESH;
-				} else if ((name == punkt7) || (name == punkt12)) {
-					// TODO Р400М в 3-х концевой 2 разных
-					EnterParam.setEnable();
-					EnterParam.setValueRange(DEF_RZ_DEC_MIN, DEF_RZ_DEC_MAX);
-					EnterParam.setValue(sParam.def.getRzDec(curCom_));
-					EnterParam.setDopValue(curCom_);
-					EnterParam.setDisc(DEF_RZ_DEC_DISC);
-					EnterParam.setFract(DEF_RZ_DEC_FRACT);
-					EnterParam.com = GB_COM_DEF_SET_RZ_DEC;
-				} else if (name == punkt8) {
-					EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-					EnterParam.setValueRange(DEF_PRM_TYPE_MIN,
-							DEF_PRM_TYPE_MAX - 1);
-					EnterParam.setValue(sParam.def.getPrmType());
-					EnterParam.list = fcPrmType[0];
-					EnterParam.com = GB_COM_DEF_SET_PRM_TYPE;
-				} else if (name == punkt9) {
-					EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-					EnterParam.setValueRange(0, 1);
-					uint8_t val = sParam.def.getAcDec() ? 1 : 0;
-					EnterParam.setValue(val);
-					EnterParam.list = fcOnOff[0];
-					EnterParam.com = GB_COM_DEF_SET_PRM_TYPE;
-				} else if (name == punkt10) {
-					EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-					EnterParam.setValueRange(GB_PVZL_FREQ_MIN,
-							GB_PVZL_FREQ_MAX - 1);
-					EnterParam.setValue(sParam.def.getFreqPrd());
-					EnterParam.list = fcPvzlFreq[0];
-					EnterParam.com = GB_COM_DEF_SET_FREQ_PRD;
-				} else if (name == punkt11) {
-					EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-					EnterParam.setValueRange(GB_PVZL_FREQ_MIN,
-							GB_PVZL_FREQ_MAX - 1);
-					EnterParam.setValue(sParam.def.getFreqPrm());
-					EnterParam.list = fcPvzlFreq[0];
-					EnterParam.com = GB_COM_DEF_SET_RZ_THRESH;
-				} else if (name == punkt13) {
-					EnterParam.setEnable();
-					EnterParam.setValueRange(DEF_SH_FRONT_MIN,
-							DEF_SH_FRONT_MAX);
-					EnterParam.setValue(sParam.def.getShiftFront());
-					EnterParam.setDopValue(1);
-					EnterParam.setDisc(DEF_SH_FRONT_DISC);
-					EnterParam.setFract(DEF_SH_FRONT_FRACT);
-					EnterParam.com = GB_COM_DEF_SET_OVERLAP;
-				} else if (name == punkt14) {
-					EnterParam.setEnable();
-					EnterParam.setValueRange(DEF_SH_BACK_MIN, DEF_SH_BACK_MAX);
-					EnterParam.setValue(sParam.def.getShiftBack());
-					EnterParam.setDopValue(2);
-					EnterParam.setDisc(DEF_SH_BACK_DISC);
-					EnterParam.setFract(DEF_SH_BACK_FRACT);
-					EnterParam.com = GB_COM_DEF_SET_OVERLAP;
-				} else if (name == punkt15) {
-					EnterParam.setEnable();
-					EnterParam.setValueRange(DEF_SH_PRM_MIN, DEF_SH_PRM_MAX);
-					EnterParam.setValue(sParam.def.getShiftPrm());
-					EnterParam.setDopValue(3);
-					EnterParam.setDisc(DEF_SH_PRM_DISC);
-					EnterParam.setFract(DEF_SH_PRM_FRACT);
-					EnterParam.com = GB_COM_DEF_SET_OVERLAP;
-				} else if (name == punkt16) {
-					EnterParam.setEnable();
-					EnterParam.setValueRange(DEF_SH_PRD_MIN, DEF_SH_PRD_MAX);
-					EnterParam.setValue(sParam.def.getShiftPrd());
-					EnterParam.setDopValue(4);
-					EnterParam.setDisc(DEF_SH_PRD_DISC);
-					EnterParam.setFract(DEF_SH_PRD_FRACT);
-					EnterParam.com = GB_COM_DEF_SET_OVERLAP;
-				}
-			}
-			break;
-
-		default:
-			break;
-	}
+		// подмена команды, на команду текущего уровня меню.
+		sParam.txComBuf.addCom1(sParam.local.getCom(), 0);
 }
 
 /** Уровень меню. Настройка параметров приемника.
@@ -3291,23 +3044,20 @@ void clMenu::lvlSetupParamPrm() {
  */
 void clMenu::lvlSetupParamPrd() {
 	static char title[] PROGMEM = "Параметры\\Передатчик";
-	static char punkt1[] PROGMEM = "Задержка срабат. ПРД";
-	static char punkt2[] PROGMEM = "Длительность команды";	// ВЧ
-	static char punkt2o[] PROGMEM= "Длительность команды";	// Оптика
-	static char punkt3[] PROGMEM = "Тестовая команда";
-	static char punkt4[] PROGMEM = "Следящие команды";
-	static char punkt5[] PROGMEM = "Блокиров. команды";
-	static char punkt6[] PROGMEM = "Трансляция ЦС";
-	static char punkt7[] PROGMEM = "Блокиров. команды ЦС";
-	static char punkt8[] PROGMEM = "Количество команд А";	// К400
-	static char punkt9[] PROGMEM = "Количество команд";		// К400
+//	static char punkt1[] PROGMEM = "Задержка срабат. ПРД";
+//	static char punkt2[] PROGMEM = "Длительность команды";	// ВЧ
+//	static char punkt2o[] PROGMEM= "Длительность команды";	// Оптика
+//	static char punkt3[] PROGMEM = "Тестовая команда";
+//	static char punkt4[] PROGMEM = "Следящие команды";
+//	static char punkt5[] PROGMEM = "Блокиров. команды";
+//	static char punkt6[] PROGMEM = "Трансляция ЦС";
+//	static char punkt7[] PROGMEM = "Блокиров. команды ЦС";
+//	static char punkt8[] PROGMEM = "Количество команд А";	// К400
+//	static char punkt9[] PROGMEM = "Количество команд";		// К400
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
-		cursorLine_ = 1;
-		cursorEnable_ = true;
-		lineParam_ = 1;
-		curCom_ = 1;
+		EnterParam.setDisable();
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
@@ -3315,7 +3065,8 @@ void clMenu::lvlSetupParamPrd() {
 		// заполнение массивов параметров и команд
 		eGB_TYPE_DEVICE device = sParam.typeDevice;
 		sParam.txComBuf.clear();
-		Punkts_.clear();
+
+		sParam.local.clearParams();
 		if (device == AVANT_K400) {
 			// для переформирования меню добавим опрос кол-ва команд
 			sParam.txComBuf.addCom2(GB_COM_PRD_GET_COM);
@@ -3323,189 +3074,123 @@ void clMenu::lvlSetupParamPrd() {
 			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
 
 			uint8_t numcom = sParam.prd.getNumCom();
-			Punkts_.add(punkt9, GB_COM_PRD_GET_COM);
-			Punkts_.add(punkt1, GB_COM_PRD_GET_TIME_ON);
-			Punkts_.add(punkt2, GB_COM_PRD_GET_DURATION);
-			Punkts_.add(punkt3, GB_COM_PRD_GET_TEST_COM);
+			sParam.local.addParam(GB_PARAM_PRD_COM_NUMS);
+			sParam.local.addParam(GB_PARAM_PRD_IN_DELAY);
+			sParam.local.addParam(GB_PARAM_PRD_DURATION_L);
+			sParam.local.addParam(GB_PARAM_TEST_COM);
 			if (numcom != 0) {
-				Punkts_.add(punkt4, GB_COM_PRD_GET_LONG_COM);
-				Punkts_.add(punkt5, GB_COM_PRD_GET_BLOCK_COM);
+				sParam.local.addParam(GB_PARAM_PRD_COM_LONG);
+				sParam.local.addParam(GB_PARAM_PRD_COM_BLOCK);
+				sParam.local.addParam(GB_PARAM_PRD_COM_NUMS_A);
 			}
-			Punkts_.add(punkt8, GB_COM_PRD_GET_COM_A);
-			Punkts_.add(punkt6, GB_COM_PRD_GET_DR_STATE);
+			sParam.local.addParam(GB_PARAM_PRD_DR_ENABLE);
 			if (numcom != 0) {
-				Punkts_.add(punkt7, GB_COM_PRD_GET_DR_BLOCK);
+				sParam.local.addParam(GB_PARAM_PRD_DR_COM_BLOCK);
 			}
 		} else if (device == AVANT_RZSK) {
-			Punkts_.add(punkt1, GB_COM_PRD_GET_TIME_ON);
-			Punkts_.add(punkt2, GB_COM_PRD_GET_DURATION);
-			Punkts_.add(punkt4, GB_COM_PRD_GET_LONG_COM);
-			Punkts_.add(punkt5, GB_COM_PRD_GET_BLOCK_COM);
+			sParam.local.addParam(GB_PARAM_PRD_IN_DELAY);
+			sParam.local.addParam(GB_PARAM_PRD_DURATION_L);
+			sParam.local.addParam(GB_PARAM_PRD_COM_LONG);
+			sParam.local.addParam(GB_PARAM_PRD_COM_BLOCK);
 		} else if (device == AVANT_OPTO) {
-			Punkts_.add(punkt1, GB_COM_PRD_GET_TIME_ON);
-			Punkts_.add(punkt2o, GB_COM_PRD_GET_DURATION);
-			Punkts_.add(punkt4, GB_COM_PRD_GET_LONG_COM);
-			Punkts_.add(punkt5, GB_COM_PRD_GET_BLOCK_COM);
+			sParam.local.addParam(GB_PARAM_PRD_IN_DELAY);
+			sParam.local.addParam(GB_PARAM_PRD_DURATION_O);
+			sParam.local.addParam(GB_PARAM_PRD_COM_LONG);
+			sParam.local.addParam(GB_PARAM_PRD_COM_BLOCK);
 		}
-	}
 
-	// подмена команды, на команду текущего параметра
-	sParam.txComBuf.addCom1(Punkts_.getCom(cursorLine_ - 1), 0);
+		// подмена команды, на команду текущего уровня меню.
+		sParam.txComBuf.addCom1(sParam.local.getCom(), 0);
+	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
-
-	uint8_t poz = 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_,
-			Punkts_.getMaxNumPunkts());
-
-	poz = 40;
-	PGM_P name = Punkts_.getName(cursorLine_ - 1);
-	snprintf_P(&vLCDbuf[poz], 21, name);
-
-	// при необходимости выводим подномер данного параметра
-	poz = 60;
-	if ((name == punkt4) || (name == punkt5) || (name == punkt7)) {
-		snprintf_P(&vLCDbuf[poz], 21, fcNumCom, curCom_,
-				sParam.prd.getNumCom());
-	}
-
-	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
-	poz = 80;
-	poz += snprintf_P(&vLCDbuf[poz], 11, fcRange);
-	if (name == punkt1) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, PRD_TIME_ON_MIN,
-				PRD_TIME_ON_MAX, "мс");
-	} else if (name == punkt2) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, PRD_DURAT_L_MIN,
-				PRD_DURAT_L_MAX, "мс");
-	} else if (name == punkt2o) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, PRD_DURAT_O_MIN,
-				PRD_DURAT_O_MAX, "мс");
-	} else if (name == punkt3) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
-	} else if (name == punkt4) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
-	} else if (name == punkt5) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
-	} else if (name == punkt6) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
-	} else if (name == punkt7) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeOnOff);
-	} else if (name == punkt8) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, PRD_COM_A_MIN,
-				sParam.prd.getNumCom(), "");
-	} else if (name == punkt9) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
-	}
+	printParam();
 
 	if (EnterParam.isEnable()) {
-		// ввод нового значения параметра
 		eMENU_ENTER_PARAM stat = enterValue();
 
 		if (stat == MENU_ENTER_PARAM_READY) {
-			// новое значение введено, надо передать в БСП
-
-			if (name == punkt1) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-			} else if ((name == punkt2) || (name == punkt2o)) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-			} else if (name == punkt3) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-			} else if (name == punkt4) {
-				uint8_t pl = EnterParam.getDopValue() - 1;
-				uint8_t val = sParam.prd.getLongCom8(pl / 8);
-				if (EnterParam.getValue() > 0)
-					val |= (1 << (pl % 8));
-				else
-					val &= ~(1 << (pl % 8));
-				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
-				sParam.txComBuf.setInt8(val, 1);
-			} else if (name == punkt5) {
-				uint8_t pl = EnterParam.getDopValue() - 1;
-				uint8_t val = sParam.prd.getBlockCom8(pl / 8);
-				if (EnterParam.getValue() > 0)
-					val |= (1 << (pl % 8));
-				else
-					val &= ~(1 << (pl % 8));
-				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
-				sParam.txComBuf.setInt8(val, 1);
-			} else if (name == punkt6) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-			} else if (name == punkt7) {
-				uint8_t pl = EnterParam.getDopValue() - 1;
-				uint8_t val = sParam.prd.getBlockComDR8(pl / 8);
-				if (EnterParam.getValue() > 0)
-					val |= (1 << (pl % 8));
-				else
-					val &= ~(1 << (pl % 8));
-				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
-				sParam.txComBuf.setInt8(val, 1);
-			} else if (name == punkt8) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-			} else if (name == punkt9) {
-				eGB_K400_NUM_COM val;
-				uint8_t num = 0;
-				val = (eGB_K400_NUM_COM) EnterParam.getValueEnter();
-				if (val <= GB_K400_NUM_COM_32) {
-					if (val == GB_K400_NUM_COM_32) {
-						num = 8;
-					} else if (val == GB_K400_NUM_COM_24) {
-						num = 6;
-					} else {
-						num = static_cast<uint8_t>(val);
-					}
-					sParam.txComBuf.setInt8(num);
-				}
-			}
-			sParam.txComBuf.addFastCom(EnterParam.com);
 			EnterParam.setDisable();
-		}
-	} else {
-		// вывод надписи "Значение:" и переход к выводу самого значения
-		poz = 100;
-		poz += snprintf_P(&vLCDbuf[poz], 11, fcValue);
-		if (name == punkt1) {
-			snprintf(&vLCDbuf[poz], 11, "%dмс", sParam.prd.getTimeOn());
-		} else if (name == punkt2) {
-			snprintf(&vLCDbuf[poz], 11, "%dмс", sParam.prd.getDurationL());
-		} else if (name == punkt2o) {
-			snprintf(&vLCDbuf[poz], 11, "%dмс", sParam.prd.getDurationO());
-		} else if (name == punkt3) {
-			uint8_t val = sParam.prd.getTestCom() ? 1 : 0;
-			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
-		} else if (name == punkt4) {
-			uint8_t val = sParam.prd.getLongCom(curCom_ - 1) ? 1 : 0;
-			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
-		} else if (name == punkt5) {
-			uint8_t val = sParam.prd.getBlockCom(curCom_ - 1) ? 1 : 0;
-			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
-		} else if (name == punkt6) {
-			uint8_t val = sParam.prd.getStateDR() ? 1 : 0;
-			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
-		} else if (name == punkt7) {
-			uint8_t val = sParam.prd.getBlockComDR(curCom_ - 1) ? 1 : 0;
-			snprintf_P(&vLCDbuf[poz], 11, fcOnOff[val]);
-		} else if (name == punkt8) {
-			snprintf(&vLCDbuf[poz], 11, "%d", sParam.prd.getNumComA());
-		} else if (name == punkt9) {
-			snprintf(&vLCDbuf[poz], 11, "%d", sParam.prd.getNumCom());
 		}
 	}
 
+//	if (EnterParam.isEnable()) {
+//		// ввод нового значения параметра
+//		eMENU_ENTER_PARAM stat = enterValue();
+//
+//		if (stat == MENU_ENTER_PARAM_READY) {
+//			// новое значение введено, надо передать в БСП
+//
+//			if (name == punkt1) {
+//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+//			} else if ((name == punkt2) || (name == punkt2o)) {
+//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+//			} else if (name == punkt3) {
+//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+//			} else if (name == punkt4) {
+//				uint8_t pl = EnterParam.getDopValue() - 1;
+//				uint8_t val = sParam.prd.getLongCom8(pl / 8);
+//				if (EnterParam.getValue() > 0)
+//					val |= (1 << (pl % 8));
+//				else
+//					val &= ~(1 << (pl % 8));
+//				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
+//				sParam.txComBuf.setInt8(val, 1);
+//			} else if (name == punkt5) {
+//				uint8_t pl = EnterParam.getDopValue() - 1;
+//				uint8_t val = sParam.prd.getBlockCom8(pl / 8);
+//				if (EnterParam.getValue() > 0)
+//					val |= (1 << (pl % 8));
+//				else
+//					val &= ~(1 << (pl % 8));
+//				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
+//				sParam.txComBuf.setInt8(val, 1);
+//			} else if (name == punkt6) {
+//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+//			} else if (name == punkt7) {
+//				uint8_t pl = EnterParam.getDopValue() - 1;
+//				uint8_t val = sParam.prd.getBlockComDR8(pl / 8);
+//				if (EnterParam.getValue() > 0)
+//					val |= (1 << (pl % 8));
+//				else
+//					val &= ~(1 << (pl % 8));
+//				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
+//				sParam.txComBuf.setInt8(val, 1);
+//			} else if (name == punkt8) {
+//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+//			} else if (name == punkt9) {
+//				eGB_K400_NUM_COM val;
+//				uint8_t num = 0;
+//				val = (eGB_K400_NUM_COM) EnterParam.getValueEnter();
+//				if (val <= GB_K400_NUM_COM_32) {
+//					if (val == GB_K400_NUM_COM_32) {
+//						num = 8;
+//					} else if (val == GB_K400_NUM_COM_24) {
+//						num = 6;
+//					} else {
+//						num = static_cast<uint8_t>(val);
+//					}
+//					sParam.txComBuf.setInt8(num);
+//				}
+//			}
+//			sParam.txComBuf.addFastCom(EnterParam.com);
+//			EnterParam.setDisable();
+//		}
+//	}
+
 	switch(key_) {
 		case KEY_UP:
-			cursorLineUp();
-			curCom_ = 1;
+			sParam.local.prevParam();
 			break;
 		case KEY_DOWN:
-			cursorLineDown();
-			curCom_ = 1;
+			sParam.local.nextParam();
 			break;
+
 		case KEY_LEFT:
-			curCom_ = curCom_ <= 1 ? sParam.prd.getNumCom() : curCom_ - 1;
+			sParam.local.prevSameParam();
 			break;
 		case KEY_RIGHT:
-			curCom_ = curCom_ >= sParam.prd.getNumCom() ? 1 : curCom_ + 1;
+			sParam.local.nextSameParam();
 			break;
 
 		case KEY_CANCEL:
@@ -3518,94 +3203,15 @@ void clMenu::lvlSetupParamPrd() {
 			break;
 
 		case KEY_ENTER:
-			enterFunc = &clMenu::enterValue;
-			if (sParam.glb.status.getRegime() != GB_REGIME_DISABLED) {
-				// если хоть одно из имеющихся устройств введено
-				// изменение параметров запрещено
-				EnterParam.printMessage();
-			} else {
-
-				if (name == punkt1) {
-					EnterParam.setEnable();
-					EnterParam.setValueRange(PRD_TIME_ON_MIN, PRD_TIME_ON_MAX);
-					EnterParam.setValue(sParam.prd.getTimeOn());
-					EnterParam.setDisc(PRD_TIME_ON_DISC);
-					EnterParam.setFract(PRD_TIME_ON_FRACT);
-					EnterParam.com = GB_COM_PRD_SET_TIME_ON;
-				} else if (name == punkt2) {
-					EnterParam.setEnable();
-					EnterParam.setValueRange(PRD_DURAT_L_MIN, PRD_DURAT_L_MAX);
-					EnterParam.setValue(sParam.prd.getDurationL());
-					EnterParam.setDisc(PRD_DURAT_L_DISC);
-					EnterParam.setFract(PRD_DURAT_L_FRACT);
-					EnterParam.com = GB_COM_PRD_SET_DURATION;
-				} else if (name == punkt2o) {
-					EnterParam.setEnable();
-					EnterParam.setValueRange(PRD_DURAT_O_MIN, PRD_DURAT_O_MAX);
-					EnterParam.setValue(sParam.prd.getDurationO());
-					EnterParam.setDisc(PRD_DURAT_O_DISC);
-					EnterParam.setFract(PRD_DURAT_O_FRACT);
-					EnterParam.com = GB_COM_PRD_SET_DURATION;
-				} else if (name == punkt3) {
-					EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-					EnterParam.setValueRange(0, 1);
-					uint8_t val = sParam.prd.getTestCom() ? 1 : 0;
-					EnterParam.setValue(val);
-					EnterParam.list = fcOnOff[0];
-					EnterParam.com = GB_COM_PRD_SET_TEST_COM;
-				} else if (name == punkt4) {
-					EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-					EnterParam.setValueRange(0, 1);
-					uint8_t val = sParam.prd.getLongCom(curCom_ - 1) ? 1 : 0;
-					EnterParam.setValue(val);
-					EnterParam.setDopValue(curCom_);
-					EnterParam.list = fcOnOff[0];
-					EnterParam.com = GB_COM_PRD_SET_LONG_COM;
-				} else if (name == punkt5) {
-					EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-					EnterParam.setValueRange(0, 1);
-					uint8_t val = sParam.prd.getBlockCom(curCom_ - 1) ? 1 : 0;
-					EnterParam.setValue(val);
-					EnterParam.setDopValue(curCom_);
-					EnterParam.list = fcOnOff[0];
-					EnterParam.com = GB_COM_PRD_SET_BLOCK_COM;
-				} else if (name == punkt6) {
-					EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-					EnterParam.setValueRange(0, 1);
-					uint8_t val = sParam.prd.getStateDR() ? 1 : 0;
-					EnterParam.setValue(val);
-					EnterParam.list = fcOnOff[0];
-					EnterParam.com = GB_COM_PRD_SET_DR_STATE;
-				} else if (name == punkt7) {
-					EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-					EnterParam.setValueRange(0, 1);
-					uint8_t val = sParam.prd.getBlockComDR(curCom_ - 1) ? 1 : 0;
-					EnterParam.setValue(val);
-					EnterParam.setDopValue(curCom_);
-					EnterParam.list = fcOnOff[0];
-					EnterParam.com = GB_COM_PRD_SET_DR_BLOCK;
-				} else if (name == punkt8) {
-					EnterParam.setEnable();
-					uint8_t max = sParam.prd.getNumCom();
-					EnterParam.setValueRange(PRD_COM_A_MIN, max);
-					EnterParam.setValue(sParam.prd.getNumComA());
-					EnterParam.setDisc(PRD_COM_A_DISC);
-					EnterParam.setFract(PRD_COM_A_FRACT);
-					EnterParam.com = GB_COM_PRD_SET_COM_A;
-				} else if (name == punkt9) {
-					EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-					EnterParam.setValueRange(GB_K400_NUM_COM_4,
-							GB_K400_NUM_COM_MAX - 1);
-					EnterParam.setValue(GB_K400_NUM_COM_MAX - 1);
-					EnterParam.list = fcK400NumCom[0];
-					EnterParam.com = GB_COM_PRD_SET_COM;
-				}
-			}
+			enterParameter();
 			break;
 
 		default:
 			break;
 	}
+
+	// подмена команды, на команду текущего уровня меню.
+	sParam.txComBuf.addCom1(sParam.local.getCom(), 0);
 }
 
 /** Уровень меню. Настройка параметров общих.
@@ -3617,10 +3223,6 @@ void clMenu::lvlSetupParamGlb() {
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
-		cursorLine_ = 1;
-		cursorEnable_ = true;
-		lineParam_ = 1;
-		curCom_ = 1;
 		EnterParam.setDisable();
 
 		vLCDclear();
@@ -3629,7 +3231,7 @@ void clMenu::lvlSetupParamGlb() {
 		// заполнение массивов параметров и команд
 		eGB_TYPE_DEVICE type = sParam.typeDevice;
 		sParam.txComBuf.clear();
-		Punkts_.clear();
+
 		sParam.local.clearParams();
 		if (type == AVANT_K400) {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
@@ -3718,11 +3320,11 @@ void clMenu::lvlSetupParamGlb() {
 			sParam.local.addParam(GB_PARAM_FREQ);
 			sParam.local.addParam(GB_PARAM_COMP_P400);
 			if (comp == GB_COMPATIBILITY_PVZL) {
-				sParam.local.addParam(GB_PARAM_IN_DEC_AC);
+				sParam.local.addParam(GB_PARAM_IN_DEC_AC_ANSWER);
 			}
 			sParam.local.addParam(GB_PARAM_COR_U);
 			sParam.local.addParam(GB_PARAM_COR_I);
-			if (comp = GB_COMPATIBILITY_PVZUE) {
+			if (comp == GB_COMPATIBILITY_PVZUE) {
 				sParam.local.addParam(GB_PARAM_PVZUE_PROTOCOL);
 				sParam.local.addParam(GB_PARAM_PVZUE_PARITY);
 				sParam.local.addParam(GB_PARAM_PVZUE_FAIL);
@@ -5126,7 +4728,7 @@ void clMenu::printParam() {
 // Вывод на экран текущего номера и их колчиество для однотипных пар-ов.
 void clMenu::printSameNumber(uint8_t pos) {
 	static prog_uint8_t POS = 60;
-	static prog_uint8_t MAX_CHARS = 11;
+	static prog_uint8_t MAX_CHARS = 21;
 
 	if (sParam.local.getNumOfSameParams() > 1) {
 		snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Номер: %u/%u"),
@@ -5139,13 +4741,14 @@ void clMenu::printSameNumber(uint8_t pos) {
 void clMenu::printRange(uint8_t pos) {
 	static prog_uint8_t MAX_CHARS = 11;
 
-	int16_t min = sParam.local.getMin();
-	int16_t max = sParam.local.getMax();
+	LocalParams *lp = &sParam.local;
+	int16_t min = lp->getMin();
+	int16_t max = lp->getMax();
 	PGM_P str = fcNullBuf;
 
 	pos += snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Диапазон: "));
 
-	switch(sParam.local.getRangeType()) {
+	switch(lp->getRangeType()) {
 		case Param::RANGE_LIST:
 			str = PSTR("список");
 			break;
@@ -5154,9 +4757,6 @@ void clMenu::printRange(uint8_t pos) {
 			str = PSTR("вкл./выкл.");
 			break;
 
-		case Param::RANGE_INT_DIV_10:	// DOWN
-			min /= 10;
-			max /= 10;
 		case Param::RANGE_INT:
 			str = PSTR("%d..%d%S");
 			break;
@@ -5164,9 +4764,15 @@ void clMenu::printRange(uint8_t pos) {
 		case Param::RANGE_INT_NO_DIM:
 			str = PSTR("%d..%d");
 			break;
+
+		case Param::RANGE_U_COR:
+			min /= 10;
+			max /= 10;
+			str = PSTR("%d..%d%S");
+			break;
 	}
 
-	PGM_P dim = fcDimension[sParam.local.getDim()];
+	PGM_P dim = fcDimension[lp->getDim()];
 	snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, min, max, dim);
 }
 
@@ -5190,16 +4796,20 @@ void clMenu::printValue(uint8_t pos) {
 			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("%d"), val);
 		}
 	} else if (state == LocalParams::STATE_READ_PARAM) {
-		snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("(чтение)"));
+		if (blink_) {
+			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("чтение."));
+		} else {
+			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("чтение.."));
+		}
 	} else {
 		// вывод корректного значения
 		switch(sParam.local.getParamType()) {
+			case Param::PARAM_BITES: // DOWN
 			case Param::PARAM_LIST:
 				val -= sParam.local.getMin();
 				str = sParam.local.getListOfValues() + (val * STRING_LENGHT);
 				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str);
 				break;
-
 			case Param::PARAM_INT:
 				str = PSTR("%d%S");
 				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val, dim);
@@ -5219,266 +4829,43 @@ void clMenu::printValue(uint8_t pos) {
 }
 
 
-//
+// Настройка параметров для ввода значения с клавиатуры.
 void clMenu::enterParameter() {
-	enterFunc = &clMenu::enterValue;
-
 	LocalParams *lp = &sParam.local;
-	//			EnterParam.setEnable()
 
 	if ((sParam.local.getParam() == GB_PARAM_COR_U)
 			|| (sParam.local.getParam() == GB_PARAM_COR_I)
 			|| (sParam.glb.status.getRegime() == GB_REGIME_DISABLED)) {
 
+		int16_t min = lp->getMin();
+
 		switch(lp->getParamType()) {
+			case Param::PARAM_BITES: // DOWN
 			case Param::PARAM_LIST:
 				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-				EnterParam.setValueRange(lp->getMin(), lp->getMax());
-				if (lp->isError() != LocalParams::STATE_NO_ERROR) {
-					EnterParam.setValue(0);
-				} else {
-					EnterParam.setValue(lp->getValue());
-				}
-				EnterParam.list = lp->getListOfValues();
-				EnterParam.com = (eGB_COM) (lp->getCom() + 0x80);
 				break;
 			case Param::PARAM_INT:
 				EnterParam.setEnable();
-				EnterParam.setValueRange(lp->getMin(), lp->getMax());
-				if (lp->isError() != LocalParams::STATE_NO_ERROR) {
-					EnterParam.setValue(lp->getMin());
-				} else {
-					EnterParam.setValue(lp->getValue());
-				}
-				EnterParam.setFract(lp->getFract());
-				EnterParam.setDisc(lp->getDisc());
-				EnterParam.com = (eGB_COM) (lp->getCom() + 0x80);
 				break;
 			case Param::PARAM_U:
+				min = 0;
+				EnterParam.setEnable(MENU_ENTER_PARAM_U_COR);
 				break;
 		}
-	}
 
-//	// коррекция тока и напряжения вводятся в любом режиме
-//	// а также настройка интерфейса связи
-//	// остальные параметры только в "Выведен"
-//	if (name == punkt15) {
-//		// вводится реальное значение напряжения
-//		// по умолчанию стоит 0, что значит сброс настроек
-//		EnterParam.setEnable(MENU_ENTER_PARAM_U_COR);
-//		EnterParam.setValueRange(0, GLB_COR_U_DEC_MAX);
-//		EnterParam.setValue(0);
-//		EnterParam.setDisc(GLB_COR_U_DEC_DISC);
-//		EnterParam.setFract(GLB_COR_U_DEC_FRACT);
-//		EnterParam.setDopValue(1);
-//		EnterParam.com = GB_COM_SET_COR_U_I;
-//	} else if (name == punkt16) {
-//		// вводится реальное значение тока
-//		// по умолчанию стоит 0, что значит сброс настроек
-//		EnterParam.setEnable();
-//		EnterParam.setValueRange(0, GLB_COR_I_DEC_MAX);
-//		EnterParam.setValue(0);
-//		EnterParam.setDisc(GLB_COR_I_DEC_DISC);
-//		EnterParam.setFract(GLB_AC_IN_DEC_FRACT);
-//		EnterParam.setDopValue(2);
-//		EnterParam.com = GB_COM_SET_COR_U_I;
-//	} else if (sParam.glb.status.getRegime() != GB_REGIME_DISABLED) {
-//		// если хоть одно из имеющихся устройств введено
-//		// изменение параметров запрещено
-//		EnterParam.printMessage();
-//	} else if (name == punkt1) {
-//		EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-//		EnterParam.setValueRange(0, 1);
-//		uint8_t val = sParam.glb.getTimeSinchr() ? 1 : 0;
-//		EnterParam.setValue(val);
-//		EnterParam.list = fcOnOff[0];
-//		EnterParam.setDopValue(1);
-//		EnterParam.com = GB_COM_SET_TIME_SINCHR;
-//	} else if (name == punkt2) {
-//		EnterParam.setEnable();
-//		EnterParam.setValueRange(GLB_DEV_NUM_MIN,
-//				sParam.glb.getMaxNumDevices());
-//		EnterParam.setValue(sParam.glb.getDeviceNum());
-//		EnterParam.setDisc(GLB_DEV_NUM_DISC);
-//		EnterParam.setFract(GLB_DEV_NUM_FRACT);
-//		EnterParam.com = GB_COM_SET_DEVICE_NUM;
-//	} else if (name == punkt3) {
-//		EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-//		EnterParam.setValueRange(0, 1);
-//		uint8_t val = sParam.glb.getOutCheck() ? 1 : 0;
-//		EnterParam.setValue(val);
-//		EnterParam.list = fcOnOff[0];
-//		EnterParam.com = GB_COM_SET_OUT_CHECK;
-//	} else if ((name == punkt4) || (name == punkt4rzsk)) {
-//		EnterParam.setEnable();
-//		EnterParam.setValueRange(GLB_CF_THRESH_MIN, GLB_CF_THRESH_MAX);
-//		EnterParam.setValue(sParam.glb.getCfThreshold());
-//		EnterParam.setDisc(GLB_CF_THRESH_DISC);
-//		EnterParam.setFract(GLB_CF_THRESH_FRACT);
-//		EnterParam.setDopValue(1);
-//		EnterParam.com = GB_COM_SET_CF_THRESHOLD;
-//	} else if (name == punkt5) {
-//		EnterParam.setEnable();
-//		EnterParam.setValueRange(GLB_T_RERUN_MIN, GLB_T_RERUN_MAX);
-//		EnterParam.setValue(sParam.glb.getTimeRerun());
-//		EnterParam.setDisc(GLB_T_RERUN_DISC);
-//		EnterParam.setFract(GLB_T_RERUN_FRACT);
-//		EnterParam.com = GB_COM_SET_TIME_RERUN;
-//	} else if (name == punkt6) {
-//		EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-//		EnterParam.setValueRange(0, 1);
-//		uint8_t val = sParam.glb.getComPrdKeep() ? 1 : 0;
-//		EnterParam.setValue(val);
-//		EnterParam.list = fcOnOff[0];
-//		EnterParam.setDopValue(1);
-//		EnterParam.com = GB_COM_SET_COM_PRD_KEEP;
-//	} else if (name == punkt7) {
-//		EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-//		EnterParam.setValueRange(0, 1);
-//		uint8_t val = sParam.glb.getComPrmKeep() ? 1 : 0;
-//		EnterParam.setValue(val);
-//		EnterParam.list = fcOnOff[0];
-//		EnterParam.com = GB_COM_SET_COM_PRM_KEEP;
-//	} else if (name == punkt8) {
-//		EnterParam.setEnable();
-//		EnterParam.setValueRange(GLB_IN_DEC_MIN, GLB_IN_DEC_MAX);
-//		EnterParam.setValue(sParam.glb.getInDecrease(curCom_));
-//		EnterParam.setDisc(GLB_IN_DEC_DISC);
-//		EnterParam.setFract(GLB_IN_DEC_FRACT);
-//		EnterParam.setDopValue(curCom_ + 1);
-//		EnterParam.com = GB_COM_SET_CF_THRESHOLD;
-//	} else if (name == punkt10) {
-//		EnterParam.setEnable();
-//		EnterParam.setValueRange(GLB_U_OUT_NOM_MIN, GLB_U_OUT_NOM_MAX);
-//		EnterParam.setValue(sParam.glb.getUoutNom());
-//		EnterParam.setDisc(GLB_U_OUT_NOM_DISC);
-//		EnterParam.setFract(GLB_U_OUT_NOM_FRACT);
-//		EnterParam.com = GB_COM_SET_COM_PRM_KEEP;
-//	} else if (name == punkt11) {
-//		EnterParam.setEnable();
-//		EnterParam.setValueRange(GLB_FREQ_MIN, GLB_FREQ_MAX);
-//		EnterParam.setValue(sParam.glb.getFreq());
-//		EnterParam.setDisc(GLB_FREQ_DISC);
-//		EnterParam.setFract(GLB_FREQ_FRACT);
-//		EnterParam.com = GB_COM_SET_FREQ;
-//	} else if (name == punkt12) {
-//		EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-//		EnterParam.setValueRange(GB_COMPATIBILITY_MIN,
-//				GB_COMPATIBILITY_MAX - 1);
-//		uint8_t val = (uint8_t) sParam.glb.getCompatibility();
-//		EnterParam.setValue(val);
-//		EnterParam.list = fcCompatibility[0];
-//		EnterParam.setDopValue(1);
-//		EnterParam.com = GB_COM_SET_COM_PRD_KEEP;
-//	} else if (name == punkt13) {
-//		EnterParam.setEnable();
-//		EnterParam.setValueRange(GLB_AC_IN_DEC_MIN, GLB_AC_IN_DEC_MAX);
-//		EnterParam.setValue(sParam.glb.getAcInDec());
-//		EnterParam.setDisc(GLB_AC_IN_DEC_DISC);
-//		EnterParam.setFract(GLB_AC_IN_DEC_FRACT);
-//		EnterParam.setDopValue(1);
-//		EnterParam.com = GB_COM_SET_TIME_RERUN;
-//	} else if (name == punkt14) {
-//		EnterParam.setEnable();
-//		EnterParam.setValueRange(GLB_DETECTOR_MIN, GLB_DETECTOR_MAX);
-//		EnterParam.setValue(sParam.glb.getDetector());
-//		EnterParam.setDisc(GLB_DETECTOR_DISC);
-//		EnterParam.setFract(GLB_DETECTOR_FRACT);
-//		EnterParam.setDopValue(2);
-//		EnterParam.com = GB_COM_SET_TIME_SINCHR;
-//	} else if (name == punkt17) {
-//		EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-//		EnterParam.setValueRange(GB_PVZUE_PROTOCOL_MIN,
-//				GB_PVZUE_PROTOCOL_MAX - 1);
-//		EnterParam.setValue(sParam.glb.getPvzueProtocol());
-//		EnterParam.list = fcPvzueProtocol[0];
-//		EnterParam.setDopValue(1);
-//		EnterParam.com = GB_COM_SET_TIME_RERUN;
-//	} else if (name == punkt18) {
-//		EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-//		EnterParam.setValueRange(GB_PVZUE_PARITY_MIN,
-//				GB_PVZUE_PARITY_MAX - 1);
-//		EnterParam.setValue(sParam.glb.getPvzueParity());
-//		EnterParam.list = fcPvzueParity[0];
-//		EnterParam.setDopValue(2);
-//		EnterParam.com = GB_COM_SET_TIME_RERUN;
-//	} else if (name == punkt19) {
-//		EnterParam.setEnable();
-//		EnterParam.setValueRange(GLB_PVZUE_FAIL_MIN, GLB_PVZUE_FAIL_MAX);
-//		EnterParam.setValue(sParam.glb.getPvzueFail());
-//		EnterParam.setDisc(GLB_PVZUE_FAIL_DISC);
-//		EnterParam.setFract(GLB_PVZUE_FAIL_FRACT);
-//		EnterParam.setDopValue(3);
-//		EnterParam.com = GB_COM_SET_TIME_RERUN;
-//	} else if (name == punkt20) {
-//		EnterParam.setEnable();
-//		EnterParam.setValueRange(GLB_PVZUE_N_TH_MIN, GLB_PVZUE_N_TH_MAX);
-//		EnterParam.setValue(sParam.glb.getPvzueNoiseTH());
-//		EnterParam.setDisc(GLB_PVZUE_N_TH_DISC);
-//		EnterParam.setFract(GLB_PVZUE_N_TH_FRACT);
-//		EnterParam.setDopValue(4);
-//		EnterParam.com = GB_COM_SET_TIME_RERUN;
-//	} else if (name == punkt21) {
-//		EnterParam.setEnable();
-//		EnterParam.setValueRange(GLB_PVZUE_N_LVL_MIN, GLB_PVZUE_N_LVL_MAX);
-//		EnterParam.setValue(sParam.glb.getPvzueNoiseLvl());
-//		EnterParam.setDisc(GLB_PVZUE_N_LVL_DISC);
-//		EnterParam.setFract(GLB_PVZUE_N_LVL_FRACT);
-//		EnterParam.setDopValue(5);
-//		EnterParam.com = GB_COM_SET_TIME_RERUN;
-//	} else if (name == punkt22) {
-//		EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-//		EnterParam.setValueRange(GB_PVZUE_TYPE_AC_MIN,
-//				GB_PVZUE_TYPE_AC_MAX - 1);
-//		EnterParam.setValue(sParam.glb.getPvzueTypeAC());
-//		EnterParam.list = fcPvzueTypeAC[0];
-//		EnterParam.setDopValue(6);
-//		EnterParam.com = GB_COM_SET_TIME_RERUN;
-//	} else if (name == punkt23) {
-//		EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-//		EnterParam.setValueRange(0, 1);
-//		uint8_t val = sParam.glb.getBackup() ? 1 : 0;
-//		EnterParam.setValue(val);
-//		EnterParam.list = fcOnOff[0];
-//		EnterParam.setDopValue(1);
-//		EnterParam.com = GB_COM_SET_COR_U_I;
-//	} else if (name == punkt24) {
-//		EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-//		EnterParam.setValueRange(GB_COMP_K400_MIN, GB_COMP_K400_MAX - 1);
-//		EnterParam.setValue(sParam.glb.getCompK400());
-//		EnterParam.list = fcCompK400[0];
-//		EnterParam.setDopValue(2);
-//		EnterParam.com = GB_COM_SET_COM_PRD_KEEP;
-//	} else if (name == punkt25) {
-//		EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-//		EnterParam.setValueRange(GB_NUM_DEVICES_MIN,
-//				GB_NUM_DEVICES_MAX - 1);
-//		EnterParam.setValue(sParam.def.getNumDevices());
-//		EnterParam.list = fcNumDevices[0];
-//		EnterParam.com = GB_COM_DEF_SET_LINE_TYPE;
-//	} else if (name == punkt26) {
-//		EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-//		EnterParam.setValueRange(0, 1);
-//		uint8_t val = sParam.glb.getTmK400()? 1 : 0;
-//		EnterParam.setValue(val);
-//		EnterParam.list = fcOnOff[0];
-//		EnterParam.setDopValue(3);
-//		EnterParam.com = GB_COM_SET_COM_PRD_KEEP;
-//	} else if (name == punkt27) {
-//		EnterParam.setEnable();
-//		EnterParam.setValueRange(GLB_PVZUE_P_BAC_MIN, GLB_PVZUE_P_BAC_MAX);
-//		EnterParam.setValue(sParam.glb.getPvzuePeriodBAC());
-//		EnterParam.setDisc(GLB_PVZUE_P_BAC_DISC);
-//		EnterParam.setFract(GLB_PVZUE_P_BAC_FRACT);
-//		EnterParam.setDopValue(7);
-//		EnterParam.com = GB_COM_SET_TIME_RERUN;
-//	} else if (name == punkt28) {
-//		EnterParam.setEnable();
-//		EnterParam.setValueRange(GLB_PVZUE_PR_BAC_MIN, GLB_PVZUE_PR_BAC_MAX);
-//		EnterParam.setValue(sParam.glb.getPvzuePeriodRepBAC());
-//		EnterParam.setDisc(GLB_PVZUE_PR_BAC_DISC);
-//		EnterParam.setFract(GLB_PVZUE_PR_BAC_FRACT);
-//		EnterParam.setDopValue(8);
-//		EnterParam.com = GB_COM_SET_TIME_RERUN;
-//	}
+		if (EnterParam.isEnable()) {
+			EnterParam.setValueRange(min, lp->getMax());
+			if (lp->isError() != LocalParams::STATE_NO_ERROR) {
+				EnterParam.setValue(min);
+			} else {
+				EnterParam.setValue(lp->getValue());
+			}
+			EnterParam.list = lp->getListOfValues();
+			EnterParam.setFract(lp->getFract());
+			EnterParam.setDisc(lp->getDisc());
+			EnterParam.com = (eGB_COM) (lp->getCom() + 0x80);
+
+			enterFunc = &clMenu::enterValue;
+		}
+	}
 }

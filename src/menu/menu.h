@@ -628,8 +628,19 @@ private:
 	 */
 	void printValue(uint8_t pos);
 
-	/**
+	/**	Настройка параметров для ввода значения с клавиатуры.
 	 *
+	 * 	Для параметров типа \a Param::PARAM_LIST вызывается функция выбора
+	 * 	значения из списка.
+	 *
+	 * 	Для параметров типа \a Param::PARAM_INT вызывается функция ввода
+	 * 	целого числа.
+	 *
+	 * 	Для параметров типа \a Param::PARAM_U_COR вызывается функция ввода
+	 * 	коррекции напряжения, а также минимальное значение подменяется на 0.
+	 *
+	 * 	Для параметров типа \a Param::PARAM_I вызывается функция ввода целого
+	 * 	числа, при этом минимальное значение подменяется на 0.
 	 */
 	void enterParameter();
 
@@ -640,34 +651,15 @@ private:
 	void (clMenu::*lvlMenu)();
 };
 
-//	static char punkt1[] PROGMEM 	= "Синхронизация часов";
-//	static char punkt2[] PROGMEM 	= "Номер аппарата";
-//	static char punkt3[] PROGMEM 	= "Контроль вых.сигнала";
-//	static char punkt4[] PROGMEM 	= "Порог предупреждения";
-//	static char punkt4rzsk[] PROGMEM= "Порог предупр. по КЧ";
-//	static char punkt5[] PROGMEM 	= "Время перезапуска";
-//	static char punkt6[] PROGMEM 	= "Удерж. реле ком. ПРД";
-//	static char punkt7[] PROGMEM 	= "Удерж. реле ком. ПРМ";
-//	static char punkt8[] PROGMEM 	= "Загрубл. чувств. ПРМ";
-////	static char punkt9[] PROGMEM 	= ""; // на текущий момент свободно
-//	static char punkt10[] PROGMEM 	= "Uвых номинальное";
-//	static char punkt11[] PROGMEM 	= "Частота";
-//	static char punkt12[] PROGMEM 	= "Совместимость";			// защита
-//	static char punkt13[] PROGMEM 	= "Снижение ответа АК";
-//	static char punkt14[] PROGMEM 	= "Тип детектора";
-//	static char punkt15[] PROGMEM 	= "Коррекция напряжения";
-//	static char punkt16[] PROGMEM 	= "Коррекция тока";
-//	static char punkt17[] PROGMEM 	= "Протокол обмена";
-//	static char punkt18[] PROGMEM 	= "Признак четности";
-//	static char punkt19[] PROGMEM 	= "Допустимые провалы";
-//	static char punkt20[] PROGMEM 	= "Порог по помехе";
-//	static char punkt21[] PROGMEM 	= "Допустимая помеха";
-//	static char punkt22[] PROGMEM 	= "Тип автоконтроля";
-//	static char punkt23[] PROGMEM 	= "Резервирование";
-//	static char punkt24[] PROGMEM 	= "Совместимость";	// к400
-//	static char punkt25[] PROGMEM 	= "Тип линии";
-//	static char punkt26[] PROGMEM 	= "Телемеханика"; // к400
-//	static char punkt27[] PROGMEM 	= "Период беглого АК";
-//	static char punkt28[] PROGMEM	= "Период повт.бегл. АК";
+//	static char punkt1[] PROGMEM = "Задержка срабат. ПРД";
+//	static char punkt2[] PROGMEM = "Длительность команды";	// ВЧ
+//	static char punkt2o[] PROGMEM= "Длительность команды";	// Оптика
+//	static char punkt3[] PROGMEM = "Тестовая команда";
+//	static char punkt4[] PROGMEM = "Следящие команды";
+//	static char punkt5[] PROGMEM = "Блокиров. команды";
+//	static char punkt6[] PROGMEM = "Трансляция ЦС";
+//	static char punkt7[] PROGMEM = "Блокиров. команды ЦС";
+//	static char punkt8[] PROGMEM = "Количество команд А";	// К400
+//	static char punkt9[] PROGMEM = "Количество команд";		// К400
 
 #endif /* MENU_H_ */

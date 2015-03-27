@@ -45,49 +45,17 @@ bool clProtocolBspS::getData(bool pc) {
 
 		LocalParams *lp = &sParam_->local;
 		if (com == lp->getCom()) {
-			int16_t val = -10000;
+
+			// по умолчанию загружается значение первого байта,
+			// на отличные от этого параметры далее ведется проверка
+			int16_t val = -1000;
 			switch(lp->getParam()) {
-				case GB_PARAM_TIME_SYNCH:
-					val = buf[B1];
-					break;
-				case GB_PARAM_NUM_OF_DEVICE_2:	// DOWN
-				case GB_PARAM_NUM_OF_DEVICE_3:
-					val = buf[B1];
-					break;
-				case GB_PARAM_OUT_CHECK:
-					val = buf[B1];
-					break;
-				case GB_PARAM_WARN_THD:
-				case GB_PARAM_WARN_THD_CF:	// DOWN
-					val = buf[B1];
-					break;
-				case GB_PARAM_TIME_RERUN:
-					val = buf[B1];
-					break;
-				case GB_PARAM_COM_PRD_KEEP:
-					val = buf[B1];
-					break;
-				case GB_PARAM_COM_PRM_KEEP:
-					val = buf[B1];
-					break;
 				case GB_PARAM_IN_DEC_2:
 				case GB_PARAM_IN_DEC_3:
 					val = buf[B2 + lp->getNumOfCurrSameParam() - 1];
 					break;
-				case GB_PARAM_NET_ADDRESS:
-					val = buf[B1];
-					break;
-				case GB_PARAM_U_OUT_NOM:
-					val = buf[B1];
-					break;
 				case GB_PARAM_FREQ:
 					val = TO_INT16(buf[B1], buf[B2]);
-					break;
-				case GB_PARAM_COMP_P400:
-					val = buf[B1];
-					break;
-				case GB_PARAM_IN_DEC_AC:
-					val = buf[B1];
 					break;
 				case GB_PARAM_DETECTOR:
 					val = buf[B2];
@@ -122,25 +90,54 @@ bool clProtocolBspS::getData(bool pc) {
 				case GB_PARAM_PVZUE_PER_RE_AC:
 					val = buf[B8];
 					break;
-				case GB_PARAM_BACKUP:
-					val = buf[B1];
-					break;
 				case GB_PARAM_COMP_K400:
 					val = buf[B2];
-					break;
-				case GB_PARAM_NUM_OF_DEVICES:
-					val = buf[B1] + 1;
 					break;
 				case GB_PARAM_TM_K400:
 					val = buf[B3];
 					break;
+				case GB_PARAM_DELAY_2:	// DOWN
+				case GB_PARAM_DELAY_3:
+					val = buf[B1 + lp->getNumOfCurrSameParam() - 1];
+					break;
+				case GB_PARAM_SENS_DEC:
+				case GB_PARAM_SENS_DEC_RZ_2:
+				case GB_PARAM_SENS_DEC_RZ_3:
+					val = buf[B1 + lp->getNumOfCurrSameParam() - 1];
+					break;
+				case GB_PARAM_SHIFT_FRONT:
+					val = buf[B1];
+					break;
+				case GB_PARAM_SHIFT_BACK:
+					val = buf[B2];
+					break;
+				case GB_PARAM_SHIFT_PRM:
+					val = buf[B3];
+					break;
+				case GB_PARAM_SHIFT_PRD:
+					val = buf[B4];
+					break;
+				case GB_PARAM_PRD_COM_LONG:
+					val = B1;
+					break;
+				case GB_PARAM_PRD_COM_BLOCK:
+					val = B1;
+					break;
+				case GB_PARAM_PRD_DR_COM_BLOCK:
+					val = B1;
+					break;
+				default:
+					val = buf[B1];
+					break;
 			}
-			lp->setValue(val);
-//			if (sParam_->local.getParam() == GB_PARAM_COMP_K400) {
-//				sParam_->local.setValue(buf[B2]);
-//			} else if (sParam_->local.getParam() == GB_PARAM_TIME_SYNCH) {
-//
-//			}
+
+			// Для битовых переменных передается указатель на начало данных,
+			// а для остальных текущее значение.
+			if (lp->getParamType() == Param::PARAM_BITES) {
+				lp->setValueBits(&buf[val]);
+			} else {
+				lp->setValue(val);
+			}
 		}
 	}
 
@@ -228,47 +225,13 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
  */
 bool clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
 	bool stat = false;
-	eGB_TYPE_DEVICE device = sParam_->typeDevice;
 
-	if (com == GB_COM_DEF_GET_DEF_TYPE) {
-		stat = sParam_->def.setDefType(buf[B1]);
-	} else if (com == GB_COM_DEF_GET_LINE_TYPE) {
+	if (com == GB_COM_DEF_GET_LINE_TYPE) {
 		stat = sParam_->def.setNumDevices((eGB_NUM_DEVICES) buf[B1]);
 		uint8_t act = sParam_->glb.setNumDevices((eGB_NUM_DEVICES) buf[B1]);
 		if (act & GB_ACT_NEW)
 			sParam_->device = false;
-	} else if (com == GB_COM_DEF_GET_T_NO_MAN) {
-		stat = sParam_->def.setTimeNoMan(buf[B1]);
-	} else if (com == GB_COM_DEF_GET_DELAY) {
-		stat = sParam_->def.setDelay(1, buf[B1]);
-		sParam_->def.setDelay(2, buf[B2]);
-	} else if (com == GB_COM_DEF_GET_OVERLAP) {
-		if ((device == AVANT_R400M) || (device == AVANT_R400)) {
-			stat  = sParam_->def.setShiftFront(buf[B1]);
-			stat |= sParam_->def.setShiftBack(buf[B2]);
-			stat |= sParam_->def.setShiftPrm(buf[B3]);
-			stat |= sParam_->def.setShiftPrd(buf[B4]);
-		} else {
-			stat = sParam_->def.setOverlap(buf[B1]);
-		}
-	} else if (com == GB_COM_DEF_GET_RZ_DEC) {
-		stat = sParam_->def.setRzDec(1, buf[B1]);
-		sParam_->def.setRzDec(2, buf[B2]);
-	} else if (com == GB_COM_DEF_GET_PRM_TYPE) {
-		if (sParam_->typeDevice == AVANT_RZSK) {
-			stat = sParam_->def.setPrmType(buf[B1]);
-		} else if (sParam_->typeDevice == AVANT_R400M) {
-			stat = sParam_->def.setAcDec(buf[B1]);
-		}
-	} else if (com == GB_COM_DEF_GET_FREQ_PRD) {
-		sParam_->def.setFreqPrd((eGB_PVZL_FREQ) buf[B1]);
-	} else if (com == GB_COM_DEF_GET_RZ_THRESH) {
-		if (sParam_->typeDevice == AVANT_R400M) {
-			// ! В Р400М это частота ПРМ (ПВЗЛ)
-			sParam_->def.setFreqPrm((eGB_PVZL_FREQ) buf[B1]);
-		} else
-			stat = sParam_->def.setRzThreshold(buf[B1]);
-	} else if (com == GB_COM_DEF_GET_TYPE_AC) {
+	} else  if (com == GB_COM_DEF_GET_TYPE_AC) {
 		// 1 байт - тип АК
 		// 2-5 - время до АК
 		stat = sParam_->def.setTypeAC((eGB_TYPE_AC) buf[B1]);
@@ -428,60 +391,6 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 	bool stat = false;
 
 	switch (com) {
-		case GB_COM_PRD_GET_TIME_ON: {
-			stat = sParam_->prd.setTimeOn(buf[B1]);
-		}
-		break;
-
-		case GB_COM_PRD_GET_DURATION: {
-			if (sParam_->glb.getTypeLine() == GB_TYPE_LINE_OPTO) {
-				stat = sParam_->prd.setDurationO(buf[B1]);
-			} else {
-				stat = sParam_->prd.setDurationL(buf[B1]);
-			}
-		}
-		break;
-
-		case GB_COM_PRD_GET_TEST_COM: {
-			stat = sParam_->prd.setTestCom(buf[B1]);
-		}
-		break;
-
-		case GB_COM_PRD_GET_BLOCK_COM: {
-			sParam_->prd.setBlockCom8(0, buf[B1]);
-			sParam_->prd.setBlockCom8(1, buf[B2]);
-			sParam_->prd.setBlockCom8(2, buf[B3]);
-			sParam_->prd.setBlockCom8(3, buf[B4]);
-			stat = true;
-		}
-		break;
-
-		case GB_COM_PRD_GET_LONG_COM: {
-			sParam_->prd.setLongCom8(0, buf[B1]);
-			sParam_->prd.setLongCom8(1, buf[B2]);
-			sParam_->prd.setLongCom8(2, buf[B3]);
-			sParam_->prd.setLongCom8(3, buf[B4]);
-			stat = true;
-		}
-		break;
-
-		case GB_COM_PRD_GET_DR_STATE: {
-			stat = sParam_->prd.setStateDR(buf[B1]);
-		}
-		break;
-
-		case GB_COM_PRD_GET_DR_BLOCK: {
-			stat = sParam_->prd.setBlockComDR8(0, buf[B1]);
-			stat = (stat && sParam_->prd.setBlockComDR8(1, buf[B2]));
-			stat = (stat && sParam_->prd.setBlockComDR8(2, buf[B3]));
-			stat = (stat && sParam_->prd.setBlockComDR8(3, buf[B4]));
-		}
-		break;
-
-		case GB_COM_PRD_GET_COM_A: {
-			stat = sParam_->prd.setNumComA(buf[B1]);
-		}
-		break;
 
 		case GB_COM_PRD_GET_COM: {
 			uint8_t act = GB_ACT_NO;
@@ -735,70 +644,8 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 		}
 		break;
 
-		case GB_COM_GET_TIME_SINCHR: {
-			stat = sParam_->glb.setTimeSinchr(buf[B1]);
-			if (sParam_->typeDevice == AVANT_RZSK) {
-				stat |= sParam_->glb.setDetector(buf[B2]);
-			}
-		}
-		break;
-
 		case GB_COM_GET_DEVICE_NUM: {
 			stat = sParam_->glb.setDeviceNum(buf[B1]);
-		}
-		break;
-
-		case GB_COM_GET_OUT_CHECK: {
-			stat = sParam_->glb.setOutCheck(buf[B1]);
-		}
-		break;
-
-		case GB_COM_GET_CF_THRESHOLD: {
-			sParam_->glb.setCfThreshold(buf[B1]);
-			sParam_->glb.setInDecrease(buf[B2], 1);
-			sParam_->glb.setInDecrease(buf[B3], 2);
-			stat = true;
-		}
-		break;
-
-		case GB_COM_GET_TIME_RERUN: {
-			if (sParam_->typeDevice == AVANT_R400M) {
-				eGB_COMPATIBILITY comp = sParam_->glb.getCompatibility();
-				if (comp == GB_COMPATIBILITY_PVZL) {
-					// в Р400м ПВЗЛ это Снижение ответа АК
-					stat = sParam_->glb.setAcInDec(buf[B1]);
-				} else if (comp == GB_COMPATIBILITY_PVZUE) {
-					// в Р400м ПВЗУ-Е это набор параметров
-					TDeviceGlb *glb = &sParam_->glb;
-					stat = glb->setPvzueProtocol((eGB_PVZUE_PROTOCOL) buf[B1]);
-					stat |= glb->setPvzueParity((eGB_PVZUE_PARITY) buf[B2]);
-					stat |= glb->setPvzueFail(buf[B3]);
-					stat |= glb->setPvzueNoiseTH(buf[B4]);
-					stat |= glb->setPvzueNoiseLvl(buf[B5]);
-					stat |= glb->setPvzueTypeAC((eGB_PVZUE_TYPE_AC) buf[B6]);
-					stat |= glb->setPvzuePeriodBAC(buf[B7]);
-					stat |= glb->setPvzuePeriodRepBAC(buf[B8]);
-				}
-			} else {
-				// в командной аппаратуре "Время перезапуска"
-				stat = sParam_->glb.setTimeRerun(buf[B1]);
-			}
-		}
-		break;
-
-		case GB_COM_GET_FREQ: {
-			uint16_t t = TO_INT16(buf[B1], buf[B2]);
-			stat = sParam_->glb.setFreq(t);
-		}
-		break;
-
-		case GB_COM_GET_COM_PRM_KEEP: {
-			if (sParam_->typeDevice == AVANT_R400M) {
-				// ! в Р400 это Uвых номинальное
-				stat = sParam_->glb.setUoutNom(buf[B1]);
-			} else {
-				stat = sParam_->glb.setComPrmKeep(buf[B1]);
-			}
 		}
 		break;
 
@@ -808,12 +655,8 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 				// в Р400м/Р400 это Своместимость (тип удаленного аппарата)
 				act = sParam_->glb.setCompatibility((eGB_COMPATIBILITY)buf[B1]);
 			} else if (sParam_->typeDevice == AVANT_K400) {
-				stat = sParam_->glb.setComPrdKeep(buf[B1]);
 				// совместимость К400
 				act = sParam_->glb.setCompK400((eGB_COMP_K400) buf[B2]);
-				stat |= sParam_->glb.setTmK400(buf[B3]);
-			} else {
-				stat = sParam_->glb.setComPrdKeep(buf[B1]);
 			}
 			// в случае записи нового значения, сбросим флаг конфигурации
 			if (act & GB_ACT_NEW)
@@ -823,24 +666,6 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 
 		case GB_COM_GET_NET_ADR: {
 			stat = sParam_->glb.setNetAddress(buf[B1]);
-		}
-		break;
-
-		case GB_COM_GET_COR_U_I: {
-			eGB_TYPE_DEVICE type = sParam_->typeDevice;
-			// в оптике это резервирование, иначе коррекция тока и напряжения
-			if (type == AVANT_OPTO) {
-				stat = sParam_->glb.setBackup(buf[B1]);
-			} else {
-				int16_t val = 0;
-				int8_t i = buf[B1];
-				int8_t f = buf[B2];
-				val = i * 10 + static_cast<int16_t>(f / 10);
-				stat = sParam_->glb.setCorU(val);
-				// коррекция тока
-				val = static_cast<int16_t>(TO_INT16(buf[B3], buf[B4]));
-				stat |= sParam_->glb.setCorI(val);
-			}
 		}
 		break;
 
@@ -905,9 +730,6 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			break;
 
 	}
-
-
-
 
 	return stat;
 }
