@@ -19,6 +19,7 @@ void LocalParams::nextParam() {
 
 	if (t != currParam) {
 		currParam = t;
+		refresh = true;
 		refreshParam();
 	}
 }
@@ -31,6 +32,7 @@ void LocalParams::prevParam() {
 
 	if (t != currParam) {
 		currParam = t;
+		refresh = true;
 		refreshParam();
 	}
 }
@@ -43,6 +45,7 @@ void LocalParams::nextSameParam() {
 
 	if (t != currSameParam) {
 		refreshParam();
+		refresh = true;
 		currSameParam = t;
 	}
 }
@@ -55,6 +58,7 @@ void LocalParams::prevSameParam() {
 
 	if (t != currSameParam) {
 		refreshParam();
+		refresh = true;
 		currSameParam = t;
 	}
 }
@@ -70,7 +74,7 @@ bool LocalParams::addParam(eGB_PARAM newParam) {
 
 // Установка нового значения параметра и его проверка на корректность.
 void LocalParams::setValue(int16_t val) {
-	uint8_t fract = pgm_read_byte(&fp[param[currParam]].fract);
+	uint8_t fract = pgm_read_byte(&getPtrParam()->fract);
 	uint8_t disc = getDisc();
 
 	val = val * fract;
@@ -90,6 +94,7 @@ void LocalParams::setValueBits(uint8_t *ptr) {
 	state = STATE_NO_ERROR;
 }
 
+// Возвращает текущее значение параметра.
 int16_t LocalParams::getValue() const {
 	int16_t v = val;
 
@@ -103,11 +108,18 @@ int16_t LocalParams::getValue() const {
 	return v;
 }
 
+// Считывание флага обновления параметра с последующем сбросом.
+bool LocalParams::isRefresh() {
+	bool r = refresh;
+	refresh = false;
+	return r;
+}
+
 // Очистка списка параметров.
 void  LocalParams::clearParams() {
-	param[0] = GB_PARAM_NO;
-	val = 0;
+	param[0] = GB_PARAM_NULL_PARAM;
 	currParam = 0;
+	val = 0;
 	numOfParams = 0;
 	currSameParam = 0;
 	numOfSameParam = 0;
@@ -126,7 +138,7 @@ void LocalParams::check(int16_t val) {
 //	Обновление параметра.
 void LocalParams::refreshParam() {
 	val = 0;
-	numOfSameParam = pgm_read_byte(&fp[param[currParam]].num);
+	numOfSameParam = pgm_read_byte(&getPtrParam()->num);
 	currSameParam = 0;
 	state = STATE_READ_PARAM;
 }

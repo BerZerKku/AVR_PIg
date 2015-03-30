@@ -5,6 +5,8 @@
 #include <avr/pgmspace.h>
 #include "glbDefine.h"
 
+//typedef struct Param Param_t PROGMEM;
+
 struct Param {
 
 	/// Названия параметров
@@ -49,7 +51,7 @@ struct Param {
 		PARAM_BITES		///< Намор битовых значений.
 	};
 
-	PGM_P name;			///< Имя параметра.
+	char name[NAME_PARAM_LENGHT];	///< Имя параметра.
 	eGB_COM com;		///< Команда считывания для стандартного протокола.
 
 	PARAM_TYPE param;	///< Тип параметра.
@@ -62,6 +64,8 @@ struct Param {
 	int16_t max;		///< Максимальное значение параметра.
 	uint8_t disc;		///< Дискретность.
 	uint8_t fract;		///< Множитель для обмена по протоколу с БСП.
+
+//	char name1[20];
 };
 
 #endif /* PARAM_H_ */

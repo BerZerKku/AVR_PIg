@@ -44,8 +44,8 @@ bool clProtocolBspS::getData(bool pc) {
 			stat = getGlbCommand(com, pc);				// команды общие
 
 		LocalParams *lp = &sParam_->local;
-		if (com == lp->getCom()) {
 
+		if (com == lp->getCom()) {
 			// по умолчанию загружается значение первого байта,
 			// на отличные от этого параметры далее ведется проверка
 			int16_t val = -1000;
@@ -71,7 +71,7 @@ bool clProtocolBspS::getData(bool pc) {
 				case GB_PARAM_PVZUE_FAIL:
 					val = buf[B3];
 					break;
-				case GB_PARAM_PVZUE_NOISE_TH:
+				case GB_PARAM_PVZUE_NOISE_THD:
 					val = buf[B4];
 					break;
 				case GB_PARAM_PVZUE_NOISE_LVL:
@@ -80,10 +80,10 @@ bool clProtocolBspS::getData(bool pc) {
 				case GB_PARAM_PVZUE_AC_TYPE:
 					val = buf[B6];
 					break;
-				case GB_PARAM_PVZUE_PERIOD_AC:
+				case GB_PARAM_PVZUE_AC_PERIOD:
 					val = buf[B7];
 					break;
-				case GB_PARAM_PVZUE_PER_RE_AC:
+				case GB_PARAM_PVZUE_AC_PER_RE:
 					val = buf[B8];
 					break;
 				case GB_PARAM_COMP_K400:

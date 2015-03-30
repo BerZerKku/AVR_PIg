@@ -12,8 +12,6 @@
 #include "glbDefine.h"
 #include "param.h"
 
-#define STRING_LENGHT 11
-
 static const char fcNullBuf[] PROGMEM= "";
 
 /// массив строк размерностей, связан с Param::DIMENSION
@@ -140,229 +138,1035 @@ static char fcPvzueParity[][STRING_LENGHT] PROGMEM = {
 		"выкл."			///<
 };
 
-//								   				   12345678901234567890
-static const char nameBackup[]			PROGMEM = "Резервирование";
-static const char nameCompK400[]		PROGMEM = "Совместимость";
-static const char nameCompP400[]		PROGMEM = "Совместимость";
-static const char nameComPrdKeep[]		PROGMEM = "Удерж. реле ком. ПРД";
-static const char nameComPrmKeep[] 		PROGMEM = "Удерж. реле ком. ПРМ";
-static const char nameCorI[]			PROGMEM = "Коррекция тока";
-static const char nameCorU[]			PROGMEM = "Коррекция напряжения";
-static const char nameDefType[] 		PROGMEM = "Тип защиты";
-static const char nameDelay[]			PROGMEM = "Компенсация задержки";
-static const char nameDetector[]		PROGMEM = "Тип детектора";
-static const char nameFreq[]			PROGMEM = "Частота";
-static const char nameFreqPrd[]			PROGMEM = "Частота ПРД";
-static const char nameFreqPrm[]			PROGMEM = "Частота ПРМ";
-static const char nameInDec[]			PROGMEM = "Загрубл. чувств. ПРМ";
-static const char nameInDecAc[]			PROGMEM = "Снижение уровня АК";
-static const char nameInDecAcAnswer[]	PROGMEM = "Снижение ответа АК";
-static const char nameNumOfDevice[] 	PROGMEM = "Номер аппарата";
-static const char nameNumOfDevices[]	PROGMEM = "Тип линии";
-static const char nameNetAddress[]		PROGMEM = "Сетевой адрес";
-static const char nameOutCheck[] 		PROGMEM = "Контроль вых.сигнала";
-static const char nameOverlap[]			PROGMEM = "Перекрытие импульсов";
-static const char namePrdComBlock[]		PROGMEM = "Блокиров. команды";
-static const char namePrdComLong[]		PROGMEM = "Следящие команды";
-static const char namePrdComNumbers[]	PROGMEM = "Количество команд";
-static const char namePrdComNumbersA[]	PROGMEM = "Количество команд А";
-static const char namePrdDrComBlock[]	PROGMEM = "Блокиров. команды ЦС";
-static const char namePrdDrEnable[]		PROGMEM = "Трансляция ЦС";
-static const char namePrdDuration[]		PROGMEM = "Длительность команды";
-static const char namePrdInDelay[]		PROGMEM = "Задержка срабат. ПРД";
-static const char namePrmComBlock[]		PROGMEM = "Блокиров. команды";
-static const char namePrmComNumbers[]	PROGMEM = "Количество команд";
-static const char namePrmDrComToHF[]	PROGMEM = "Команда ВЧ в ЦС";
-static const char namePrmDrComBlock[]	PROGMEM = "Блокиров. команды ЦС";
-static const char namePrmDrEnable[]		PROGMEM = "Трансляция ЦС";
-static const char namePrmTimeOff[]		PROGMEM = "Задержка на выкл.ком";
-static const char namePrmTimeOn[]		PROGMEM = "Задержка на фикс.ком";
-static const char namePrmType[]			PROGMEM = "Тип приемника";
-static const char namePvzueAcType[]		PROGMEM = "Тип автоконтроля";
-static const char namePvzueFail[]		PROGMEM = "Допустимые провалы";
-static const char namePvzueNoiseLvl[]	PROGMEM = "Допустимая помеха";
-static const char namePvzueNoiseTh[]	PROGMEM = "Порог по помехе";
-static const char namePvzueParity[]		PROGMEM = "Признак четности";
-static const char namePvzuePeriodAC[]	PROGMEM = "Период беглого АК";
-static const char namePvzuePeriodReAC[]	PROGMEM = "Период повт.бегл. АК";
-static const char namePvzueProtocol[]	PROGMEM = "Протокол обмена";
-static const char nameSensDec[]			PROGMEM = "Загрубление чувствит";
-static const char nameSensDecRz[]		PROGMEM = "Загрубл. чувств. РЗ";
-static const char nameShiftBack[]		PROGMEM = "Сдвиг зад.фронта ПРД";
-static const char nameShiftFront[]		PROGMEM = "Сдвиг пер.фронта ПРД";
-static const char nameShiftPrd[]		PROGMEM = "Сдвиг ВЧ ПРД от ПУСК";
-static const char nameShiftPrm[]		PROGMEM = "Сдвиг ПРМ";
-static const char nameTestCom[]			PROGMEM = "Тестовая команда";
-static const char nameTimeNoMan[]		PROGMEM = "Доп. время без ман.";
-static const char nameTimeRerun[]		PROGMEM = "Время перезапуска";
-static const char nameTimeSynch[] 		PROGMEM = "Синхронизация часов";
-static const char nameTmK400[]			PROGMEM = "Телемеханика";
-static const char nameUOutNom[]			PROGMEM = "Uвых номинальное";
-static const char nameWarnThreshold[]	PROGMEM = "Порог предупреждения";
-static const char nameWarnThresholdCf[]	PROGMEM = "Порог предупр. по КЧ";
-static const char nameWarnThresholdRz[]	PROGMEM = "Порог предупр. по РЗ";
+// параметр заглушка
+static const Param fNullParam = {
+		"",						// название параметра
+		GB_COM_NO,				// команда стандартного протокола
+		Param::PARAM_NO,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		1,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
 
-//	GB_PARAM_PRM_DR_COM,		///< команда ВЧ в ЦС
-//	GB_PARAM_PRM_COM_NUMS		///< количество команд
+// синхронизация часов
+static const Param fTimeSynch PROGMEM = {
+		"Синхронизация часов",			// название параметра
+		GB_COM_GET_TIME_SINCHR,	// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcOnOff[0],				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		1,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
 
-/// Параметры (связаны с eGB_PARAM)
-static const Param fcParams[] PROGMEM = {
-		// ЗАГЛУШКА
-		{fcNullBuf,				GB_COM_NO,					Param::PARAM_NO,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
-		//name					com							param				range					dim					listValues			num		min		max		disc	fract
-		// ---------------------------------------------------------------------
-		// ОБЩИЕ ПАРМЕТРЫ
-		// синхронизация часов
-		{nameTimeSynch,			GB_COM_GET_TIME_SINCHR,		Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
-		// номер аппарата (2-х концевая)
-		{nameNumOfDevice,		GB_COM_GET_DEVICE_NUM,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_NO,		fcNullBuf,			1,		1,		2,		1,		1},
-		// номер аппарата (3-х концевая)
-		{nameNumOfDevice,		GB_COM_GET_DEVICE_NUM,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_NO,		fcNullBuf,			1,		1,		3,		1,		1},
-		// контроль выходного сигнала
-		{nameOutCheck, 			GB_COM_GET_OUT_CHECK,		Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
-		// порог предупреждения
-		{nameWarnThreshold,		GB_COM_GET_CF_THRESHOLD,	Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DB,		fcNullBuf,			1,		0, 		22,		1,		1},
-		// порог предупреждения по КЧ (для РЗСК)
-		{nameWarnThresholdCf,	GB_COM_GET_CF_THRESHOLD,	Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DB,		fcNullBuf,			1,		0, 		22,		1,		1},
-		// время перезапуска
-		{nameTimeRerun,			GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_SEC,		fcNullBuf,			1,	 	0,		5,		1,		1},
-		// удержание реле команд ПРД
-		{nameComPrdKeep,		GB_COM_GET_COM_PRD_KEEP,	Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
-		// удержание реле команд ПРМ
-		{nameComPrmKeep,		GB_COM_GET_COM_PRM_KEEP,	Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
-		// загрубление чувствительности ПРМ (2-х концевая)
-		{nameInDec,				GB_COM_GET_CF_THRESHOLD,	Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DB,		fcNullBuf,			1,		0,		22,		1,		1},
-		// загрубление чувствительности ПРМ (3-х концевая)
-		{nameInDec,				GB_COM_GET_CF_THRESHOLD,	Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DB,		fcNullBuf,			2,		0,		22,		1,		1},
-		// адрес в локальной сети
-		{nameNetAddress,		GB_COM_GET_NET_ADR,			Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_NO,		fcNullBuf,			1,		1,		247,	1,		1},
-		// номинальноые выходное напряжение
-		{nameUOutNom,			GB_COM_GET_COM_PRM_KEEP,	Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_V,		fcNullBuf,			1,		18,		50,		1,		1},
-		// частота
-		{nameFreq,				GB_COM_GET_FREQ,			Param::PARAM_INT,	Param::RANGE_INT_NO_DIM,Param::DIM_KHZ,		fcNullBuf,			1,		16,		1000,	1,		1},
-		// совместимость (Р400, Р400м)
-		{nameCompP400,			GB_COM_GET_COM_PRD_KEEP,	Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcCompatibility[0],	1,		0,		5,		1,		1},
-		// снижение ответа АК (ПВЗЛ)
-		{nameInDecAcAnswer,		GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DB,		fcNullBuf,			1,		0,		20,		1,		1},
-		// тип детектора
-		{nameDetector,			GB_COM_GET_TIME_SINCHR,		Param::PARAM_INT,  	Param::RANGE_INT,		Param::DIM_NO,		fcNullBuf,			1,		1,		3,		1,		1},
-		// коррекция напряжения
-		{nameCorU,				GB_COM_GET_COR_U_I,			Param::PARAM_U,		Param::RANGE_U_COR,		Param::DIM_V,		fcNullBuf,			1,		0,		600,	1,		1},
-		// коррекция тока
-		{nameCorI,				GB_COM_GET_COR_U_I,			Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_MA,		fcNullBuf,			1,		0,		999,	1,		1},
-		// протокол обмена (ПВЗУ-Е)
-		{namePvzueProtocol,		GB_COM_GET_TIME_RERUN,		Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcPvzueProtocol[0],	1,		1,		2,		1,		1},
-		// признак четности (ПВЗУ-Е)
-		{namePvzueParity,		GB_COM_GET_TIME_RERUN,		Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcPvzueParity[0],	1,		1,		2,		1,		1},
-		// допустимые провалы (ПВЗУ-Е)
-		{namePvzueFail,			GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DEG,		fcNullBuf,			1,		0,		80,		2,		1},
-		// порог по помехе (ПВЗУ-Е)
-		{namePvzueNoiseTh, 		GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_SEC,		fcNullBuf,			1,		0,		255,	1,		1},
-		// допустимая помеха (ПВЗУ-Е)
-		{namePvzueNoiseLvl,		GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DEG,		fcNullBuf,			1,		20,		80,		20,		1},
-		// тип автоконтроля (ПВЗУ-Е)
-		{namePvzueAcType,		GB_COM_GET_TIME_RERUN,		Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcPvzueTypeAC[0],	1,		1,		3,		1,		1},
-		// период беглого режима АК (ПВЗУ-Е)
-		{namePvzuePeriodAC,		GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_SEC, 	fcNullBuf,			1,		1,		255,	1,		1},
-		//	период повтора беглого режима АК (ПЗВУ-Е)
-		{namePvzuePeriodReAC,	GB_COM_GET_TIME_RERUN,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_SEC, 	fcNullBuf,			1,		1,		255,	1,		1},
-		// резервирование
-		{nameBackup,			GB_COM_GET_COR_U_I,			Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcNullBuf,			1,		0,		1,		1,		1},
-		// совместимость К400
-		{nameCompK400,			GB_COM_GET_COM_PRD_KEEP,	Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcCompK400[0],		1, 		0,		10,		1,		1},
-		// тип линии (кол-во аппаратов в линии)
-		{nameNumOfDevices,		GB_COM_DEF_GET_LINE_TYPE,	Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcNumDevices[0],	1,		1,		2,		1,		1},
-		// телемеханика
-		{nameTmK400,			GB_COM_GET_COM_PRD_KEEP,	Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
-		// ---------------------------------------------------------------------
-		//name					com							param				range					dim					listValues			num		min		max		disc	fract
-		// ---------------------------------------------------------------------
-		// ПАРАМЕТРЫ ЗАЩИТЫ
-		// тип защиты
-		{nameDefType, 			GB_COM_DEF_GET_DEF_TYPE,	Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcDefType[0],		1,		0,		7,		1,		1},
-		// дополнительное время без манипуляции
-		{nameTimeNoMan,			GB_COM_DEF_GET_T_NO_MAN,	Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_HOUR,	fcNullBuf,			1,		0,		99,		1,		1},
-		// перекрытие импульсов
-		{nameOverlap,			GB_COM_DEF_GET_OVERLAP,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DEG,		fcNullBuf,			1,		0,		54,		2,		1},
-		// перекрытие импульсов Р400
-		{nameOverlap,			GB_COM_DEF_GET_OVERLAP,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DEG,		fcNullBuf,			1,		18,		54,		2,		1},
-		// компенсация задержки в линии (2-х концевая)
-		{nameDelay,				GB_COM_DEF_GET_DELAY, 		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DEG,		fcNullBuf, 			1, 		0, 		18,		2,		1},
-		// компенсация задержки в линии (3-х концевая)
-		{nameDelay,				GB_COM_DEF_GET_DELAY, 		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DEG,		fcNullBuf, 			2, 		0, 		18,		2,		1},
-		// порог предупреждения по РЗ
-		{nameWarnThresholdRz,	GB_COM_DEF_GET_RZ_THRESH,	Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DB,		fcNullBuf,			1,		0,		16,		1,		1},
-		// загрубление чувствительности
-		{nameSensDec,			GB_COM_DEF_GET_RZ_DEC,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DB,		fcNullBuf,			1,		0,		32,		1,		1},
-		// загрубление чувствительности РЗ (2-х концевая)
-		{nameSensDecRz,			GB_COM_DEF_GET_RZ_DEC,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DB,		fcNullBuf,			1,		0,		32,		1,		1},
-		// загрубление чувствительности РЗ (3-х концевая)
-		{nameSensDecRz,			GB_COM_DEF_GET_RZ_DEC,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DB,		fcNullBuf,			1,		0,		32,		1,		1},
-		// тип приемника
-		{namePrmType,			GB_COM_DEF_GET_PRM_TYPE,	Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcPrmType[0],		1,		0,		2,		1,		1},
-		// снижение уровня АК
-		{nameInDecAc,			GB_COM_DEF_GET_PRM_TYPE,	Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
-		// частота ПРД
-		{nameFreqPrd,			GB_COM_DEF_GET_FREQ_PRD,	Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcPvzlFreq[0],		1,		0,		4,		1,		1},
-		// частота ПРД
-		{nameFreqPrm,			GB_COM_DEF_GET_RZ_THRESH,	Param::PARAM_LIST,	Param::RANGE_LIST,		Param::DIM_NO,		fcPvzlFreq[0],		1,		0,		4,		1,		1},
-		// сдвиг переднего фронта ПРД относительно сигнала МАН (пуск)
-		{nameShiftFront,		GB_COM_DEF_GET_OVERLAP,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DEG,		fcNullBuf,			1,		0,		72,		1,		1},
-		// сдвиг заднего фронта ПРД относительно сигнала МАН (пуск)
-		{nameShiftBack,			GB_COM_DEF_GET_OVERLAP,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DEG,		fcNullBuf,			1,		0,		72,		1,		1},
-		// сдвиг ПРМ
-		{nameShiftPrm,			GB_COM_DEF_GET_OVERLAP,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DEG,		fcNullBuf,			1,		0,		72,		1,		1},
-		// сдвиг ВЧ ПРД от ПУСК
-		{nameShiftPrd,			GB_COM_DEF_GET_OVERLAP,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_DEG,		fcNullBuf,			1,		0,		72,		1,		1},
-		// ---------------------------------------------------------------------
-		//name					com							param				range					dim					listValues			num		min		max		disc	fract
-		// ---------------------------------------------------------------------
-		// ПАРАМЕТРЫ ПЕРЕДАТЧИКА
-		// время включения (задержка срабатывания дискретного входа)
-		{namePrdInDelay,		GB_COM_PRD_GET_TIME_ON,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_MSEC,	fcNullBuf,			1,		0,		20,		1,		1},
-		// длительность команды ВЧ
-		{namePrdDuration,		GB_COM_PRD_GET_DURATION,	Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_MSEC,	fcNullBuf,			1,		30,		100,	1,		1},
-		// длительность команды ОПТИКА
-		{namePrdDuration,		GB_COM_PRD_GET_DURATION,	Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_MSEC,	fcNullBuf,			1,		30,		500,	10,		10},
-		// тестовая команда
-		{nameTestCom,			GB_COM_PRD_GET_TEST_COM,	Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
-		// следящие команды
-		// TODO зависит от количества текущих команд на передачу!!!
-		{namePrdComLong,		GB_COM_PRD_GET_LONG_COM,	Param::PARAM_BITES,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			32,		0,		1,		1,		1},
-		// блокированные команды
-		// TODO зависит от количества текущих команд на передачу!!!
-		{namePrdComBlock,		GB_COM_PRD_GET_BLOCK_COM,	Param::PARAM_BITES,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			32,		0,		1,		1,		1},
-		// трансляция ЦС
-		{namePrdDrEnable,		GB_COM_PRD_GET_DR_STATE,	Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
-		// блокированные команды ЦС
-		// TODO зависит от количества текущих команд на передачу!!!
-		{namePrdDrComBlock,		GB_COM_PRD_GET_DR_BLOCK,	Param::PARAM_BITES,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			32,		0,		1,		1,		1},
-		// количество команд
-		{namePrdComNumbers, 	GB_COM_PRD_GET_COM,			Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_NO,		fcNullBuf,			1,		0,		32,		4,		4},
-		// количество команд группы А
-		// TODO максимум зависит от количества текущих команд на передачу!!!
-		{namePrdComNumbersA, 	GB_COM_PRD_GET_COM_A,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_NO,		fcNullBuf,			1,		0,		32,		1,		1},
-		// ---------------------------------------------------------------------
-		//name					com							param				range					dim					listValues			num		min		max		disc	fract
-		// ---------------------------------------------------------------------
-		// ПАРАМЕТРЫ ПРИЕМНИКА
-		// задержка на фиксацию команды (время включения)
-		{namePrmTimeOn,			GB_COM_PRM_GET_TIME_ON,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_MSEC,	fcNullBuf,			1,		0,		5,		1,		1},
-		// блокированные команды
-		// TODO зависит от количества текущих команд на приеме!!!
-		{namePrmComBlock,		GB_COM_PRM_GET_BLOCK_COM,	Param::PARAM_BITES,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			32,		0,		1,		1,		1},
-		// задержка на выключение
-		// TODO зависит от количества текущих команд на приеме!!!
-		{namePrmTimeOff,		GB_COM_PRM_GET_TIME_OFF,	Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_MSEC,	fcNullBuf,			32,		0,		1000,	50,		10},
-		// трансляция ЦС
-		{namePrmDrEnable,		GB_COM_PRM_GET_DR_STATE,	Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
-		// блокированные команды ЦС
-		// TODO зависит от количества текущих команд на приеме!!!
-		{namePrmDrComBlock,		GB_COM_PRM_GET_DR_BLOCK,	Param::PARAM_BITES,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			32,		0,		1,		1,		1},
-		// команда ВЧ в ЦС
-		{namePrmDrComToHF,		GB_COM_PRM_GET_DR_COM,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_NO,		fcNullBuf,			32,		1,		32,		1,		1},
-		// количество команд
-		{namePrmComNumbers,		GB_COM_PRM_GET_COM,			Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_NO,		fcNullBuf,			1,		0,		32,		4,		4}
+// номер аппарата
+// TODO максимум зависит от количества аппаратов в линии
+static const Param fNumOfDevice PROGMEM = {
+		"Номер аппарата",		// название параметра
+		GB_COM_GET_DEVICE_NUM,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		1,						// минимальное значение
+		3,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// контроль выходного сигнала
+static const Param fOutCheck PROGMEM = {
+		"Контроль вых.сигнала",	// название параметра
+		GB_COM_GET_OUT_CHECK,	// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcOnOff[0],				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		1,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// порог предупреждения
+static const Param fWarnThd PROGMEM = {
+		"Порог предупреждения",	// название параметра
+		GB_COM_GET_CF_THRESHOLD,// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DB,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		22,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// порог предупреждения по КЧ (для РЗСК)
+static const Param fWarnThdCf PROGMEM = {
+		"Порог предупр. по КЧ",	// название параметра
+		GB_COM_GET_CF_THRESHOLD,// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DB,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		22,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// время перезапуска
+static const Param fTimeRerun PROGMEM = {
+		"Время перезапуска",	// название параметра
+		GB_COM_GET_TIME_RERUN,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_SEC,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		5,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// удержание реле команд ПРД
+static const Param fComPrdKeep PROGMEM = {
+		"Удерж. реле ком. ПРД",	// название параметра
+		GB_COM_GET_COM_PRD_KEEP,// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcOnOff[0],				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		1,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// удержание реле команд ПРМ
+static const Param fComPrmKeep PROGMEM = {
+		"Удерж. реле ком. ПРМ",	// название параметра
+		GB_COM_GET_COM_PRM_KEEP,// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcOnOff[0],				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		1,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// загрубление чувствительности ПРМ
+// TODO повторения зависят от количества аппаратов в линии
+static const Param fInDec PROGMEM = {
+		"Загрубл. чувств. ПРМ",	// название параметра
+		GB_COM_GET_CF_THRESHOLD,// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DB,			// размерность
+		fcNullBuf,				// массив значений
+		2,						// кол-во повторений параметра
+		0,						// минимальное значение
+		22,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// адрес в локальной сети
+static const Param fNetAddress PROGMEM = {
+		"Сетевой адрес",		// название параметра
+		GB_COM_GET_NET_ADR,		// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		1,						// минимальное значение
+		247,					// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// номинальноые выходное напряжение
+static const Param fUOutNom PROGMEM = {
+		"Uвых номинальное",		// название параметра
+		GB_COM_GET_COM_PRM_KEEP,// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_V,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		18,						// минимальное значение
+		50,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// частота
+static const Param fFreq PROGMEM = {
+		"Частота",				// название параметра
+		GB_COM_GET_FREQ,		// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT_NO_DIM,// диапазон измнения
+		Param::DIM_KHZ,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		16,						// минимальное значение
+		1000,					// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// совместимость (Р400, Р400м)
+static const Param fCompP400 PROGMEM = {
+		"Совместимость",		// название параметра
+		GB_COM_GET_COM_PRD_KEEP,// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcCompatibility[0],		// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		5,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// снижение ответа АК (ПВЗЛ)
+static const Param fInDecAcAnswer PROGMEM = {
+		"Снижение ответа АК",	// название параметра
+		GB_COM_GET_TIME_RERUN,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DB,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		20,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// тип детектора
+static const Param fDetector PROGMEM = {
+		"Тип детектора",		// название параметра
+		GB_COM_GET_TIME_SINCHR,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		1,						// минимальное значение
+		3,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// коррекция напряжения
+static const Param fCorU PROGMEM = {
+		 "Коррекция напряжения",// название параметра
+		GB_COM_GET_COR_U_I,		// команда стандартного протокола
+		Param::PARAM_U,			// тип параметра
+		Param::RANGE_U_COR,		// диапазон измнения
+		Param::DIM_V,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		600,					// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// коррекция тока
+static const Param fCorI PROGMEM = {
+		"Коррекция тока",		// название параметра
+		GB_COM_GET_COR_U_I,		// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_MA,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		999,					// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// протокол обмена (ПВЗУ-Е)
+static const Param fPvzueProtocol PROGMEM =	{
+		"Протокол обмена",		// название параметра
+		GB_COM_GET_TIME_RERUN,	// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcPvzueProtocol[0],		// массив значений
+		1,						// кол-во повторений параметра
+		1,						// минимальное значение
+		2,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// признак четности (ПВЗУ-Е)
+static const Param fPvzueParity PROGMEM = {
+		"Признак четности",		// название параметра
+		GB_COM_GET_TIME_RERUN,	// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcPvzueParity[0],		// массив значений
+		1,						// кол-во повторений параметра
+		1,						// минимальное значение
+		2,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// допустимые провалы (ПВЗУ-Е)
+static const Param fPvzueFail PROGMEM = {
+		"Допустимые провалы",	// название параметра
+		GB_COM_GET_TIME_RERUN,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DEG,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		80,						// максимальное значение
+		2,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// порог по помехе (ПВЗУ-Е)
+static const Param fPvzueNoiseThd PROGMEM = {
+		"Порог по помехе",		// название параметра
+		GB_COM_GET_TIME_RERUN,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_SEC,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		255,					// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// допустимая помеха (ПВЗУ-Е)
+static const Param fPvzueNoiseLvl PROGMEM = {
+		"Допустимая помеха",	// название параметра
+		GB_COM_GET_TIME_RERUN,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DEG,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		20,						// минимальное значение
+		80,						// максимальное значение
+		20,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// тип автоконтроля (ПВЗУ-Е)
+static const Param fPvzueAcType PROGMEM = {
+		"Тип автоконтроля",		// название параметра
+		GB_COM_GET_TIME_RERUN,	// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcPvzueTypeAC[0],		// массив значений
+		1,						// кол-во повторений параметра
+		1,						// минимальное значение
+		3,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// период беглого режима АК (ПВЗУ-Е)
+static const Param fPvzueAcPeriod PROGMEM = {
+		 "Период беглого АК",	// название параметра
+		GB_COM_GET_TIME_RERUN,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_SEC,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		1,						// минимальное значение
+		255,					// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+
+//	период повтора беглого режима АК (ПЗВУ-Е)
+static const Param fPvzueAcPerRe PROGMEM = {
+		"Период повт.бегл. АК",	// название параметра
+		GB_COM_GET_TIME_RERUN,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_SEC,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		1,						// минимальное значение
+		255,					// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// резервирование
+static const Param fBackup PROGMEM = {
+		"Резервирование",		// название параметра
+		GB_COM_GET_COR_U_I,		// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		1,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// совместимость К400
+static const Param fCompK400 PROGMEM = {
+		"Совместимость",		// название параметра
+		GB_COM_GET_COM_PRD_KEEP,// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcCompK400[0],			// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		10,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// тип линии (кол-во аппаратов в линии)
+static const Param fNumOfDevices PROGMEM = {
+		"Тип линии",			// название параметра
+		GB_COM_DEF_GET_LINE_TYPE,// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcNumDevices[0],		// массив значений
+		1,						// кол-во повторений параметра
+		1,						// минимальное значение
+		2,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+
+// телемеханика
+static const Param fTmK400 PROGMEM = {
+		"Телемеханика",			// название параметра
+		GB_COM_GET_COM_PRD_KEEP,// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcOnOff[0],				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		1,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+
+// тип защиты
+static const Param fDefType	PROGMEM = {
+		"Тип защиты", 			// название параметра
+		GB_COM_DEF_GET_DEF_TYPE,// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcDefType[0],			// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		7,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// дополнительное время без манипуляции
+static const Param fTimeNoMan PROGMEM = {
+		"Доп. время без ман.",	// название параметра
+		GB_COM_DEF_GET_T_NO_MAN,// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_HOUR,		// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		99,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// перекрытие импульсов
+static const Param fOverlap PROGMEM = {
+		"Перекрытие импульсов",	// название параметра
+		GB_COM_DEF_GET_OVERLAP,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DEG,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		54,						// максимальное значение
+		2,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// перекрытие импульсов Р400
+static const Param fOverlapP400 PROGMEM = {
+		"Перекрытие импульсов",	// название параметра
+		GB_COM_DEF_GET_OVERLAP,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DEG,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		18,						// минимальное значение
+		54,						// максимальное значение
+		2,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// компенсация задержки в линии
+// TODO повторения зависят от количества аппаратов в линии
+static const Param fDelay PROGMEM = {
+		"Компенсация задержки",	// название параметра
+		GB_COM_DEF_GET_DELAY,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DEG,			// размерность
+		fcNullBuf,				// массив значений
+		2,						// кол-во повторений параметра
+		0,						// минимальное значение
+		18,						// максимальное значение
+		2,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// порог предупреждения по РЗ
+static const Param fWarnThdRz PROGMEM = {
+		"Порог предупр. по РЗ",	// название параметра
+		GB_COM_DEF_GET_RZ_THRESH,// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DB,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		16,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// загрубление чувствительности
+static const Param fSensDec PROGMEM = {
+		"Загрубление чувствит",	// название параметра
+		GB_COM_DEF_GET_RZ_DEC,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DB,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		32,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// загрубление чувствительности РЗ
+// TODO повторения зависят от количества аппаратов в линии
+static const Param fSensDecRz PROGMEM = {
+		"Загрубл. чувств. РЗ",	// название параметра
+		GB_COM_DEF_GET_RZ_DEC,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DB,			// размерность
+		fcNullBuf,				// массив значений
+		2,						// кол-во повторений параметра
+		0,						// минимальное значение
+		32,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// тип приемника
+static const Param fPrmType PROGMEM = {
+		"Тип приемника",		// название параметра
+		GB_COM_DEF_GET_PRM_TYPE,// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcPrmType[0],			// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		2,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// снижение уровня АК
+static const Param fAcInDec PROGMEM = {
+		"Снижение уровня АК",	// название параметра
+		GB_COM_DEF_GET_PRM_TYPE,// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcOnOff[0],				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		1,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// частота ПРД
+static const Param fFreqPrd PROGMEM = {
+		"Частота ПРД",			// название параметра
+		GB_COM_DEF_GET_FREQ_PRD,// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcPvzlFreq[0],			// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		4,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// частота ПРМ
+static const Param fFreqPrm PROGMEM = {
+		"Частота ПРМ",			// название параметра
+		GB_COM_DEF_GET_RZ_THRESH,// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcPvzlFreq[0],			// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		4,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+static const Param fShiftFront PROGMEM = {
+		"Сдвиг пер.фронта ПРД",	// название параметра
+		GB_COM_DEF_GET_OVERLAP,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DEG,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		72,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// сдвиг заднего фронта ПРД относительно сигнала МАН (пуск)
+static const Param fShiftBack PROGMEM = {
+		"Сдвиг зад.фронта ПРД",	// название параметра
+		GB_COM_DEF_GET_OVERLAP,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DEG,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		72,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// сдвиг ПРМ
+static const Param fShiftPrm PROGMEM = {
+		"Сдвиг ПРМ",			// название параметра
+		GB_COM_DEF_GET_OVERLAP,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DEG,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		72,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// сдвиг ВЧ ПРД от ПУСК
+static const Param fShiftPrd PROGMEM = {
+		"Сдвиг ВЧ ПРД от ПУСК",	// название параметра
+		GB_COM_DEF_GET_OVERLAP,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DEG,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		72,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+
+// время включения (задержка срабатывания дискретного входа)
+static const Param fPrdInDelay PROGMEM = {
+		"Задержка срабат. ПРД",	// название параметра
+		GB_COM_PRD_GET_TIME_ON,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_MSEC,		// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		20,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// длительность команды ВЧ
+static const Param fPrdDurationL PROGMEM = {
+		"Длительность команды",	// название параметра
+		GB_COM_PRD_GET_DURATION,// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_MSEC,		// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		30,						// минимальное значение
+		100,					// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// длительность команды ОПТИКА
+static const Param fPrdDurationO PROGMEM = {
+		"Длительность команды",	// название параметра
+		GB_COM_PRD_GET_DURATION,// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_MSEC,		// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		30,						// минимальное значение
+		500,					// максимальное значение
+		10,						// дискретность
+		10						// множитель для стандартного протокола
+};
+
+// тестовая команда
+static const Param fPrdTestCom PROGMEM = {
+		"Тестовая команда",		// название параметра
+		GB_COM_PRD_GET_TEST_COM,// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcOnOff[0],				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		1,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// следящие команды
+// TODO зависит от количества текущих команд на передачу!!!
+static const Param fPrdComLong PROGMEM = {
+		"Следящие команды",		// название параметра
+		GB_COM_PRD_GET_LONG_COM,// команда стандартного протокола
+		Param::PARAM_BITES,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcOnOff[0],				// массив значений
+		32,						// кол-во повторений параметра
+		0,						// минимальное значение
+		1,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// блокированные команды
+// TODO зависит от количества текущих команд на передачу!!!
+static const Param fPrdComBlock PROGMEM = {
+		"Блокиров. команды",	// название параметра
+		GB_COM_PRD_GET_BLOCK_COM,// команда стандартного протокола
+		Param::PARAM_BITES,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcOnOff[0],				// массив значений
+		32,						// кол-во повторений параметра
+		0,						// минимальное значение
+		1,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// трансляция ЦС
+static const Param fPrdDrEnable PROGMEM = {
+		"Трансляция ЦС",		// название параметра
+		GB_COM_PRD_GET_DR_STATE,// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcOnOff[0],				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		1,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// блокированные команды ЦС
+// TODO зависит от количества текущих команд на передачу!!!
+static const Param fPrdDrComBlock PROGMEM = {
+		"Блокиров. команды ЦС",	// название параметра
+		GB_COM_PRD_GET_DR_BLOCK,// команда стандартного протокола
+		Param::PARAM_BITES,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcOnOff[0],				// массив значений
+		32,						// кол-во повторений параметра
+		0,						// минимальное значение
+		1,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// количество команд
+static const Param fPrdComNums PROGMEM = {
+		"Количество команд",	// название параметра
+		GB_COM_PRD_GET_COM,		// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		32,						// максимальное значение
+		4,						// дискретность
+		4						// множитель для стандартного протокола
+};
+
+// количество команд группы А
+// TODO максимум зависит от количества текущих команд на передачу!!!
+static const Param fPrdComNumsA PROGMEM = {
+		"Количество команд А",	// название параметра
+		GB_COM_PRD_GET_COM_A,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		32,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+
+// задержка на фиксацию команды (время включения)
+static const Param fPrmTimeOn PROGMEM = {
+		"Задержка на фикс.ком",	// название параметра
+		GB_COM_PRM_GET_TIME_ON,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_MSEC,		// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		5,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// блокированные команды
+// TODO зависит от количества текущих команд на приеме!!!
+static const Param fPrmComBlock PROGMEM = {
+		"Блокиров. команды",	// название параметра
+		GB_COM_PRM_GET_BLOCK_COM,// команда стандартного протокола
+		Param::PARAM_BITES,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcOnOff[0],				// массив значений
+		32,						// кол-во повторений параметра
+		0,						// минимальное значение
+		1,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// задержка на выключение
+// TODO зависит от количества текущих команд на приеме!!!
+static const Param fPrmTimeOff PROGMEM = {
+		"Задержка на выкл.ком",	// название параметра
+		GB_COM_PRM_GET_TIME_OFF,// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_MSEC,		// размерность
+		fcNullBuf,				// массив значений
+		32,						// кол-во повторений параметра
+		0,						// минимальное значение
+		1000,					// максимальное значение
+		50,						// дискретность
+		10						// множитель для стандартного протокола
+};
+
+// трансляция ЦС
+static const Param fPrmDrEnable PROGMEM = {
+		"Трансляция ЦС",		// название параметра
+		GB_COM_PRM_GET_DR_STATE,// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcOnOff[0],				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		1,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// блокированные команды ЦС
+// TODO зависит от количества текущих команд на приеме!!!
+static const Param fPrmDrComBlock PROGMEM = {
+		"Блокиров. команды ЦС",	// название параметра
+		GB_COM_PRM_GET_DR_BLOCK,// команда стандартного протокола
+		Param::PARAM_BITES,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcOnOff[0],				// массив значений
+		32,						// кол-во повторений параметра
+		0,						// минимальное значение
+		1,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// команда ВЧ в ЦС
+static const Param fPrmDrComToHf PROGMEM = {
+		"Команда ВЧ в ЦС",		// название параметра
+		GB_COM_PRM_GET_DR_COM,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcNullBuf,				// массив значений
+		32,						// кол-во повторений параметра
+		1,						// минимальное значение
+		32,						// максимальное значение
+		1,						// дискретность
+		1						// множитель для стандартного протокола
+};
+
+// количество команд
+static const Param fPrmComNums PROGMEM = {
+		"Количество команд",	// название параметра
+		GB_COM_PRM_GET_COM,		// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		32,						// максимальное значение
+		4,						// дискретность
+		4						// множитель для стандартного протокола
+};
+
+// Массив параметров (связан с eGB_PARAM)
+static const Param* fParams[] PROGMEM  = {
+		&fNullParam,
+		// Общие параметры
+		&fTimeSynch,
+		&fNumOfDevice,
+		&fOutCheck,
+		&fWarnThd,
+		&fWarnThdCf,
+		&fTimeRerun,
+		&fComPrdKeep,
+		&fComPrmKeep,
+		&fInDec,
+		&fNetAddress,
+		&fUOutNom,
+		&fFreq,
+		&fCompP400,
+		&fInDecAcAnswer,
+		&fDetector,
+		&fCorU,
+		&fCorI,
+		&fPvzueProtocol,
+		&fPvzueParity,
+		&fPvzueFail,
+		&fPvzueNoiseThd,
+		&fPvzueNoiseLvl,
+		&fPvzueAcType,
+		&fPvzueAcPeriod,
+		&fPvzueAcPerRe,
+		&fBackup,
+		&fCompK400,
+		&fNumOfDevices,
+		&fTmK400,
+		// Параметры защиты
+		&fDefType,
+		&fTimeNoMan,
+		&fOverlap,
+		&fOverlapP400,
+		&fDelay,
+		&fWarnThdRz,
+		&fSensDec,
+		&fSensDecRz,
+		&fPrmType,
+		&fAcInDec,
+		&fFreqPrd,
+		&fFreqPrm,
+		&fShiftFront,
+		&fShiftBack,
+		&fShiftPrm,
+		&fShiftPrd,
+		// Параметры передатчика
+		&fPrdInDelay,
+		&fPrdDurationL,
+		&fPrdDurationO,
+		&fPrdTestCom,
+		&fPrdComLong,
+		&fPrdComBlock,
+		&fPrdDrEnable,
+		&fPrdDrComBlock,
+		&fPrdComNums,
+		&fPrdComNumsA,
+		// Параметры приемника
+		&fPrmTimeOn,
+		&fPrmComBlock,
+		&fPrmTimeOff,
+		&fPrmDrEnable,
+		&fPrmDrComBlock,
+		&fPrmDrComToHf,
+		&fPrmComNums
 };
 
 #endif /* FLASHPARAMS_H_ */

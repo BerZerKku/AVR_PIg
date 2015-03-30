@@ -103,7 +103,7 @@ clMenu::clMenu() {
 	vLCDsetLed(LED_REGIME);
 #endif
 
-	sParam.local.setFlashParams(&fcParams[0]);
+	sParam.local.setFlashParams(fParams);
 }
 
 void clMenu::main(void) {
@@ -2634,19 +2634,11 @@ void clMenu::lvlSetupParamDef() {
 		sParam.local.clearParams();
 		if (device == AVANT_RZSK) {
 			sParam.local.addParam(GB_PARAM_DEF_TYPE);
-			sParam.local.addParam(GB_PARAM_T_NO_MAN);
+			sParam.local.addParam(GB_PARAM_TIME_NO_MAN);
 			sParam.local.addParam(GB_PARAM_OVERLAP);
-			if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_2) {
-				sParam.local.addParam(GB_PARAM_DELAY_2);
-			} else {
-				sParam.local.addParam(GB_PARAM_DELAY_3);
-			}
+			sParam.local.addParam(GB_PARAM_DELAY);
 			sParam.local.addParam(GB_PARAM_WARN_THD_RZ);
-			if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_2) {
-				sParam.local.addParam(GB_PARAM_SENS_DEC_RZ_2);
-			} else {
-				sParam.local.addParam(GB_PARAM_SENS_DEC_RZ_3);
-			}
+			sParam.local.addParam(GB_PARAM_SENS_DEC_RZ);
 			sParam.local.addParam(GB_PARAM_PRM_TYPE);
 		} else if (device == AVANT_R400M) {
 			eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
@@ -2656,7 +2648,7 @@ void clMenu::lvlSetupParamDef() {
 
 			sParam.local.addParam(GB_PARAM_DEF_TYPE);
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES);
-			sParam.local.addParam(GB_PARAM_T_NO_MAN);
+			sParam.local.addParam(GB_PARAM_TIME_NO_MAN);
 			sParam.local.addParam(GB_PARAM_SHIFT_FRONT);
 			sParam.local.addParam(GB_PARAM_SHIFT_BACK);
 			sParam.local.addParam(GB_PARAM_SHIFT_PRM);
@@ -2664,14 +2656,11 @@ void clMenu::lvlSetupParamDef() {
 			sParam.local.addParam(GB_PARAM_SENS_DEC);
 			if (comp == GB_COMPATIBILITY_AVANT) {
 				// Снижение уровня АК есть только в совместимости АВАНТ
-				sParam.local.addParam(GB_PARAM_IN_DEC_AC);
+				sParam.local.addParam(GB_PARAM_AC_IN_DEC);
 			}
 			sParam.local.addParam(GB_PARAM_FREQ_PRD);
 			sParam.local.addParam(GB_PARAM_FREQ_PRM);
 		}
-
-		// подмена команды, на команду текущего уровня меню.
-		sParam.txComBuf.addCom1(sParam.local.getCom(), 0);
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -2727,39 +2716,43 @@ void clMenu::lvlSetupParamDef() {
 //	}
 
 	switch(key_) {
-			case KEY_UP:
-				sParam.local.prevParam();
-				break;
-			case KEY_DOWN:
-				sParam.local.nextParam();
-				break;
-
-			case KEY_LEFT:
-				sParam.local.prevSameParam();
-				break;
-			case KEY_RIGHT:
-				sParam.local.nextSameParam();
-				break;
-
-			case KEY_CANCEL:
-				lvlMenu = &clMenu::lvlSetupParam;
-				lvlCreate_ = true;
-				break;
-			case KEY_MENU:
-				lvlMenu = &clMenu::lvlStart;
-				lvlCreate_ = true;
-				break;
-
-			case KEY_ENTER:
-				enterParameter();
+		case KEY_UP:
+			sParam.local.prevParam();
+			break;
+		case KEY_DOWN:
+			sParam.local.nextParam();
 			break;
 
-			default:
-				break;
-		}
+		case KEY_LEFT:
+			sParam.local.prevSameParam();
+			break;
+		case KEY_RIGHT:
+			sParam.local.nextSameParam();
+			break;
 
-		// подмена команды, на команду текущего уровня меню.
-		sParam.txComBuf.addCom1(sParam.local.getCom(), 0);
+		case KEY_CANCEL:
+			lvlMenu = &clMenu::lvlSetupParam;
+			lvlCreate_ = true;
+			break;
+		case KEY_MENU:
+			lvlMenu = &clMenu::lvlStart;
+			lvlCreate_ = true;
+			break;
+
+		case KEY_ENTER:
+			enterParameter();
+			break;
+
+		default:
+			break;
+	}
+
+	// подмена команды, на команду текущего уровня меню + быстрая команда
+	if (sParam.local.isRefresh()) {
+		eGB_COM com = sParam.local.getCom();
+		sParam.txComBuf.addFastCom(com);
+		sParam.txComBuf.addCom1(com, 0);
+	}
 }
 
 /** Уровень меню. Настройка параметров приемника.
@@ -2908,8 +2901,12 @@ void clMenu::lvlSetupParamPrm() {
 			break;
 	}
 
-	// подмена команды, на команду текущего уровня меню.
-	sParam.txComBuf.addCom1(sParam.local.getCom(), 0);
+	// подмена команды, на команду текущего уровня меню + быстрая команда
+	if (sParam.local.isRefresh()) {
+		eGB_COM com = sParam.local.getCom();
+		sParam.txComBuf.addFastCom(com);
+		sParam.txComBuf.addCom1(com, 0);
+	}
 }
 
 /** Уровень меню. Настройка параметров передатчика.
@@ -2941,7 +2938,7 @@ void clMenu::lvlSetupParamPrd() {
 			sParam.local.addParam(GB_PARAM_PRD_COM_NUMS);
 			sParam.local.addParam(GB_PARAM_PRD_IN_DELAY);
 			sParam.local.addParam(GB_PARAM_PRD_DURATION_L);
-			sParam.local.addParam(GB_PARAM_TEST_COM);
+			sParam.local.addParam(GB_PARAM_PRD_TEST_COM);
 			if (numcom != 0) {
 				sParam.local.addParam(GB_PARAM_PRD_COM_LONG);
 				sParam.local.addParam(GB_PARAM_PRD_COM_BLOCK);
@@ -2962,9 +2959,6 @@ void clMenu::lvlSetupParamPrd() {
 			sParam.local.addParam(GB_PARAM_PRD_COM_LONG);
 			sParam.local.addParam(GB_PARAM_PRD_COM_BLOCK);
 		}
-
-		// подмена команды, на команду текущего уровня меню.
-		sParam.txComBuf.addCom1(sParam.local.getCom(), 0);
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -3074,8 +3068,12 @@ void clMenu::lvlSetupParamPrd() {
 			break;
 	}
 
-	// подмена команды, на команду текущего уровня меню.
-	sParam.txComBuf.addCom1(sParam.local.getCom(), 0);
+	// подмена команды, на команду текущего уровня меню + быстрая команда
+	if (sParam.local.isRefresh()) {
+		eGB_COM com = sParam.local.getCom();
+		sParam.txComBuf.addFastCom(com);
+		sParam.txComBuf.addCom1(com, 0);
+	}
 }
 
 /** Уровень меню. Настройка параметров общих.
@@ -3098,16 +3096,13 @@ void clMenu::lvlSetupParamGlb() {
 
 		sParam.local.clearParams();
 		if (device == AVANT_K400) {
+
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
 
 			sParam.local.addParam(GB_PARAM_COMP_K400);
 			sParam.local.addParam(GB_PARAM_TIME_SYNCH);
-			if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_2) {
-				sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE_2);
-			} else if (sParam.glb.getMaxNumDevices() == GB_NUM_DEVICES_3) {
-				sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE_3);
-			}
+			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE);
 			if (sParam.prd.status.isEnable()) {
 				sParam.local.addParam(GB_PARAM_OUT_CHECK);
 			}
@@ -3120,11 +3115,7 @@ void clMenu::lvlSetupParamGlb() {
 			}
 			if (sParam.prm.status.isEnable()) {
 				sParam.local.addParam(GB_PARAM_COM_PRM_KEEP);
-				if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_2) {
-					sParam.local.addParam(GB_PARAM_IN_DEC_2);
-				} else if (sParam.glb.getMaxNumDevices() == GB_NUM_DEVICES_3) {
-					sParam.local.addParam(GB_PARAM_IN_DEC_3);
-				}
+				sParam.local.addParam(GB_PARAM_IN_DEC);
 			}
 			sParam.local.addParam(GB_PARAM_FREQ);
 			if (sParam.prd.status.isEnable()) {
@@ -3140,21 +3131,13 @@ void clMenu::lvlSetupParamGlb() {
 
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES);
 			sParam.local.addParam(GB_PARAM_TIME_SYNCH);
-			if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_2) {
-				sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE_2);
-			} else if (sParam.glb.getMaxNumDevices() == GB_NUM_DEVICES_3) {
-				sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE_3);
-			}
+			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE);
 			sParam.local.addParam(GB_PARAM_OUT_CHECK);
 			sParam.local.addParam(GB_PARAM_WARN_THD_CF);
 			sParam.local.addParam(GB_PARAM_TIME_RERUN);
 			sParam.local.addParam(GB_PARAM_COM_PRD_KEEP);
 			sParam.local.addParam(GB_PARAM_COM_PRM_KEEP);
-			if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_2) {
-				sParam.local.addParam(GB_PARAM_IN_DEC_2);
-			} else if (sParam.glb.getMaxNumDevices() == GB_NUM_DEVICES_3) {
-				sParam.local.addParam(GB_PARAM_IN_DEC_3);
-			}
+			sParam.local.addParam(GB_PARAM_IN_DEC);
 			sParam.local.addParam(GB_PARAM_FREQ);
 			sParam.local.addParam(GB_PARAM_DETECTOR);
 			sParam.local.addParam(GB_PARAM_COR_U);
@@ -3173,11 +3156,7 @@ void clMenu::lvlSetupParamGlb() {
 			if (comp == GB_COMPATIBILITY_AVANT) {
 				sParam.local.addParam(GB_PARAM_TIME_SYNCH);
 			}
-			if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_2) {
-				sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE_2);
-			} else if (sParam.glb.getMaxNumDevices() == GB_NUM_DEVICES_3) {
-				sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE_3);
-			}
+			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE);
 			sParam.local.addParam(GB_PARAM_OUT_CHECK);
 			sParam.local.addParam(GB_PARAM_WARN_THD);
 			sParam.local.addParam(GB_PARAM_U_OUT_NOM);
@@ -3192,19 +3171,15 @@ void clMenu::lvlSetupParamGlb() {
 				sParam.local.addParam(GB_PARAM_PVZUE_PROTOCOL);
 				sParam.local.addParam(GB_PARAM_PVZUE_PARITY);
 				sParam.local.addParam(GB_PARAM_PVZUE_FAIL);
-				sParam.local.addParam(GB_PARAM_PVZUE_NOISE_TH);
+				sParam.local.addParam(GB_PARAM_PVZUE_NOISE_THD);
 				sParam.local.addParam(GB_PARAM_PVZUE_NOISE_LVL);
 				sParam.local.addParam(GB_PARAM_PVZUE_AC_TYPE);
-				sParam.local.addParam(GB_PARAM_PVZUE_PERIOD_AC);
-				sParam.local.addParam(GB_PARAM_PVZUE_PER_RE_AC);
+				sParam.local.addParam(GB_PARAM_PVZUE_AC_PERIOD);
+				sParam.local.addParam(GB_PARAM_PVZUE_AC_PER_RE);
 			}
 		} else if (device == AVANT_OPTO) {
 			sParam.local.addParam(GB_PARAM_TIME_SYNCH);
-			if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_2) {
-				sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE_2);
-			} else if (sParam.glb.getMaxNumDevices() == GB_NUM_DEVICES_3) {
-				sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE_3);
-			}
+			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE);
 			if (sParam.prm.status.isEnable()) {
 				sParam.local.addParam(GB_PARAM_TIME_RERUN);
 			}
@@ -3216,9 +3191,6 @@ void clMenu::lvlSetupParamGlb() {
 			}
 			sParam.local.addParam(GB_PARAM_BACKUP);
 		}
-
-		// подмена команды, на команду текущего уровня меню.
-		sParam.txComBuf.addCom1(sParam.local.getCom(), 0);
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -3379,8 +3351,12 @@ void clMenu::lvlSetupParamGlb() {
 			break;
 	}
 
-	// подмена команды, на команду текущего уровня меню.
-	sParam.txComBuf.addCom1(sParam.local.getCom(), 0);
+	// подмена команды, на команду текущего уровня меню + быстрая команда
+	if (sParam.local.isRefresh()) {
+		eGB_COM com = sParam.local.getCom();
+		sParam.txComBuf.addFastCom(com);
+		sParam.txComBuf.addCom1(com, 0);
+	}
 }
 
 /** Уровень меню. Настройка дата/время.
@@ -4591,7 +4567,6 @@ void clMenu::printParam() {
 
 // Вывод на экран текущего номера и их колчиество для однотипных пар-ов.
 void clMenu::printSameNumber(uint8_t pos) {
-	static prog_uint8_t POS = 60;
 	static prog_uint8_t MAX_CHARS = 21;
 
 	if (sParam.local.getNumOfSameParams() > 1) {

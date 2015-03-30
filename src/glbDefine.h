@@ -65,6 +65,11 @@
 /// максимальное кол-во сигналов в тестах
 #define MAX_NUM_TEST_SIGNAL 40
 
+// длина половины строки (+1 - символ конца строки)
+#define STRING_LENGHT (11 + 1)
+
+// длина строки (+1 - символ конца строки)
+#define NAME_PARAM_LENGHT (20 + 1)
 
 /// максимальное и минимальный код типа событий в журнале событий
 #define MIN_JRN_EVENT_VALUE 1
@@ -293,21 +298,19 @@ enum eGB_COM_MASK {
 	GB_COM_MASK_GROUP_READ_JOURNAL = 0xC0
 };
 
-/// Параметры (связаны с fcParams)
+/// Параметры (связаны с fParams)
 enum eGB_PARAM {
-	GB_PARAM_NO = 0,			///< параметр заглушка
+	GB_PARAM_NULL_PARAM = 0,	///< параметр заглушка
 	// общие параметры
 	GB_PARAM_TIME_SYNCH,		///< синхронизация часов
-	GB_PARAM_NUM_OF_DEVICE_2,	///< номер аппарата (2-х концевая)
-	GB_PARAM_NUM_OF_DEVICE_3,	///< номер аппарата (3-х концевая)
+	GB_PARAM_NUM_OF_DEVICE,		///< номер аппарата
 	GB_PARAM_OUT_CHECK,			///< контроль выходного сигнала
 	GB_PARAM_WARN_THD, 			///< порог предупреждения
 	GB_PARAM_WARN_THD_CF,		///< порог предупреждения по КЧ (для РЗСК)
 	GB_PARAM_TIME_RERUN,		///< время перезапуска
 	GB_PARAM_COM_PRD_KEEP,		///< удержание реле команд ПРД
 	GB_PARAM_COM_PRM_KEEP,		///< удержание реле команд ПРМ
-	GB_PARAM_IN_DEC_2,			///< загрубление чувствительности ПРМ (2-х концевая)
-	GB_PARAM_IN_DEC_3,			///< загрубление чувствительности ПРМ (3-х концевая)
+	GB_PARAM_IN_DEC,			///< загрубление чувствительности ПРМ
 	GB_PARAM_NET_ADDRESS,		///< адрес в локальной сети
 	GB_PARAM_U_OUT_NOM,			///< номинальноые выходное напряжение
 	GB_PARAM_FREQ,				///< частота
@@ -319,28 +322,26 @@ enum eGB_PARAM {
 	GB_PARAM_PVZUE_PROTOCOL,	///< протокол обмена (ПВЗУ-Е)
 	GB_PARAM_PVZUE_PARITY,		///< признак четности (ПВЗУ-Е)
 	GB_PARAM_PVZUE_FAIL,		///< допустимые провалы (ПВЗУ-Е)
-	GB_PARAM_PVZUE_NOISE_TH,	///< порог по помехе (ПВЗУ-Е)
+	GB_PARAM_PVZUE_NOISE_THD,	///< порог по помехе (ПВЗУ-Е)
 	GB_PARAM_PVZUE_NOISE_LVL,	///< допустимая помеха (ПВЗУ-Е)
 	GB_PARAM_PVZUE_AC_TYPE,		///< тип автоконтроля (ПВЗУ-Е)
-	GB_PARAM_PVZUE_PERIOD_AC,	///< период беглого режима АК (ПВЗУ-Е)
-	GB_PARAM_PVZUE_PER_RE_AC,	///< период повтора беглого режима АК (ПЗВУ-Е)
+	GB_PARAM_PVZUE_AC_PERIOD,	///< период беглого режима АК (ПВЗУ-Е)
+	GB_PARAM_PVZUE_AC_PER_RE,	///< период повтора беглого режима АК (ПЗВУ-Е)
 	GB_PARAM_BACKUP,			///< резервирование
 	GB_PARAM_COMP_K400,			///< совместимость К400
 	GB_PARAM_NUM_OF_DEVICES,	///< тип линии (кол-во аппаратов в линии)
 	GB_PARAM_TM_K400,			///< телемеханика
 	// параметры защиты
 	GB_PARAM_DEF_TYPE,			///< тип защиты
-	GB_PARAM_T_NO_MAN,			///< дополнительное время без манипуляции
+	GB_PARAM_TIME_NO_MAN,		///< дополнительное время без манипуляции
 	GB_PARAM_OVERLAP,			///< перекрытие импульсов (кроме Р400/Р400м)
 	GB_PARAM_OVERLAP_P400,		///< перекрытие импульсов (Р400/Р400м)
-	GB_PARAM_DELAY_2,			///< компенсация задержки (2-х концевая)
-	GB_PARAM_DELAY_3,			///< компенсация задержки (3-х концевая)
+	GB_PARAM_DELAY,				///< компенсация задержки
 	GB_PARAM_WARN_THD_RZ,		///< порог предупреждения по РЗ (для РЗСК)
 	GB_PARAM_SENS_DEC,			///< загрубленеи чувствительности
-	GB_PARAM_SENS_DEC_RZ_2,		///< загрубленеи чувствительности по РЗ (2-х концевая)
-	GB_PARAM_SENS_DEC_RZ_3,		///< загрубленеи чувствительности по РЗ (3-х концевая)
+	GB_PARAM_SENS_DEC_RZ,		///< загрубленеи чувствительности по РЗ
 	GB_PARAM_PRM_TYPE,			///< тип приемника
-	GB_PARAM_IN_DEC_AC,			///< снижение уровня АК
+	GB_PARAM_AC_IN_DEC,			///< снижение уровня АК
 	GB_PARAM_FREQ_PRD,			///< частота ПРД
 	GB_PARAM_FREQ_PRM,			///< частота ПРМ
 	GB_PARAM_SHIFT_FRONT,		///< сдвиг переднего фронта ПРД
@@ -351,7 +352,7 @@ enum eGB_PARAM {
 	GB_PARAM_PRD_IN_DELAY,		///< время включения (задержка срабатывания дискретного входа)
 	GB_PARAM_PRD_DURATION_L,	///< длительность команды ВЧ
 	GB_PARAM_PRD_DURATION_O,	///< длительность команды ОПТИКА
-	GB_PARAM_TEST_COM,			///< тестовая команда
+	GB_PARAM_PRD_TEST_COM,		///< тестовая команда
 	GB_PARAM_PRD_COM_LONG,		///< следящие команды
 	GB_PARAM_PRD_COM_BLOCK,		///< блокированные команды
 	GB_PARAM_PRD_DR_ENABLE,		///< трансляция ЦС
