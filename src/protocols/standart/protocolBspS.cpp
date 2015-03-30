@@ -50,10 +50,6 @@ bool clProtocolBspS::getData(bool pc) {
 			// на отличные от этого параметры далее ведется проверка
 			int16_t val = -1000;
 			switch(lp->getParam()) {
-				case GB_PARAM_IN_DEC_2:
-				case GB_PARAM_IN_DEC_3:
-					val = buf[B2 + lp->getNumOfCurrSameParam() - 1];
-					break;
 				case GB_PARAM_FREQ:
 					val = TO_INT16(buf[B1], buf[B2]);
 					break;
@@ -96,15 +92,6 @@ bool clProtocolBspS::getData(bool pc) {
 				case GB_PARAM_TM_K400:
 					val = buf[B3];
 					break;
-				case GB_PARAM_DELAY_2:	// DOWN
-				case GB_PARAM_DELAY_3:
-					val = buf[B1 + lp->getNumOfCurrSameParam() - 1];
-					break;
-				case GB_PARAM_SENS_DEC:
-				case GB_PARAM_SENS_DEC_RZ_2:
-				case GB_PARAM_SENS_DEC_RZ_3:
-					val = buf[B1 + lp->getNumOfCurrSameParam() - 1];
-					break;
 				case GB_PARAM_SHIFT_FRONT:
 					val = buf[B1];
 					break;
@@ -117,17 +104,15 @@ bool clProtocolBspS::getData(bool pc) {
 				case GB_PARAM_SHIFT_PRD:
 					val = buf[B4];
 					break;
-				case GB_PARAM_PRD_COM_LONG:
-					val = B1;
-					break;
-				case GB_PARAM_PRD_COM_BLOCK:
-					val = B1;
-					break;
-				case GB_PARAM_PRD_DR_COM_BLOCK:
+				case GB_PARAM_PRD_COM_LONG:		// DOWN
+				case GB_PARAM_PRD_COM_BLOCK:	// DOWN
+				case GB_PARAM_PRD_DR_COM_BLOCK:	// DOWN
+				case GB_PARAM_PRM_COM_BLOCK:	// DOWN
+				case GB_PARAM_PRM_DR_COM_BLOCK:
 					val = B1;
 					break;
 				default:
-					val = buf[B1];
+					val = buf[B1 + lp->getNumOfCurrSameParam() - 1];
 					break;
 			}
 
@@ -281,42 +266,6 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
 	bool stat = false;
 
 	switch(com) {
-		case GB_COM_PRM_GET_TIME_ON: {
-			stat = sParam_->prm.setTimeOn(buf[B1]);
-		}
-		break;
-
-		case GB_COM_PRM_GET_BLOCK_COM: {
-			sParam_->prm.setBlockCom8(0, buf[B1]);
-			sParam_->prm.setBlockCom8(1, buf[B2]);
-			sParam_->prm.setBlockCom8(2, buf[B3]);
-			sParam_->prm.setBlockCom8(3, buf[B4]);
-			stat = true;
-		}
-		break;
-
-		case GB_COM_PRM_GET_TIME_OFF: {
-			stat = sParam_->prm.setTimeOff(&buf[B1]);
-		}
-		break;
-
-		case GB_COM_PRM_GET_DR_STATE: {
-			stat = sParam_->prm.setStateDR(buf[B1]);
-		}
-		break;
-
-		case GB_COM_PRM_GET_DR_BLOCK: {
-			stat = sParam_->prm.setBlockComDR8(0, buf[B1]);
-			stat = (stat && sParam_->prm.setBlockComDR8(1, buf[B2]));
-			stat = (stat && sParam_->prm.setBlockComDR8(2, buf[B3]));
-			stat = (stat && sParam_->prm.setBlockComDR8(3, buf[B4]));
-		}
-		break;
-
-		case GB_COM_PRM_GET_DR_COM: {
-			stat = sParam_->prm.setComDR(&buf[B1]);
-		}
-		break;
 
 		case GB_COM_PRM_GET_COM: {
 			uint8_t act = GB_ACT_NO;

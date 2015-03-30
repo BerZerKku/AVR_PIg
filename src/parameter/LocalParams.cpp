@@ -103,10 +103,9 @@ int16_t LocalParams::getValue() const {
 	return v;
 }
 
-
 // Очистка списка параметров.
 void  LocalParams::clearParams() {
-	param[0] = GB_PARAM_TIME_SYNCH;
+	param[0] = GB_PARAM_NO;
 	val = 0;
 	currParam = 0;
 	numOfParams = 0;

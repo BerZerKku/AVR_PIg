@@ -16,6 +16,23 @@
 
 static const char fcNullBuf[] PROGMEM= "";
 
+/// массив строк размерностей, связан с Param::DIMENSION
+static const char fcDimension[] [5] PROGMEM = {
+		"",		// Param::DIM_NO
+		"мА",	// Param::DIM_MA
+		"А",	// Param::DIM_A
+		"кА",	// Param::DIM_KA
+		"В",	// Param::DIM_V
+		"кВ",	// Param::DIM_KV
+		"мс",	// Param::MSEC
+		"c",	// Param::DIM_SEC
+		"час",	// Param::DIM_HOUR
+		"дБ",	// Param::DIM_DB
+		"Гц",	// Param::DIM_HZ
+		"кГц",	// Param::DIM_KHZ
+		"град"	// Param::DIM_DEG
+};
+
 /// Возможные значения параметра.
 static const char fcOnOff[][STRING_LENGHT] PROGMEM = {
 // 		 1234567890
@@ -153,6 +170,13 @@ static const char namePrdDrComBlock[]	PROGMEM = "Блокиров. команды ЦС";
 static const char namePrdDrEnable[]		PROGMEM = "Трансляция ЦС";
 static const char namePrdDuration[]		PROGMEM = "Длительность команды";
 static const char namePrdInDelay[]		PROGMEM = "Задержка срабат. ПРД";
+static const char namePrmComBlock[]		PROGMEM = "Блокиров. команды";
+static const char namePrmComNumbers[]	PROGMEM = "Количество команд";
+static const char namePrmDrComToHF[]	PROGMEM = "Команда ВЧ в ЦС";
+static const char namePrmDrComBlock[]	PROGMEM = "Блокиров. команды ЦС";
+static const char namePrmDrEnable[]		PROGMEM = "Трансляция ЦС";
+static const char namePrmTimeOff[]		PROGMEM = "Задержка на выкл.ком";
+static const char namePrmTimeOn[]		PROGMEM = "Задержка на фикс.ком";
 static const char namePrmType[]			PROGMEM = "Тип приемника";
 static const char namePvzueAcType[]		PROGMEM = "Тип автоконтроля";
 static const char namePvzueFail[]		PROGMEM = "Допустимые провалы";
@@ -178,8 +202,13 @@ static const char nameWarnThreshold[]	PROGMEM = "Порог предупреждения";
 static const char nameWarnThresholdCf[]	PROGMEM = "Порог предупр. по КЧ";
 static const char nameWarnThresholdRz[]	PROGMEM = "Порог предупр. по РЗ";
 
+//	GB_PARAM_PRM_DR_COM,		///< команда ВЧ в ЦС
+//	GB_PARAM_PRM_COM_NUMS		///< количество команд
+
 /// Параметры (связаны с eGB_PARAM)
 static const Param fcParams[] PROGMEM = {
+		// ЗАГЛУШКА
+		{fcNullBuf,				GB_COM_NO,					Param::PARAM_NO,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
 		//name					com							param				range					dim					listValues			num		min		max		disc	fract
 		// ---------------------------------------------------------------------
 		// ОБЩИЕ ПАРМЕТРЫ
@@ -313,6 +342,27 @@ static const Param fcParams[] PROGMEM = {
 		// количество команд группы А
 		// TODO максимум зависит от количества текущих команд на передачу!!!
 		{namePrdComNumbersA, 	GB_COM_PRD_GET_COM_A,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_NO,		fcNullBuf,			1,		0,		32,		1,		1},
+		// ---------------------------------------------------------------------
+		//name					com							param				range					dim					listValues			num		min		max		disc	fract
+		// ---------------------------------------------------------------------
+		// ПАРАМЕТРЫ ПРИЕМНИКА
+		// задержка на фиксацию команды (время включения)
+		{namePrmTimeOn,			GB_COM_PRM_GET_TIME_ON,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_MSEC,	fcNullBuf,			1,		0,		5,		1,		1},
+		// блокированные команды
+		// TODO зависит от количества текущих команд на приеме!!!
+		{namePrmComBlock,		GB_COM_PRM_GET_BLOCK_COM,	Param::PARAM_BITES,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			32,		0,		1,		1,		1},
+		// задержка на выключение
+		// TODO зависит от количества текущих команд на приеме!!!
+		{namePrmTimeOff,		GB_COM_PRM_GET_TIME_OFF,	Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_MSEC,	fcNullBuf,			32,		0,		1000,	50,		10},
+		// трансляция ЦС
+		{namePrmDrEnable,		GB_COM_PRM_GET_DR_STATE,	Param::PARAM_LIST,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			1,		0,		1,		1,		1},
+		// блокированные команды ЦС
+		// TODO зависит от количества текущих команд на приеме!!!
+		{namePrmDrComBlock,		GB_COM_PRM_GET_DR_BLOCK,	Param::PARAM_BITES,	Param::RANGE_ON_OFF,	Param::DIM_NO,		fcOnOff[0],			32,		0,		1,		1,		1},
+		// команда ВЧ в ЦС
+		{namePrmDrComToHF,		GB_COM_PRM_GET_DR_COM,		Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_NO,		fcNullBuf,			32,		1,		32,		1,		1},
+		// количество команд
+		{namePrmComNumbers,		GB_COM_PRM_GET_COM,			Param::PARAM_INT,	Param::RANGE_INT,		Param::DIM_NO,		fcNullBuf,			1,		0,		32,		4,		4}
 };
 
 #endif /* FLASHPARAMS_H_ */

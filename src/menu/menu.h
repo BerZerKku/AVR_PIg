@@ -630,6 +630,9 @@ private:
 
 	/**	Настройка параметров для ввода значения с клавиатуры.
 	 *
+	 *	Для параметров типа \a Param::PARAM_NO функция ввода значения не
+	 *	вызывается.
+	 *
 	 * 	Для параметров типа \a Param::PARAM_LIST вызывается функция выбора
 	 * 	значения из списка.
 	 *
@@ -651,15 +654,12 @@ private:
 	void (clMenu::*lvlMenu)();
 };
 
-//	static char punkt1[] PROGMEM = "Задержка срабат. ПРД";
-//	static char punkt2[] PROGMEM = "Длительность команды";	// ВЧ
-//	static char punkt2o[] PROGMEM= "Длительность команды";	// Оптика
-//	static char punkt3[] PROGMEM = "Тестовая команда";
-//	static char punkt4[] PROGMEM = "Следящие команды";
-//	static char punkt5[] PROGMEM = "Блокиров. команды";
-//	static char punkt6[] PROGMEM = "Трансляция ЦС";
-//	static char punkt7[] PROGMEM = "Блокиров. команды ЦС";
-//	static char punkt8[] PROGMEM = "Количество команд А";	// К400
-//	static char punkt9[] PROGMEM = "Количество команд";		// К400
+//static char punkt1[] PROGMEM = "Задержка на фикс.ком";
+//static char punkt2[] PROGMEM = "Блокиров. команды";
+//static char punkt3[] PROGMEM = "Задержка на выкл.ком";
+//static char punkt4[] PROGMEM = "Трансляция ЦС";
+//static char punkt5[] PROGMEM = "Блокиров. команды ЦС";
+//static char punkt6[] PROGMEM = "Команда ВЧ в ЦС";
+//static char punkt7[] PROGMEM = "Количество команд";		// К400
 
 #endif /* MENU_H_ */

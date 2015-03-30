@@ -295,8 +295,9 @@ enum eGB_COM_MASK {
 
 /// Параметры (связаны с fcParams)
 enum eGB_PARAM {
+	GB_PARAM_NO = 0,			///< параметр заглушка
 	// общие параметры
-	GB_PARAM_TIME_SYNCH = 0,	///< синхронизация часов
+	GB_PARAM_TIME_SYNCH,		///< синхронизация часов
 	GB_PARAM_NUM_OF_DEVICE_2,	///< номер аппарата (2-х концевая)
 	GB_PARAM_NUM_OF_DEVICE_3,	///< номер аппарата (3-х концевая)
 	GB_PARAM_OUT_CHECK,			///< контроль выходного сигнала
@@ -357,6 +358,14 @@ enum eGB_PARAM {
 	GB_PARAM_PRD_DR_COM_BLOCK,	///< блокированные команды ЦС
 	GB_PARAM_PRD_COM_NUMS,		///< количество команд
 	GB_PARAM_PRD_COM_NUMS_A,	///< количество команд группы А
+	// параметры приемника
+	GB_PARAM_PRM_TIME_ON,		///< задержка на фиксацию команды (время включения)
+	GB_PARAM_PRM_COM_BLOCK,		///< блокированные команды
+	GB_PARAM_PRM_TIME_OFF,		///< задержка на выключение
+	GB_PARAM_PRM_DR_ENABLE,		///< трансляция ЦС
+	GB_PARAM_PRM_DR_COM_BLOCK,	///< блокированные команды ЦС
+	GB_PARAM_PRM_DR_COM_TO_HF,	///< команда ВЧ в ЦС
+	GB_PARAM_PRM_COM_NUMS		///< количество команд
 };
 
 /// Значения команд управления

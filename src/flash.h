@@ -600,34 +600,4 @@ static const char fcTest1K400[GB_SIGNAL_MAX + 1][STRING_LENGHT] PROGMEM = {
 		"ошибка"		///< ошибочное значение
 };
 
-//static const Param parameters[] PROGMEM {
-//	// ќЅў»≈ ѕј–јћ≈“–џ
-//	//min,	max,	disc,	fract
-//
-//
-//
-//
-//
-//	//min,	max,	disc,	fract
-//};
-
-
-
-/// массив строк размерностей, св€зан с Param::DIMENSION
-static const char fcDimension[] [5] PROGMEM = {
-		"",		// Param::DIM_NO
-		"мј",	// Param::DIM_MA
-		"ј",	// Param::DIM_A
-		"кј",	// Param::DIM_KA
-		"¬",	// Param::DIM_V
-		"к¬",	// Param::DIM_KV
-		"мс",	// Param::MSEC
-		"c",	// Param::DIM_SEC
-		"час",	// Param::DIM_HOUR
-		"дЅ",	// Param::DIM_DB
-		"√ц",	// Param::DIM_HZ
-		"к√ц",	// Param::DIM_KHZ
-		"град"	// Param::DIM_DEG
-};
-
 
