@@ -5,6 +5,11 @@
 #include "ks0108.h"
 #include "symbols.h"
 
+bool vLCDcheckBusy	(void);
+void vLCDsetXY		(uint8_t x, uint8_t y);
+void vLCDcom		(uint8_t com, uint8_t cs);
+void vLCDdata		(uint8_t data, uint8_t cs);
+
 /// буфер инф-ии выводимой на ЖКИ
 static uint8_t uBuf[1024];
 /// текущее положение в буфере ввода
@@ -30,13 +35,9 @@ bool vLCDcheckBusy(void) {
 	DDRA = 0;
 	PORT_CS |= PIN_CS;
 	PORT_RW |= PIN_RW;
-	asm volatile ( "nop\n\t"
-			"nop\n\t"
-			::);
+	asm volatile ( "nop\n\t""nop\n\t"::);
 	PORT_E |= PIN_E;
-	asm volatile ( "nop\n\t"
-			"nop\n\t"
-			::);
+	asm volatile ( "nop\n\t""nop\n\t"::);
 	data = PINA;
 	PORT_E &= ~PIN_E;
 	_delay_us(4);
@@ -59,14 +60,10 @@ void vLCDcom(uint8_t com, uint8_t cs) {
 	PORT_CS |= cs;
 	PORT_RS &= ~PIN_RS;
 	PORT_RW &= ~PIN_RW;
-	asm volatile ( "nop\n\t"
-			"nop\n\t"
-			::);
+	asm volatile ( "nop\n\t""nop\n\t"::);
 	PORT_E |= PIN_E;
 	PORTA = com;
-	asm volatile ( "nop\n\t"
-			"nop\n\t"
-			::);
+	asm volatile ( "nop\n\t""nop\n\t"::);
 	PORT_E &= ~PIN_E;
 	_delay_us(1);
 	PORT_CS &= ~cs;
@@ -91,14 +88,10 @@ void vLCDdata(uint8_t data, uint8_t cs) {
 	PORT_CS |= cs;
 	PORT_RS |= PIN_RS;
 	PORT_RW &= ~PIN_RW;
-	asm volatile ( "nop\n\t"
-			"nop\n\t"
-			::);
+	asm volatile ( "nop\n\t""nop\n\t"::);
 	PORTA = data;
 	PORT_E |= PIN_E;
-	asm volatile ( "nop\n\t"
-			"nop\n\t"
-			::);
+	asm volatile ( "nop\n\t""nop\n\t"::);
 	PORT_E &= ~PIN_E;
 	_delay_us(2);
 	PORT_CS &= ~cs;

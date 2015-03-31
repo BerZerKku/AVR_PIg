@@ -42,7 +42,7 @@ clMenu::clMenu() {
 	// связи с БСП еще нет
 	connectionBsp_ = false;
 
-	// заполним массивы сост1ояний работы для всех устройств
+	// заполним массивы состояний работы для всех устройств
 	// массив должен быть заполнен полностью и последним всегда должно
 	// быть fcUnknownSost
 	sParam.def.status.stateText[0] = fcDefSost00;
@@ -2663,6 +2663,21 @@ void clMenu::lvlSetupParamDef() {
 		}
 	}
 
+	switch(sParam.local.getDependSame()) {
+		case Param::DEPEND_SAME_NO:
+			break;
+		case Param::DEPEND_SAME_ON_NUM_DEVS:
+			sParam.local.setNumOfSameParams(sParam.glb.getMaxNumDevices() - 1);
+			break;
+		case Param::DEPEND_SAME_ON_COM_PRD:
+			sParam.local.setNumOfSameParams(sParam.prd.getNumCom() - 1);
+			break;
+		case Param::DEPEND_SAME_ON_COM_PRM:
+			sParam.local.setNumOfSameParams(sParam.prm.getNumCom() - 1);
+			break;
+
+	}
+
 	snprintf_P(&vLCDbuf[0], 21, title);
 	printParam();
 
@@ -2673,47 +2688,6 @@ void clMenu::lvlSetupParamDef() {
 			EnterParam.setDisable();
 		}
 	}
-
-//	if (EnterParam.isEnable()) {
-//		// ввод нового значения параметра
-//		eMENU_ENTER_PARAM stat = enterValue();
-//
-//		if (stat == MENU_ENTER_PARAM_READY) {
-//			// новое значение введено, надо передать в БСП
-//			if (name == punkt1) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if (name == punkt2) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if (name == punkt3) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if (name == punkt4) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if (name == punkt5) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
-//			} else if (name == punkt6) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if ((name == punkt7) || (name == punkt12)) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
-//			} else if (name == punkt8) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if (name == punkt9) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if (name == punkt10) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if (name == punkt11) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if ((name == punkt13) || (name == punkt14)
-//					|| (name == punkt15) || (name == punkt16)) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
-//			}
-//
-//			sParam.txComBuf.addFastCom(EnterParam.com);
-//			EnterParam.setDisable();
-//		}
-//	}
 
 	switch(key_) {
 		case KEY_UP:
@@ -2801,6 +2775,21 @@ void clMenu::lvlSetupParamPrm() {
 		}
 	}
 
+	switch(sParam.local.getDependSame()) {
+		case Param::DEPEND_SAME_NO:
+			break;
+		case Param::DEPEND_SAME_ON_NUM_DEVS:
+			sParam.local.setNumOfSameParams(sParam.glb.getMaxNumDevices() - 1);
+			break;
+		case Param::DEPEND_SAME_ON_COM_PRD:
+			sParam.local.setNumOfSameParams(sParam.prd.getNumCom() - 1);
+			break;
+		case Param::DEPEND_SAME_ON_COM_PRM:
+			sParam.local.setNumOfSameParams(sParam.prm.getNumCom() - 1);
+			break;
+
+	}
+
 	snprintf_P(&vLCDbuf[0], 21, title);
 	printParam();
 
@@ -2821,9 +2810,7 @@ void clMenu::lvlSetupParamPrm() {
 //		if (stat == MENU_ENTER_PARAM_READY) {
 //			// новое значение введено, надо передать в БСП
 //
-//			if (name == punkt1) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if (name == punkt2) {
+//			if (name == punkt2) {
 //				uint8_t pl = EnterParam.getDopValue() - 1;
 //				uint8_t val = sParam.prm.getBlockCom8(pl / 8);
 //				if (EnterParam.getValue() > 0)
@@ -2832,9 +2819,6 @@ void clMenu::lvlSetupParamPrm() {
 //					val &= ~(1 << (pl % 8));
 //				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
 //				sParam.txComBuf.setInt8(val, 1);
-//			} else if (name == punkt3) {
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
 //			} else if (name == punkt4) {
 //				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 //			} else if (name == punkt5) {
@@ -2961,6 +2945,21 @@ void clMenu::lvlSetupParamPrd() {
 		}
 	}
 
+	switch(sParam.local.getDependSame()) {
+		case Param::DEPEND_SAME_NO:
+			break;
+		case Param::DEPEND_SAME_ON_NUM_DEVS:
+			sParam.local.setNumOfSameParams(sParam.glb.getMaxNumDevices() - 1);
+			break;
+		case Param::DEPEND_SAME_ON_COM_PRD:
+			sParam.local.setNumOfSameParams(sParam.prd.getNumCom() - 1);
+			break;
+		case Param::DEPEND_SAME_ON_COM_PRM:
+			sParam.local.setNumOfSameParams(sParam.prm.getNumCom() - 1);
+			break;
+
+	}
+
 	snprintf_P(&vLCDbuf[0], 21, title);
 	printParam();
 
@@ -2979,13 +2978,7 @@ void clMenu::lvlSetupParamPrd() {
 //		if (stat == MENU_ENTER_PARAM_READY) {
 //			// новое значение введено, надо передать в БСП
 //
-//			if (name == punkt1) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if ((name == punkt2) || (name == punkt2o)) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if (name == punkt3) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if (name == punkt4) {
+//			if (name == punkt4) {
 //				uint8_t pl = EnterParam.getDopValue() - 1;
 //				uint8_t val = sParam.prd.getLongCom8(pl / 8);
 //				if (EnterParam.getValue() > 0)
@@ -3003,8 +2996,6 @@ void clMenu::lvlSetupParamPrd() {
 //					val &= ~(1 << (pl % 8));
 //				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
 //				sParam.txComBuf.setInt8(val, 1);
-//			} else if (name == punkt6) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 //			} else if (name == punkt7) {
 //				uint8_t pl = EnterParam.getDopValue() - 1;
 //				uint8_t val = sParam.prd.getBlockComDR8(pl / 8);
@@ -3014,8 +3005,6 @@ void clMenu::lvlSetupParamPrd() {
 //					val &= ~(1 << (pl % 8));
 //				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
 //				sParam.txComBuf.setInt8(val, 1);
-//			} else if (name == punkt8) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 //			} else if (name == punkt9) {
 //				eGB_K400_NUM_COM val;
 //				uint8_t num = 0;
@@ -3142,7 +3131,6 @@ void clMenu::lvlSetupParamGlb() {
 			sParam.local.addParam(GB_PARAM_DETECTOR);
 			sParam.local.addParam(GB_PARAM_COR_U);
 			sParam.local.addParam(GB_PARAM_COR_I);
-
 		} else if (device == AVANT_R400M) {
 			eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
 
@@ -3193,6 +3181,21 @@ void clMenu::lvlSetupParamGlb() {
 		}
 	}
 
+	switch(sParam.local.getDependSame()) {
+		case Param::DEPEND_SAME_NO:
+			break;
+		case Param::DEPEND_SAME_ON_NUM_DEVS:
+			sParam.local.setNumOfSameParams(sParam.glb.getMaxNumDevices() - 1);
+			break;
+		case Param::DEPEND_SAME_ON_COM_PRD:
+			sParam.local.setNumOfSameParams(sParam.prd.getNumCom() - 1);
+			break;
+		case Param::DEPEND_SAME_ON_COM_PRM:
+			sParam.local.setNumOfSameParams(sParam.prm.getNumCom() - 1);
+			break;
+
+	}
+
 	snprintf_P(&vLCDbuf[0], 21, title);
 	printParam();
 
@@ -3200,6 +3203,40 @@ void clMenu::lvlSetupParamGlb() {
 		eMENU_ENTER_PARAM stat = enterValue();
 
 		if (stat == MENU_ENTER_PARAM_READY) {
+			eGB_COM com = sParam.local.getCom();
+
+			if (com != GB_COM_NO) {
+
+				switch(sParam.local.getSendType()) {
+					case GB_SEND_INT8:
+						sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+						break;
+					case GB_SEND_INT8_DOP:
+						sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
+						sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
+						break;
+					case GB_SEND_DOP_INT8:
+						sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
+						sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
+						break;
+					case GB_SEND_INT16_BE:
+						sParam.txComBuf.setInt8(EnterParam.getValue() >> 8, 0);
+						sParam.txComBuf.setInt8(EnterParam.getValue(), 1);
+						break;
+					case GB_SEND_DOP_BITES:
+						break;
+					case GB_SEND_COR_U:
+						break;
+					case GB_SEND_COR_I:
+						break;
+					case GB_SEND_NO:
+						break;
+				}
+
+				com = (eGB_COM) (com + GB_COM_MASK_GROUP_WRITE_PARAM);
+				sParam.txComBuf.addFastCom(com);
+				sParam.txComBuf.setSendType(sParam.local.getSendType());
+			}
 			EnterParam.setDisable();
 		}
 	}
@@ -3210,42 +3247,7 @@ void clMenu::lvlSetupParamGlb() {
 //
 //		if (stat == MENU_ENTER_PARAM_READY) {
 //			// новое значение введено, надо передать в БСП
-//			if (name == punkt1) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
-//			} else if (name == punkt2) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if (name == punkt3) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if ((name == punkt4) || (name == punkt4rzsk)) {
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
-//			} else if (name == punkt5) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if (name == punkt6) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
-//			} else if (name == punkt7) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if (name == punkt8) {
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
-//			} else if (name == punkt10) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if (name == punkt11) {
-//				uint16_t t = EnterParam.getValue();
-//				sParam.txComBuf.setInt8(static_cast<uint8_t>(t >> 8), 0);
-//				sParam.txComBuf.setInt8(static_cast<uint8_t>(t), 1);
-//			} else if (name == punkt12) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
-//			} else if (name == punkt13) {
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
-//			} else if (name == punkt14) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
-//			} else if (name == punkt15) {
+//			if (name == punkt15) {
 //				// если текущее значение коррекции тока равно 0
 //				// то передается сообщение с под.байтом равным 4
 //				// означающим сброс коррекции
@@ -3278,41 +3280,6 @@ void clMenu::lvlSetupParamGlb() {
 //				sParam.txComBuf.setInt8(dop, 0);
 //				sParam.txComBuf.setInt8((t >> 8), 1);
 //				sParam.txComBuf.setInt8((t), 2);
-//			} else if (name == punkt17) {
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
-//			} else if (name == punkt18) {
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
-//			} else if (name == punkt19) {
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
-//			} else if (name == punkt20) {
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
-//			} else if (name == punkt21) {
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
-//			} else if (name == punkt22) {
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
-//			} else if (name == punkt23) {
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
-//			} else if (name == punkt24) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
-//			} else if (name == punkt25) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if (name == punkt26) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
-//			} else if (name == punkt27) {
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
-//			} else if (name == punkt28) {
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
 //			}
 //			sParam.txComBuf.addFastCom(EnterParam.com);
 //			EnterParam.setDisable();
@@ -3353,6 +3320,7 @@ void clMenu::lvlSetupParamGlb() {
 
 	// подмена команды, на команду текущего уровня меню + быстрая команда
 	if (sParam.local.isRefresh()) {
+
 		eGB_COM com = sParam.local.getCom();
 		sParam.txComBuf.addFastCom(com);
 		sParam.txComBuf.addCom1(com, 0);
@@ -4679,6 +4647,8 @@ void clMenu::enterParameter() {
 			|| (sParam.glb.status.getRegime() == GB_REGIME_DISABLED)) {
 
 		int16_t min = lp->getMin();
+		int16_t max = lp->getMax();
+		uint8_t dop = lp->getSendDop();
 
 		switch(lp->getParamType()) {
 			case Param::PARAM_BITES: // DOWN
@@ -4686,10 +4656,9 @@ void clMenu::enterParameter() {
 				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
 				break;
 			case Param::PARAM_INT:
-				EnterParam.setEnable();
+				EnterParam.setEnable(MENU_ENTER_PARAM_INT);
 				break;
 			case Param::PARAM_U:
-				min = 0;
 				EnterParam.setEnable(MENU_ENTER_PARAM_U_COR);
 				break;
 			case Param::PARAM_NO:
@@ -4697,17 +4666,36 @@ void clMenu::enterParameter() {
 		}
 
 		if (EnterParam.isEnable()) {
+
 			EnterParam.setValueRange(min, lp->getMax());
+
+			// В случае ошибочного значения параметра или если он не считан
+			// в текущее значение будет подставлен минимум
 			if (lp->isError() != LocalParams::STATE_NO_ERROR) {
 				EnterParam.setValue(min);
 			} else {
 				EnterParam.setValue(lp->getValue());
 			}
+
+			// Зависимость максимального значения от чего-либо
+			switch(lp->getDependMax()) {
+				case Param::DEPEND_MAX_NO:
+					break;
+				case Param::DEPEND_MAX_ON_NUM_DEVS:
+					max = sParam.glb.getMaxNumDevices();
+					break;
+			}
+
+			// При зависимости повторений от чего-либо, в дополнительный
+			// байт подставляется номер текущего повторения
+			if (lp->getDependSame() != Param::DEPEND_SAME_NO) {
+				dop = lp->getNumOfCurrSameParam();
+			}
+
 			EnterParam.list = lp->getListOfValues();
 			EnterParam.setFract(lp->getFract());
 			EnterParam.setDisc(lp->getDisc());
-			EnterParam.com = (eGB_COM) (lp->getCom() + 0x80);
-
+			EnterParam.setDopValue(dop);
 			enterFunc = &clMenu::enterValue;
 		}
 	}

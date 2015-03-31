@@ -10,7 +10,6 @@
 
 clProtocolBspS::clProtocolBspS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
 clProtocolS(buf, size, sParam) {
-
 }
 
 /**	Обработка принятого сообщения.
@@ -139,20 +138,39 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 	uint8_t num = 0;
 	uint8_t mask = 0;
 
+
 	mask = com & GB_COM_MASK_GROUP;
 	if (mask == GB_COM_MASK_GROUP_WRITE_PARAM) {
 		// команды изменения параметров
 
-		mask = com & GB_COM_MASK_DEVICE;
+		eGB_SEND_TYPE sendType = sParam_->txComBuf.getSendType();
+		sDebug.byte1 = com;
+		sDebug.byte2 = sendType;
+		if (sendType != GB_SEND_NO) {
+			uint8_t b1 = sParam_->txComBuf.getInt8(0);
+			uint8_t b2 = sParam_->txComBuf.getInt8(1);
 
-		if (mask == GB_COM_MASK_DEVICE_DEF)
-			num = sendModifDefCommand(com);
-		else if (mask == GB_COM_MASK_DEVICE_PRM)
-			num = sendModifPrmCommand(com);
-		else if (mask == GB_COM_MASK_DEVICE_PRD)
-			num = sendModifPrdCommand(com);
-		else
-			num = sendModifGlbCommand(com);
+			switch(sendType) {
+				case GB_SEND_INT8:
+					num = addCom(com, b1);
+					break;
+				case GB_SEND_INT8_DOP:
+					num = addCom(com, b1, b2);
+					break;
+				case GB_SEND_DOP_INT8:
+					num = addCom(com, b1, b2);
+					break;
+				case GB_SEND_INT16_BE:
+					num = addCom(com, b1, b2);
+					break;
+				case GB_SEND_COR_U:
+					break;
+				case GB_SEND_COR_I:
+					break;
+				case GB_SEND_NO:
+					break;
+			}
+		}
 	} else if (mask == GB_COM_MASK_GROUP_WRITE_REGIME) {
 		// команды изменения Режимов Работы и работы с Тестами
 		// по умолчанию отправляется только код команды
@@ -683,87 +701,8 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 	return stat;
 }
 
-/**	Формирование сообщения команды Защиты.
- * 	@param com Команда на передачу
- * 	@return Кол-во передаваемых бйт
- */
-uint8_t clProtocolBspS::sendModifDefCommand(eGB_COM com) {
-	uint8_t num = 0;
-	uint8_t b1 = sParam_->txComBuf.getInt8(0);
-	uint8_t b2 = sParam_->txComBuf.getInt8(1);
-	eGB_TYPE_DEVICE device = sParam_->typeDevice;
 
-	if (com == GB_COM_DEF_SET_DELAY) {
-		// Р400м трех-концевая версия может быть два параметра,
-		// а в двух концевой только один
-		// но будем передавать два байта всегда
-		num = addCom(com, b1, b2);
-	} else if (com == GB_COM_DEF_SET_RZ_DEC) {
-		num = addCom(com, b1, b2);
-	} else if (com == GB_COM_DEF_SET_OVERLAP) {
-		if ((device == AVANT_R400M) || (device == AVANT_R400)) {
-			num = addCom(com, b1, b2);
-		} else {
-			num = addCom(com, b1);
-		}
-	}else {
-		// по умолчанию передается один байт
-		num = addCom(com, b1);
-	}
 
-	return num;
-}
-
-/**	Формирование сообщения команды Приемника.
- * 	@param com Команда на передачу
- * 	@return Кол-во передаваемых бйт
- */
-uint8_t clProtocolBspS::sendModifPrmCommand(eGB_COM com) {
-	uint8_t num = 0;
-	uint8_t b1 = sParam_->txComBuf.getInt8(0);
-	uint8_t b2 = sParam_->txComBuf.getInt8(1);
-
-	if (com == GB_COM_PRM_SET_TIME_OFF) {
-		num = addCom(com, b1, b2);
-	} else if (com == GB_COM_PRM_SET_BLOCK_COM) {
-		num = addCom(com, b1, b2);
-	} else if (com == GB_COM_PRM_RES_IND) {
-		num = addCom(com);
-	} else if (com == GB_COM_PRM_SET_DR_BLOCK) {
-		num = addCom(com, b1, b2);
-	} else if (com == GB_COM_PRM_SET_DR_COM) {
-		num = addCom(com, b1, b2);
-	} else {
-		// по умолчанию передается один байт
-		// GB_COM_PRM_SET_TIME_ON
-		num = addCom(com, b1);
-	}
-
-	return num;
-}
-
-/**	Формирование сообщения команды Передатчика.
- * 	@param com Команда на передачу
- * 	@return Кол-во передаваемых бйт
- */
-uint8_t clProtocolBspS::sendModifPrdCommand(eGB_COM com) {
-	uint8_t num = 0;
-	uint8_t b1 = sParam_->txComBuf.getInt8(0);
-	uint8_t b2 = sParam_->txComBuf.getInt8(1);
-
-	if (com == GB_COM_PRD_SET_BLOCK_COM) {
-		num = addCom(com, b1, b2);
-	} else if (com == GB_COM_PRD_SET_LONG_COM) {
-		num = addCom(com, b1, b2);
-	} else if (com == GB_COM_PRD_SET_DR_BLOCK) {
-		num = addCom(com, b1, b2);
-	} else {
-		// по умолчанию передается один байт
-		num = addCom(com, b1);
-	}
-
-	return num;
-}
 
 /**	Формирование сообщения Общей команды.
  * 	@param com Команда на передачу
@@ -776,32 +715,6 @@ uint8_t clProtocolBspS::sendModifGlbCommand(eGB_COM com) {
 
 	if (com == GB_COM_SET_TIME) {
 		num = addCom(com, 6, sParam_->txComBuf.getBuferAddress());
-	} else if (com == GB_COM_SET_TIME_RERUN) {
-		if (sParam_->typeDevice == AVANT_R400M) {
-			num = addCom(com, b1, b2);
-		} else
-			num = addCom(com, b1);
-	} else if (com == GB_COM_SET_CF_THRESHOLD) {
-		num = addCom(com, b1, b2);
-	} else if (com == GB_COM_SET_FREQ) {
-		num = addCom(com, b1, b2);
-	} else if (com == GB_COM_SET_COR_U_I) {
-		num = addCom(com, 3, sParam_->txComBuf.getBuferAddress());
-	} else if (com == GB_COM_SET_TIME_SINCHR) {
-		if (sParam_->typeDevice == AVANT_RZSK) {
-			num = addCom(com, b1, b2);
-		} else {
-			num = addCom(com, b1);
-		}
-	} else if (com == GB_COM_SET_COM_PRD_KEEP) {
-		if (sParam_->typeDevice == AVANT_K400) {
-			num = addCom(com, b1, b2);
-		} else {
-			num = addCom(com, b1);
-		}
-	}else {
-		// по умолчанию передается один байт
-		num = addCom(com, b1);
 	}
 
 	return num;

@@ -20,15 +20,13 @@ public:
 
 	/// Отправка команды
 	uint8_t sendData(eGB_COM com);
+
 private:
 	bool getDefCommand(eGB_COM com, bool pc);
 	bool getPrmCommand(eGB_COM com, bool pc);
 	bool getPrdCommand(eGB_COM com, bool pc);
 	bool getGlbCommand(eGB_COM com, bool pc);
 
-	uint8_t sendModifDefCommand(eGB_COM com);
-	uint8_t sendModifPrmCommand(eGB_COM com);
-	uint8_t sendModifPrdCommand(eGB_COM com);
 	uint8_t sendModifGlbCommand(eGB_COM com);
 
 	uint8_t sendReadJrnCommand(eGB_COM com);

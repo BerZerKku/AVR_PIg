@@ -142,6 +142,18 @@ enum eGB_TYPE_LINE {
 	GB_TYPE_LINE_MAX
 };
 
+/// Тип параметра, в плане сохранения нового значения.
+enum eGB_SEND_TYPE {
+	GB_SEND_NO,			///< Команды стандартного протокола нет
+	GB_SEND_INT8,		///< Передается один байт данных.
+	GB_SEND_INT8_DOP,	///< Передается два байта данных (значение, доп.байт).
+	GB_SEND_DOP_INT8,	///< Передается два байта данных (доп.байт, значение).
+	GB_SEND_INT16_BE,	///< Передается два байта данных (in16>>8, int16&0xFF).
+	GB_SEND_DOP_BITES,	///< Передается битовая переменная (значение, доп.байт).
+	GB_SEND_COR_U,		///< Передается коррекция напряжения.
+	GB_SEND_COR_I		///< Передается коррекция тока.
+};
+
 /// Кол-во аппаратов в линии
 // 	Учесть что 1 и 2 используются для параметров в 3-х концевой. Не менять !!!
 enum eGB_NUM_DEVICES {
@@ -391,7 +403,6 @@ enum eGB_CONTROL {
 	GB_CONTROL_MAN_3 		= 18,	// пуск МАН удаленного 3
 	GB_CONTROL_MAN_ALL 		= 19,	// пуск МАН удаленных
 	GB_CONTROL_MAX					//
-
 };
 
 /// События журнала передатчика/приемника - конец и начало команды
@@ -1147,6 +1158,7 @@ public:
 			buf_[i] = 0;
 		}
 		com1_[0] = com2_[0] = GB_COM_NO;
+		sendType = GB_SEND_NO;
 	}
 
 	/** Запись команды в буфер 1.
@@ -1284,7 +1296,25 @@ public:
 		return buf_;
 	}
 
+	/**	Возвращает тип команды на передачу.
+	 *
+	 * 	@return Тип команды на передачу
+	 */
+	eGB_SEND_TYPE getSendType() const {
+		return sendType;
+	}
+
+	/**	Установка типа команды на передачу.
+	 *
+	 * 	@param sendType Тип команды на передачу.
+	 */
+	void setSendType(eGB_SEND_TYPE sendType) {
+		this->sendType = sendType;
+	}
+
 private:
+	// тип передаваемой команды
+	eGB_SEND_TYPE sendType;
 	// срочная команда (на изменение)
 	eGB_COM comFast_[MAX_NUM_FAST_COM];
 	// первый буфер команд

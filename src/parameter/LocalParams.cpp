@@ -138,7 +138,7 @@ void LocalParams::check(int16_t val) {
 //	Обновление параметра.
 void LocalParams::refreshParam() {
 	val = 0;
-	numOfSameParam = pgm_read_byte(&getPtrParam()->num);
+	setNumOfSameParams(pgm_read_byte(&getPtrParam()->num));
 	currSameParam = 0;
 	state = STATE_READ_PARAM;
 }

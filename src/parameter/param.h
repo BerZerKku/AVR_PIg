@@ -51,6 +51,20 @@ struct Param {
 		PARAM_BITES		///< Намор битовых значений.
 	};
 
+	/// Зависимость максимума параметра.
+	enum DEPEND_MAX {
+		DEPEND_MAX_NO,
+		DEPEND_MAX_ON_NUM_DEVS
+	};
+
+	/// Зависимость повторов параметра
+	enum DEPEND_SAME {
+		DEPEND_SAME_NO,
+		DEPEND_SAME_ON_NUM_DEVS,
+		DEPEND_SAME_ON_COM_PRD,
+		DEPEND_SAME_ON_COM_PRM
+	};
+
 	char name[NAME_PARAM_LENGHT];	///< Имя параметра.
 	eGB_COM com;		///< Команда считывания для стандартного протокола.
 
@@ -65,7 +79,10 @@ struct Param {
 	uint8_t disc;		///< Дискретность.
 	uint8_t fract;		///< Множитель для обмена по протоколу с БСП.
 
-//	char name1[20];
+	eGB_SEND_TYPE send;	///< Тип параметра для сохранения нового значения.
+	uint8_t sendDop;	///< Байт дополнительной информации для сохранения.
+	DEPEND_MAX dependMax;	///< Зависимость максимума текущего параметра.
+	DEPEND_SAME dependSame;	///< Зависимость повторений текущего параметра.
 };
 
 #endif /* PARAM_H_ */

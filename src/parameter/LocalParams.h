@@ -208,20 +208,35 @@ public:
 		return (PGM_P) pgm_read_word(&getPtrParam()->listValues);
 	}
 
+	/**	¬озвращает текущий номер однотипного параметра.
+	 *
+	 * 	@return “екущий номер однотипного параметра.
+	 */
+	uint8_t getNumOfCurrSameParam() const {
+		return currSameParam + 1;
+	}
+
+	/**	”становка количества однотипных параметров.
+	 *
+	 * 	»спользуетс€ в случае зависимости количества от чего-либо, например
+	 * 	количества команд на передачу.
+	 *
+	 * 	¬ случае если кол-во повторений меньше 1, будет установлена 1.
+	 *
+	 * 	@param  оличество однотипных параметров.
+	 */
+	void setNumOfSameParams(uint8_t numOfSameParam) {
+		if (numOfSameParam < 1)
+			numOfSameParam = 1;
+		this->numOfSameParam = numOfSameParam;
+	}
+
 	/**	¬озвращает количество однотипных парметров.
 	 *
 	 * 	Ќапример, если дл€ каждой из команд возможно установить свое значение
 	 * 	"ƒлительность команды", то тут будет количество команд.
 	 *
 	 * 	@return  оличество однотипных параметров.
-	 */
-	uint8_t getNumOfCurrSameParam() const {
-		return currSameParam + 1;
-	}
-
-	/**	¬озвращает текущий номер однотипного параметра.
-	 *
-	 * 	@return “екущий номер однотипного параметра.
 	 */
 	uint8_t getNumOfSameParams() const {
 		return numOfSameParam;
@@ -259,6 +274,22 @@ public:
 		return (eGB_COM) pgm_read_byte(&getPtrParam()->com);
 	}
 
+	/**	¬озвращает тип параметра дл€ сохранени€ нового значени€.
+	 *
+	 * 	@return “ип параметра дл€ сохранени€ нового значени€.
+	 */
+	eGB_SEND_TYPE getSendType() const {
+		return (eGB_SEND_TYPE) pgm_read_byte(&getPtrParam()->send);
+	}
+
+	/**	¬озвращает значение байта доп. информации дл€ сохранени€ нового значени€.
+	 *
+	 * 	@return «начение байта доп. информации дл€ сохранени€ нового значени€.
+	 */
+	uint8_t getSendDop() const {
+		return pgm_read_byte(&getPtrParam()->sendDop);
+	}
+
 	/**	”становка массива значений параметров.
 	 *
 	 * 	—ам массив находитс€ во FLASH, но это учитываетс€ далее.
@@ -276,6 +307,23 @@ public:
 	eGB_PARAM getParam() const {
 		return param[currParam];
 	}
+
+	/**	¬озвращает зависимость повторений текущего параметра.
+	 *
+	 * 	@return «ависимость текущего параметра.
+	 */
+	Param::DEPEND_SAME getDependSame() const {
+		return (Param::DEPEND_SAME) pgm_read_byte(&getPtrParam()->dependSame);
+	}
+
+	/**	¬озвращает зависимость максимума текущего параметра.
+	 *
+	 * 	@return «ависимость текущего параметра.
+	 */
+	Param::DEPEND_MAX getDependMax() const {
+		return (Param::DEPEND_MAX) pgm_read_byte(&getPtrParam()->dependMax);
+	}
+
 
 private:
 
