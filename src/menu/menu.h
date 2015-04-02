@@ -647,19 +647,26 @@ private:
 	 */
 	void enterParameter();
 
+	/// Формирование списка локальных параметров для Защиты.
+	void crtListOfParamsDef();
+
+	/// Формирование списка локальных параметров для Приемника.
+	void crtListOfParamsPrm();
+
+	/// Формирование списка локальных параметров для Передатчика.
+	void crtListOfParamsPrd();
+
+	/// Формирование списка локальных параметров для Общие.
+	void crtListOfParamsGlb();
+
 	// текущая функция ввода
 	eMENU_ENTER_PARAM (clMenu::*enterFunc)();
 
 	// текущий уровень меню
 	void (clMenu::*lvlMenu)();
-};
 
-//static char punkt1[] PROGMEM = "Задержка на фикс.ком";
-//static char punkt2[] PROGMEM = "Блокиров. команды";
-//static char punkt3[] PROGMEM = "Задержка на выкл.ком";
-//static char punkt4[] PROGMEM = "Трансляция ЦС";
-//static char punkt5[] PROGMEM = "Блокиров. команды ЦС";
-//static char punkt6[] PROGMEM = "Команда ВЧ в ЦС";
-//static char punkt7[] PROGMEM = "Количество команд";		// К400
+	/// Работа в меню настройки параметров.
+	void setupParam();
+};
 
 #endif /* MENU_H_ */

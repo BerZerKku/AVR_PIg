@@ -2663,47 +2663,11 @@ void clMenu::lvlSetupParamDef() {
 		}
 	}
 
-	switch(sParam.local.getDependSame()) {
-		case Param::DEPEND_SAME_NO:
-			break;
-		case Param::DEPEND_SAME_ON_NUM_DEVS:
-			sParam.local.setNumOfSameParams(sParam.glb.getMaxNumDevices() - 1);
-			break;
-		case Param::DEPEND_SAME_ON_COM_PRD:
-			sParam.local.setNumOfSameParams(sParam.prd.getNumCom() - 1);
-			break;
-		case Param::DEPEND_SAME_ON_COM_PRM:
-			sParam.local.setNumOfSameParams(sParam.prm.getNumCom() - 1);
-			break;
-
-	}
-
 	snprintf_P(&vLCDbuf[0], 21, title);
-	printParam();
 
-	if (EnterParam.isEnable()) {
-		eMENU_ENTER_PARAM stat = enterValue();
-
-		if (stat == MENU_ENTER_PARAM_READY) {
-			EnterParam.setDisable();
-		}
-	}
+	setupParam();
 
 	switch(key_) {
-		case KEY_UP:
-			sParam.local.prevParam();
-			break;
-		case KEY_DOWN:
-			sParam.local.nextParam();
-			break;
-
-		case KEY_LEFT:
-			sParam.local.prevSameParam();
-			break;
-		case KEY_RIGHT:
-			sParam.local.nextSameParam();
-			break;
-
 		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlSetupParam;
 			lvlCreate_ = true;
@@ -2713,19 +2677,8 @@ void clMenu::lvlSetupParamDef() {
 			lvlCreate_ = true;
 			break;
 
-		case KEY_ENTER:
-			enterParameter();
-			break;
-
 		default:
 			break;
-	}
-
-	// подмена команды, на команду текущего уровня меню + быстрая команда
-	if (sParam.local.isRefresh()) {
-		eGB_COM com = sParam.local.getCom();
-		sParam.txComBuf.addFastCom(com);
-		sParam.txComBuf.addCom1(com, 0);
 	}
 }
 
@@ -2775,99 +2728,11 @@ void clMenu::lvlSetupParamPrm() {
 		}
 	}
 
-	switch(sParam.local.getDependSame()) {
-		case Param::DEPEND_SAME_NO:
-			break;
-		case Param::DEPEND_SAME_ON_NUM_DEVS:
-			sParam.local.setNumOfSameParams(sParam.glb.getMaxNumDevices() - 1);
-			break;
-		case Param::DEPEND_SAME_ON_COM_PRD:
-			sParam.local.setNumOfSameParams(sParam.prd.getNumCom() - 1);
-			break;
-		case Param::DEPEND_SAME_ON_COM_PRM:
-			sParam.local.setNumOfSameParams(sParam.prm.getNumCom() - 1);
-			break;
-
-	}
-
 	snprintf_P(&vLCDbuf[0], 21, title);
-	printParam();
 
-	if (EnterParam.isEnable()) {
-		eMENU_ENTER_PARAM stat = enterValue();
-
-		if (stat == MENU_ENTER_PARAM_READY) {
-			EnterParam.setDisable();
-		}
-	}
-
-
-
-//	if (EnterParam.isEnable()) {
-//		// ввод нового значения параметра
-//		eMENU_ENTER_PARAM stat = enterValue();
-//
-//		if (stat == MENU_ENTER_PARAM_READY) {
-//			// новое значение введено, надо передать в БСП
-//
-//			if (name == punkt2) {
-//				uint8_t pl = EnterParam.getDopValue() - 1;
-//				uint8_t val = sParam.prm.getBlockCom8(pl / 8);
-//				if (EnterParam.getValue() > 0)
-//					val |= (1 << (pl % 8));
-//				else
-//					val &= ~(1 << (pl % 8));
-//				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
-//				sParam.txComBuf.setInt8(val, 1);
-//			} else if (name == punkt4) {
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-//			} else if (name == punkt5) {
-//				uint8_t pl = EnterParam.getDopValue() - 1;
-//				uint8_t val = sParam.prm.getBlockComDR8(pl / 8);
-//				if (EnterParam.getValue() > 0)
-//					val |= (1 << (pl % 8));
-//				else
-//					val &= ~(1 << (pl % 8));
-//				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
-//				sParam.txComBuf.setInt8(val, 1);
-//			} else if (name == punkt6) {
-//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
-//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
-//			} else if (name == punkt7) {
-//				eGB_K400_NUM_COM val;
-//				uint8_t num = 0;
-//				val = (eGB_K400_NUM_COM) EnterParam.getValueEnter();
-//				if (val <= GB_K400_NUM_COM_32) {
-//					if (val == GB_K400_NUM_COM_32) {
-//						num = 8;
-//					} else if (val == GB_K400_NUM_COM_24) {
-//						num = 6;
-//					} else {
-//						num = static_cast<uint8_t>(val);
-//					}
-//					sParam.txComBuf.setInt8(num);
-//				}
-//			}
-//			sParam.txComBuf.addFastCom(EnterParam.com);
-//			EnterParam.setDisable();
-//		}
-//	}
+	setupParam();
 
 	switch(key_) {
-		case KEY_UP:
-			sParam.local.prevParam();
-			break;
-		case KEY_DOWN:
-			sParam.local.nextParam();
-			break;
-
-		case KEY_LEFT:
-			sParam.local.prevSameParam();
-			break;
-		case KEY_RIGHT:
-			sParam.local.nextSameParam();
-			break;
-
 		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlSetupParam;
 			lvlCreate_ = true;
@@ -2877,19 +2742,8 @@ void clMenu::lvlSetupParamPrm() {
 			lvlCreate_ = true;
 			break;
 
-		case KEY_ENTER:
-			enterParameter();
-			break;
-
 		default:
 			break;
-	}
-
-	// подмена команды, на команду текущего уровня меню + быстрая команда
-	if (sParam.local.isRefresh()) {
-		eGB_COM com = sParam.local.getCom();
-		sParam.txComBuf.addFastCom(com);
-		sParam.txComBuf.addCom1(com, 0);
 	}
 }
 
@@ -2945,101 +2799,11 @@ void clMenu::lvlSetupParamPrd() {
 		}
 	}
 
-	switch(sParam.local.getDependSame()) {
-		case Param::DEPEND_SAME_NO:
-			break;
-		case Param::DEPEND_SAME_ON_NUM_DEVS:
-			sParam.local.setNumOfSameParams(sParam.glb.getMaxNumDevices() - 1);
-			break;
-		case Param::DEPEND_SAME_ON_COM_PRD:
-			sParam.local.setNumOfSameParams(sParam.prd.getNumCom() - 1);
-			break;
-		case Param::DEPEND_SAME_ON_COM_PRM:
-			sParam.local.setNumOfSameParams(sParam.prm.getNumCom() - 1);
-			break;
-
-	}
-
 	snprintf_P(&vLCDbuf[0], 21, title);
-	printParam();
 
-	if (EnterParam.isEnable()) {
-		eMENU_ENTER_PARAM stat = enterValue();
-
-		if (stat == MENU_ENTER_PARAM_READY) {
-			EnterParam.setDisable();
-		}
-	}
-
-//	if (EnterParam.isEnable()) {
-//		// ввод нового значения параметра
-//		eMENU_ENTER_PARAM stat = enterValue();
-//
-//		if (stat == MENU_ENTER_PARAM_READY) {
-//			// новое значение введено, надо передать в БСП
-//
-//			if (name == punkt4) {
-//				uint8_t pl = EnterParam.getDopValue() - 1;
-//				uint8_t val = sParam.prd.getLongCom8(pl / 8);
-//				if (EnterParam.getValue() > 0)
-//					val |= (1 << (pl % 8));
-//				else
-//					val &= ~(1 << (pl % 8));
-//				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
-//				sParam.txComBuf.setInt8(val, 1);
-//			} else if (name == punkt5) {
-//				uint8_t pl = EnterParam.getDopValue() - 1;
-//				uint8_t val = sParam.prd.getBlockCom8(pl / 8);
-//				if (EnterParam.getValue() > 0)
-//					val |= (1 << (pl % 8));
-//				else
-//					val &= ~(1 << (pl % 8));
-//				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
-//				sParam.txComBuf.setInt8(val, 1);
-//			} else if (name == punkt7) {
-//				uint8_t pl = EnterParam.getDopValue() - 1;
-//				uint8_t val = sParam.prd.getBlockComDR8(pl / 8);
-//				if (EnterParam.getValue() > 0)
-//					val |= (1 << (pl % 8));
-//				else
-//					val &= ~(1 << (pl % 8));
-//				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
-//				sParam.txComBuf.setInt8(val, 1);
-//			} else if (name == punkt9) {
-//				eGB_K400_NUM_COM val;
-//				uint8_t num = 0;
-//				val = (eGB_K400_NUM_COM) EnterParam.getValueEnter();
-//				if (val <= GB_K400_NUM_COM_32) {
-//					if (val == GB_K400_NUM_COM_32) {
-//						num = 8;
-//					} else if (val == GB_K400_NUM_COM_24) {
-//						num = 6;
-//					} else {
-//						num = static_cast<uint8_t>(val);
-//					}
-//					sParam.txComBuf.setInt8(num);
-//				}
-//			}
-//			sParam.txComBuf.addFastCom(EnterParam.com);
-//			EnterParam.setDisable();
-//		}
-//	}
+	setupParam();
 
 	switch(key_) {
-		case KEY_UP:
-			sParam.local.prevParam();
-			break;
-		case KEY_DOWN:
-			sParam.local.nextParam();
-			break;
-
-		case KEY_LEFT:
-			sParam.local.prevSameParam();
-			break;
-		case KEY_RIGHT:
-			sParam.local.nextSameParam();
-			break;
-
 		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlSetupParam;
 			lvlCreate_ = true;
@@ -3049,19 +2813,8 @@ void clMenu::lvlSetupParamPrd() {
 			lvlCreate_ = true;
 			break;
 
-		case KEY_ENTER:
-			enterParameter();
-			break;
-
 		default:
 			break;
-	}
-
-	// подмена команды, на команду текущего уровня меню + быстрая команда
-	if (sParam.local.isRefresh()) {
-		eGB_COM com = sParam.local.getCom();
-		sParam.txComBuf.addFastCom(com);
-		sParam.txComBuf.addCom1(com, 0);
 	}
 }
 
@@ -3181,126 +2934,11 @@ void clMenu::lvlSetupParamGlb() {
 		}
 	}
 
-	switch(sParam.local.getDependSame()) {
-		case Param::DEPEND_SAME_NO:
-			break;
-		case Param::DEPEND_SAME_ON_NUM_DEVS:
-			sParam.local.setNumOfSameParams(sParam.glb.getMaxNumDevices() - 1);
-			break;
-		case Param::DEPEND_SAME_ON_COM_PRD:
-			sParam.local.setNumOfSameParams(sParam.prd.getNumCom() - 1);
-			break;
-		case Param::DEPEND_SAME_ON_COM_PRM:
-			sParam.local.setNumOfSameParams(sParam.prm.getNumCom() - 1);
-			break;
-
-	}
-
 	snprintf_P(&vLCDbuf[0], 21, title);
-	printParam();
 
-	if (EnterParam.isEnable()) {
-		eMENU_ENTER_PARAM stat = enterValue();
-
-		if (stat == MENU_ENTER_PARAM_READY) {
-			eGB_COM com = sParam.local.getCom();
-
-			if (com != GB_COM_NO) {
-
-				switch(sParam.local.getSendType()) {
-					case GB_SEND_INT8:
-						sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-						break;
-					case GB_SEND_INT8_DOP:
-						sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
-						sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
-						break;
-					case GB_SEND_DOP_INT8:
-						sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
-						sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
-						break;
-					case GB_SEND_INT16_BE:
-						sParam.txComBuf.setInt8(EnterParam.getValue() >> 8, 0);
-						sParam.txComBuf.setInt8(EnterParam.getValue(), 1);
-						break;
-					case GB_SEND_DOP_BITES:
-						break;
-					case GB_SEND_COR_U:
-						break;
-					case GB_SEND_COR_I:
-						break;
-					case GB_SEND_NO:
-						break;
-				}
-
-				com = (eGB_COM) (com + GB_COM_MASK_GROUP_WRITE_PARAM);
-				sParam.txComBuf.addFastCom(com);
-				sParam.txComBuf.setSendType(sParam.local.getSendType());
-			}
-			EnterParam.setDisable();
-		}
-	}
-
-//	if (EnterParam.isEnable()) {
-//		// ввод нового значения параметра
-//		eMENU_ENTER_PARAM stat = enterValue();
-//
-//		if (stat == MENU_ENTER_PARAM_READY) {
-//			// новое значение введено, надо передать в БСП
-//			if (name == punkt15) {
-//				// если текущее значение коррекции тока равно 0
-//				// то передается сообщение с под.байтом равным 4
-//				// означающим сброс коррекции
-//				int16_t t = static_cast<int16_t>(EnterParam.getValue());
-//				uint8_t dop = EnterParam.getDopValue();
-//				if (t == 0)
-//					dop = 4;
-//				else {
-//					// новая коррекция =
-//					// напряжение прибора - (напряжение с БСП - коррекция)
-//					t -= static_cast<int16_t>(sParam.measParam.getVoltageOut());
-//					t += sParam.glb.getCorU();
-//				}
-//				sParam.txComBuf.setInt8(dop, 0);
-//				sParam.txComBuf.setInt8(t / 10, 1);
-//				sParam.txComBuf.setInt8((t % 10) * 10, 2);
-//			} else if (name == punkt16) {
-//				// если текущее значение коррекции тока равно 0
-//				// то передается сообщение с под.байтом равным 5
-//				// означающим сброс коррекции
-//				int16_t t = static_cast<int16_t>(EnterParam.getValue());
-//				uint8_t dop = EnterParam.getDopValue();
-//				if (t == 0)
-//					dop = 5;
-//				else {
-//					// новая коррекция = ток прибора - (ток с БСП - коррекция)
-//					t -= static_cast<int16_t>(sParam.measParam.getCurrentOut());
-//					t += sParam.glb.getCorI();
-//				}
-//				sParam.txComBuf.setInt8(dop, 0);
-//				sParam.txComBuf.setInt8((t >> 8), 1);
-//				sParam.txComBuf.setInt8((t), 2);
-//			}
-//			sParam.txComBuf.addFastCom(EnterParam.com);
-//			EnterParam.setDisable();
-//		}
-//	}
+	setupParam();
 
 	switch(key_) {
-		case KEY_UP:
-			sParam.local.prevParam();
-			break;
-		case KEY_DOWN:
-			sParam.local.nextParam();
-			break;
-
-		case KEY_LEFT:
-			sParam.local.prevSameParam();
-			break;
-		case KEY_RIGHT:
-			sParam.local.nextSameParam();
-			break;
-
 		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlSetupParam;
 			lvlCreate_ = true;
@@ -3310,20 +2948,8 @@ void clMenu::lvlSetupParamGlb() {
 			lvlCreate_ = true;
 			break;
 
-		case KEY_ENTER:
-			enterParameter();
-		break;
-
 		default:
 			break;
-	}
-
-	// подмена команды, на команду текущего уровня меню + быстрая команда
-	if (sParam.local.isRefresh()) {
-
-		eGB_COM com = sParam.local.getCom();
-		sParam.txComBuf.addFastCom(com);
-		sParam.txComBuf.addCom1(com, 0);
 	}
 }
 
@@ -4593,7 +4219,7 @@ void clMenu::printValue(uint8_t pos) {
 
 	pos += snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Значение: "));
 
-	LocalParams::STATE state = sParam.local.isError();
+	LocalParams::STATE state = sParam.local.getState();
 
 	if (state == LocalParams::STATE_ERROR) {
 		// вывод ошибочного значения
@@ -4646,9 +4272,8 @@ void clMenu::enterParameter() {
 			|| (sParam.local.getParam() == GB_PARAM_COR_I)
 			|| (sParam.glb.status.getRegime() == GB_REGIME_DISABLED)) {
 
-		int16_t min = lp->getMin();
+
 		int16_t max = lp->getMax();
-		uint8_t dop = lp->getSendDop();
 
 		switch(lp->getParamType()) {
 			case Param::PARAM_BITES: // DOWN
@@ -4666,37 +4291,271 @@ void clMenu::enterParameter() {
 		}
 
 		if (EnterParam.isEnable()) {
-
+			int16_t min = lp->getMin();
 			EnterParam.setValueRange(min, lp->getMax());
 
 			// В случае ошибочного значения параметра или если он не считан
 			// в текущее значение будет подставлен минимум
-			if (lp->isError() != LocalParams::STATE_NO_ERROR) {
+			if (lp->getState() != LocalParams::STATE_NO_ERROR) {
 				EnterParam.setValue(min);
 			} else {
 				EnterParam.setValue(lp->getValue());
 			}
 
-			// Зависимость максимального значения от чего-либо
-			switch(lp->getDependMax()) {
-				case Param::DEPEND_MAX_NO:
-					break;
-				case Param::DEPEND_MAX_ON_NUM_DEVS:
-					max = sParam.glb.getMaxNumDevices();
-					break;
-			}
-
-			// При зависимости повторений от чего-либо, в дополнительный
-			// байт подставляется номер текущего повторения
-			if (lp->getDependSame() != Param::DEPEND_SAME_NO) {
-				dop = lp->getNumOfCurrSameParam();
-			}
-
 			EnterParam.list = lp->getListOfValues();
 			EnterParam.setFract(lp->getFract());
 			EnterParam.setDisc(lp->getDisc());
-			EnterParam.setDopValue(dop);
+			EnterParam.setDopValue(lp->getSendDop());
 			enterFunc = &clMenu::enterValue;
 		}
+	}
+}
+
+// Работа в меню настройки параметров.
+void clMenu::setupParam() {
+	printParam();
+
+	if (EnterParam.isEnable()) {
+		eMENU_ENTER_PARAM stat = enterValue();
+
+		if (stat == MENU_ENTER_PARAM_READY) {
+			eGB_COM com = sParam.local.getCom();
+
+			if (com != GB_COM_NO) {
+
+				switch(sParam.local.getSendType()) {
+					case GB_SEND_INT8: {
+						sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+
+					}
+					break;
+					case GB_SEND_INT8_DOP:
+					case GB_SEND_DOP_INT8: {
+						sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
+						sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
+
+					}
+					break;
+					case GB_SEND_INT16_BE: {
+						sParam.txComBuf.setInt8(EnterParam.getValue() >> 8, 0);
+						sParam.txComBuf.setInt8(EnterParam.getValue(), 1);
+					}
+					break;
+					case GB_SEND_DOP_BITES: {
+
+						uint8_t val = sParam.local.getValueB();
+						uint8_t pos = sParam.local.getNumOfCurrSameParam() - 1;
+						if (EnterParam.getValue()) {
+							val |= (1 << (pos % 8));
+						} else {
+							val &= ~(1 << (pos % 8));
+						}
+						sDebug.byte1 = val;
+						sDebug.byte2 = 1 + pos/8;
+						sParam.txComBuf.setInt8(val, 0);
+						sParam.txComBuf.setInt8(1 + pos/8 , 1);
+					}
+					break;
+					case GB_SEND_COR_U: {
+					}
+					break;
+					case GB_SEND_COR_I: {
+					}
+					break;
+					case GB_SEND_NO: {
+
+					}
+					break;
+				}
+
+				com = (eGB_COM) (com + GB_COM_MASK_GROUP_WRITE_PARAM);
+				sParam.txComBuf.addFastCom(com);
+				sParam.txComBuf.setSendType(sParam.local.getSendType());
+			}
+			EnterParam.setDisable();
+		}
+	}
+
+	// Общие параметры
+	//	if (EnterParam.isEnable()) {
+		//		// ввод нового значения параметра
+	//		eMENU_ENTER_PARAM stat = enterValue();
+	//
+	//		if (stat == MENU_ENTER_PARAM_READY) {
+	//			// новое значение введено, надо передать в БСП
+	//			if (name == punkt15) {
+	//				// если текущее значение коррекции тока равно 0
+	//				// то передается сообщение с под.байтом равным 4
+	//				// означающим сброс коррекции
+	//				int16_t t = static_cast<int16_t>(EnterParam.getValue());
+	//				uint8_t dop = EnterParam.getDopValue();
+	//				if (t == 0)
+	//					dop = 4;
+	//				else {
+	//					// новая коррекция =
+	//					// напряжение прибора - (напряжение с БСП - коррекция)
+	//					t -= static_cast<int16_t>(sParam.measParam.getVoltageOut());
+	//					t += sParam.glb.getCorU();
+	//				}
+	//				sParam.txComBuf.setInt8(dop, 0);
+	//				sParam.txComBuf.setInt8(t / 10, 1);
+	//				sParam.txComBuf.setInt8((t % 10) * 10, 2);
+	//			} else if (name == punkt16) {
+	//				// если текущее значение коррекции тока равно 0
+	//				// то передается сообщение с под.байтом равным 5
+	//				// означающим сброс коррекции
+	//				int16_t t = static_cast<int16_t>(EnterParam.getValue());
+	//				uint8_t dop = EnterParam.getDopValue();
+	//				if (t == 0)
+	//					dop = 5;
+	//				else {
+	//					// новая коррекция = ток прибора - (ток с БСП - коррекция)
+	//					t -= static_cast<int16_t>(sParam.measParam.getCurrentOut());
+	//					t += sParam.glb.getCorI();
+	//				}
+	//				sParam.txComBuf.setInt8(dop, 0);
+	//				sParam.txComBuf.setInt8((t >> 8), 1);
+	//				sParam.txComBuf.setInt8((t), 2);
+	//			}
+	//			sParam.txComBuf.addFastCom(EnterParam.com);
+	//			EnterParam.setDisable();
+	//		}
+	//	}
+
+	// параметры ПРД
+	//	if (EnterParam.isEnable()) {
+	//		// ввод нового значения параметра
+	//		eMENU_ENTER_PARAM stat = enterValue();
+	//
+	//		if (stat == MENU_ENTER_PARAM_READY) {
+	//			// новое значение введено, надо передать в БСП
+	//
+	//			if (name == punkt4) {
+	//				uint8_t pl = EnterParam.getDopValue() - 1;
+	//				uint8_t val = sParam.prd.getLongCom8(pl / 8);
+	//				if (EnterParam.getValue() > 0)
+	//					val |= (1 << (pl % 8));
+	//				else
+	//					val &= ~(1 << (pl % 8));
+	//				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
+	//				sParam.txComBuf.setInt8(val, 1);
+	//			} else if (name == punkt5) {
+	//				uint8_t pl = EnterParam.getDopValue() - 1;
+	//				uint8_t val = sParam.prd.getBlockCom8(pl / 8);
+	//				if (EnterParam.getValue() > 0)
+	//					val |= (1 << (pl % 8));
+	//				else
+	//					val &= ~(1 << (pl % 8));
+	//				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
+	//				sParam.txComBuf.setInt8(val, 1);
+	//			} else if (name == punkt7) {
+	//				uint8_t pl = EnterParam.getDopValue() - 1;
+	//				uint8_t val = sParam.prd.getBlockComDR8(pl / 8);
+	//				if (EnterParam.getValue() > 0)
+	//					val |= (1 << (pl % 8));
+	//				else
+	//					val &= ~(1 << (pl % 8));
+	//				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
+	//				sParam.txComBuf.setInt8(val, 1);
+	//			} else if (name == punkt9) {
+	//				eGB_K400_NUM_COM val;
+	//				uint8_t num = 0;
+	//				val = (eGB_K400_NUM_COM) EnterParam.getValueEnter();
+	//				if (val <= GB_K400_NUM_COM_32) {
+	//					if (val == GB_K400_NUM_COM_32) {
+	//						num = 8;
+	//					} else if (val == GB_K400_NUM_COM_24) {
+	//						num = 6;
+	//					} else {
+	//						num = static_cast<uint8_t>(val);
+	//					}
+	//					sParam.txComBuf.setInt8(num);
+	//				}
+	//			}
+	//			sParam.txComBuf.addFastCom(EnterParam.com);
+	//			EnterParam.setDisable();
+	//		}
+	//	}
+
+	// Параметры ПРМ
+	//	if (EnterParam.isEnable()) {
+	//		// ввод нового значения параметра
+	//		eMENU_ENTER_PARAM stat = enterValue();
+	//
+	//		if (stat == MENU_ENTER_PARAM_READY) {
+	//			// новое значение введено, надо передать в БСП
+	//
+	//			if (name == punkt2) {
+	//				uint8_t pl = EnterParam.getDopValue() - 1;
+	//				uint8_t val = sParam.prm.getBlockCom8(pl / 8);
+	//				if (EnterParam.getValue() > 0)
+	//					val |= (1 << (pl % 8));
+	//				else
+	//					val &= ~(1 << (pl % 8));
+	//				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
+	//				sParam.txComBuf.setInt8(val, 1);
+	//			} else if (name == punkt4) {
+	//				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+	//			} else if (name == punkt5) {
+	//				uint8_t pl = EnterParam.getDopValue() - 1;
+	//				uint8_t val = sParam.prm.getBlockComDR8(pl / 8);
+	//				if (EnterParam.getValue() > 0)
+	//					val |= (1 << (pl % 8));
+	//				else
+	//					val &= ~(1 << (pl % 8));
+	//				sParam.txComBuf.setInt8(pl / 8 + 1, 0);
+	//				sParam.txComBuf.setInt8(val, 1);
+	//			} else if (name == punkt6) {
+	//				sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
+	//				sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
+	//			} else if (name == punkt7) {
+	//				eGB_K400_NUM_COM val;
+	//				uint8_t num = 0;
+	//				val = (eGB_K400_NUM_COM) EnterParam.getValueEnter();
+	//				if (val <= GB_K400_NUM_COM_32) {
+	//					if (val == GB_K400_NUM_COM_32) {
+	//						num = 8;
+	//					} else if (val == GB_K400_NUM_COM_24) {
+	//						num = 6;
+	//					} else {
+	//						num = static_cast<uint8_t>(val);
+	//					}
+	//					sParam.txComBuf.setInt8(num);
+	//				}
+	//			}
+	//			sParam.txComBuf.addFastCom(EnterParam.com);
+	//			EnterParam.setDisable();
+	//		}
+	//	}
+
+	switch(key_) {
+		case KEY_UP:
+			sParam.local.prevParam();
+			break;
+		case KEY_DOWN:
+			sParam.local.nextParam();
+			break;
+
+		case KEY_LEFT:
+			sParam.local.prevSameParam();
+			break;
+		case KEY_RIGHT:
+			sParam.local.nextSameParam();
+			break;
+
+		case KEY_ENTER:
+			enterParameter();
+			break;
+
+		default:
+			break;
+	}
+
+	// подмена команды, на команду текущего уровня меню + быстрая команда
+	if (sParam.local.getState() == LocalParams::STATE_READ_PARAM) {
+
+		eGB_COM com = sParam.local.getCom();
+		sParam.txComBuf.addFastCom(com);
+		sParam.txComBuf.addCom1(com, 0);
 	}
 }

@@ -54,6 +54,7 @@ struct Param {
 	/// Зависимость максимума параметра.
 	enum DEPEND_MAX {
 		DEPEND_MAX_NO,
+		DEPEND_MAX_ON_COM_PRD,
 		DEPEND_MAX_ON_NUM_DEVS
 	};
 

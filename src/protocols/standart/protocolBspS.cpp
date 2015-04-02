@@ -49,6 +49,9 @@ bool clProtocolBspS::getData(bool pc) {
 			// на отличные от этого параметры далее ведется проверка
 			int16_t val = -1000;
 			switch(lp->getParam()) {
+				case GB_PARAM_IN_DEC:
+					val = buf[B2 + lp->getNumOfCurrSameParam() - 1];
+					break;
 				case GB_PARAM_FREQ:
 					val = TO_INT16(buf[B1], buf[B2]);
 					break;
@@ -129,8 +132,10 @@ bool clProtocolBspS::getData(bool pc) {
 }
 
 /**	Формирование посылки и отправка заданной команды.
+ *
  * 	По-умолчанию в сообщении опроса параметра посылается только код команды.
  * 	По-умолчанию в сообщениии изменения параметра посылается 1 байт данных.
+ *
  * 	@param com Команда на передачу
  * 	@return Кол-во передаваемых бйт
  */
@@ -140,28 +145,31 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 
 
 	mask = com & GB_COM_MASK_GROUP;
+
 	if (mask == GB_COM_MASK_GROUP_WRITE_PARAM) {
 		// команды изменения параметров
 
 		eGB_SEND_TYPE sendType = sParam_->txComBuf.getSendType();
-		sDebug.byte1 = com;
-		sDebug.byte2 = sendType;
-		if (sendType != GB_SEND_NO) {
-			uint8_t b1 = sParam_->txComBuf.getInt8(0);
-			uint8_t b2 = sParam_->txComBuf.getInt8(1);
+
+		if (com == GB_COM_SET_TIME) {
+			num = addCom(com, 6, sParam_->txComBuf.getBuferAddress());
+		} else 	if (sendType != GB_SEND_NO) {
+			uint8_t val = sParam_->txComBuf.getInt8(0);
+			uint8_t dop = sParam_->txComBuf.getInt8(1);
 
 			switch(sendType) {
 				case GB_SEND_INT8:
-					num = addCom(com, b1);
+					num = addCom(com, val);
 					break;
 				case GB_SEND_INT8_DOP:
-					num = addCom(com, b1, b2);
+					num = addCom(com, val, dop);
 					break;
-				case GB_SEND_DOP_INT8:
-					num = addCom(com, b1, b2);
+				case GB_SEND_DOP_INT8:	// DOWN
+				case GB_SEND_DOP_BITES:
+					num = addCom(com, dop, val);
 					break;
 				case GB_SEND_INT16_BE:
-					num = addCom(com, b1, b2);
+					num = addCom(com, val, dop);
 					break;
 				case GB_SEND_COR_U:
 					break;
@@ -230,8 +238,9 @@ bool clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
 	bool stat = false;
 
 	if (com == GB_COM_DEF_GET_LINE_TYPE) {
-		stat = sParam_->def.setNumDevices((eGB_NUM_DEVICES) buf[B1]);
-		uint8_t act = sParam_->glb.setNumDevices((eGB_NUM_DEVICES) buf[B1]);
+		stat = sParam_->def.setNumDevices((eGB_NUM_DEVICES) (buf[B1]));
+		uint8_t act = sParam_->glb.setNumDevices((eGB_NUM_DEVICES) (buf[B1]));
+		sParam_->local.setNumDevices(sParam_->glb.getNumDevices() + 1);
 		if (act & GB_ACT_NEW)
 			sParam_->device = false;
 	} else  if (com == GB_COM_DEF_GET_TYPE_AC) {
@@ -289,6 +298,7 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
 			uint8_t act = GB_ACT_NO;
 			if (sParam_->typeDevice == AVANT_K400) {
 				act = sParam_->prm.setNumCom(buf[B1] * 4);
+				sParam_->local.setNumComPrm(sParam_->prm.getNumCom());
 			}
 			// в случае записи нового значения, сбросим флаг конфигурации
 			if (act & GB_ACT_NEW)
@@ -363,6 +373,7 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 			uint8_t act = GB_ACT_NO;
 			if (sParam_->typeDevice == AVANT_K400) {
 				act = sParam_->prd.setNumCom(buf[B1] * 4);
+				sParam_->local.setNumComPrd(sParam_->prd.getNumCom());
 			}
 			// в случае записи нового значения, сбросим флаг конфигурации
 			if (act & GB_ACT_NEW)
@@ -565,8 +576,9 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			// в def хранится значение параметра
 			// все действия с меню производятся относительно значения в glb.
 			// !!! и значение == кол-ву аппаратов, а раньше было на 1 меньше
-			act |= sParam_->glb.setNumDevices((eGB_NUM_DEVICES) (buf[B5] - 1));
-			sParam_->def.setNumDevices((eGB_NUM_DEVICES) (buf[B5] - 1));
+			act |= sParam_->glb.setNumDevices((eGB_NUM_DEVICES) (buf[B5]-1));
+			sParam_->def.setNumDevices((eGB_NUM_DEVICES) (buf[B5]-1));
+			sParam_->local.setNumDevices(sParam_->glb.getNumDevices() + 1);
 			// тип линии (вч, оптика, ...)
 			act |= sParam_->glb.setTypeLine((eGB_TYPE_LINE) buf[B6]);
 			// версия прошивки АТмега БСП
@@ -699,25 +711,6 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 	}
 
 	return stat;
-}
-
-
-
-
-/**	Формирование сообщения Общей команды.
- * 	@param com Команда на передачу
- * 	@return Кол-во передаваемых бйт
- */
-uint8_t clProtocolBspS::sendModifGlbCommand(eGB_COM com) {
-	uint8_t num = 0;
-	uint8_t b1 = sParam_->txComBuf.getInt8(0);
-	uint8_t b2 = sParam_->txComBuf.getInt8(1);
-
-	if (com == GB_COM_SET_TIME) {
-		num = addCom(com, 6, sParam_->txComBuf.getBuferAddress());
-	}
-
-	return num;
 }
 
 /**	Формирование сообщения команды считавания кол-ва и самих записей журнала.
