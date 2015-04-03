@@ -631,6 +631,9 @@ bool clMenu::setDeviceOPTO() {
 }
 
 bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
+	static const char fcUnknownFault[]	 PROGMEM = "Неисправность";
+	static const char fcUnknownWarning[] PROGMEM = "Предупреждение";
+
 	bool status = false;
 
 	sParam.glb.status.setEnable(true);
@@ -4049,6 +4052,9 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
  *	@return Нет
  */
 void clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device) {
+	static const char fcFaults[] 	PROGMEM = "Неиспр. %c-%04X";
+	static const char fcWarnings[] 	PROGMEM = "Предупр. %c-%04X";
+
 	PGM_P *text;
 	uint_fast8_t x = 0;
 	uint_fast16_t y = 0;

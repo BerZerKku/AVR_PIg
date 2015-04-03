@@ -222,18 +222,6 @@ static const char fcPrdSost10[] PROGMEM =	"Речь";			///<
 static const char fcPrdSost11[] PROGMEM =	"ПРД";			///<
 static const char fcPrdSost12[] PROGMEM =	"ПРМ";			///<
 
-///
-
-/// Надпись Несиправность для неиспользуемых кодов неисправности.
-static const char fcUnknownFault[]		PROGMEM = "Неисправность";
-/// Надпись Предупреждение для неиспользуемых кодо предупреждений.
-static const char fcUnknownWarning[] 	PROGMEM = "Предупреждение";
-
-/// Строка вывода кода неисправности.
-static const char fcFaults[] 			PROGMEM = "Неиспр. %c-%04X";
-/// Строка вывода кода предупреждения.
-static const char fcWarnings[] 			PROGMEM = "Предупр. %c-%04X";
-
 // общие неисправности
 static const char fcGlbFault0001[] 		PROGMEM = "Неиспр.чт. FLASH";	///<
 static const char fcGlbFault0002[] 		PROGMEM = "Неиспр.зап.FLASH";	///<
@@ -321,23 +309,16 @@ static const char fcPrdFault0800rzsk[] 	PROGMEM = "Неиспр.вход. КСК";	///<
 static const char fcPrdWarning02k400[] 	PROGMEM = "Ошибка работы ЦС";	///<
 static const char fcPrdWarning04k400[] 	PROGMEM = "Вход RX ЦС пуст";	///<
 
-// строки используемые для отображения параметров
-/// Ввод нового значения параметра.
-static const char fcEnterInt[]			PROGMEM = "Ввод: %f";
 /// Текущее значение параметра.
 static const char fcValue[] 			PROGMEM = "Значение: ";
 /// Диапазон допустимых значений параметра.
 static const char fcRange[] 			PROGMEM = "Диапазон: ";
-/// Номер команды, для которой устанавливается параметр.
-static const char fcNumCom[] 			PROGMEM = "Номер команды: %u/%u";
 /// Номер приемника (для 3-ж концевой линии).
 //static const char fcNumPrm[]			PROGMEM = "Номер ПРМ: %u/%u";
 /// Диапазон допустимых значений параметра.
 static const char fcRangeDec[] 			PROGMEM = "%d..%d%S";
 /// Диапазон допустимых значений параметра: для списков.
 static const char fcRangeList[] 		PROGMEM = "список";
-/// Диапазон допустимых значений параметров: для вкл./выкл.
-static const char fcRangeOnOff[]		PROGMEM = "вкл./выкл.";
 /// Текущий параметр и общее их количество в данном пункте меню.
 static const char fcNumPunkt[] 			PROGMEM = "Параметр:%u Всего:%u";
 

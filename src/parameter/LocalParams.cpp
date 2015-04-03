@@ -111,7 +111,7 @@ void  LocalParams::clearParams() {
 	state = STATE_READ_PARAM;
 }
 
-//	¬озвращает максимальное значение параметра ?!
+//	¬озвращает максимальное значение параметра.
 int16_t LocalParams::getMax() const {
 	uint16_t max = 0;
 
@@ -124,6 +124,14 @@ int16_t LocalParams::getMax() const {
 			break;
 		case Param::DEPEND_MAX_ON_COM_PRD:
 			max = numComPrd;
+	}
+
+	// дл€ строковых параметров в максимуме записано макс.количество элементов
+	// списка, поэтому скорректируем максимальное значение
+
+	Param::PARAM_TYPE type = getParamType();
+	if ((type == Param::PARAM_LIST) || (type == Param::PARAM_BITES)) {
+		max = getMin() + max  - 1;
 	}
 
 	return max;

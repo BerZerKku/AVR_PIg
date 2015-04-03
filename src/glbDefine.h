@@ -19,6 +19,9 @@
 #include <avr/pgmspace.h>
 #include "debug.h"
 
+/// размер массива
+#define SIZE_OF(mas) (sizeof(mas) / sizeof(mas[0]))
+
 /// пароль администратора
 #define PASSWORD_ADMIN 6352
 
