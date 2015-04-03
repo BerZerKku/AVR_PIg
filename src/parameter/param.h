@@ -39,7 +39,8 @@ struct Param {
 		RANGE_ON_OFF,	///< Список вкл./выкл.
 		RANGE_INT,		///< <min>..<max><dim>
 		RANGE_INT_NO_DIM,///< <min>..<max>
-		RANGE_U_COR		///< <min/10>..<max/10>
+		RANGE_U_COR,	///< 0..±<max/10><dim>
+		RANGE_I_COR		///< 0..±<max><dim>
 	};
 
 	/// Тип параметра, в плане ввода / отображения.
@@ -47,7 +48,8 @@ struct Param {
 		PARAM_NO = 0,	///< Неизменяемый параметр.
 		PARAM_LIST,		///< Список.
 		PARAM_INT,		///< Целое значение jn -32768..32767.
-		PARAM_U,		///< Коррекция напряжения ±ХХ.Х.
+		PARAM_U_COR,	///< Коррекция напряжения ±ХХ.Х.
+		PARAM_I_COR,	///< Коррекция тока ±XXX.
 		PARAM_BITES		///< Намор битовых значений.
 	};
 

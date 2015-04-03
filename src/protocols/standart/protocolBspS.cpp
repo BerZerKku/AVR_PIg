@@ -59,7 +59,8 @@ bool clProtocolBspS::getData(bool pc) {
 					val = buf[B2];
 					break;
 				case GB_PARAM_COR_U:
-					val = buf[B1]*10 + buf[B2]/10;
+					val = ((int8_t) buf[B1])*10;
+					val += ((int8_t) buf[B2])/10;
 					break;
 				case GB_PARAM_COR_I:
 					val = TO_INT16(buf[B3], buf[B4]);
@@ -111,7 +112,7 @@ bool clProtocolBspS::getData(bool pc) {
 				case GB_PARAM_PRD_DR_COM_BLOCK:	// DOWN
 				case GB_PARAM_PRM_COM_BLOCK:	// DOWN
 				case GB_PARAM_PRM_DR_COM_BLOCK:
-					val = B1;
+					val = buf[B1 + (lp->getNumOfCurrSameParam() - 1) / 8];
 					break;
 				default:
 					val = buf[B1 + lp->getNumOfCurrSameParam() - 1];
@@ -120,11 +121,7 @@ bool clProtocolBspS::getData(bool pc) {
 
 			// Для битовых переменных передается указатель на начало данных,
 			// а для остальных текущее значение.
-			if (lp->getParamType() == Param::PARAM_BITES) {
-				lp->setValueBits(&buf[val]);
-			} else {
-				lp->setValue(val);
-			}
+			lp->setValue(val);
 		}
 	}
 
@@ -172,8 +169,8 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 					num = addCom(com, val, dop);
 					break;
 				case GB_SEND_COR_U:
-					break;
-				case GB_SEND_COR_I:
+				case GB_SEND_COR_I:	// DOWN
+					num = addCom(com, 3, sParam_->txComBuf.getBuferAddress());
 					break;
 				case GB_SEND_NO:
 					break;

@@ -2838,7 +2838,6 @@ void clMenu::lvlSetupParamGlb() {
 
 		sParam.local.clearParams();
 		if (device == AVANT_K400) {
-
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
 
@@ -3024,23 +3023,17 @@ void clMenu::lvlSetupDT() {
 					}
 				}
 				sParam.txComBuf.setInt8(BIN_TO_BCD(val), t);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getHour()),
-						3);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMinute()),
-						4);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getSecond()),
-						5);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getHour()), 3);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMinute()), 4);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getSecond()), 5);
 				sParam.txComBuf.addFastCom(EnterParam.com);
 			} else if (t <= 5) {
 				// ввод времени
 				// подменим сохраненную дату на текущую
 				sParam.txComBuf.setInt8(BIN_TO_BCD(val), t);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getYear()),
-						0);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMonth()),
-						1);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getDay()),
-						2);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getYear()), 0);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMonth()),	1);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getDay()), 2);
 				sParam.txComBuf.addFastCom(EnterParam.com);
 			}
 			EnterParam.setDisable();
@@ -4199,9 +4192,14 @@ void clMenu::printRange(uint8_t pos) {
 			break;
 
 		case Param::RANGE_U_COR:
-			min /= 10;
+			min = 0;
 			max /= 10;
-			str = PSTR("%d..%d%S");
+			str = PSTR("%d..±%d%S");
+			break;
+
+		case Param::RANGE_I_COR:
+			min = 0;
+			str= PSTR("%d..±%d%S");
 			break;
 	}
 
@@ -4243,11 +4241,12 @@ void clMenu::printValue(uint8_t pos) {
 				str = sParam.local.getListOfValues() + (val * STRING_LENGHT);
 				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str);
 				break;
+			case Param::PARAM_I_COR: // DOWN
 			case Param::PARAM_INT:
 				str = PSTR("%d%S");
 				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val, dim);
 				break;
-			case Param::PARAM_U:
+			case Param::PARAM_U_COR:
 				if (val >= 0) {
 					str = PSTR("%d.%d%S");
 				} else {
@@ -4272,18 +4271,16 @@ void clMenu::enterParameter() {
 			|| (sParam.local.getParam() == GB_PARAM_COR_I)
 			|| (sParam.glb.status.getRegime() == GB_REGIME_DISABLED)) {
 
-
-		int16_t max = lp->getMax();
-
 		switch(lp->getParamType()) {
 			case Param::PARAM_BITES: // DOWN
 			case Param::PARAM_LIST:
 				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
 				break;
+			case Param::PARAM_I_COR: // DOWN
 			case Param::PARAM_INT:
 				EnterParam.setEnable(MENU_ENTER_PARAM_INT);
 				break;
-			case Param::PARAM_U:
+			case Param::PARAM_U_COR:
 				EnterParam.setEnable(MENU_ENTER_PARAM_U_COR);
 				break;
 			case Param::PARAM_NO:
@@ -4292,20 +4289,45 @@ void clMenu::enterParameter() {
 
 		if (EnterParam.isEnable()) {
 			int16_t min = lp->getMin();
-			EnterParam.setValueRange(min, lp->getMax());
+			int16_t val = lp->getValue();
+			int16_t max = lp->getMax();
 
-			// В случае ошибочного значения параметра или если он не считан
-			// в текущее значение будет подставлен минимум
-			if (lp->getState() != LocalParams::STATE_NO_ERROR) {
-				EnterParam.setValue(min);
-			} else {
-				EnterParam.setValue(lp->getValue());
+			// Для ввода значений коррекции тока и напряжения
+			// минимальное значение делаем 0 , а начальное значение
+			// устанвливаем равным текущему напряжению/тока, а не коррекции.
+			// Если при этом коррекция ошибочна, то максимум тоже делаем 0.
+			// Чтобы был только один путь - сброить текущую коррекцию.
+			//
+			// Для остальных параметров в случае ошибки текущего значения,
+			// устанавливается минимум.
+			if (lp->getParamType() == Param::PARAM_I_COR) {
+				min = 0;
+				val = sParam.measParam.getCurrentOut();
+				if ((val < min) || (val > max)) {
+					val = 0;
+				}
+				if (lp->getState() != LocalParams::STATE_NO_ERROR) {
+					max = 0;
+				}
+			} else if (lp->getParamType() == Param::PARAM_U_COR) {
+				min = 0;
+				val = sParam.measParam.getVoltageOut();
+				if ((val < min) || (val > max)) {
+					val = 0;
+				}
+				if (lp->getState() != LocalParams::STATE_NO_ERROR) {
+					max = 0;
+				}
+			} else 	if (lp->getState() != LocalParams::STATE_NO_ERROR) {
+				val = min;
 			}
 
+			EnterParam.setValueRange(min, max);
+			EnterParam.setValue(val);
 			EnterParam.list = lp->getListOfValues();
 			EnterParam.setFract(lp->getFract());
 			EnterParam.setDisc(lp->getDisc());
-			EnterParam.setDopValue(lp->getSendDop());
+//			EnterParam.setDopValue(lp->getSendDop());
 			enterFunc = &clMenu::enterValue;
 		}
 	}
@@ -4322,55 +4344,83 @@ void clMenu::setupParam() {
 			eGB_COM com = sParam.local.getCom();
 
 			if (com != GB_COM_NO) {
+				uint8_t dop = sParam.local.getSendDop();
 
 				switch(sParam.local.getSendType()) {
-					case GB_SEND_INT8: {
+					case GB_SEND_INT8:
 						sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+						break;
 
-					}
-					break;
 					case GB_SEND_INT8_DOP:
-					case GB_SEND_DOP_INT8: {
+					case GB_SEND_DOP_INT8:
 						sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
-						sParam.txComBuf.setInt8(EnterParam.getDopValue(), 1);
+						sParam.txComBuf.setInt8(dop, 1);
+						break;
 
-					}
-					break;
-					case GB_SEND_INT16_BE: {
+					case GB_SEND_INT16_BE:
 						sParam.txComBuf.setInt8(EnterParam.getValue() >> 8, 0);
 						sParam.txComBuf.setInt8(EnterParam.getValue(), 1);
-					}
-					break;
-					case GB_SEND_DOP_BITES: {
+						break;
 
-						uint8_t val = sParam.local.getValueB();
+					case GB_SEND_DOP_BITES: {
+						uint8_t val = sParam.local.getValue();
 						uint8_t pos = sParam.local.getNumOfCurrSameParam() - 1;
 						if (EnterParam.getValue()) {
 							val |= (1 << (pos % 8));
 						} else {
 							val &= ~(1 << (pos % 8));
 						}
-						sDebug.byte1 = val;
-						sDebug.byte2 = 1 + pos/8;
 						sParam.txComBuf.setInt8(val, 0);
 						sParam.txComBuf.setInt8(1 + pos/8 , 1);
 					}
 					break;
-					case GB_SEND_COR_U: {
-					}
-					break;
-					case GB_SEND_COR_I: {
-					}
-					break;
-					case GB_SEND_NO: {
 
+					case GB_SEND_COR_U: {
+						// если текущее значение коррекции тока равно 0
+						// то передается сообщение с под.байтом равным 4
+						// означающим сброс коррекции
+						int16_t t =(int16_t) (EnterParam.getValue());
+						if (t == 0)
+							dop = 4;
+						else {
+							// новая коррекция =
+							// напряжение прибора - (напряжение с БСП - коррекция)
+							t -= (int16_t) (sParam.measParam.getVoltageOut());
+							t += sParam.local.getValue();
+						}
+						sParam.txComBuf.setInt8(dop, 0);
+						sParam.txComBuf.setInt8(t / 10, 1);
+						sParam.txComBuf.setInt8((t % 10) * 10, 2);
 					}
 					break;
+
+					case GB_SEND_COR_I: {
+						// если текущее значение коррекции тока равно 0
+						// то передается сообщение с под.байтом равным 5
+						// означающим сброс коррекции
+						int16_t t = static_cast<int16_t>(EnterParam.getValue());
+						if (t == 0)
+							dop = 5;
+						else {
+							// новая коррекция = ток прибора - (ток с БСП - коррекция)
+							t -= static_cast<int16_t>(sParam.measParam.getCurrentOut());
+							t += sParam.local.getValue();
+						}
+						sParam.txComBuf.setInt8(dop, 0);
+						sParam.txComBuf.setInt8((t >> 8), 1);
+						sParam.txComBuf.setInt8((t), 2);
+					}
+					break;
+
+					case GB_SEND_NO:
+						break;
 				}
 
-				com = (eGB_COM) (com + GB_COM_MASK_GROUP_WRITE_PARAM);
-				sParam.txComBuf.addFastCom(com);
-				sParam.txComBuf.setSendType(sParam.local.getSendType());
+				if (com != GB_COM_NO) {
+					com = (eGB_COM) (com + GB_COM_MASK_GROUP_WRITE_PARAM);
+					sParam.txComBuf.addFastCom(com);
+					sParam.txComBuf.setSendType(sParam.local.getSendType());
+				}
 			}
 			EnterParam.setDisable();
 		}

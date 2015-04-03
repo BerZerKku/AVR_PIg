@@ -83,25 +83,15 @@ void LocalParams::setValue(int16_t val) {
 	this->val = val;
 }
 
-// ”становка нового значени€ параметра содержащего набор бит
-void LocalParams::setValueBits(uint8_t *ptr) {
-	for(uint8_t i = 0; i < MAX_BUF_BITS_VALUES; i++) {
-		this->valB[i] = *ptr++;
-	}
-
-	state = STATE_NO_ERROR;
-}
-
 // ¬озвращает текущее значение параметра.
 int16_t LocalParams::getValue() const {
 	int16_t v = val;
 
 	if (getParamType() == Param::PARAM_BITES) {
 		uint8_t cur = getNumOfCurrSameParam() - 1;
-		uint8_t byte = cur / 8;
 		uint8_t bite = cur % 8;
 
-		v = ((valB[byte] & (1 << bite)) > 0) ? 1 : 0;
+		v = ((val & (1 << bite)) > 0) ? 1 : 0;
 	}
 
 	return v;
@@ -109,7 +99,7 @@ int16_t LocalParams::getValue() const {
 
 // ¬озвращает текущий байт дл€ битовых параметров.
 uint8_t LocalParams::getValueB() const {
-	return valB[(getNumOfCurrSameParam() - 1) / 8];
+	return val;
 }
 
 // ќчистка списка параметров.
