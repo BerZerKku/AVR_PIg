@@ -47,10 +47,6 @@ public:
 
 	/**	Возвращает текущий байт для битовых параметров.
 	 *
-	 *	Возвращает байт для битового параметра, в котором содержится текущий
-	 *	параметр. Например, для блокированной команды 9 будет возвращено
-	 *	значение \a valB[1].
-	 *
 	 * 	@return Текущий байт для битового параметра.
 	 */
 	uint8_t getValueB() const;
@@ -302,7 +298,6 @@ public:
 	 * 	@param numDevices Количество аппаратов в линии
 	 * 	@argval 2
 	 * 	@argval 3
-	 *
 	 */
 	void setNumDevices(uint8_t numDevices) {
 		this->numDevices = numDevices;
@@ -328,7 +323,7 @@ private:
 
 	uint8_t numComPrd;		///< Количество команд на передачу.
 
-	uint8_t numDevices;		///< Количество аппаратов в линии
+	uint8_t numDevices;		///< Количество аппаратов в линии.
 
 	/**	Проверка установленного значения параметра на корректность.
 	 *
@@ -337,11 +332,8 @@ private:
 	 *
 	 *	@see STATE_ERROR
 	 *	@see STATE_NO_ERROR
-	 *
-	 * 	@param val Новое значение параметра.
-	 *
 	 */
-	void checkValue(int16_t val);
+	void checkValue();
 
 	/**	Обновление параметра.
 	 *

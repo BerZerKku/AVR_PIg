@@ -1433,7 +1433,6 @@ static const Param* fParams[] PROGMEM  = {
 		&fPrmDrComToHf,
 		&fPrmComNums,
 		// Параметры интерфейса
-
 };
 
 #endif /* FLASHPARAMS_H_ */

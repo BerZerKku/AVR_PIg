@@ -77,10 +77,9 @@ void LocalParams::setValue(int16_t val) {
 
 	val = val * fract;
 	val = (val / disc) * disc;
-
-	checkValue(val);
-
 	this->val = val;
+
+	checkValue();
 }
 
 // ¬озвращает текущее значение параметра.
@@ -170,8 +169,8 @@ uint8_t LocalParams::getSendDop() const {
 	switch(getDependSame()) {
 		case Param::DEPEND_SAME_NO:
 			break;
-		case Param::DEPEND_SAME_ON_NUM_DEVS:// DOWN
-		case Param::DEPEND_SAME_ON_COM_PRD:	// DOWN
+		case Param::DEPEND_SAME_ON_NUM_DEVS: // DOWN
+		case Param::DEPEND_SAME_ON_COM_PRD:	 // DOWN
 		case Param::DEPEND_SAME_ON_COM_PRM:
 			dop += getNumOfCurrSameParam();
 			break;
@@ -181,7 +180,11 @@ uint8_t LocalParams::getSendDop() const {
 }
 
 //	ѕроверка установленного значени€ параметра на корректность.
-void LocalParams::checkValue(int16_t val) {
+void LocalParams::checkValue() {
+	// ƒл€ совместимости с битовыми переменными \a Param::PARAM_BITES
+	// провер€ем значение возвращаемое getValue(), а не работаем со значением
+	// переменной this->val на пр€мую.
+	int16_t val = getValue();
 	if ((val >= getMin()) && (val <= getMax())) {
 		state = STATE_NO_ERROR;
 	} else {
