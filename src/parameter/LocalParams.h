@@ -307,6 +307,14 @@ public:
 		this->numDevices = numDevices;
 	}
 
+	/**	¬озвращает текущее условие дл€ изменени€ параметра.
+	 *
+	 *	@return ”словие дл€ изменени€ параметра.
+	 */
+	Param::CHANGE_COND getChangeCond() const {
+		return (Param::CHANGE_COND) pgm_read_byte(&getPtrParam()->changeCond);
+	}
+
 private:
 
 	const Param** fps;		///< ћассив значений параметров.

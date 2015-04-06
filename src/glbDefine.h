@@ -381,7 +381,14 @@ enum eGB_PARAM {
 	GB_PARAM_PRM_DR_ENABLE,		///< трансляция ЦС
 	GB_PARAM_PRM_DR_COM_BLOCK,	///< блокированные команды ЦС
 	GB_PARAM_PRM_DR_COM_TO_HF,	///< команда ВЧ в ЦС
-	GB_PARAM_PRM_COM_NUMS		///< количество команд
+	GB_PARAM_PRM_COM_NUMS,		///< количество команд
+	// параметры интерфейса
+	GB_PARAM_INTF_INTERFACE,	///< интерфейс связи
+	GB_PARAM_INTF_PROTOCOL,		///< протокол
+	GB_PARAM_INTF_BAUDRATE,		///< скорость передачи
+	GB_PARAM_INTF_DATA_BITS,	///< биты данных
+	GB_PARAM_INTF_PARITY,		///< четность
+	GB_PARAM_INTF_STOP_BITS		///< стоповые биты
 };
 
 /// Значения команд управления

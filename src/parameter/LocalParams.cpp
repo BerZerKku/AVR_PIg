@@ -102,7 +102,7 @@ uint8_t LocalParams::getValueB() const {
 }
 
 // Очистка списка параметров.
-void  LocalParams::clearParams() {
+void LocalParams::clearParams() {
 	param[0] = GB_PARAM_NULL_PARAM;
 	currParam = 0;
 	val = 0;
@@ -131,7 +131,7 @@ int16_t LocalParams::getMax() const {
 
 	Param::PARAM_TYPE type = getParamType();
 	if ((type == Param::PARAM_LIST) || (type == Param::PARAM_BITES)) {
-		max = getMin() + max  - 1;
+		max = getMin() + max - 1;
 	}
 
 	return max;

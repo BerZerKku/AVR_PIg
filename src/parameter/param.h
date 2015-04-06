@@ -55,17 +55,23 @@ struct Param {
 
 	/// Зависимость максимума параметра.
 	enum DEPEND_MAX {
-		DEPEND_MAX_NO,
-		DEPEND_MAX_ON_COM_PRD,
-		DEPEND_MAX_ON_NUM_DEVS
+		DEPEND_MAX_NO,				///< Нет зависимости.
+		DEPEND_MAX_ON_COM_PRD,		///< Зависит от количества команд на ПРД.
+		DEPEND_MAX_ON_NUM_DEVS		///< Зависит от количества команд на ПРМ.
 	};
 
-	/// Зависимость повторов параметра
+	/// Зависимость повторов параметра.
 	enum DEPEND_SAME {
-		DEPEND_SAME_NO,
-		DEPEND_SAME_ON_NUM_DEVS,
-		DEPEND_SAME_ON_COM_PRD,
-		DEPEND_SAME_ON_COM_PRM
+		DEPEND_SAME_NO,				///< Нет зависимости.
+		DEPEND_SAME_ON_NUM_DEVS,	///< Зависит от количества аппаратов в линии.
+		DEPEND_SAME_ON_COM_PRD,		///< Зависит от количества команд на ПРД.
+		DEPEND_SAME_ON_COM_PRM		///< Зависит от количества команд на ПРМ.
+	};
+
+	/// Условие для изменения параметра.
+	enum CHANGE_COND {
+		CHANGE_COND_NO,			///< Нет условий.
+		CHANGE_COND_REG_DISABLE	///< Изменить можно только в режиме "Выведен".
 	};
 
 	char name[NAME_PARAM_LENGHT];	///< Имя параметра.
@@ -82,10 +88,11 @@ struct Param {
 	uint8_t disc;		///< Дискретность.
 	uint8_t fract;		///< Множитель для обмена по протоколу с БСП.
 
-	eGB_SEND_TYPE send;	///< Тип параметра для сохранения нового значения.
-	uint8_t sendDop;	///< Байт дополнительной информации для сохранения.
+	eGB_SEND_TYPE send;		///< Тип параметра для сохранения нового значения.
+	uint8_t sendDop;		///< Байт дополнительной информации для сохранения.
 	DEPEND_MAX dependMax;	///< Зависимость максимума текущего параметра.
 	DEPEND_SAME dependSame;	///< Зависимость повторений текущего параметра.
+	CHANGE_COND changeCond;	///< Условие для изменения параметра.
 };
 
 #endif /* PARAM_H_ */

@@ -66,7 +66,7 @@ static const char fcPrmType[][STRING_LENGHT] PROGMEM = {
 		"пассивный"		///< 2
 };
 
-/// Тип совместимости (параметр Защиты).
+/// Тип совместимости (параметр Защиты). Связан с eGB_COMPATIBILITY.
 static const char fcCompatibility[][STRING_LENGHT] PROGMEM = {
 // 		 1234567890
 		"АВАНТ Р400",	///< 0
@@ -74,10 +74,11 @@ static const char fcCompatibility[][STRING_LENGHT] PROGMEM = {
 		"АВЗК-80",		///< 2
 		"ПВЗУ-Е",		///< 3
 		"ПВЗЛ",			///< 4
-		"ЛИНИЯ-Р"		///< 5
+		"ЛИНИЯ-Р",		///< 5
+		"ПВЗК"			///< 6
 };
 
-/// Тип совместимости (параметр К400).
+/// Тип совместимости (параметр К400). Связан с eGB_COMP_K400.
 static const char fcCompK400[][STRING_LENGHT] PROGMEM = {
 // 		 1234567890
 		"АВАНТ",		///< 0
@@ -126,6 +127,53 @@ static char fcPvzueParity[][STRING_LENGHT] PROGMEM = {
 		"выкл."			///< 2
 };
 
+/// Интерфейс связи (параметр Интерфейс).
+static char fcInterface[TInterface::MAX][STRING_LENGHT] PROGMEM = {
+//	 	 1234567890
+		"USB",			///< TInterface::USB
+		"RS485"			///< TInterface::RS485
+};
+
+// Протокол (параметр Интерфейс).
+static char fcProtocol[TProtocol::MAX ][STRING_LENGHT] PROGMEM = {
+//	 	 1234567890
+		"СТАНДАРТ",		///< TProtocol::STANDART
+		"MODBUS",		///< TProtocol::MODBUS
+		"МЭК-101"		///< TProtocol::IEC_101
+};
+
+// Скорость, бит/с (параметр Интерфейс).
+static char fcBaudRate[TBaudRate::MAX][STRING_LENGHT] PROGMEM = {
+//		 1234567890
+		"600",			///< TBaudRate::_600
+		"1200",			///< TBaudRate::_1200
+		"2400",			///< TBaudRate::_2400
+		"4800",			///< TBaudRate::_4800
+		"9600",			///< TBaudRate::_9600
+		"19200"			///< TBaudRate::_19200
+};
+
+/// Количество бит данных (параметр Интерфейс).
+static char fcDataBits[TDataBits::MAX][STRING_LENGHT] PROGMEM = {
+//		 1234567890
+		"8"				///< TDataBits::_8
+};
+
+/// Четность (параметр Интерфейс).
+static char fcParity[TParity::MAX][STRING_LENGHT] PROGMEM = {
+//		 1234567890
+		"нет",			///< TParity::NONE
+		"чет",			///< TParity::EVEN
+		"нечет"			///< TParity::ODD
+};
+
+/// Стоповые биты (параметр Интерфейс).
+static char fcStopBits[TStopBits::MAX][STRING_LENGHT] PROGMEM = {
+//		 1234567890
+		"1",			///< TStopBits::ONE
+		"2"				///< TStopBits::TWO
+};
+
 // параметр заглушка
 static const Param fNullParam = {
 		"",						// название параметра
@@ -142,7 +190,8 @@ static const Param fNullParam = {
 		GB_SEND_NO,				// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // синхронизация часов
@@ -161,7 +210,8 @@ static const Param fTimeSynch PROGMEM = {
 		GB_SEND_INT8_DOP,		// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // номер аппарата
@@ -180,8 +230,9 @@ static const Param fNumOfDevice PROGMEM = {
 		1,						// множитель для стандартного протокола
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
-		Param::DEPEND_MAX_ON_NUM_DEVS,	// тип параметра для сохранения новго значения
-		Param::DEPEND_SAME_NO	// байт дополнительной информации для сохранения
+		Param::DEPEND_MAX_ON_NUM_DEVS,	// заивимость максимума
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // контроль выходного сигнала
@@ -200,7 +251,8 @@ static const Param fOutCheck PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // порог предупреждения
@@ -219,7 +271,8 @@ static const Param fWarnThd PROGMEM = {
 		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // порог предупреждения по КЧ (для РЗСК)
@@ -238,7 +291,8 @@ static const Param fWarnThdCf PROGMEM = {
 		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // время перезапуска
@@ -257,7 +311,8 @@ static const Param fTimeRerun PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // удержание реле команд ПРД
@@ -276,7 +331,8 @@ static const Param fComPrdKeep PROGMEM = {
 		GB_SEND_INT8_DOP,		// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // удержание реле команд ПРМ
@@ -295,7 +351,8 @@ static const Param fComPrmKeep PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // загрубление чувствительности ПРМ
@@ -317,7 +374,8 @@ static const Param fInDec PROGMEM = {
 		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_ON_NUM_DEVS	// зависимость повторений
+		Param::DEPEND_SAME_ON_NUM_DEVS,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // адрес в локальной сети
@@ -336,7 +394,8 @@ static const Param fNetAddress PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // номинальноые выходное напряжение
@@ -355,7 +414,8 @@ static const Param fUOutNom PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // частота
@@ -374,7 +434,8 @@ static const Param fFreq PROGMEM = {
 		GB_SEND_INT16_BE,		// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // совместимость (Р400, Р400м)
@@ -393,7 +454,8 @@ static const Param fCompP400 PROGMEM = {
 		GB_SEND_INT8_DOP,		// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // снижение ответа АК (ПВЗЛ)
@@ -412,7 +474,8 @@ static const Param fInDecAcAnswer PROGMEM = {
 		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // тип детектора
@@ -431,7 +494,8 @@ static const Param fDetector PROGMEM = {
 		GB_SEND_INT8_DOP,		// тип параметра для сохранения новго значения
 		2,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // коррекция напряжения
@@ -450,7 +514,8 @@ static const Param fCorU PROGMEM = {
 		GB_SEND_COR_U,			// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_NO 	// условие для изменения параметра
 };
 
 // коррекция тока
@@ -469,7 +534,8 @@ static const Param fCorI PROGMEM = {
 		GB_SEND_COR_I,			// тип параметра для сохранения новго значения
 		2,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_NO  	// условие для изменения параметра
 };
 
 // протокол обмена (ПВЗУ-Е)
@@ -488,7 +554,8 @@ static const Param fPvzueProtocol PROGMEM =	{
 		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // признак четности (ПВЗУ-Е)
@@ -507,7 +574,8 @@ static const Param fPvzueParity PROGMEM = {
 		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
 		2,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // допустимые провалы (ПВЗУ-Е)
@@ -526,7 +594,8 @@ static const Param fPvzueFail PROGMEM = {
 		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
 		3,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // порог по помехе (ПВЗУ-Е)
@@ -545,7 +614,8 @@ static const Param fPvzueNoiseThd PROGMEM = {
 		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
 		4,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // допустимая помеха (ПВЗУ-Е)
@@ -564,7 +634,8 @@ static const Param fPvzueNoiseLvl PROGMEM = {
 		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
 		5,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // тип автоконтроля (ПВЗУ-Е)
@@ -583,7 +654,8 @@ static const Param fPvzueAcType PROGMEM = {
 		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
 		6,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // период беглого режима АК (ПВЗУ-Е)
@@ -602,7 +674,8 @@ static const Param fPvzueAcPeriod PROGMEM = {
 		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
 		7,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 
@@ -622,7 +695,8 @@ static const Param fPvzueAcPerRe PROGMEM = {
 		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
 		8,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // резервирование
@@ -641,7 +715,8 @@ static const Param fBackup PROGMEM = {
 		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // совместимость К400
@@ -660,7 +735,8 @@ static const Param fCompK400 PROGMEM = {
 		GB_SEND_INT8_DOP,		// тип параметра для сохранения новго значения
 		2,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // тип линии (кол-во аппаратов в линии)
@@ -679,7 +755,8 @@ static const Param fNumOfDevices PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 
@@ -699,7 +776,8 @@ static const Param fTmK400 PROGMEM = {
 		GB_SEND_INT8_DOP,		// тип параметра для сохранения новго значения
 		3,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 
@@ -719,7 +797,8 @@ static const Param fDefType	PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // дополнительное время без манипуляции
@@ -738,7 +817,8 @@ static const Param fTimeNoMan PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // перекрытие импульсов
@@ -757,7 +837,8 @@ static const Param fOverlap PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // перекрытие импульсов Р400
@@ -776,7 +857,8 @@ static const Param fOverlapP400 PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
 // компенсация задержки в линии
@@ -797,7 +879,8 @@ static const Param fDelay PROGMEM = {
 		GB_SEND_INT8_DOP,		// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_ON_NUM_DEVS	// зависимость повторений
+		Param::DEPEND_SAME_ON_NUM_DEVS,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // порог предупреждения по РЗ
@@ -816,7 +899,8 @@ static const Param fWarnThdRz PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // загрубление чувствительности
@@ -835,7 +919,8 @@ static const Param fSensDec PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // загрубление чувствительности РЗ
@@ -856,7 +941,8 @@ static const Param fSensDecRz PROGMEM = {
 		GB_SEND_INT8_DOP,		// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_ON_NUM_DEVS	// зависимость повторений
+		Param::DEPEND_SAME_ON_NUM_DEVS,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметрай
 };
 
 // тип приемника
@@ -875,7 +961,8 @@ static const Param fPrmType PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // снижение уровня АК
@@ -894,7 +981,8 @@ static const Param fAcInDec PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // частота ПРД
@@ -913,7 +1001,8 @@ static const Param fFreqPrd PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // частота ПРМ
@@ -932,7 +1021,8 @@ static const Param fFreqPrm PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // сдвиг переднего фронта ПРД
@@ -951,7 +1041,8 @@ static const Param fShiftFront PROGMEM = {
 		GB_SEND_INT8_DOP,		// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // сдвиг заднего фронта ПРД относительно сигнала МАН (пуск)
@@ -970,7 +1061,8 @@ static const Param fShiftBack PROGMEM = {
 		GB_SEND_INT8_DOP,		// тип параметра для сохранения новго значения
 		2,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // сдвиг ПРМ
@@ -989,7 +1081,8 @@ static const Param fShiftPrm PROGMEM = {
 		GB_SEND_INT8_DOP,		// тип параметра для сохранения новго значения
 		3,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // сдвиг ВЧ ПРД от ПУСК
@@ -1008,7 +1101,8 @@ static const Param fShiftPrd PROGMEM = {
 		GB_SEND_INT8_DOP,		// тип параметра для сохранения новго значения
 		4,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 
@@ -1028,7 +1122,8 @@ static const Param fPrdInDelay PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // длительность команды ВЧ
@@ -1047,7 +1142,8 @@ static const Param fPrdDurationL PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения						// байт дополнительной информации для сохранения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений						// байт дополнительной информации для сохранения
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра					// байт дополнительной информации для сохранения
 };
 
 // длительность команды ОПТИКА
@@ -1066,7 +1162,8 @@ static const Param fPrdDurationO PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // тестовая команда
@@ -1085,7 +1182,8 @@ static const Param fPrdTestCom PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // следящие команды
@@ -1106,7 +1204,8 @@ static const Param fPrdComLong PROGMEM = {
 		GB_SEND_DOP_BITES,		// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_ON_COM_PRD	// зависимость повторений
+		Param::DEPEND_SAME_ON_COM_PRD,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // блокированные команды
@@ -1127,7 +1226,8 @@ static const Param fPrdComBlock PROGMEM = {
 		GB_SEND_DOP_BITES,		// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_ON_COM_PRD	// зависимость повторений
+		Param::DEPEND_SAME_ON_COM_PRD,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // трансляция ЦС
@@ -1146,7 +1246,8 @@ static const Param fPrdDrEnable PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // блокированные команды ЦС
@@ -1167,7 +1268,8 @@ static const Param fPrdDrComBlock PROGMEM = {
 		GB_SEND_DOP_BITES,		// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_ON_COM_PRD	// зависимость повторений
+		Param::DEPEND_SAME_ON_COM_PRD,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // количество команд
@@ -1186,7 +1288,8 @@ static const Param fPrdComNums PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // количество команд группы А
@@ -1206,7 +1309,8 @@ static const Param fPrdComNumsA PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_ON_COM_PRD,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 
@@ -1226,7 +1330,8 @@ static const Param fPrmTimeOn PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // блокированные команды
@@ -1247,7 +1352,8 @@ static const Param fPrmComBlock PROGMEM = {
 		GB_SEND_DOP_BITES,		// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_ON_COM_PRM	// зависимость повторений
+		Param::DEPEND_SAME_ON_COM_PRM,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // задержка на выключение
@@ -1268,7 +1374,8 @@ static const Param fPrmTimeOff PROGMEM = {
 		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_ON_COM_PRM	// зависимость повторений
+		Param::DEPEND_SAME_ON_COM_PRM,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // трансляция ЦС
@@ -1287,7 +1394,8 @@ static const Param fPrmDrEnable PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // блокированные команды ЦС
@@ -1308,7 +1416,8 @@ static const Param fPrmDrComBlock PROGMEM = {
 		GB_SEND_DOP_BITES,		// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_ON_COM_PRM	// зависимость повторений
+		Param::DEPEND_SAME_ON_COM_PRM,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // команда ВЧ в ЦС
@@ -1329,7 +1438,8 @@ static const Param fPrmDrComToHf PROGMEM = {
 		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
 		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_ON_COM_PRM	// зависимость повторений
+		Param::DEPEND_SAME_ON_COM_PRM,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
 // количество команд
@@ -1341,14 +1451,135 @@ static const Param fPrmComNums PROGMEM = {
 		Param::DIM_NO,			// размерность
 		fcNullBuf,				// массив значений
 		1,						// кол-во повторений параметра
-		4,						// минимальное ыыыыыыызначение
+		4,						// минимальное значение
 		32,						// максимальное значение
 		4,						// дискретность
 		4,						// множитель для стандартного протокола
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO	// зависимость повторений
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+};
+
+// интерфейс связи
+static const Param fIntfInterface PROGMEM = {
+		"Интерфейс связи",		// название параметра
+		GB_COM_NO,				// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcInterface[0],			// массив значений
+		1,						// кол-во повторений параметра
+		TInterface::MIN,		// минимальное значение
+		SIZE_OF(fcInterface),	// максимальное значение
+		1,						// дискретность
+		1,						// множитель для стандартного протокола
+		GB_SEND_NO,				// тип параметра для сохранения новго значения
+		0,						// байт дополнительной информации для сохранения
+		Param::DEPEND_MAX_NO,	// заивимость максимума
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_NO 	// условие для изменения параметра
+};
+
+// четность - интерфейс связи
+static const Param fIntfProtocol PROGMEM = {
+		"Протокол",				// название параметра
+		GB_COM_NO,				// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcProtocol[0],			// массив значений
+		1,						// кол-во повторений параметра
+		TProtocol::MIN,			// минимальное значение
+		SIZE_OF(fcProtocol),	// максимальное значение
+		1,						// дискретность
+		1,						// множитель для стандартного протокола
+		GB_SEND_NO,				// тип параметра для сохранения новго значения
+		0,						// байт дополнительной информации для сохранения
+		Param::DEPEND_MAX_NO,	// заивимость максимума
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_NO 	// условие для изменения параметра
+};
+
+// скорость связи - интерфейс связи
+static const Param fIntfBaudrate PROGMEM = {
+		"Скорость передачи",	// название параметра
+		GB_COM_NO,				// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcBaudRate[0],			// массив значений
+		1,						// кол-во повторений параметра
+		TBaudRate::MIN,			// минимальное значение
+		SIZE_OF(fcBaudRate),	// максимальное значение
+		1,						// дискретность
+		1,						// множитель для стандартного протокола
+		GB_SEND_NO,				// тип параметра для сохранения новго значения
+		0,						// байт дополнительной информации для сохранения
+		Param::DEPEND_MAX_NO,	// заивимость максимума
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_NO 	// условие для изменения параметра
+};
+
+// количество битов данных - интерфейс связи
+static const Param fIntfDataBits PROGMEM = {
+		"Биты данных",			// название параметра
+		GB_COM_NO,				// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcDataBits[0],			// массив значений
+		1,						// кол-во повторений параметра
+		TDataBits::MIN,			// минимальное значение
+		SIZE_OF(fcDataBits),	// максимальное значение
+		1,						// дискретность
+		1,						// множитель для стандартного протокола
+		GB_SEND_NO,				// тип параметра для сохранения новго значения
+		0,						// байт дополнительной информации для сохранения
+		Param::DEPEND_MAX_NO,	// заивимость максимума
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_NO 	// условие для изменения параметра
+};
+
+// четность - интерфейс связи
+static const Param fIntfParity PROGMEM = {
+		"Четность",				// название параметра
+		GB_COM_NO,				// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcParity[0],			// массив значений
+		1,						// кол-во повторений параметра
+		TParity::MIN,			// минимальное значение
+		SIZE_OF(fcParity),		// максимальное значение
+		1,						// дискретность
+		1,						// множитель для стандартного протокола
+		GB_SEND_NO,				// тип параметра для сохранения новго значения
+		0,						// байт дополнительной информации для сохранения
+		Param::DEPEND_MAX_NO,	// заивимость максимума
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_NO 	// условие для изменения параметра
+};
+
+// число стоповых битов - интерфейс связи
+static const Param fIntfStopBits PROGMEM = {
+		"Стоповые биты",		// название параметра
+		GB_COM_NO,				// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcStopBits[0],			// массив значений
+		1,						// кол-во повторений параметра
+		TStopBits::MIN,			// минимальное значение
+		SIZE_OF(fcStopBits),	// максимальное значение
+		1,						// дискретность
+		1,						// множитель для стандартного протокола
+		GB_SEND_NO,				// тип параметра для сохранения новго значения
+		0,						// байт дополнительной информации для сохранения
+		Param::DEPEND_MAX_NO,	// заивимость максимума
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_NO 	// условие для изменения параметра
 };
 
 // Массив параметров (связан с eGB_PARAM)
@@ -1421,6 +1652,12 @@ static const Param* fParams[] PROGMEM  = {
 		&fPrmDrComToHf,
 		&fPrmComNums,
 		// Параметры интерфейса
+		&fIntfInterface,
+		&fIntfProtocol,
+		&fIntfBaudrate,
+		&fIntfDataBits,
+		&fIntfParity,
+		&fIntfStopBits
 };
 
 #endif /* FLASHPARAMS_H_ */

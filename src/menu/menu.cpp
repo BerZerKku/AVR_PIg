@@ -91,9 +91,9 @@ clMenu::clMenu() {
 	sParam.prd.status.stateText[MAX_NUM_DEVICE_STATE] = fcUnknownSost;
 
 	// назначим имена устройствам
-	sParam.def.status.name = fcDeviceName00;
-	sParam.prm.status.name = fcDeviceName01;
-	sParam.prd.status.name = fcDeviceName02;
+	sParam.def.status.name = PSTR("ЗАЩ"); 	// fcDeviceName00;
+	sParam.prm.status.name = PSTR("ПРМ");	//fcDeviceName01;
+	sParam.prd.status.name = PSTR("ПРД");	//fcDeviceName02;
 
 #ifdef DEBUG
 	// в режиме отладки включена постоянная подсветка
@@ -1952,6 +1952,7 @@ void clMenu::lvlControl() {
 			Punkts_.add(punkt07);// далее выбирается в зависимости от текущего
 			// сброс своего есть во всех аппаратах и совместимостях
 			Punkts_.add(punkt03);
+			// TODO для ПВЗК
 			if (compatibility == GB_COMPATIBILITY_AVANT) {
 				if (numDevices == GB_NUM_DEVICES_2) {
 					Punkts_.add(punkt04);
@@ -2649,8 +2650,8 @@ void clMenu::lvlSetupParamDef() {
 			// совместимости
 			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
 
-			sParam.local.addParam(GB_PARAM_DEF_TYPE);
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES);
+			sParam.local.addParam(GB_PARAM_DEF_TYPE);
 			sParam.local.addParam(GB_PARAM_TIME_NO_MAN);
 			sParam.local.addParam(GB_PARAM_SHIFT_FRONT);
 			sParam.local.addParam(GB_PARAM_SHIFT_BACK);
@@ -2955,6 +2956,83 @@ void clMenu::lvlSetupParamGlb() {
 	}
 }
 
+/** Уровень меню. Интерфейс
+ * 	@param Нет
+ * 	@return Нет
+ */
+void clMenu::lvlSetupInterface() {
+	static char title[] PROGMEM = "Настройка\\Интерфейс";
+	static char punkt1[] PROGMEM = "Интерфейс связи";
+
+	static char punkt2[] PROGMEM = "Протокол";
+	static char punkt3[] PROGMEM = "Скорость передачи";
+	static char punkt4[] PROGMEM = "Биты данных";
+	static char punkt5[] PROGMEM = "Четность";
+	static char punkt6[] PROGMEM = "Стоповые биты";
+	static char punkt7[] PROGMEM = "Сетевой адрес";
+
+	if (lvlCreate_) {
+		lvlCreate_ = false;
+		EnterParam.setDisable();
+
+		vLCDclear();
+		vLCDdrawBoard(lineParam_);
+
+		sParam.txComBuf.clear();
+
+		sParam.local.clearParams();
+		// если установлена связь по Локальной сети
+		// появляются настройки портов
+		// в USB всегда: 19200 бит/с, 8 бит, 2 стоп-бита, четность-нет
+		sParam.local.addParam(GB_PARAM_INTF_INTERFACE);
+		if (sParam.Uart.Interface.get() == TInterface::RS485) {
+			sParam.local.addParam(GB_PARAM_INTF_PROTOCOL);
+			sParam.local.addParam(GB_PARAM_NET_ADDRESS);
+			sParam.local.addParam(GB_PARAM_INTF_BAUDRATE);
+			sParam.local.addParam(GB_PARAM_INTF_DATA_BITS);
+			sParam.local.addParam(GB_PARAM_INTF_PARITY);
+			sParam.local.addParam(GB_PARAM_INTF_STOP_BITS);
+		}
+	}
+
+	snprintf_P(&vLCDbuf[0], 21, title);
+
+	LocalParams *lp = &sParam.local;
+	if (lp->getCom() == GB_COM_NO) {
+		// Для считывания текущего значения параметра хранящегося в ЕЕПРОМ
+		eGB_PARAM param = lp->getParam();
+		if (param == GB_PARAM_INTF_INTERFACE) {
+			lp->setValue(sParam.Uart.Interface.get());
+		} else if (param == GB_PARAM_INTF_PROTOCOL) {
+			lp->setValue(sParam.Uart.Protocol.get());
+		} else if (param == GB_PARAM_INTF_BAUDRATE) {
+			lp->setValue(sParam.Uart.BaudRate.get());
+		} else if (param == GB_PARAM_INTF_DATA_BITS) {
+			lp->setValue(sParam.Uart.DataBits.get());
+		} else if (param == GB_PARAM_INTF_PARITY) {
+			lp->setValue(sParam.Uart.Parity.get());
+		} else if (param == GB_PARAM_INTF_STOP_BITS) {
+			lp->setValue(sParam.Uart.StopBits.get());
+		}
+	}
+
+	setupParam();
+
+	switch(key_) {
+		case KEY_CANCEL:
+			lvlMenu = &clMenu::lvlSetupParam;
+			lvlCreate_ = true;
+			break;
+		case KEY_MENU:
+			lvlMenu = &clMenu::lvlSetup;
+			lvlCreate_ = true;
+			break;
+
+		default:
+			break;
+	}
+}
+
 /** Уровень меню. Настройка дата/время.
  * 	@param Нет
  * 	@return Нет
@@ -3113,218 +3191,6 @@ void clMenu::lvlSetupDT() {
 	}
 }
 
-/** Уровень меню. Интерфейс
- * 	@param Нет
- * 	@return Нет
- */
-void clMenu::lvlSetupInterface() {
-	static char title[] PROGMEM = "Настройка\\Интерфейс";
-	static char punkt1[] PROGMEM = "Интерфейс связи";
-
-	static char punkt2[] PROGMEM = "Протокол";
-	static char punkt3[] PROGMEM = "Скорость передачи";
-	static char punkt4[] PROGMEM = "Биты данных";
-	static char punkt5[] PROGMEM = "Четность";
-	static char punkt6[] PROGMEM = "Стоповые биты";
-	static char punkt7[] PROGMEM = "Сетевой адрес";
-
-	if (lvlCreate_) {
-		lvlCreate_ = false;
-
-		cursorLine_ = 1;
-		cursorEnable_ = true;
-
-		lineParam_ = 1;
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
-
-		Punkts_.clear();
-		Punkts_.add(punkt1);
-		// если установлена связь по Локальной сети
-		// появляются настройки портов
-		// в USB всегда: 19200 бит/с, 8 бит, 2 стоп-бита, четность-нет
-		if (sParam.Uart.Interface.get() == TInterface::RS485) {
-			Punkts_.add(punkt2);
-			Punkts_.add(punkt7, GB_COM_GET_NET_ADR);
-			Punkts_.add(punkt3);
-			Punkts_.add(punkt4);
-			Punkts_.add(punkt5);
-			Punkts_.add(punkt6);
-		}
-
-		// дополнительные команды
-		sParam.txComBuf.clear();
-	}
-
-	// подмена команды, на команду текущего уровня меню.
-	sParam.txComBuf.addCom1(Punkts_.getCom(cursorLine_ - 1), 0);
-
-	PGM_P name = Punkts_.getName(cursorLine_ - 1);
-
-	snprintf_P(&vLCDbuf[0], 21, title);
-
-	uint8_t poz = 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_,
-			Punkts_.getMaxNumPunkts());
-
-	poz = 40;
-	snprintf_P(&vLCDbuf[poz], 21, name);
-
-	// вывод надписи "Диапазон:" и переход к выводу самого диапазона
-	// ВСЕ СПИСКИ
-	poz = 80;
-	poz += snprintf_P(&vLCDbuf[poz], 11, fcRange);
-
-	if (name == punkt7) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_NET_ADR_MIN,
-				GLB_NET_ADR_MAX, "");
-	} else {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
-	}
-
-	if (EnterParam.isEnable()) {
-		// ввод нового значения параметра
-		eMENU_ENTER_PARAM stat = enterValue();
-
-		if (stat == MENU_ENTER_PARAM_READY) {
-			if (name == punkt1) {
-				uint8_t tmp = EnterParam.getValueEnter();
-				TInterface::INTERFACE val;
-				val = static_cast<TInterface::INTERFACE>(tmp);
-				// если интерфейс сменился, обновим меню
-				if (val != sParam.Uart.Interface.get()) {
-					sParam.Uart.Interface.set(val);
-					lvlCreate_ = true;
-				}
-			} else if (name == punkt2) {
-				uint8_t tmp = EnterParam.getValueEnter();
-				TProtocol::PROTOCOL val;
-				val = static_cast<TProtocol::PROTOCOL>(tmp);
-				sParam.Uart.Protocol.set(val);
-			} else if (name == punkt3) {
-				uint8_t tmp = EnterParam.getValueEnter();
-				TBaudRate::BAUD_RATE val;
-				val = static_cast<TBaudRate::BAUD_RATE>(tmp);
-				sParam.Uart.BaudRate.set(val);
-			} else if (name == punkt4) {
-				uint8_t tmp = EnterParam.getValueEnter();
-				TDataBits::DATA_BITS val;
-				val = static_cast<TDataBits::DATA_BITS>(tmp);
-				sParam.Uart.DataBits.set(val);
-			} else if (name == punkt5) {
-				uint8_t tmp = EnterParam.getValueEnter();
-				TParity::PARITY val;
-				val = static_cast<TParity::PARITY>(tmp);
-				sParam.Uart.Parity.set(val);
-			} else if (name == punkt6) {
-				uint8_t tmp = EnterParam.getValueEnter();
-				TStopBits::STOP_BITS val;
-				val = static_cast<TStopBits::STOP_BITS>(tmp);
-				sParam.Uart.StopBits.set(val);
-			} else if (name == punkt7) {
-				sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-				sParam.txComBuf.addFastCom(EnterParam.com);
-			}
-			EnterParam.setDisable();
-		}
-	} else {
-		// вывод надписи "Значение:" и переход к выводу самого значения
-		poz = 100;
-		poz += snprintf_P(&vLCDbuf[poz], 11, fcValue);
-		if (name == punkt1) {
-			uint8_t val = static_cast<uint8_t>(sParam.Uart.Interface.get());
-			snprintf_P(&vLCDbuf[poz], 11, fcInterface[val]);
-		} else if (name == punkt2) {
-			uint8_t val = static_cast<uint8_t>(sParam.Uart.Protocol.get());
-			snprintf_P(&vLCDbuf[poz], 11, fcProtocol[val]);
-		} else if (name == punkt3) {
-			uint8_t val = static_cast<uint8_t>(sParam.Uart.BaudRate.get());
-			snprintf_P(&vLCDbuf[poz], 11, fcBaudRate[val]);
-		} else if (name == punkt4) {
-			uint8_t val = static_cast<uint8_t>(sParam.Uart.DataBits.get());
-			snprintf_P(&vLCDbuf[poz], 11, fcDataBits[val]);
-		} else if (name == punkt5) {
-			uint8_t val = static_cast<uint8_t>(sParam.Uart.Parity.get());
-			snprintf_P(&vLCDbuf[poz], 11, fcParity[val]);
-		} else if (name == punkt6) {
-			uint8_t val = static_cast<uint8_t>(sParam.Uart.StopBits.get());
-			snprintf_P(&vLCDbuf[poz], 11, fcStopBits[val]);
-		} else if (name == punkt7) {
-			snprintf(&vLCDbuf[poz], 11, "%u", sParam.glb.getNetAddress());
-		}
-	}
-
-	switch(key_) {
-		case KEY_UP:
-			cursorLineUp();
-			break;
-		case KEY_DOWN:
-			cursorLineDown();
-			break;
-
-		case KEY_CANCEL:
-			lvlMenu = &clMenu::lvlSetup;
-			lvlCreate_ = true;
-			break;
-		case KEY_MENU:
-			lvlMenu = &clMenu::lvlStart;
-			lvlCreate_ = true;
-			break;
-
-		case KEY_ENTER:
-			enterFunc = &clMenu::enterValue;
-			// а также настройка интерфейса связи
-			// остальные параметры только в "Выведен"
-			if (name == punkt1) {
-				// интерфейс связи
-				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-				EnterParam.setValueRange(TInterface::MIN, TInterface::MAX - 1);
-				EnterParam.setValue(sParam.Uart.Interface.get());
-				EnterParam.list = fcInterface[0];
-				EnterParam.com = GB_COM_NO;
-			} else if (name == punkt2) {
-				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-				EnterParam.setValueRange(TProtocol::MIN, TProtocol::MAX - 1);
-				EnterParam.setValue(sParam.Uart.Protocol.get());
-				EnterParam.list = fcProtocol[0];
-				EnterParam.com = GB_COM_NO;
-			} else if (name == punkt3) {
-				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-				EnterParam.setValueRange(TBaudRate::MIN, TBaudRate::MAX - 1);
-				EnterParam.setValue(sParam.Uart.BaudRate.get());
-				EnterParam.list = fcBaudRate[0];
-				EnterParam.com = GB_COM_NO;
-			} else if (name == punkt4) {
-				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-				EnterParam.setValueRange(TDataBits::MIN, TDataBits::MAX - 1);
-				EnterParam.setValue(sParam.Uart.DataBits.get());
-				EnterParam.list = fcDataBits[0];
-				EnterParam.com = GB_COM_NO;
-			} else if (name == punkt5) {
-				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-				EnterParam.setValueRange(TParity::MIN, TParity::MAX - 1);
-				EnterParam.setValue(sParam.Uart.Parity.get());
-				EnterParam.list = fcParity[0];
-				EnterParam.com = GB_COM_NO;
-			} else if (name == punkt6) {
-				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-				EnterParam.setValueRange(TStopBits::MIN, TStopBits::MAX - 1);
-				EnterParam.setValue(sParam.Uart.StopBits.get());
-				EnterParam.list = fcStopBits[0];
-				EnterParam.com = GB_COM_NO;
-			} else if (name == punkt7) {
-				EnterParam.setEnable();
-				EnterParam.setValueRange(GLB_NET_ADR_MIN, GLB_NET_ADR_MAX);
-				EnterParam.setValue(sParam.glb.getNetAddress());
-				EnterParam.setDisc(GLB_NET_ADR_DISC);
-				EnterParam.setFract(GLB_NET_ADR_FRACT);
-				EnterParam.com = GB_COM_SET_NET_ADR;
-			}
-			break;
-		default:
-			break;
-	}
-}
 
 /** Уровень меню. Тест 1.
  * 	@param Нет
@@ -3722,29 +3588,7 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 	static char enterUcor[] PROGMEM = "Ввод: %01u.%01u";
 
 	eMENU_ENTER_PARAM status = EnterParam.getStatus();
-	if (status == MENU_ENTER_PARAM_MESSAGE) {
-		for (uint_fast8_t i = lineParam_ + 1; i <= NUM_TEXT_LINES; i++)
-			clearLine(i);
-
-		// вывод сообщения до тех пор, пока счетчик времени не обнулится
-		// затем возврат в исходный пункт меню
-		if (EnterParam.cnt_ < TIME_MESSAGE) {
-			static char message[3][21] PROGMEM = {
-			//		 12345678901234567890
-					" Изменить параметр  ",//
-					"  можно только в    ",		//
-					"  режиме ВЫВЕДЕН    " };
-
-			EnterParam.cnt_++;
-			key_ = KEY_NO;
-
-			uint8_t poz = 40;
-			for (uint_fast8_t i = 0; i < 3; i++, poz += 20)
-				snprintf_P(&vLCDbuf[poz], 21, message[i]);
-		} else {
-			key_ = KEY_CANCEL;
-		}
-	} else if (status == MENU_ENTER_PARAM_INT) {
+	if (status == MENU_ENTER_PARAM_INT) {
 		uint16_t val = EnterParam.getValue();
 		uint8_t num = EnterParam.getValueNumSymbols();
 
@@ -3933,21 +3777,21 @@ void clMenu::printPunkts() {
  * 	@return Нет
  */
 void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
-	static const char fcUout[] PROGMEM = "U=%02u.%01uВ";
-	static const char fcIout[] PROGMEM = "I=%03uмА";
-	static const char fcRout[] PROGMEM = "R=%03uОм";
-	static const char fcUz[] PROGMEM = "Uз=%02dдБ";
-	static const char fcUz1[] PROGMEM = "Uз1=%02dдБ";
-	static const char fcUz2[] PROGMEM = "Uз2=%02dдБ";
-	static const char fcUcf[] PROGMEM = "Uк=%02dдБ";
-	static const char fcUcf1[] PROGMEM = "Uк1=%02dдБ";
-	static const char fcUcf2[] PROGMEM = "Uк2=%02dдБ";
-	static const char fcUn[] PROGMEM = "Uш=%02dдБ";
-	static const char fcUn1[] PROGMEM = "Uш1=%02dдБ";
-	static const char fcUn2[] PROGMEM = "Uш2=%02dдБ";
-	static const char fcSd[] PROGMEM = "Sд=%02u°";
-	static const char fcDate[] PROGMEM = "%02u.%02u.%02u";
-	static const char fcTime[] PROGMEM = "%02u:%02u:%02u";
+	static const char fcUout[] PROGMEM = "U=%02u.%01uВ";	// Напряжение выхода.
+	static const char fcIout[] PROGMEM = "I=%03uмА";		// Ток выхода.
+	static const char fcRout[] PROGMEM = "R=%03uОм";		// Сопротивление линии.
+	static const char fcUz[] PROGMEM = "Uз=%02dдБ";			// Запас по защите.
+	static const char fcUz1[] PROGMEM = "Uз1=%02dдБ";		// Запас по защите 1.
+	static const char fcUz2[] PROGMEM = "Uз2=%02dдБ";		// Запас по защите 2.
+	static const char fcUcf[] PROGMEM = "Uк=%02dдБ";		// Запас по КЧ.
+	static const char fcUcf1[] PROGMEM = "Uк1=%02dдБ";		// Запас по КЧ 1.
+	static const char fcUcf2[] PROGMEM = "Uк2=%02dдБ";		// Запас по КЧ 2.
+	static const char fcUn[] PROGMEM = "Uш=%02dдБ";			// Уровень шумов.
+	static const char fcUn1[] PROGMEM = "Uш1=%02dдБ";		// Уровень шумов 1.
+	static const char fcUn2[] PROGMEM = "Uш2=%02dдБ";		// Уровень шумов 2.
+	static const char fcSd[] PROGMEM = "Sд=%02u°";			// Просечки в сигнале.
+	static const char fcDate[] PROGMEM = "%02u.%02u.%02u";	// Дата.
+	static const char fcTime[] PROGMEM = "%02u:%02u:%02u";	// Время.
 
 	// смещение в буфере
 	if (poz < MAX_NUM_MEAS_PARAM) {
@@ -4273,9 +4117,10 @@ void clMenu::printValue(uint8_t pos) {
 void clMenu::enterParameter() {
 	LocalParams *lp = &sParam.local;
 
-	if ((sParam.local.getParam() == GB_PARAM_COR_U)
-			|| (sParam.local.getParam() == GB_PARAM_COR_I)
-			|| (sParam.glb.status.getRegime() == GB_REGIME_DISABLED)) {
+	if ((lp->getChangeCond() == Param::CHANGE_COND_REG_DISABLE) &&
+			(sParam.glb.status.getRegime() != GB_REGIME_DISABLED)) {
+		printMessage();
+	} else {
 
 		switch(lp->getParamType()) {
 			case Param::PARAM_BITES: // DOWN
@@ -4328,20 +4173,38 @@ void clMenu::enterParameter() {
 				val = min;
 			}
 
+			enterFunc = &clMenu::enterValue;
 			EnterParam.setValueRange(min, max);
 			EnterParam.setValue(val);
 			EnterParam.list = lp->getListOfValues();
 			EnterParam.setFract(lp->getFract());
 			EnterParam.setDisc(lp->getDisc());
 //			EnterParam.setDopValue(lp->getSendDop());
-			enterFunc = &clMenu::enterValue;
 		}
 	}
 }
 
 // Работа в меню настройки параметров.
 void clMenu::setupParam() {
-	printParam();
+
+	if (isMessage()) {
+		// Вывод на экран сообщения о невозможности изменения параметра,
+		// при этом нажатые кнопки будут проигнорированы.
+		static char message[3][21] PROGMEM = {
+				//2345678901234567890
+				" Изменить параметр  ",
+				"  можно только в    ",
+				"  режиме ВЫВЕДЕН    " };
+
+		for(uint8_t i = 0, pos = 40; i < SIZE_OF(message); i++, pos += 20) {
+			snprintf_P(&vLCDbuf[pos], 21, message[i]);
+		}
+
+		key_ = KEY_NO;
+	} else {
+		// вывод на экран информации о текущем параметре
+		printParam();
+	}
 
 	if (EnterParam.isEnable()) {
 		eMENU_ENTER_PARAM stat = enterValue();
@@ -4349,7 +4212,11 @@ void clMenu::setupParam() {
 		if (stat == MENU_ENTER_PARAM_READY) {
 			eGB_COM com = sParam.local.getCom();
 
+			// Если у параметра есть команда обмена с блоком БСП, идет
+			// работа по записи в БСП.
+			// Иначе идет запись в ЕЕПРОМ.
 			if (com != GB_COM_NO) {
+				// Подготовка данных для записи в БСП.
 				uint8_t dop = sParam.local.getSendDop();
 
 				switch(sParam.local.getSendType()) {
@@ -4419,6 +4286,7 @@ void clMenu::setupParam() {
 					break;
 
 					case GB_SEND_NO:
+						com = GB_COM_NO;
 						break;
 				}
 
@@ -4426,6 +4294,31 @@ void clMenu::setupParam() {
 					com = (eGB_COM) (com + GB_COM_MASK_GROUP_WRITE_PARAM);
 					sParam.txComBuf.addFastCom(com);
 					sParam.txComBuf.setSendType(sParam.local.getSendType());
+				}
+			} else {
+				eGB_PARAM param= sParam.local.getParam();
+				if (param != GB_PARAM_NULL_PARAM) {
+					// Запись параметров в ЕЕПРОМ.
+					uint8_t tmp = EnterParam.getValueEnter();
+					if (param == GB_PARAM_INTF_INTERFACE) {
+						TInterface::INTERFACE val;
+						val = (TInterface::INTERFACE) (tmp);
+						// если интерфейс сменился, обновим меню
+						if (val != sParam.Uart.Interface.get()) {
+							sParam.Uart.Interface.set(val);
+							lvlCreate_ = true;
+						}
+					} else if (param == GB_PARAM_INTF_PROTOCOL) {
+						sParam.Uart.Protocol.set((TProtocol::PROTOCOL) (tmp));
+					} else if (param == GB_PARAM_INTF_BAUDRATE) {
+						sParam.Uart.BaudRate.set((TBaudRate::BAUD_RATE) (tmp));
+					} else if (param == GB_PARAM_INTF_DATA_BITS) {
+						sParam.Uart.DataBits.set((TDataBits::DATA_BITS) (tmp));
+					} else if (param == GB_PARAM_INTF_PARITY) {
+						sParam.Uart.Parity.set((TParity::PARITY) (tmp));
+					} else if (param == GB_PARAM_INTF_STOP_BITS) {
+						sParam.Uart.StopBits.set((TStopBits::STOP_BITS) (tmp));
+					}
 				}
 			}
 			EnterParam.setDisable();
@@ -4461,5 +4354,10 @@ void clMenu::setupParam() {
 		eGB_COM com = sParam.local.getCom();
 		sParam.txComBuf.addFastCom(com);
 		sParam.txComBuf.addCom1(com, 0);
+	}
+
+	// выход из текущего уровня меню, если кол-во параметров равно 0
+	if (sParam.local.getNumOfParams() == 0) {
+		key_ = KEY_CANCEL;
 	}
 }

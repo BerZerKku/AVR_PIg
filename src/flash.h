@@ -12,28 +12,6 @@
 /// Пустая строка.
 static const char fcNull[] PROGMEM = "";
 
-// Измеряемые параметры.
-static const char fcUout[]  PROGMEM = "U=%02u.%01uВ";	///< Напряжение выхода.
-static const char fcIout[] 	PROGMEM	= "I=%03uмА";		///< Ток выхода.
-static const char fcRout[] 	PROGMEM = "R=%03uОм";		///< Сопротивление линии.
-static const char fcUz[]	PROGMEM	= "Uз=%02dдБ";		///< Запас по защите.
-static const char fcUz1[] 	PROGMEM = "Uз1=%02dдБ";		///< Запас по защите 1.
-static const char fcUz2[] 	PROGMEM = "Uз2=%02dдБ";		///< Запас по защите 2.
-static const char fcUcf[] 	PROGMEM	= "Uк=%02dдБ";		///< Запас по КЧ.
-static const char fcUcf1[] 	PROGMEM	= "Uк1=%02dдБ";		///< Запас по КЧ 1.
-static const char fcUcf2[] 	PROGMEM	= "Uк2=%02dдБ";		///< Запас по КЧ 2.
-static const char fcUn[] 	PROGMEM	= "Uш=%02dдБ";		///< Уровень шумов.
-static const char fcUn1[] 	PROGMEM	= "Uш1=%02dдБ";		///< Уровень шумов 1.
-static const char fcUn2[] 	PROGMEM	= "Uш2=%02dдБ";		///< Уровень шумов 2.
-static const char fcSd[]	PROGMEM = "Sд=%02u°";		///< Просечки в сигнале.
-static const char fcDate[] 	PROGMEM = "%02u.%02u.%02u";	///< Дата.
-static const char fcTime[] 	PROGMEM = "%02u:%02u:%02u";	///< Время.
-
-// Имена устройств аппарата (в начальном меню и при смене режимов работы).
-static const char fcDeviceName00[] PROGMEM = "ЗАЩ";		///< Устройство Защита.
-static const char fcDeviceName01[] PROGMEM = "ПРМ";		///< Устройство Приемник.
-static const char fcDeviceName02[] PROGMEM = "ПРД";		///< Устройство Передатчик.
-
 /// Типы автоконтролей для отображения в начальном меню.
 static const char fcAcType[GB_TYPE_AC_MAX + 2][9] PROGMEM = {
 // 		12345678
@@ -49,9 +27,6 @@ static const char fcAcType[GB_TYPE_AC_MAX + 2][9] PROGMEM = {
 		"АК-ошиб",		///< Ошибочное значение.
 		"АК-авто"		///< Подмена  GB_TYPE_AC_AUTO_NORM в Р400м->ЛинияР.
 };
-
-/// Время до АК.
-static const char fcTimeToAc[] PROGMEM = "%02d:%02d:%02d";
 
 /// Режимы работы устройств.
 static const char fcRegime[GB_REGIME_MAX + 1][8] PROGMEM = {
@@ -88,10 +63,6 @@ static const char fcRegimeEnter[GB_REGIME_ENTER_MAX][STRING_LENGHT] PROGMEM = {
 		"Тест 2"		///< Тест приемника
 };
 
-
-
-
-
 /// Имена устройств (для Журналов).
 static const char fcDevices[GB_DEVICE_MAX + 1][4] PROGMEM = {
 // 		 123
@@ -112,55 +83,6 @@ static const char fcDevicesK400[GB_DEVICE_K400_MAX + 1][5] PROGMEM = {
 		"ОБЩ",			///<
 		"П1,2",			///< приемник 1 и 2
 		"ОШБ"			///< ошибочное значение
-};
-
-
-
-/// Интерфейс (параметр вкладки Интерфейс).
-static char fcInterface[TInterface::MAX+1][STRING_LENGHT] PROGMEM = {
-//	 	 1234567890
-		"USB",			///<
-		"RS485"			///<
-};
-
-/// Протокол (параметр вкладки Интерфейс).
-static char fcProtocol[TProtocol::MAX + 1][STRING_LENGHT] PROGMEM = {
-//	 	 1234567890
-		"СТАНДАРТ",		///<
-		"MODBUS",		///<
-		"МЭК-101"		///<
-};
-
-/// Скорость, бит/с (параметр вкладки Интерфейс).
-static char fcBaudRate[TBaudRate::MAX + 1][STRING_LENGHT] PROGMEM = {
-//		 1234567890
-		"600",			///<
-		"1200",			///<
-		"2400",			///<
-		"4800",			///<
-		"9600",			///<
-		"19200"			///<
-};
-
-/// Количество бит данных (параметр вкладки Интерфейс).
-static char fcDataBits[TDataBits::MAX + 1][STRING_LENGHT] PROGMEM = {
-//		 1234567890
-		"8"				///<
-};
-
-/// Четность (параметр вкладки Интерфейс).
-static char fcParity[TParity::MAX + 1][STRING_LENGHT] PROGMEM = {
-//		 1234567890
-		"нет",			///<
-		"чет",			///<
-		"нечет"			///<
-};
-
-/// Стоповые биты (параметр вкладки Интерфейс).
-static char fcStopBits[TStopBits::MAX + 1][STRING_LENGHT] PROGMEM = {
-//		 1234567890
-		"1",			///<
-		"2"				///<
 };
 
 /// Номера удаленного(ых) аппарата
