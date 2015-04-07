@@ -1230,15 +1230,11 @@ public:
 
 	/**	«апись срочной команды в конец очереди.
 	 *
-	 * 	≈сли данна€ команда уже есть в срочных, добавление не происходит.
-	 *
 	 * 	@param com  од срочной команды
 	 */
 	void addFastCom(eGB_COM com) {
 		for(uint_fast8_t i = 0; i < MAX_NUM_FAST_COM; i++) {
-			if (comFast_[i] == com) {
-				break;
-			} else if (comFast_[i] == GB_COM_NO) {
+			if (comFast_[i] == GB_COM_NO) {
 				comFast_[i] = com;
 				break;
 			}

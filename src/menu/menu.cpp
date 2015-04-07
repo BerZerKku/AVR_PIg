@@ -2705,11 +2705,12 @@ void clMenu::lvlSetupParamPrm() {
 		sParam.txComBuf.clear();
 
 		sParam.local.clearParams();
+
+		uint8_t numcom = sParam.prm.getNumCom();
 		if (device == AVANT_K400) {
 			// для переформирования меню добавим опрос кол-ва команд
 			sParam.txComBuf.addCom2(GB_COM_PRM_GET_COM);
 
-			uint8_t numcom = sParam.prm.getNumCom();
 			sParam.local.addParam(GB_PARAM_PRM_COM_NUMS);
 			sParam.local.addParam(GB_PARAM_PRM_TIME_ON);
 			if (numcom != 0) {
@@ -2723,12 +2724,16 @@ void clMenu::lvlSetupParamPrm() {
 			}
 		} else if (device == AVANT_RZSK) {
 			sParam.local.addParam(GB_PARAM_PRM_TIME_ON);
-			sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK);
-			sParam.local.addParam(GB_PARAM_PRM_TIME_OFF);
+			if (numcom != 0) {
+				sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK);
+				sParam.local.addParam(GB_PARAM_PRM_TIME_OFF);
+			}
 		} else if (device == AVANT_OPTO) {
 			sParam.local.addParam(GB_PARAM_PRM_TIME_ON);
-			sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK);
-			sParam.local.addParam(GB_PARAM_PRM_TIME_OFF);
+			if (numcom != 0) {
+				sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK);
+				sParam.local.addParam(GB_PARAM_PRM_TIME_OFF);
+			}
 		}
 	}
 
@@ -2897,6 +2902,7 @@ void clMenu::lvlSetupParamGlb() {
 			sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 
+			sParam.local.addParam(GB_PARAM_COMP_P400);
 			if (comp == GB_COMPATIBILITY_AVANT) {
 				sParam.local.addParam(GB_PARAM_TIME_SYNCH);
 			}
@@ -2905,7 +2911,6 @@ void clMenu::lvlSetupParamGlb() {
 			sParam.local.addParam(GB_PARAM_WARN_THD);
 			sParam.local.addParam(GB_PARAM_U_OUT_NOM);
 			sParam.local.addParam(GB_PARAM_FREQ);
-			sParam.local.addParam(GB_PARAM_COMP_P400);
 			if (comp == GB_COMPATIBILITY_PVZL) {
 				sParam.local.addParam(GB_PARAM_IN_DEC_AC_ANSWER);
 			}
@@ -3407,14 +3412,15 @@ void clMenu::lvlTest1() {
 			// для каждой из которых требуется отправка своей команды
 			// добавим в буфере команду для каждой из групп
 			// !!! при передаче команды надо проверять данные в буфере
-			// КЧ
-			sParam.txComBuf.setInt8(1, 0);				// группа КЧ
-			sParam.txComBuf.setInt8(cf, 1);				// текущий сигнал КЧ
-			sParam.txComBuf.addFastCom(EnterParam.com);
 			// РЗ
 			sParam.txComBuf.setInt8(2, 2);				// группа РЗ
 			sParam.txComBuf.setInt8(rz, 3);				// текущий сигнал РЗ
 			sParam.txComBuf.addFastCom(EnterParam.com);
+			// КЧ
+			sParam.txComBuf.setInt8(1, 0);				// группа КЧ
+			sParam.txComBuf.setInt8(cf, 1);				// текущий сигнал КЧ
+			sParam.txComBuf.addFastCom(EnterParam.com);
+
 
 			EnterParam.setDisable();
 		}
@@ -4236,7 +4242,7 @@ void clMenu::setupParam() {
 						break;
 
 					case GB_SEND_DOP_BITES: {
-						uint8_t val = sParam.local.getValue();
+						uint8_t val = sParam.local.getValueB();
 						uint8_t pos = sParam.local.getNumOfCurrSameParam() - 1;
 						if (EnterParam.getValue()) {
 							val |= (1 << (pos % 8));

@@ -567,8 +567,10 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			// данные о типе аппарата
 			act |= sParam_->def.status.setEnable(buf[B1] == 1);
 			act |= sParam_->prm.setNumCom(buf[B2] * 4);
+			sParam_->local.setNumComPrm(sParam_->prm.getNumCom());
 			// buf[B3] - прм2
 			act |= sParam_->prd.setNumCom(buf[B4] * 4);
+			sParam_->local.setNumComPrd(sParam_->prd.getNumCom());
 			// кол-во аппаратов в линии
 			// в def хранится значение параметра
 			// все действия с меню производятся относительно значения в glb.
@@ -648,7 +650,6 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 		case GB_COM_GET_TEST: {
 			eGB_TYPE_DEVICE type = sParam_->typeDevice;
 			// определеим макимальное кол-во
-
 			sParam_->test.setCurrentSignal(&buf[B1], type);
 		}
 		break;

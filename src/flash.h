@@ -233,17 +233,6 @@ static const char fcPrdWarning04k400[] 	PROGMEM = "Вход RX ЦС пуст";	///<
 
 /// Текущее значение параметра.
 static const char fcValue[] 			PROGMEM = "Значение: ";
-/// Диапазон допустимых значений параметра.
-static const char fcRange[] 			PROGMEM = "Диапазон: ";
-/// Номер приемника (для 3-ж концевой линии).
-//static const char fcNumPrm[]			PROGMEM = "Номер ПРМ: %u/%u";
-/// Диапазон допустимых значений параметра.
-static const char fcRangeDec[] 			PROGMEM = "%d..%d%S";
-/// Диапазон допустимых значений параметра: для списков.
-static const char fcRangeList[] 		PROGMEM = "список";
-/// Текущий параметр и общее их количество в данном пункте меню.
-static const char fcNumPunkt[] 			PROGMEM = "Параметр:%u Всего:%u";
-
 
 //	ЖУРНАЛ
 /// Сообщение о том, что в текущем журнале нет записей.
