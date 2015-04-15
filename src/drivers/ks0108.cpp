@@ -2,9 +2,9 @@
 #include <util/delay.h>
 #include <stdio.h>
 
-#include "../inc/debug.h"
-#include "../inc/ks0108.h"
-#include "../inc/symbols.h"
+#include "debug.h"
+#include "ks0108.h"
+#include "symbols.h"
 
 /// буфер инф-ии выводимой на ЖКИ
 static uint8_t uBuf[1024];

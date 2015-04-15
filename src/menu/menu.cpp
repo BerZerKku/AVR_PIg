@@ -6,10 +6,10 @@
  */
 #include <stdio.h>
 
-#include "../inc/menu.h"
-#include "../inc/debug.h"
-#include "../inc/ks0108.h"
-#include "../inc/flash.h"
+#include "menu.h"
+#include "debug.h"
+#include "ks0108.h"
+#include "flash.h"
 
 /// режим подсветки по умолчанию
 #define LED_REGIME LED_SWITCH
@@ -269,52 +269,6 @@ void clMenu::clearLine(uint8_t line) {
 		line = (line - 1) * 20;
 		for (uint_fast8_t i = 0; i < 20; i++)
 			vLCDbuf[line++] = ' ';
-	}
-}
-
-/** Уровень "Ошибочный тип аппарата"
- * 	Изначально на экран выводится надпись "Инициализация". Но если тип аппарата
- * 	не будет определен n-ое кол-во времени, то надпись сменится на
- * 	"Тип аппарата не определен!!!"
- * 	@param Нет
- * 	@return Нет
- */
-void clMenu::lvlError() {
-	static uint8_t time = 0;
-
-	static const char fcNoTypeDevice0[] PROGMEM = "    Тип аппарата    ";
-	static const char fcNoTypeDevice1[] PROGMEM = "   не определен!!!  ";
-	static const char fcNoTypeDevice3[] PROGMEM = "    Инициализация   ";
-
-	if (lvlCreate_) {
-		lvlCreate_ = false;
-		cursorEnable_ = false;
-		vLCDclear();
-		// только одна строка отводится под вывод параметров
-		lineParam_ = 1;
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
-		sParam.TxComBuf.clear();
-		sParam.TxComBuf.addCom2(GB_COM_GET_VERS);
-	}
-
-	// вывод на экран измеряемых параметров
-	printMeasParam(0, measParam[0]);
-	printMeasParam(1, measParam[1]);
-
-	// Проверка времени нахождения в неизвестном состоянии типа аппарата
-	if (time >= 25) {
-		snprintf_P(&vLCDbuf[40], 21, fcNoTypeDevice0);
-		snprintf_P(&vLCDbuf[60], 21, fcNoTypeDevice1);
-	} else {
-		snprintf_P(&vLCDbuf[40], 21, fcNoTypeDevice3);
-	}
-	time++;
-
-	if (sParam.typeDevice != AVANT_NO) {
-		pLvlMenu = &clMenu::lvlStart;
-		lvlCreate_ = true;
-		time = 0;
 	}
 }
 

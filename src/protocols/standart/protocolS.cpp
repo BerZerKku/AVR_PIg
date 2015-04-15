@@ -4,7 +4,7 @@
  *  Created on: 28.06.2012
  *      Author: Shcheblykin
  */
-#include "../inc/protocolS.h"
+#include "protocolS.h"
 
 clProtocolS::clProtocolS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
 		buf(buf), size_(size), sParam_(sParam) {

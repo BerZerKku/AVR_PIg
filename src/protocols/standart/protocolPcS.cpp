@@ -4,7 +4,7 @@
  *  Created on: 15.07.2013
  *      Author: Shcheblykin
  */
-#include "../inc/protocolPcS.h"
+#include "protocolPcS.h"
 
 clProtocolPcS::clProtocolPcS(uint8_t *buf, uint8_t size, stGBparam *sParam)
 										: clProtocolS(buf, size, sParam)

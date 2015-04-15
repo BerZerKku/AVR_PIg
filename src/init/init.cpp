@@ -7,7 +7,7 @@
 
 #include <avr/io.h>
 #include <avr/wdt.h>
-#include "../inc/debug.h"
+#include "debug.h"
 
 void
 low_level_init() __attribute__((__naked__)) __attribute__((section(".init3")));
