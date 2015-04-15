@@ -1,10 +1,14 @@
 #include <math.h>
 #include <util/delay.h>
 #include <stdio.h>
-
 #include "debug.h"
 #include "ks0108.h"
 #include "symbols.h"
+
+bool vLCDcheckBusy	(void);
+void vLCDsetXY		(uint8_t x, uint8_t y);
+void vLCDcom		(uint8_t com, uint8_t cs);
+void vLCDdata		(uint8_t data, uint8_t cs);
 
 /// буфер инф-ии выводимой на ЖКИ
 static uint8_t uBuf[1024];
@@ -31,13 +35,9 @@ bool vLCDcheckBusy(void) {
 	DDRA = 0;
 	PORT_CS |= PIN_CS;
 	PORT_RW |= PIN_RW;
-	asm volatile ( "nop\n\t"
-			"nop\n\t"
-			::);
+	asm volatile ( "nop\n\t""nop\n\t"::);
 	PORT_E |= PIN_E;
-	asm volatile ( "nop\n\t"
-			"nop\n\t"
-			::);
+	asm volatile ( "nop\n\t""nop\n\t"::);
 	data = PINA;
 	PORT_E &= ~PIN_E;
 	_delay_us(4);
@@ -60,14 +60,10 @@ void vLCDcom(uint8_t com, uint8_t cs) {
 	PORT_CS |= cs;
 	PORT_RS &= ~PIN_RS;
 	PORT_RW &= ~PIN_RW;
-	asm volatile ( "nop\n\t"
-			"nop\n\t"
-			::);
+	asm volatile ( "nop\n\t""nop\n\t"::);
 	PORT_E |= PIN_E;
 	PORTA = com;
-	asm volatile ( "nop\n\t"
-			"nop\n\t"
-			::);
+	asm volatile ( "nop\n\t""nop\n\t"::);
 	PORT_E &= ~PIN_E;
 	_delay_us(1);
 	PORT_CS &= ~cs;
@@ -92,14 +88,10 @@ void vLCDdata(uint8_t data, uint8_t cs) {
 	PORT_CS |= cs;
 	PORT_RS |= PIN_RS;
 	PORT_RW &= ~PIN_RW;
-	asm volatile ( "nop\n\t"
-			"nop\n\t"
-			::);
+	asm volatile ( "nop\n\t""nop\n\t"::);
 	PORTA = data;
 	PORT_E |= PIN_E;
-	asm volatile ( "nop\n\t"
-			"nop\n\t"
-			::);
+	asm volatile ( "nop\n\t""nop\n\t"::);
 	PORT_E &= ~PIN_E;
 	_delay_us(2);
 	PORT_CS &= ~cs;
@@ -253,18 +245,12 @@ void vLCDled(void) {
 }
 
 /** Рисование рамки
- *
- * 	Прорисовывается две области: в первой \a num кол-во строк, во второй
- * 	(6 - \a num) строк.
- * 	Если кол-во параметров равно максимальному значению (т.е. 7),
- * 	то второй области нет.
- *
- * 	@param num Кол-во линий параметров 1..7
+ * 	@param num Кол-во линий параметров 1..3
  * 	@return true - в случае успешной отрисовки
  */
 bool vLCDdrawBoard(uint8_t num) {
 	// задано ошибочное кол-во строк для отображения параметров
-	if (num > 7)
+	if (num > 6)
 		return false;
 
 	uint16_t poz = 0;
@@ -292,7 +278,7 @@ bool vLCDdrawBoard(uint8_t num) {
 
 	// нарисуем разделение на два поля, если надо
 
-	if (num < 5) {
+	if (num < 7) {
 		// горизонтальная граница
 		poz = (num + 1) * NUM_POINT_HOR + 3;
 		for (uint8_t i = 3; i < 125; i++) {

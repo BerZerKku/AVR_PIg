@@ -21,7 +21,7 @@ static char vLCDbuf[SIZE_BUF_STRING + 1];
 #define NUM_TEXT_LINES (SIZE_BUF_STRING / 20)
 
 clMenu::clMenu() {
-	pLvlMenu = &clMenu::lvlStart;
+	lvlMenu = &clMenu::lvlStart;
 	lineParam_ = 3;
 	lvlCreate_ = true;
 	blink_ = false;
@@ -64,7 +64,7 @@ clMenu::clMenu() {
 	sParam.Rps.Status.pStateText[12] = fcRpsSost12;
 	sParam.Rps.Status.pStateText[MAX_NUM_DEVICE_STATE] = fcUnknownSost;
 
-	sParam.Rps.Status.pName = fcDeviceName00;
+	sParam.Rps.Status.name = PSTR("ЗАЩ");
 
 #ifdef DEBUG
 	// в режиме отладки включена постоянная подсветка
@@ -125,12 +125,12 @@ void clMenu::main(void) {
 	// вывод в буфер содержимого текущего меню
 	// либо сообщения что тип аппарата не определен
 	clearTextBuf();
-	(this->*pLvlMenu)();
+	(this->*lvlMenu)();
 	key_ = KEY_NO;
 
 #ifdef VIEW_DEBUG_PARAM
 	// вывод отладочной информации
-	if (this->pLvlMenu == &clMenu::lvlStart) {
+	if (this->lvlMenu == &clMenu::lvlStart) {
 		snprintf(&vLCDbuf[20], 5, "1*%02X", sDebug.byte1);
 		snprintf(&vLCDbuf[25], 5, "2*%02X", sDebug.byte2);
 		snprintf(&vLCDbuf[30], 5, "3*%02X", sDebug.byte3);
@@ -224,6 +224,8 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 	// 1-9 нет
 	sParam.Glb.Status.pWarningText[10] = fcGlbWarning01;
 	// 11-15 нет
+
+	lvlCreate_ = true;
 
 	return true;
 }
@@ -321,7 +323,7 @@ void clMenu::lvlStart() {
 			break;
 
 		case KEY_MENU:
-			pLvlMenu = &clMenu::lvlFirst;
+			lvlMenu = &clMenu::lvlFirst;
 			lvlCreate_ = true;
 			break;
 
@@ -390,27 +392,27 @@ void clMenu::lvlFirst() {
 
 		case KEY_ENTER:
 			if (name == punkt1) {
-				pLvlMenu = &clMenu::lvlJournal;
+				lvlMenu = &clMenu::lvlJournal;
 				lvlCreate_ = true;
 			} else if (name == punkt2) {
-				pLvlMenu = &clMenu::lvlControl;
+				lvlMenu = &clMenu::lvlControl;
 				lvlCreate_ = true;
 			} else if (name == punkt3) {
-				pLvlMenu = &clMenu::lvlSetup;
+				lvlMenu = &clMenu::lvlSetup;
 				lvlCreate_ = true;
 			} else if (name == punkt4) {
-				pLvlMenu = &clMenu::lvlInfo;
+				lvlMenu = &clMenu::lvlInfo;
 				lvlCreate_ = true;
 			}
 			break;
 
 		case KEY_CANCEL:
-			pLvlMenu = &clMenu::lvlStart;
+			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
 			break;
 
 		case KEY_MENU:
-			pLvlMenu = &clMenu::lvlStart;
+			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
 			break;
 
@@ -476,12 +478,12 @@ void clMenu::lvlInfo() {
 			break;
 
 		case KEY_CANCEL:
-			pLvlMenu = &clMenu::lvlFirst;
+			lvlMenu = &clMenu::lvlFirst;
 			lvlCreate_ = true;
 			break;
 
 		case KEY_MENU:
-			pLvlMenu = &clMenu::lvlStart;
+			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
 			break;
 
@@ -528,17 +530,17 @@ void clMenu::lvlJournal() {
 			break;
 
 		case KEY_CANCEL:
-			pLvlMenu = &clMenu::lvlFirst;
+			lvlMenu = &clMenu::lvlFirst;
 			lvlCreate_ = true;
 			break;
 		case KEY_MENU:
-			pLvlMenu = &clMenu::lvlStart;
+			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
 			break;
 
 		case KEY_ENTER:
 			if (name == punkt1) {
-				pLvlMenu = &clMenu::lvlJournalEvent;
+				lvlMenu = &clMenu::lvlJournalEvent;
 				lvlCreate_ = true;
 			}
 			break;
@@ -609,11 +611,11 @@ void clMenu::lvlJournalEvent() {
 			break;
 
 		case KEY_CANCEL:
-			pLvlMenu = &clMenu::lvlJournal;
+			lvlMenu = &clMenu::lvlJournal;
 			lvlCreate_ = true;
 			break;
 		case KEY_MENU:
-			pLvlMenu = &clMenu::lvlStart;
+			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
 			break;
 
@@ -668,11 +670,11 @@ void clMenu::lvlControl() {
 			break;
 
 		case KEY_CANCEL:
-			pLvlMenu = &clMenu::lvlFirst;
+			lvlMenu = &clMenu::lvlFirst;
 			lvlCreate_ = true;
 			break;
 		case KEY_MENU: {
-			pLvlMenu = &clMenu::lvlStart;
+			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
 		}
 			break;
@@ -757,30 +759,30 @@ void clMenu::lvlSetup() {
 			break;
 
 		case KEY_CANCEL:
-			pLvlMenu = &clMenu::lvlFirst;
+			lvlMenu = &clMenu::lvlFirst;
 			lvlCreate_ = true;
 			break;
 		case KEY_MENU:
-			pLvlMenu = &clMenu::lvlStart;
+			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
 			break;
 
 		case KEY_ENTER: {
 			if (name == punkt1) {
-				pLvlMenu = &clMenu::lvlRegime;
+				lvlMenu = &clMenu::lvlRegime;
 				lvlCreate_ = true;
 			} else if (name == punkt2) {
-				pLvlMenu = &clMenu::lvlSetupDT;
+				lvlMenu = &clMenu::lvlSetupDT;
 				lvlCreate_ = true;
 			} else if (name == punkt3) {
-				pLvlMenu = &clMenu::lvlSetupParam;
+				lvlMenu = &clMenu::lvlSetupParam;
 				lvlCreate_ = true;
 			} else if (name == punkt4) {
 				pEnterFunc = &clMenu::enterPassword;
 				EnterParam.setEnable(MENU_ENTER_PASSWORD);
 				EnterParam.com = GB_COM_NO;
 			} else if (name == punkt5) {
-				pLvlMenu = &clMenu::lvlSetupInterface;
+				lvlMenu = &clMenu::lvlSetupInterface;
 				lvlCreate_ = true;
 			}
 		}
@@ -812,7 +814,6 @@ void clMenu::lvlRegime() {
 
 	uint8_t poz = lineParam_ * 20;
 	printDevicesRegime(poz, &sParam.Rps.Status);
-	poz += 20;
 
 	// Ввод нового значения параметра.
 	// Сначала выбирается требуемый режим работы.
@@ -863,11 +864,11 @@ void clMenu::lvlRegime() {
 
 	switch (key_) {
 		case KEY_CANCEL:
-			pLvlMenu = &clMenu::lvlSetup;
+			lvlMenu = &clMenu::lvlSetup;
 			lvlCreate_ = true;
 			break;
 		case KEY_MENU:
-			pLvlMenu = &clMenu::lvlStart;
+			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
 			break;
 
@@ -957,17 +958,17 @@ void clMenu::lvlSetupParam() {
 			break;
 
 		case KEY_CANCEL:
-			pLvlMenu = &clMenu::lvlSetup;
+			lvlMenu = &clMenu::lvlSetup;
 			lvlCreate_ = true;
 			break;
 		case KEY_MENU:
-			pLvlMenu = &clMenu::lvlStart;
+			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
 			break;
 
 		case KEY_ENTER:
 			if (name == punkt1) {
-				pLvlMenu = &clMenu::lvlSetupParamGlb;
+				lvlMenu = &clMenu::lvlSetupParamGlb;
 				lvlCreate_ = true;
 			}
 			break;
@@ -1014,121 +1015,34 @@ void clMenu::lvlSetupParamGlb() {
 //		sParam.TxComBuf.addCom2(GB_COM_GET_MEAS);
 	}
 
-	// подмена команды, на команду текущего уровня меню.
-	sParam.TxComBuf.addCom1(Punkts_.getCom(cursorLine_ - 1), 0);
+	if (lvlCreate_) {
+		lvlCreate_ = false;
+		EnterParam.setDisable();
 
-	PGM_P name = Punkts_.getName(cursorLine_ - 1);
+		vLCDclear();
+		vLCDdrawBoard(lineParam_);
+
+		sParam.TxComBuf.clear();
+
+		sParam.local.clearParams();
+		sParam.local.addParam(GB_PARAM_COMP_D);
+		sParam.local.addParam(GB_PARAM_CURR_MAX);
+		sParam.local.addParam(GB_PARAM_CURR_MIN);
+		sParam.local.addParam(GB_PARAM_VOLT_MIN);
+	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	uint8_t poz = 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_,
-			Punkts_.getMaxNumPunkts());
+	setupParam();
 
-	poz = 40;
-	snprintf_P(&vLCDbuf[poz], 21, name);
-
-	// отображение доп.номера, для однотипных параметров
-//	poz = 60;
-
-	//  вывод надписи "Диапазон:" и переход к выводу самого диапазона
-	poz = 80;
-	poz += snprintf_P(&vLCDbuf[poz], 11, fcRange);
-	if (name == punkt1) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_COMP_DELAY_MIN,
-				GLB_COMP_DELAY_MAX / 1000, "мс");
-	} else if (name == punkt2) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_CURR_MAX_MIN,
-				GLB_CURR_MAX_MAX, "кА");
-	} else if (name == punkt3) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_CURR_MIN_MIN,
-				GLB_CURR_MIN_MAX, "кА");
-	} else if (name == punkt4) {
-		snprintf_P(&vLCDbuf[poz], 11, fcRangeDec, GLB_VOLT_MIN_MIN,
-				GLB_VOLT_MIN_MAX, "кВ");
-	}
-
-	if (EnterParam.isEnable()) {
-		// ввод нового значения параметра
-		eMENU_ENTER_PARAM stat = enterValue();
-
-		if (stat == MENU_ENTER_PARAM_READY) {
-			// новое значение введено, надо передать в БСП
-			sParam.TxComBuf.setInt8(EnterParam.getValueEnter());
-
-			sParam.TxComBuf.addFastCom(EnterParam.com);
-			EnterParam.setDisable();
-		}
-	} else {
-		// вывод надписи "Значение:" и переход к выводу самого значения
-		poz = 100;
-		poz += snprintf_P(&vLCDbuf[poz], 11, fcValue);
-		if (name == punkt1) {
-			uint8_t i = (sParam.Glb.getCompDelay() / 1000);
-			uint16_t f = (sParam.Glb.getCompDelay() % 1000);
-			snprintf(&vLCDbuf[poz], 11, "%01d.%01dмс", i, f);
-		} else if (name == punkt2) {
-			snprintf(&vLCDbuf[poz], 11, "%dкА", sParam.Glb.getCurrMax());
-		} else if (name == punkt3) {
-			snprintf(&vLCDbuf[poz], 11, "%dкА", sParam.Glb.getCurrMin());
-		} else if (name == punkt4) {
-			snprintf(&vLCDbuf[poz], 11, "%dкВ", sParam.Glb.getVoltMin());
-		}
-	}
-
-	switch (key_) {
-		case KEY_UP:
-			cursorLineUp();
-			break;
-		case KEY_DOWN:
-			cursorLineDown();
-			break;
-
+	switch(key_) {
 		case KEY_CANCEL:
-			pLvlMenu = &clMenu::lvlSetupParam;
+			lvlMenu = &clMenu::lvlSetupParam;
 			lvlCreate_ = true;
 			break;
 		case KEY_MENU:
-			pLvlMenu = &clMenu::lvlStart;
+			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
-			break;
-
-		case KEY_ENTER:
-			pEnterFunc = &clMenu::enterValue;
-			if (sParam.Glb.Status.getRegime() != GB_REGIME_DISABLED) {
-				// если хоть одно из имеющихся устройств введено
-				// изменение параметров запрещено
-				EnterParam.printMessage();
-			} else if (name == punkt1) {
-				EnterParam.setEnable(MENU_ENTER_PARAM_COMP_D);
-				EnterParam.setValueRange(GLB_COMP_DELAY_MIN,
-						GLB_COMP_DELAY_MAX);
-				EnterParam.setValue(sParam.Glb.getCompDelay());
-				EnterParam.setDisc(GLB_COMP_DELAY_DISC);
-				EnterParam.setFract(GLB_COMP_DELAY_FRACT);
-				EnterParam.com = GB_COM_SET_COMP_DELAY;
-			} else if (name == punkt2) {
-				EnterParam.setEnable();
-				EnterParam.setValueRange(GLB_CURR_MAX_MIN, GLB_CURR_MAX_MAX);
-				EnterParam.setValue(sParam.Glb.getCurrMax());
-				EnterParam.setDisc(GLB_CURR_MAX_DISC);
-				EnterParam.setFract(GLB_CURR_MAX_FRACT);
-				EnterParam.com = GB_COM_SET_CURR_MAX;
-			} else if (name == punkt3) {
-				EnterParam.setEnable();
-				EnterParam.setValueRange(GLB_CURR_MIN_MIN, GLB_CURR_MIN_MAX);
-				EnterParam.setValue(sParam.Glb.getCurrMin());
-				EnterParam.setDisc(GLB_CURR_MIN_DISC);
-				EnterParam.setFract(GLB_CURR_MIN_FRACT);
-				EnterParam.com = GB_COM_SET_CURR_MIN;
-			} else if (name == punkt4) {
-				EnterParam.setEnable();
-				EnterParam.setValueRange(GLB_VOLT_MIN_MIN, GLB_VOLT_MIN_MAX);
-				EnterParam.setValue(sParam.Glb.getVoltMin());
-				EnterParam.setDisc(GLB_VOLT_MIN_DISC);
-				EnterParam.setFract(GLB_VOLT_MIN_FRACT);
-				EnterParam.com = GB_COM_SET_VOLT_MIN;
-			}
 			break;
 
 		default:
@@ -1185,7 +1099,7 @@ void clMenu::lvlSetupDT() {
 
 		if (stat == MENU_ENTER_PARAM_READY) {
 			// копирование введеного значение на свое место
-//			sParam.txComBuf.setInt8(BIN_TO_BCD(EnterParam.getValueEnter()),
+//			sParam.TxComBuf.setInt8(BIN_TO_BCD(EnterParam.getValueEnter()),
 //					EnterParam.getDopValue());
 			uint8_t t = EnterParam.getDopValue();
 			uint8_t val = EnterParam.getValueEnter();
@@ -1287,11 +1201,11 @@ void clMenu::lvlSetupDT() {
 			break;
 
 		case KEY_CANCEL:
-			pLvlMenu = &clMenu::lvlSetup;
+			lvlMenu = &clMenu::lvlSetup;
 			lvlCreate_ = true;
 			break;
 		case KEY_MENU:
-			pLvlMenu = &clMenu::lvlStart;
+			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
 			break;
 
@@ -1306,178 +1220,64 @@ void clMenu::lvlSetupDT() {
  */
 void clMenu::lvlSetupInterface() {
 	static char title[] PROGMEM = "Настройка\\Интерфейс";
-	static char punkt1[] PROGMEM = "Интерфейс связи";
-	// Для RS-485 возможны следующие настройки:
-	// протокола: стандарт, modbus...
-	// скорость бит/с: 1200, 4800, 9600, 19200, 38400, 57600
-	// биты данных: всегда 8
-	// четность: нет,нечет, чет, маркер(1), пробел(0)
-	// стоповые биты: 2, 1.5, 1
-	// в RS-232 всегда: стандарт, 19200 бит/с, 8 бит, 2 стоп-бита, четность-нет
-	static char punkt2[] PROGMEM = "Протокол";
-	static char punkt3[] PROGMEM = "Скорость передачи";
-	static char punkt4[] PROGMEM = "Биты данных";
-	static char punkt5[] PROGMEM = "Четность";
-	static char punkt6[] PROGMEM = "Стоповые биты";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
+		EnterParam.setDisable();
 
-		cursorLine_ = 1;
-		cursorEnable_ = true;
-
-		lineParam_ = 1;
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		Punkts_.clear();
-		Punkts_.add(punkt1);
+		sParam.TxComBuf.clear();
+
+		sParam.local.clearParams();
 		// если установлена связь по Локальной сети
 		// появляются настройки портов
-		// в RS-232 всегда: 19200 бит/с, 8 бит, 2 стоп-бита, четность-нет
-		if (sParam.Uart.Interface.get() == GB_INTERFACE_RS485) {
-			Punkts_.add(punkt2);
-			Punkts_.add(punkt3);
-			Punkts_.add(punkt4);
-			Punkts_.add(punkt5);
-			Punkts_.add(punkt6);
+		// в USB всегда: 19200 бит/с, 8 бит, 2 стоп-бита, четность-нет
+		sParam.local.addParam(GB_PARAM_INTF_INTERFACE);
+		if (sParam.Uart.Interface.get() == TInterface::RS485) {
+			sParam.local.addParam(GB_PARAM_INTF_PROTOCOL);
+//			sParam.local.addParam(GB_PARAM_NET_ADDRESS);
+			sParam.local.addParam(GB_PARAM_INTF_BAUDRATE);
+			sParam.local.addParam(GB_PARAM_INTF_DATA_BITS);
+			sParam.local.addParam(GB_PARAM_INTF_PARITY);
+			sParam.local.addParam(GB_PARAM_INTF_STOP_BITS);
 		}
-
-		// дополнительные команды
-		sParam.TxComBuf.clear();
 	}
-
-	PGM_P name = Punkts_.getName(cursorLine_ - 1);
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	uint8_t poz = 20;
-	snprintf_P(&vLCDbuf[poz], 21, fcNumPunkt, cursorLine_,
-			Punkts_.getMaxNumPunkts());
-
-	poz = 40;
-	snprintf_P(&vLCDbuf[poz], 21, name);
-
-	// вывод надписи "Диапазон:" и переход к выводу самого диапазона
-	// ВСЕ СПИСКИ
-	poz = 80;
-	poz += snprintf_P(&vLCDbuf[poz], 11, fcRange);
-	snprintf_P(&vLCDbuf[poz], 11, fcRangeList);
-
-	if (EnterParam.isEnable()) {
-		// ввод нового значения параметра
-		eMENU_ENTER_PARAM stat = enterValue();
-
-		if (stat == MENU_ENTER_PARAM_READY) {
-			if (name == punkt1) {
-				eGB_INTERFACE val =
-						static_cast<eGB_INTERFACE>(EnterParam.getValueEnter());
-				// если интерфейс сменился, обновим меню
-				if (val != sParam.Uart.Interface.get()) {
-					sParam.Uart.Interface.set(val);
-					lvlCreate_ = true;
-				}
-			} else if (name == punkt2) {
-				// TODO ВСЕ протокол для ЛС
-			} else if (name == punkt3) {
-				uint8_t val = EnterParam.getValueEnter();
-				sParam.Uart.BaudRate.set(static_cast<eUART_BAUD_RATE>(val));
-			} else if (name == punkt4) {
-				uint8_t val = EnterParam.getValueEnter();
-				sParam.Uart.DataBits.set(static_cast<eUART_DATA_BITS>(val));
-			} else if (name == punkt5) {
-				uint8_t val = EnterParam.getValueEnter();
-				sParam.Uart.Parity.set(static_cast<eUART_PARITY>(val));
-			} else if (name == punkt6) {
-				uint8_t val = EnterParam.getValueEnter();
-				sParam.Uart.StopBits.set(static_cast<eUART_STOP_BITS>(val));
-			}
-			EnterParam.setDisable();
-		}
-	} else {
-		// вывод надписи "Значение:" и переход к выводу самого значения
-		poz = 100;
-		poz += snprintf_P(&vLCDbuf[poz], 11, fcValue);
-		if (name == punkt1) {
-			uint8_t val = static_cast<uint8_t>(sParam.Uart.Interface.get());
-			snprintf_P(&vLCDbuf[poz], 11, fcInterface[val]);
-		} else if (name == punkt2) {
-			// TODO ВСЕ Протокол для ЛС
-		} else if (name == punkt3) {
-			uint8_t val = static_cast<uint8_t>(sParam.Uart.BaudRate.get());
-			snprintf_P(&vLCDbuf[poz], 11, fcBaudRate[val]);
-		} else if (name == punkt4) {
-			uint8_t val = static_cast<uint8_t>(sParam.Uart.DataBits.get());
-			snprintf_P(&vLCDbuf[poz], 11, fcDataBits[val]);
-		} else if (name == punkt5) {
-			uint8_t val = static_cast<uint8_t>(sParam.Uart.Parity.get());
-			snprintf_P(&vLCDbuf[poz], 11, fcParity[val]);
-		} else if (name == punkt6) {
-			uint8_t val = static_cast<uint8_t>(sParam.Uart.StopBits.get());
-			snprintf_P(&vLCDbuf[poz], 11, fcStopBits[val]);
+	LocalParams *lp = &sParam.local;
+	if (lp->getCom() == GB_COM_NO) {
+		// Для считывания текущего значения параметра хранящегося в ЕЕПРОМ
+		eGB_PARAM param = lp->getParam();
+		if (param == GB_PARAM_INTF_INTERFACE) {
+			lp->setValue(sParam.Uart.Interface.get());
+		} else if (param == GB_PARAM_INTF_PROTOCOL) {
+			lp->setValue(sParam.Uart.Protocol.get());
+		} else if (param == GB_PARAM_INTF_BAUDRATE) {
+			lp->setValue(sParam.Uart.BaudRate.get());
+		} else if (param == GB_PARAM_INTF_DATA_BITS) {
+			lp->setValue(sParam.Uart.DataBits.get());
+		} else if (param == GB_PARAM_INTF_PARITY) {
+			lp->setValue(sParam.Uart.Parity.get());
+		} else if (param == GB_PARAM_INTF_STOP_BITS) {
+			lp->setValue(sParam.Uart.StopBits.get());
 		}
 	}
 
-	switch (key_) {
-		case KEY_UP:
-			cursorLineUp();
-			break;
-		case KEY_DOWN:
-			cursorLineDown();
-			break;
+	setupParam();
 
+	switch(key_) {
 		case KEY_CANCEL:
-			pLvlMenu = &clMenu::lvlSetup;
+			lvlMenu = &clMenu::lvlSetupParam;
 			lvlCreate_ = true;
 			break;
 		case KEY_MENU:
-			pLvlMenu = &clMenu::lvlStart;
+			lvlMenu = &clMenu::lvlSetup;
 			lvlCreate_ = true;
 			break;
 
-		case KEY_ENTER:
-			pEnterFunc = &clMenu::enterValue;
-			// а также настройка интерфейса связи
-			// остальные параметры только в "Выведен"
-			if (name == punkt1) {
-				// интерфейс связи
-				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-				EnterParam.setValueRange(GB_INTERFACE_MIN,
-						GB_INTERFACE_MAX - 1);
-				EnterParam.setValue(sParam.Uart.Interface.get());
-				EnterParam.list = fcInterface[0];
-				EnterParam.com = GB_COM_NO;
-			} else if (name == punkt2) {
-				//TODO ВСЕ Протокол для ЛС
-			} else if (name == punkt3) {
-				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-				EnterParam.setValueRange(UART_BAUD_RATE_MIN,
-						UART_BAUD_RATE_MAX - 1);
-				EnterParam.setValue(sParam.Uart.BaudRate.get());
-				EnterParam.list = fcBaudRate[0];
-				EnterParam.com = GB_COM_NO;
-			} else if (name == punkt4) {
-				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-				EnterParam.setValueRange(UART_DATA_BITS_MIN,
-						UART_DATA_BITS_MAX - 1);
-				EnterParam.setValue(sParam.Uart.DataBits.get());
-				EnterParam.list = fcDataBits[0];
-				EnterParam.com = GB_COM_NO;
-			} else if (name == punkt5) {
-				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-				EnterParam.setValueRange(UART_PARITY_MIN, UART_PARITY_MAX - 1);
-				EnterParam.setValue(sParam.Uart.Parity.get());
-				EnterParam.list = fcParity[0];
-				EnterParam.com = GB_COM_NO;
-			} else if (name == punkt6) {
-				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-				EnterParam.setValueRange(UART_STOP_BITS_MIN,
-						UART_STOP_BITS_MAX - 1);
-				EnterParam.setValue(sParam.Uart.StopBits.get());
-				EnterParam.list = fcStopBits[0];
-				EnterParam.com = GB_COM_NO;
-			}
-			break;
 		default:
 			break;
 	}
@@ -1812,7 +1612,7 @@ void clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device) {
 	uint_fast8_t x = 0;
 	uint_fast16_t y = 0;
 
-	snprintf_P(&vLCDbuf[poz], 4, device->pName);
+	snprintf_P(&vLCDbuf[poz], 4, device->name);
 	poz += 3;
 	snprintf(&vLCDbuf[poz], 2, ":");
 	poz += 1;
@@ -1876,24 +1676,304 @@ void clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device) {
  *	@return Нет
  */
 void clMenu::printDevicesRegime(uint8_t poz, TDeviceStatus *device) {
-	snprintf_P(&vLCDbuf[poz], 4, device->pName);
+	snprintf_P(&vLCDbuf[poz], 4, device->name);
 	poz += 3;
 	snprintf(&vLCDbuf[poz], 2, ":");
 	poz += 1;
 	poz += 1 + snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
 }
 
-///**	Возвращает кол-во ошибок в коде, т.е. кол-во установленных битов.
-// * 	@param Код ошибки
-// * 	@return Кол-во ошибок
-// */
-//uint8_t clMenu::getNumError(uint16_t val) {
-//	uint_fast8_t tmp = 0;
-//
-//	while ((val & 0x0001) == 0) {
-//		tmp++;
-//		val >>= 1;
-//	}
-//
-//	return tmp;
-//}
+// Вывод на экран текущего номера и их колчиество для однотипных пар-ов.
+void clMenu::printParam() {
+	static prog_uint8_t MAX_CHARS = 21;
+
+	snprintf_P(&vLCDbuf[20], MAX_CHARS, PSTR("Параметр:%u Всего:%u"),
+			sParam.local.getNumOfCurrParam(), sParam.local.getNumOfParams());
+
+	snprintf_P(&vLCDbuf[40], MAX_CHARS, sParam.local.getNameOfParam());
+
+	printSameNumber(60);
+	printRange(80);
+	printValue(100);
+}
+
+// Вывод на экран текущего номера и их колчиество для однотипных пар-ов.
+void clMenu::printSameNumber(uint8_t pos) {
+	static prog_uint8_t MAX_CHARS = 21;
+
+	if (sParam.local.getNumOfSameParams() > 1) {
+		snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Номер: %u/%u"),
+				sParam.local.getNumOfCurrSameParam(),
+				sParam.local.getNumOfSameParams());
+	}
+}
+
+//	Вывод на экран диапазона значений параметра.
+void clMenu::printRange(uint8_t pos) {
+	static prog_uint8_t MAX_CHARS = 11;
+
+	LocalParams *lp = &sParam.local;
+	int16_t min = lp->getMin();
+	int16_t max = lp->getMax();
+	PGM_P str = fcNullBuf;
+
+	pos += snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Диапазон: "));
+
+	switch(lp->getRangeType()) {
+		case Param::RANGE_LIST:
+			str = PSTR("список");
+			break;
+
+		case Param::RANGE_ON_OFF:
+			str = PSTR("вкл./выкл.");
+			break;
+
+		case Param::RANGE_INT:
+			str = PSTR("%d..%d%S");
+			break;
+
+		case Param::RANGE_INT_NO_DIM:
+			str = PSTR("%d..%d");
+			break;
+
+		case Param::RANGE_COMP_D:
+			max /= 1000;
+			str = PSTR("%d..%d%S");
+			break;
+	}
+
+	PGM_P dim = fcDimension[lp->getDim()];
+	snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, min, max, dim);
+}
+
+// Вывод на экран текущего значения параметра.
+void clMenu::printValue(uint8_t pos) {
+	static prog_uint8_t MAX_CHARS = 11;
+
+	int16_t val = sParam.local.getValue();
+	PGM_P dim = fcDimension[sParam.local.getDim()];
+	PGM_P str = fcNullBuf;
+
+	pos += snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Значение: "));
+
+	LocalParams::STATE state = sParam.local.getState();
+
+	if (state == LocalParams::STATE_ERROR) {
+		// вывод ошибочного значения
+		if (blink_) {
+			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("ошибка!!!"));
+		} else {
+			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("%d"), val);
+		}
+	} else if (state == LocalParams::STATE_READ_PARAM) {
+		if (blink_) {
+			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("чтение."));
+		} else {
+			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("чтение.."));
+		}
+	} else {
+		// вывод корректного значения
+		switch(sParam.local.getParamType()) {
+			case Param::PARAM_BITES: // DOWN
+			case Param::PARAM_LIST:
+				val -= sParam.local.getMin();
+				str = sParam.local.getListOfValues() + (val * STRING_LENGHT);
+				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str);
+				break;
+			case Param::PARAM_INT:
+				str = PSTR("%d%S");
+				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val, dim);
+				break;
+			case Param::PARAM_COMP_D:
+				str = PSTR("%01d.%01d%S");
+				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val/1000, val%1000);
+				break;
+			case Param::PARAM_NO:
+				break;
+		}
+	}
+}
+
+
+// Настройка параметров для ввода значения с клавиатуры.
+void clMenu::enterParameter() {
+	LocalParams *lp = &sParam.local;
+
+	if ((lp->getChangeCond() == Param::CHANGE_COND_REG_DISABLE) &&
+			(sParam.Glb.Status.getRegime() != GB_REGIME_DISABLED)) {
+		printMessage();
+	} else {
+
+		switch(lp->getParamType()) {
+			case Param::PARAM_BITES: // DOWN
+			case Param::PARAM_LIST:
+				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
+				break;
+			case Param::PARAM_INT:
+				EnterParam.setEnable(MENU_ENTER_PARAM_INT);
+				break;
+			case Param::PARAM_NO:
+				break;
+		}
+
+		if (EnterParam.isEnable()) {
+			int16_t min = lp->getMin();
+			int16_t val = lp->getValue();
+			int16_t max = lp->getMax();
+
+			// Для остальных параметров в случае ошибки текущего значения,
+			// устанавливается минимум.
+			if (lp->getState() != LocalParams::STATE_NO_ERROR) {
+				val = min;
+			}
+
+			pEnterFunc = &clMenu::enterValue;
+			EnterParam.setValueRange(min, max);
+			EnterParam.setValue(val);
+			EnterParam.list = lp->getListOfValues();
+			EnterParam.setFract(lp->getFract());
+			EnterParam.setDisc(lp->getDisc());
+		}
+	}
+}
+
+// Работа в меню настройки параметров.
+void clMenu::setupParam() {
+
+	if (isMessage()) {
+		// Вывод на экран сообщения о невозможности изменения параметра,
+		// при этом нажатые кнопки будут проигнорированы.
+		static char message[3][21] PROGMEM = {
+				//2345678901234567890
+				" Изменить параметр  ",
+				"  можно только в    ",
+				"  режиме ВЫВЕДЕН    " };
+
+		for(uint8_t i = 0, pos = 40; i < SIZE_OF(message); i++, pos += 20) {
+			snprintf_P(&vLCDbuf[pos], 21, message[i]);
+		}
+
+		key_ = KEY_NO;
+	} else {
+		// вывод на экран информации о текущем параметре
+		printParam();
+	}
+
+	if (EnterParam.isEnable()) {
+		eMENU_ENTER_PARAM stat = enterValue();
+
+		if (stat == MENU_ENTER_PARAM_READY) {
+			eGB_COM com = sParam.local.getCom();
+
+			// Если у параметра есть команда обмена с блоком БСП, идет
+			// работа по записи в БСП.
+			// Иначе идет запись в ЕЕПРОМ.
+			if (com != GB_COM_NO) {
+				// Подготовка данных для записи в БСП.
+				uint8_t dop = sParam.local.getSendDop();
+
+				switch(sParam.local.getSendType()) {
+					case GB_SEND_INT8:
+						sParam.TxComBuf.setInt8(EnterParam.getValueEnter());
+						break;
+
+					case GB_SEND_INT8_DOP:
+					case GB_SEND_DOP_INT8:
+						sParam.TxComBuf.setInt8(EnterParam.getValueEnter(), 0);
+						sParam.TxComBuf.setInt8(dop, 1);
+						break;
+
+					case GB_SEND_INT16_BE:
+						sParam.TxComBuf.setInt8(EnterParam.getValue() >> 8, 0);
+						sParam.TxComBuf.setInt8(EnterParam.getValue(), 1);
+						break;
+
+					case GB_SEND_DOP_BITES: {
+						uint8_t val = sParam.local.getValueB();
+						uint8_t pos = sParam.local.getNumOfCurrSameParam() - 1;
+						if (EnterParam.getValue()) {
+							val |= (1 << (pos % 8));
+						} else {
+							val &= ~(1 << (pos % 8));
+						}
+						sParam.TxComBuf.setInt8(val, 0);
+						sParam.TxComBuf.setInt8(1 + pos/8 , 1);
+					}
+					break;
+
+					case GB_SEND_NO:
+						com = GB_COM_NO;
+						break;
+				}
+
+				if (com != GB_COM_NO) {
+					com = (eGB_COM) (com + GB_COM_MASK_GROUP_WRITE_PARAM);
+					sParam.TxComBuf.addFastCom(com);
+					sParam.TxComBuf.setSendType(sParam.local.getSendType());
+				}
+			} else {
+				eGB_PARAM param= sParam.local.getParam();
+				if (param != GB_PARAM_NULL_PARAM) {
+					// Запись параметров в ЕЕПРОМ.
+					uint8_t tmp = EnterParam.getValueEnter();
+					if (param == GB_PARAM_INTF_INTERFACE) {
+						TInterface::INTERFACE val;
+						val = (TInterface::INTERFACE) (tmp);
+						// если интерфейс сменился, обновим меню
+						if (val != sParam.Uart.Interface.get()) {
+							sParam.Uart.Interface.set(val);
+							lvlCreate_ = true;
+						}
+					} else if (param == GB_PARAM_INTF_PROTOCOL) {
+						sParam.Uart.Protocol.set((TProtocol::PROTOCOL) (tmp));
+					} else if (param == GB_PARAM_INTF_BAUDRATE) {
+						sParam.Uart.BaudRate.set((TBaudRate::BAUD_RATE) (tmp));
+					} else if (param == GB_PARAM_INTF_DATA_BITS) {
+						sParam.Uart.DataBits.set((TDataBits::DATA_BITS) (tmp));
+					} else if (param == GB_PARAM_INTF_PARITY) {
+						sParam.Uart.Parity.set((TParity::PARITY) (tmp));
+					} else if (param == GB_PARAM_INTF_STOP_BITS) {
+						sParam.Uart.StopBits.set((TStopBits::STOP_BITS) (tmp));
+					}
+				}
+			}
+			EnterParam.setDisable();
+		}
+	}
+
+	switch(key_) {
+		case KEY_UP:
+			sParam.local.prevParam();
+			break;
+		case KEY_DOWN:
+			sParam.local.nextParam();
+			break;
+
+		case KEY_LEFT:
+			sParam.local.prevSameParam();
+			break;
+		case KEY_RIGHT:
+			sParam.local.nextSameParam();
+			break;
+
+		case KEY_ENTER:
+			enterParameter();
+			break;
+
+		default:
+			break;
+	}
+
+	// подмена команды, на команду текущего уровня меню + быстрая команда
+	if (sParam.local.getState() == LocalParams::STATE_READ_PARAM) {
+
+		eGB_COM com = sParam.local.getCom();
+		sParam.TxComBuf.addFastCom(com);
+		sParam.TxComBuf.addCom1(com, 0);
+	}
+
+	// выход из текущего уровня меню, если кол-во параметров равно 0
+	if (sParam.local.getNumOfParams() == 0) {
+		key_ = KEY_CANCEL;
+	}
+}

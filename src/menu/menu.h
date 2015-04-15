@@ -11,6 +11,7 @@
 #include "keyboard.h"
 #include "glbDefine.h"
 #include "paramBsp.h"
+#include "LocalParams.h"
 
 /// время одно цикла работы с меню, мс
 #define MENU_TIME_CYLCE 200
@@ -19,9 +20,6 @@
 #define TIME_TO_INIT_LCD (200 / MENU_TIME_CYLCE)
 /// время до переинициализации дисплея, мс
 #define TIME_TO_REINIT_LCD (10000 / MENU_TIME_CYLCE)
-
-/// максимальное кол-во пунктов в меню
-#define MAX_NUM_PUNKTS 20
 
 /// максимальное кол-во отображаемых на экране параметров
 #define MAX_NUM_MEAS_PARAM 10
@@ -117,6 +115,7 @@ public:
 		status_ = MENU_ENTER_PARAM_NO;
 		cnt_ = TIME_MESSAGE;
 		com = GB_COM_NO;
+		disc_ = 1;
 	}
 
 	// диапазон значений
@@ -169,7 +168,8 @@ public:
 	 */
 	uint16_t incValue(uint8_t velocity = 0) {
 		eMENU_ENTER_PARAM s = status_;
-		if ((s == MENU_ENTER_PARAM_INT) || (s == MENU_ENTER_PARAM_COMP_D)) {
+		if ((s == MENU_ENTER_PARAM_INT) 		||
+				(s == MENU_ENTER_PARAM_COMP_D)) {
 			// увеличение значения
 //			val_ = (val_ <= (max_ - disc_)) ? val_ + disc_ : min_;
 			uint16_t disc = disc_;
@@ -315,6 +315,8 @@ private:
 
 /// Структура пункта меню
 class TMenuPunkt {
+	/// максимальное кол-во пунктов в меню
+	static const uint8_t  MAX_NUM_PUNKTS = 20;
 public:
 	/**	Конструктор.
 	 */
@@ -334,7 +336,7 @@ public:
 	bool add(PGM_P name, eGB_COM com=GB_COM_NO) {
 		bool stat = false;
 		if (cnt_ < MAX_NUM_PUNKTS) {
-			pName_[cnt_] = name;
+			name_[cnt_] = name;
 			com_[cnt_] = com;
 			cnt_++;
 			stat = true;
@@ -375,7 +377,7 @@ public:
 	bool change(PGM_P name, eGB_COM com, uint8_t num) {
 		bool stat = false;
 		if (num < cnt_) {
-			pName_[num] = name;
+			name_[num] = name;
 			com_[num] = com;
 			stat = true;
 		}
@@ -390,7 +392,7 @@ public:
 //		if (num >= cnt_)
 //			num = 0;
 //		return name_[num];
-		return ((num < cnt_) ? pName_[num] : 0);
+		return ((num < cnt_) ? name_[num] : 0);
 	}
 
 	/**	Возвращает номер эелемента массива с именем указанного пункта меню.
@@ -423,7 +425,7 @@ private:
 	/// текущее кол-во пунктов
 	uint8_t cnt_;
 	/// указатель на имя пункта
-	PGM_P pName_[MAX_NUM_PUNKTS];
+	PGM_P name_[MAX_NUM_PUNKTS];
 	/// номер пункта, используется с массивами
 	uint8_t number_[MAX_NUM_PUNKTS];
 	/// команда для запроса из БСП, необходимая для данного пункта меню
@@ -523,6 +525,16 @@ private:
 	// Вывод в пунтке меню "Режим" текущего режима устройств.
 	void printDevicesRegime(uint8_t poz, TDeviceStatus *device);
 
+	// вывод сообщения на экран
+	void printMessage() {
+		delay_ = 0;
+	}
+
+	// возвращает true - в случае необходимости вывода сообщения
+	bool isMessage() const {
+		return (delay_ < TIME_MESSAGE);
+	}
+
 	// Уровни меню
 	void lvlError();
 	void lvlStart();
@@ -559,14 +571,75 @@ private:
 	// вывод на экран текущих пунктов меню и курсора
 	void printPunkts();
 
-	// возвращает текущий номер неисправности/предупреждения
-//	uint8_t getNumError(uint16_t val);
+	/// Вывод на экран текущего параметра.
+	void printParam();
+
+	/// Вывод на экран названия параметра.
+	void printName();
+
+	///	Вывод на экран текущего номера и их колчиество для однотипных пар-ов.
+	void printSameNumber(uint8_t pos);
+
+	///	Вывод на экран диапазона значений параметра.
+	void printRange(uint8_t pos);
+
+	/**	Вывод на экран текущего значения параметра.
+	 *
+	 * 	Если значение параметра записано с ошибкой, будет поочердено выводится
+	 * 	предупреждающая надпись и текущее значение параметра.
+	 *
+	 * 	Для строковых параметров учитывается минимальное значение. Т.е. из
+	 * 	текущего значения параметра вычитается минимальное значение, а затем
+	 * 	осуществляется выбор из массива строк значений параметра.
+	 */
+	void printValue(uint8_t pos);
+
+	/**	Настройка параметров для ввода значения с клавиатуры.
+	 *
+	 *	Для параметров типа \a Param::PARAM_NO функция ввода значения не
+	 *	вызывается.
+	 *
+	 * 	Для параметров типа \a Param::PARAM_LIST вызывается функция выбора
+	 * 	значения из списка.
+	 *
+	 * 	Для параметров типа \a Param::PARAM_INT вызывается функция ввода
+	 * 	целого числа.
+	 *
+	 * 	Для параметров типа \a Param::PARAM_U_COR вызывается функция ввода
+	 * 	коррекции напряжения, а также минимальное значение подменяется на 0.
+	 *
+	 * 	Для параметров типа \a Param::PARAM_I_COR вызывается функция ввода целого
+	 * 	числа, при этом минимальное значение подменяется на 0.
+	 *
+	 * 	Для параметров типа \a Param::PARAM_BITES вызывается функция выбора
+	 * 	значения из списка.
+	 */
+	void enterParameter();
+
+	/// Формирование списка локальных параметров для Защиты.
+	void crtListOfParamsDef();
+
+	/// Формирование списка локальных параметров для Приемника.
+	void crtListOfParamsPrm();
+
+	/// Формирование списка локальных параметров для Передатчика.
+	void crtListOfParamsPrd();
+
+	/// Формирование списка локальных параметров для Общие.
+	void crtListOfParamsGlb();
 
 	// текущая функция ввода
 	eMENU_ENTER_PARAM (clMenu::*pEnterFunc)();
 
 	// текущий уровень меню
-	void (clMenu::*pLvlMenu)();
+	void (clMenu::*lvlMenu)();
+
+	/** Работа в меню настройки параметров.
+	 *
+	 * 	Если текущее количество параметров равно 0, то будет осуществлен возврат
+	 * 	к предыдущему уровню.
+	 */
+	void setupParam();
 };
 
 #endif /* MENU_H_ */

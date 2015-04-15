@@ -20,51 +20,65 @@ clProtocolS(buf, size, sParam) {
 }
 
 /**	Обработка принятого сообщения.
- * 	@param Нет
+ *
+ * 	@param pc True - команда запрошенная с ПК, False - запрошенная с ПИ-БСП.
  * 	@return True - в случае успешной обработки, False - в случае ошибки.
  */
-bool clProtocolBspS::getData() {
+bool clProtocolBspS::getData(bool pc) {
 	bool stat = false;
 	uint8_t mask = 0;
 	eGB_COM com = (eGB_COM) buf[2];
 
 	// сообщение обработано, выставим флаг на чтение
-	this->stat_ = PRTS_STATUS_NO;
+	stat_ = PRTS_STATUS_NO;
 
-	switch(com & GB_COM_MASK_GROUP) {
+	mask = com & GB_COM_MASK_GROUP;
+	// ответ на команду изменения параметра/режима не требуется
+	if ((mask == GB_COM_MASK_GROUP_WRITE_PARAM)
+			|| (mask == GB_COM_MASK_GROUP_WRITE_REGIME)) {
+		stat = true;
+	} else {
+		mask = com & GB_COM_MASK_DEVICE;
 
-		case GB_COM_MASK_GROUP_READ_PARAM:		// команды чтения параметров
-			// vvv ВНИЗ vvv
-		case GB_COM_MASK_GROUP_READ_JOURNAL:	// команды чтения журналов
-			switch(com & GB_COM_MASK_DEVICE) {
-				case  GB_COM_MASK_DEVICE_GLB:
-					// команды чтения общие
-					stat = getGlbCommand(com);
+		if (mask == GB_COM_MASK_DEVICE_GLB)
+			stat = getGlbCommand(com, pc);				// команды общие
+
+		LocalParams *lp = &sParam_->local;
+
+		if (com == lp->getCom()) {
+			// по умолчанию загружается значение первого байта,
+			// на отличные от этого параметры далее ведется проверка
+			int16_t val = -1000;
+			switch(lp->getParam()) {
+				case GB_PARAM_FREQ:
+					val = TO_INT16(buf[B1], buf[B2]);
 					break;
-				case GB_COM_MASK_DEVICE_RPS:
-					// команды чтения терминала
-					stat = getRpsCommand(com);
+//				case GB_PARAM_PRD_COM_LONG:		// DOWN
+//				case GB_PARAM_PRD_COM_BLOCK:	// DOWN
+//				case GB_PARAM_PRD_DR_COM_BLOCK:	// DOWN
+//				case GB_PARAM_PRM_COM_BLOCK:	// DOWN
+//				case GB_PARAM_PRM_DR_COM_BLOCK:
+//					val = buf[B1 + (lp->getNumOfCurrSameParam() - 1) / 8];
+//					break;
+				default:
+					val = buf[B1 + lp->getNumOfCurrSameParam() - 1];
 					break;
 			}
-			break;
 
-		case GB_COM_MASK_GROUP_WRITE_PARAM:		// команды записи параметров
-			// обработка ответа команды записи не требуется
-			stat = true;
-			break;
-
-		case GB_COM_MASK_GROUP_WRITE_REGIME:	// команды изменения режимов
-			// обработка ответа команды изменения режима не требуется
-			stat = true;
-			break;
+			// Для битовых переменных передается указатель на начало данных,
+			// а для остальных текущее значение.
+			lp->setValue(val);
+		}
 	}
 
 	return stat;
 }
 
 /**	Формирование посылки и отправка заданной команды.
+ *
  * 	По-умолчанию в сообщении опроса параметра посылается только код команды.
  * 	По-умолчанию в сообщениии изменения параметра посылается 1 байт данных.
+ *
  * 	@param com Команда на передачу
  * 	@return Кол-во передаваемых бйт
  */
@@ -72,60 +86,62 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 	uint8_t num = 0;
 	uint8_t mask = 0;
 
-	mask = com & GB_COM_MASK_DEVICE;
 
-	switch(com & GB_COM_MASK_GROUP) {
+	mask = com & GB_COM_MASK_GROUP;
 
-		case GB_COM_MASK_GROUP_WRITE_PARAM: {
-			// команды на изменение параметров
-			switch(com & GB_COM_MASK_DEVICE) {
-				case GB_COM_MASK_DEVICE_GLB:
-					num = sendModifGlbCommand(com);
+	if (mask == GB_COM_MASK_GROUP_WRITE_PARAM) {
+		// команды изменения параметров
+
+		eGB_SEND_TYPE sendType = sParam_->TxComBuf.getSendType();
+
+		if (com == GB_COM_SET_TIME) {
+			num = addCom(com, 6, sParam_->TxComBuf.getBuferAddress());
+		} else 	if (sendType != GB_SEND_NO) {
+			uint8_t val = sParam_->TxComBuf.getInt8(0);
+			uint8_t dop = sParam_->TxComBuf.getInt8(1);
+
+			switch(sendType) {
+				case GB_SEND_INT8:
+					num = addCom(com, val);
 					break;
-				case GB_COM_MASK_DEVICE_PRM:
-					// GB_COM_SET_PRM_RES_IND
-					num = addCom(com);
+				case GB_SEND_INT8_DOP:
+					num = addCom(com, val, dop);
 					break;
-				case GB_COM_MASK_DEVICE_RPS:
-					num = sendModifRpsCommand(com);
+				case GB_SEND_DOP_INT8:	// DOWN
+				case GB_SEND_DOP_BITES:
+					num = addCom(com, dop, val);
+					break;
+				case GB_SEND_INT16_BE:
+					num = addCom(com, val, dop);
+					break;
+				case GB_SEND_NO:
 					break;
 			}
 		}
-		break;
+	} else if (mask == GB_COM_MASK_GROUP_WRITE_REGIME) {
+		// команды изменения Режимов Работы и работы с Тестами
+		// по умолчанию отправляется только код команды
 
-		case GB_COM_MASK_GROUP_WRITE_REGIME: {
-			// команды на изменение режимов работы
-			if (com == GB_COM_SET_CONTROL) {
-				num = addCom(com, sParam_->TxComBuf.getInt8());
-			} else {
-				// GB_COM_SET_PRM_ENTER
-				// GB_COM_SET_REG_DISABLED
-				// GB_COM_SET_REG_ENABLED
-				num = addCom(com);
-			}
+		if (com == GB_COM_SET_CONTROL) {
+			num = addCom(com, sParam_->TxComBuf.getInt8());
+		} else {
+			// GB_COM_PRM_ENTER
+			// GB_COM_SET_REG_DISABLED
+			// GB_COM_SET_REG_ENABLED
+			// GB_COM_SET_REG_TEST_2
+			// GB_COM_SET_REG_TEST_1
+			num = addCom(com);
 		}
-		break;
-
-		case GB_COM_MASK_GROUP_READ_PARAM: {
-			// команды считывания параметров
-			if (com == GB_COM_GET_MEAS) {
-				// для получения всех измеряемых параметров посылаем БД = 0.
-				num = addCom(com, 0);
-			} else if (com == GB_COM_GET_COMP_DELAY)
-				// для получения компенсации задежки посылаем БД = 2.
-				// для получения всех общих параметров посылаем БД = 1.
-				num = addCom(com, 2);
-			else {
-				num = addCom(com);
-			}
-		}
-		break;
-
-		case GB_COM_MASK_GROUP_READ_JOURNAL: {
-			// команды считывания журналов, в том числе и кол-ва записей
-			num = sendReadJrnCommand(com);
-		}
-		break;
+	} else if (mask == GB_COM_MASK_GROUP_READ_PARAM) {
+		// команды опроса параметров
+		// по умолчанию отправляется только код команды
+		if (com == GB_COM_GET_MEAS)
+			num = addCom(com, 0);
+		else
+			num = addCom(com);
+	} else if (mask == GB_COM_MASK_GROUP_READ_JOURNAL) {
+		// команды считывания журналов, в том числе и кол-ва записей
+		num = sendReadJrnCommand(com);
 	}
 
 	// установка статуса, в зависимости от необходимости передачи сообщения
@@ -138,7 +154,7 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
  * 	@param com	Код команды
  * 	@return True - в случае успешной обработки, False - в случае ошибки.
  */
-bool clProtocolBspS::getGlbCommand(eGB_COM com) {
+bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 	bool stat = false;
 
 	switch (com) {
@@ -210,30 +226,6 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 		}
 		break;
 
-		case GB_COM_GET_COMP_DELAY: {
-			// компенсация задержки
-			stat = sParam_->Glb.setCompDelay(buf[B1]);
-		}
-		break;
-
-		case GB_COM_GET_CURR_MAX: {
-			// максимальный ток
-			stat = sParam_->Glb.setCurrMax(buf[B1]);
-		}
-		break;
-
-		case GB_COM_GET_CURR_MIN: {
-			// минимальный ток
-			stat = sParam_->Glb.setCurrMin(buf[B1]);
-		}
-		break;
-
-		case GB_COM_GET_VOLT_MIN : {
-			// минимальное напряжение
-			stat = sParam_->Glb.setVoltMin(buf[B1]);
-		}
-		break;
-
 		case GB_COM_GET_JRN_CNT: {
 			// кол-во записей в журнале событий
 			if (sParam_->JrnEntry.getCurrentDevice() == GB_DEVICE_GLB) {
@@ -273,83 +265,6 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com) {
 	return stat;
 }
 
-/**	Обработка принятой команды Терминала
- * 	@param com	Код команды
- * 	@retval True В случае успешной обработки
- * 	@retval False В случае ошибки.
- */
-bool clProtocolBspS::getRpsCommand(eGB_COM com) {
-	bool stat = false;
-
-	switch (com) {
-		case GB_COM_GET_JRN_CNT: {
-			// кол-во записей в журнале событий
-			if (sParam_->JrnEntry.getCurrentDevice() == GB_DEVICE_RPS) {
-				uint16_t t = TO_INT16(buf[B2], buf[B1]);
-				stat = sParam_->JrnEntry.setNumJrnEntry(t);
-			}
-		}
-		break;
-
-		case GB_COM_GET_JRN_ENTRY: {
-			// запись журнала событий
-			if (sParam_->JrnEntry.getCurrentDevice() == GB_DEVICE_RPS) {
-				// дата
-				sParam_->JrnEntry.dataTime.setYear(BCD_TO_BIN(buf[B16]));
-				sParam_->JrnEntry.dataTime.setMonth(BCD_TO_BIN(buf[B15]));
-				sParam_->JrnEntry.dataTime.setDay(BCD_TO_BIN(buf[B14]));
-				// B13 - день недели
-				// время
-				sParam_->JrnEntry.dataTime.setHour(BCD_TO_BIN(buf[B12]));
-				sParam_->JrnEntry.dataTime.setMinute(BCD_TO_BIN(buf[B11]));
-				sParam_->JrnEntry.dataTime.setSecond(BCD_TO_BIN(buf[B10]));
-				uint16_t t = TO_INT16(buf[B9], buf[B8]);
-				sParam_->JrnEntry.dataTime.setMsSecond(t);
-				// ! B1 - тип устройства, на данный момент игнорируется
-				sParam_->JrnEntry.setReady();
-				stat = true;
-			}
-		}
-		break;
-
-		default:
-			break;
-
-	}
-
-	return stat;
-}
-
-/**	Формирование сообщения Общей команды.
- * 	@param com Команда на передачу
- * 	@return Кол-во передаваемых бйт
- */
-uint8_t clProtocolBspS::sendModifGlbCommand(eGB_COM com) {
-	uint8_t num = 0;
-	uint8_t b1 = sParam_->TxComBuf.getInt8(0);
-//	uint8_t b2 = sParam_->txComBuf.getInt8(1);
-
-	if (com == GB_COM_SET_TIME) {
-		num = addCom(com, 6, sParam_->TxComBuf.getBuferAddress());
-	}  else {
-		// по умолчанию передается один байт
-		num = addCom(com, b1);
-	}
-
-	return num;
-}
-
-/**	Формирование сообщения команды Терминала.
- * 	@param com Команда на передачу
- * 	@return Кол-во передаваемых бйт
- */
-uint8_t clProtocolBspS::sendModifRpsCommand(eGB_COM com) {
-	uint8_t num = 0;
-//	uint8_t b1 = sParam_->txComBuf.getInt8(0);
-//	uint8_t b2 = sParam_->txComBuf.getInt8(1);
-
-	return num;
-}
 
 /**	Формирование сообщения команды считавания кол-ва и самих записей журнала.
  * 	@param com Команда на передачу

@@ -7,8 +7,7 @@
 
 #include <avr/pgmspace.h>
 #include "glbDefine.h"
-
-#define STRING_LENGHT 11
+#include "flashParams.h"
 
 static const char fcNull[] PROGMEM = "";
 
@@ -30,9 +29,6 @@ static const char fcUB[]	PROGMEM = "Ub=%02uкВ";
 static const char fcUC[]	PROGMEM = "Uc=%02uкВ";
 static const char fcDate[] 	PROGMEM = "%02u.%02u.%02u";
 static const char fcTime[] 	PROGMEM = "%02u:%02u:%02u";
-
-// имена устройств аппарата
-static const char fcDeviceName00[] PROGMEM = "ЗАЩ";
 
 // режимы устройств
 static const char fcRegime[GB_REGIME_MAX + 1][8] PROGMEM = {
@@ -66,67 +62,11 @@ static const char fcRegimeEnter[GB_REGIME_ENTER_MAX][STRING_LENGHT] PROGMEM = {
 		"Введен",	//
 };
 
-
-static const char fcOnOff[3][STRING_LENGHT] PROGMEM = {
-// 		 1234567890
-		"выкл.",	//
-		"вкл.",		//
-		"ошибка"	//
-};
-
 static const char fcDevices[GB_DEVICE_MAX + 1][4] PROGMEM = {
 // 		 123
 		"ЗАЩ",	//
 		"ОБЩ",	//
 		"ОШБ"	//
-};
-
-static char fcInterface[GB_INTERFACE_MAX + 1][STRING_LENGHT] PROGMEM = {
-//	 	 1234567890
-		"USB",		//
-		"RS485",	//
-		"ошибка"	//
-};
-
-static char fcBaudRate[UART_BAUD_RATE_MAX + 1][STRING_LENGHT] PROGMEM = {
-//		 1234567890
-		"1200",		//
-		"2400",		//
-		"4800",		//
-		"9600",		//
-		"19200",	//
-		"38400",	//
-		"57600",	//
-		"ошибка"	//
-};
-
-static char fcDataBits[UART_DATA_BITS_MAX + 1][STRING_LENGHT] PROGMEM = {
-//		 1234567890
-		"8",		//
-		"ошибка"	//
-};
-
-static char fcParity[UART_PARITY_MAX + 1][STRING_LENGHT] PROGMEM = {
-//		 1234567890
-		"нет",		//
-		"чет",		//
-		"нечет",	//
-#ifdef UART_PARITY_MARK
-		"Маркер",
-#endif
-#ifdef UART_PARITY_SPACE
-		"Пробел",
-#endif
-		"ошибка"
-};
-
-static char fcStopBits[UART_STOP_BITS_MAX + 1][STRING_LENGHT] PROGMEM = {
-//		 1234567890
-		"1",		//
-#ifdef UART_STOP_BITS_ONEPONTFIVE
-		"1.5",		//
-#endif
-		"2",		//
 };
 
 // состояния устройств

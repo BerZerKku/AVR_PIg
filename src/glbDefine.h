@@ -19,6 +19,9 @@
 #include <avr/pgmspace.h>
 #include "debug.h"
 
+/// размер массива
+#define SIZE_OF(mas) (sizeof(mas) / sizeof(mas[0]))
+
 /// пароль администратора
 #define PASSWORD_ADMIN 6352
 
@@ -55,6 +58,11 @@
 /// максимальное кол-во команд во втором буфере
 #define MAX_NUM_COM_BUF2 5
 
+// длина половины строки (+1 - символ конца строки)
+#define STRING_LENGHT (11 + 1)
+
+// длина строки (+1 - символ конца строки)
+#define NAME_PARAM_LENGHT (20 + 1)
 
 /// максимальное и минимальный код типа событий в журнале событий
 #define MIN_JRN_EVENT_VALUE 1
@@ -100,6 +108,24 @@ enum eGB_NUM_DEVICES {
 	GB_NUM_DEVICES_MAX
 };
 
+/// Параметры (связаны с fParams)
+enum eGB_PARAM {
+	GB_PARAM_NULL_PARAM = 0,	///< параметр заглушка
+	GB_PARAM_FREQ,				///< частота
+	GB_PARAM_COMP_D,			///< компенсация задержки
+	GB_PARAM_CURR_MAX,			///< максимальный ток
+	GB_PARAM_CURR_MIN,			///< минимальный ток
+	GB_PARAM_VOLT_MIN,			///< минимальное напряжение
+	// параметры интерфейса
+	GB_PARAM_INTF_INTERFACE,	///< интерфейс связи
+	GB_PARAM_INTF_PROTOCOL,		///< протокол
+	GB_PARAM_INTF_BAUDRATE,		///< скорость передачи
+	GB_PARAM_INTF_DATA_BITS,	///< биты данных
+	GB_PARAM_INTF_PARITY,		///< четность
+	GB_PARAM_INTF_STOP_BITS,	///< стоповые биты
+	GB_PARAM_NET_ADDRESS		///< адрес в локальной сети
+};
+
 /// Режимы работы
 enum eGB_REGIME {
 	GB_REGIME_MIN = 0, 				//
@@ -121,6 +147,16 @@ enum eGB_REGIME_ENTER {
 	GB_REGIME_ENTER_MAX
 };
 
+/// Тип параметра, в плане сохранения нового значения.
+enum eGB_SEND_TYPE {
+	GB_SEND_NO,			///< Команды стандартного протокола нет
+	GB_SEND_INT8,		///< Передается один байт данных.
+	GB_SEND_INT8_DOP,	///< Передается два байта данных (значение, доп.байт).
+	GB_SEND_DOP_INT8,	///< Передается два байта данных (доп.байт, значение).
+	GB_SEND_INT16_BE,	///< Передается два байта данных (in16>>8, int16&0xFF).
+	GB_SEND_DOP_BITES	///< Передается битовая переменная (значение, доп.байт).
+};
+
 /// Команды
 enum eGB_COM {
 										// + означает что команда задукоментирована
@@ -133,6 +169,7 @@ enum eGB_COM {
 	GB_COM_GET_CURR_MAX 		= 0x36, // +
 	GB_COM_GET_CURR_MIN	 		= 0x37,	// +
 	GB_COM_GET_VOLT_MIN 		= 0x38,	// +
+	GB_COM_GET_FREQ 			= 0x3A,	// +
 	GB_COM_GET_VERS 			= 0x3F,	// +
 	GB_COM_SET_PRM_ENTER 		= 0x51,	// +
 	GB_COM_SET_REG_DISABLED 	= 0x70,	// +
@@ -146,6 +183,7 @@ enum eGB_COM {
 	GB_COM_SET_CURR_MAX 		= 0xB6, // +
 	GB_COM_SET_CURR_MIN	 		= 0xB7, // +
 	GB_COM_SET_VOLT_MIN 		= 0xB8,	// +
+	GB_COM_SET_FREQ 			= 0xBA,	// +
 	GB_COM_GET_JRN_CNT 			= 0xF1,	// +
 	GB_COM_GET_JRN_ENTRY 		= 0xF2,	// +
 	GB_COM_JRN_CLR 				= 0xFA	// ! стирание журнала событий, только с ПК
@@ -367,7 +405,7 @@ public:
 	TDeviceStatus() {
 		// присваивание иемени по умолчанию
 		static const char nameDev[] PROGMEM = "НЕТ";
-		pName = nameDev;
+		name = nameDev;
 		enable_ = true;
 		fault_ = 0;
 		faults_ = 0;
@@ -457,7 +495,7 @@ public:
 	PGM_P pFaultText[MAX_NUM_FAULTS];
 	PGM_P pWarningText[MAX_NUM_WARNINGS];
 	PGM_P pStateText[MAX_NUM_DEVICE_STATE + 1];
-	PGM_P pName;
+	PGM_P name;
 
 private:
 	// текущая приоритетная неисправность, неисправности и кол-во неисправностей
@@ -864,6 +902,8 @@ private:
 
 // класс для передачи команд
 class TTxCom {
+	static const uint8_t BUFFER_SIZE = 6;
+
 public:
 	TTxCom() {
 		clear();
@@ -873,13 +913,19 @@ public:
 	void clear() {
 		numCom1_ = numCom2_ = 0;
 		cnt1_ = cnt2_ = 0;
-		for(uint_fast8_t i = 0; i < MAX_NUM_FAST_COM; i++)
+		for(uint_fast8_t i = 0; i < MAX_NUM_FAST_COM; i++) {
 			comFast_[i] = GB_COM_NO;
+		}
+		for(uint_fast8_t i = 0; i < BUFFER_SIZE; i++) {
+			buf_[i] = 0;
+		}
 		com1_[0] = com2_[0] = GB_COM_NO;
+		sendType = GB_SEND_NO;
 	}
 
 	/** Запись команды в буфер 1.
-	 * 	Если num >= 0 то происходит замена имеющейся команды в буфере,
+	 *
+	 * 	Если num > 0 то происходит замена имеющейся команды в буфере,
 	 * 	если num < 0 команда добавляется.
 	 * 	@param com Код команды.
 	 * 	@param num Индекс элемента в буфере.
@@ -935,6 +981,7 @@ public:
 	}
 
 	/**	Запись срочной команды в конец очереди.
+	 *
 	 * 	@param com Код срочной команды
 	 */
 	void addFastCom(eGB_COM com) {
@@ -969,7 +1016,7 @@ public:
 	 * 	@param num Индекс элемента массива.
 	 */
 	void setInt8(uint8_t byte, uint8_t num = 0) {
-		if (num < 6)
+		if (num < BUFFER_SIZE)
 			buf_[num] = byte;
 	}
 
@@ -979,7 +1026,7 @@ public:
 	 */
 	uint8_t getInt8(uint8_t num = 0) const {
 		uint8_t byte = 0;
-		if (num < 6)
+		if (num < BUFFER_SIZE)
 			byte = buf_[num];
 		return byte;
 	}
@@ -1007,27 +1054,41 @@ public:
 		return buf_;
 	}
 
+	/**	Возвращает тип команды на передачу.
+	 *
+	 * 	@return Тип команды на передачу
+	 */
+	eGB_SEND_TYPE getSendType() const {
+		return sendType;
+	}
+
+	/**	Установка типа команды на передачу.
+	 *
+	 * 	@param sendType Тип команды на передачу.
+	 */
+	void setSendType(eGB_SEND_TYPE sendType) {
+		this->sendType = sendType;
+	}
+
 private:
-	// буфер данных
-	uint8_t buf_[6];
+	// тип передаваемой команды
+	eGB_SEND_TYPE sendType;
 	// срочная команда (на изменение)
 	eGB_COM comFast_[MAX_NUM_FAST_COM];
-
 	// первый буфер команд
 	eGB_COM com1_[MAX_NUM_COM_BUF1];
-	// номер текущей команды в первом буфере
-	uint8_t cnt1_;
 	// кол-во команд в первом буфере
 	uint8_t numCom1_;
-
+	// номер текущей команды в первом буфере
+	uint8_t cnt1_;
 	// второй буфер команд
 	eGB_COM com2_[MAX_NUM_COM_BUF2];
-	// номер текущей команды во втором буфере
-	uint8_t cnt2_;
 	// кол-во команд во втором буфере
 	uint8_t numCom2_;
-
-
+	// номер текущей команды во втором буфере
+	uint8_t cnt2_;
+	// буфер данных
+	uint8_t buf_[BUFFER_SIZE];
 };
 
 class TJournalEntry {

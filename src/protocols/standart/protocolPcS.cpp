@@ -44,3 +44,29 @@ bool clProtocolPcS::getData()
 
 	return stat;
 }
+
+bool clProtocolPcS::modifyVersionCom() {
+	bool state = false;
+
+	if (getCurrentCom() == GB_COM_GET_VERS) {
+		uint8_t crc = buf[maxLen_ - 1];
+		uint8_t len = buf[3];
+		if ( len < 19) {
+			for(uint8_t i = len + 4; len < 19; i++, len++) {
+				buf[i] = 0x00;
+			}
+			crc += 19 - buf[3];
+			buf[3] = len;
+			maxLen_ = len + 5;
+		} else {
+			crc -= buf[B18];
+			crc -= buf[B19];
+		}
+		uint16_t vers = sParam_->Glb.getVersProgIC(GB_IC_PI_MCU);
+		crc += (buf[B18] = (vers >> 8));
+		crc += (buf[B19] = (vers & 0xFF));
+		buf[maxLen_ - 1] = crc;
+	}
+
+	return state;
+}

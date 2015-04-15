@@ -12,6 +12,7 @@
 #include "paramGlb.h"
 #include "paramRps.h"
 #include "paramUart.h"
+#include "LocalParams.h"
 
 
 /// Структура параметров БСП
@@ -26,6 +27,8 @@ struct stGBparam {
 	TPassword			Password;		///< Пароль
 	TTxCom 				TxComBuf;		///< Буфер команд
 	TUartData 			Uart;			///< Параметры последовательного порта
+
+	LocalParams local;					///< локальные параметры
 };
 
 #endif /* PARAMBSP_H_ */

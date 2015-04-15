@@ -53,18 +53,12 @@ enum eLCD_LED
 #define NUM_POINT_VERT 64
 #define NUM_LINE (NUM_PINT_VERT / 8)
 
-
-bool vLCDcheckBusy	(void);
 void vLCDclear		(void);
-void vLCDcom		(uint8_t com, uint8_t cs);
-void vLCDdata		(uint8_t data, uint8_t cs);
 void vLCDinit		(void);
 void vLCDmain		(void);
 void vLCDrefresh	(void);
-void vLCDsetXY		(uint8_t x, uint8_t y);
 bool vLCDdrawBoard	(uint8_t num);
 bool vLCDputchar	(const char* buf, uint8_t num);
-
 void vLCDsetLed		(eLCD_LED val);
 void vLCDled		();
 
