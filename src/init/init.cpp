@@ -30,7 +30,7 @@ low_level_init()
 
 	// Порт B
 	DDRB = 0x00;
-	PORTB = ~0x00;
+	PORTB = 0xFF;
 
 	// Порт С
 	// PORTC.0 = KEY5	- вход +
@@ -78,7 +78,8 @@ low_level_init()
 	PORTG= ~0x00;
 
 #ifdef DEBUG
-	DDR_DBG |= (PIN_TP1 | PIN_TP2);
+	// TODO Отказывается компилироваться при включенной строке.
+//	DDRE |= (PIN_TP1 | PIN_TP2);
 #endif
 
 	// Обнуление регистра

@@ -86,11 +86,17 @@ void LocalParams::setValue(int16_t val) {
 int16_t LocalParams::getValue() const {
 	int16_t v = val;
 
-	if (getParamType() == Param::PARAM_BITES) {
+	Param::PARAM_TYPE type = getParamType();
+
+	if (type == Param::PARAM_BITES) {
 		uint8_t cur = getNumOfCurrSameParam() - 1;
 		uint8_t bite = cur % 8;
 
 		v = ((val & (1 << bite)) > 0) ? 1 : 0;
+	} else if (type == Param::PARAM_BITE) {
+		uint8_t pos = pgm_read_byte(&getPtrParam()->posBite);
+
+		v = (v & getMaskBite()) >> pos;
 	}
 
 	return v;
@@ -187,6 +193,18 @@ uint8_t LocalParams::getSendDop() const {
 	return dop;
 }
 
+//	”становка значени€ неоднородного битового параметра \a Param::PARAM_BITE.
+uint8_t LocalParams::getNewBiteValue(uint8_t nval) const {
+	uint8_t v = static_cast<uint8_t> (val);
+	uint8_t mask = getMaskBite();
+	uint8_t pos = pgm_read_byte(&getPtrParam()->posBite);
+
+	v &= ~mask;
+	v |= nval << pos;
+
+	return v;
+}
+
 //	ѕроверка установленного значени€ параметра на корректность.
 void LocalParams::checkValue() {
 	// ƒл€ совместимости с битовыми переменными \a Param::PARAM_BITES
@@ -204,4 +222,16 @@ void LocalParams::checkValue() {
 void LocalParams::refreshParam() {
 	val = 0;
 	state = STATE_READ_PARAM;
+}
+
+//	¬озвращает маску дл€ неоднородных битовых параметров \a Param::PARAM_BITE.
+uint8_t LocalParams::getMaskBite() const {
+	uint8_t mask = 0;
+	uint8_t max = getMax();
+
+	for(uint8_t i = 0; max > 0; max /= 2) {
+		mask |= (1 << i++);
+	}
+
+	return mask;
 }

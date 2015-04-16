@@ -112,10 +112,10 @@ enum eGB_NUM_DEVICES {
 enum eGB_PARAM {
 	GB_PARAM_NULL_PARAM = 0,	///< параметр заглушка
 	GB_PARAM_FREQ,				///< частота
-	GB_PARAM_COMP_D,			///< компенсация задержки
-	GB_PARAM_CURR_MAX,			///< максимальный ток
-	GB_PARAM_CURR_MIN,			///< минимальный ток
-	GB_PARAM_VOLT_MIN,			///< минимальное напряжение
+	GB_PARAM_SUBST_NUM,			///< номер подстанции (конфигурация терминала)
+	GB_PARAM_RPS_TYPE,			///< тип защиты (конфигурация терминала)
+	GB_PARAM_BLOCK_ON,			///< включение блокировки (конфигурация терминала)
+	GB_PARAM_PHASE_OFF,			///< отключение фаз (конфигурация терминала)
 	// параметры интерфейса
 	GB_PARAM_INTF_INTERFACE,	///< интерфейс связи
 	GB_PARAM_INTF_PROTOCOL,		///< протокол
@@ -147,14 +147,22 @@ enum eGB_REGIME_ENTER {
 	GB_REGIME_ENTER_MAX
 };
 
-/// Тип параметра, в плане сохранения нового значения.
-enum eGB_SEND_TYPE {
-	GB_SEND_NO,			///< Команды стандартного протокола нет
-	GB_SEND_INT8,		///< Передается один байт данных.
-	GB_SEND_INT8_DOP,	///< Передается два байта данных (значение, доп.байт).
-	GB_SEND_DOP_INT8,	///< Передается два байта данных (доп.байт, значение).
-	GB_SEND_INT16_BE,	///< Передается два байта данных (in16>>8, int16&0xFF).
-	GB_SEND_DOP_BITES	///< Передается битовая переменная (значение, доп.байт).
+/// Тип команды на запись нового значения параметра.
+enum eGB_SEND_WR_TYPE {
+	GB_SEND_WR_NO,			///< Команды стандартного протокола нет.
+	GB_SEND_WR_INT8,		///< Передается один байт данных.
+	GB_SEND_WR_INT8_DOP,	///< Передается два байта данных (значение, доп.байт).
+	GB_SEND_WR_DOP_INT8,	///< Передается два байта данных (доп.байт, значение).
+	GB_SEND_WR_INT16_BE,	///< Передается два байта данных (in16>>8, int16&0xFF).
+	GB_SEND_WR_DOP_BITES,	///< Передается битовая переменная (значение, доп.байт).
+	GB_SEND_WR_DOP_BITE		///< Передается не однородная битовая переменная (доп.байт, значени)
+};
+
+/// Тип команды на чтение значения параметра.
+enum eGB_SEND_RD_TYPE {
+	GB_SEND_RD_NO,			///< Команды на чтение нет.
+	GB_SEND_RD_NO_DATA,		///< Передается команда без данных
+	GB_SEND_RD_DOP			///< Передается команда и один байт данных
 };
 
 /// Команды
@@ -165,10 +173,7 @@ enum eGB_COM {
 	GB_COM_GET_FAULT 			= 0x31,	// +
 	GB_COM_GET_TIME 			= 0x32,	// +
 	GB_COM_GET_MEAS 			= 0x34,	// +
-	GB_COM_GET_COMP_DELAY		= 0x35,	// +
-	GB_COM_GET_CURR_MAX 		= 0x36, // +
-	GB_COM_GET_CURR_MIN	 		= 0x37,	// +
-	GB_COM_GET_VOLT_MIN 		= 0x38,	// +
+	GB_COM_GET_RPS_PARAMS		= 0x36,	// +
 	GB_COM_GET_FREQ 			= 0x3A,	// +
 	GB_COM_GET_VERS 			= 0x3F,	// +
 	GB_COM_SET_PRM_ENTER 		= 0x51,	// +
@@ -179,10 +184,7 @@ enum eGB_COM {
 	GB_COM_GET_PASSWORD 		= 0x74,	// + ! только с ПК
 	GB_COM_SET_PRM_RES_IND		= 0x9A,	// +
 	GB_COM_SET_TIME 			= 0xB2,	// +
-	GB_COM_SET_COMP_DELAY 		= 0xB5,	// +
-	GB_COM_SET_CURR_MAX 		= 0xB6, // +
-	GB_COM_SET_CURR_MIN	 		= 0xB7, // +
-	GB_COM_SET_VOLT_MIN 		= 0xB8,	// +
+	GB_COM_SET_RPS_PARAMS		= 0xB6,	// +
 	GB_COM_SET_FREQ 			= 0xBA,	// +
 	GB_COM_GET_JRN_CNT 			= 0xF1,	// +
 	GB_COM_GET_JRN_ENTRY 		= 0xF2,	// +
@@ -920,7 +922,7 @@ public:
 			buf_[i] = 0;
 		}
 		com1_[0] = com2_[0] = GB_COM_NO;
-		sendType = GB_SEND_NO;
+		sendType = GB_SEND_WR_NO;
 	}
 
 	/** Запись команды в буфер 1.
@@ -1054,11 +1056,11 @@ public:
 		return buf_;
 	}
 
-	/**	Возвращает тип команды на передачу.
+	/**	Возвращает тип команды для записи параметра.
 	 *
-	 * 	@return Тип команды на передачу
+	 * 	@return Тип команды для записи параметра.
 	 */
-	eGB_SEND_TYPE getSendType() const {
+	eGB_SEND_WR_TYPE getSendWrType() const {
 		return sendType;
 	}
 
@@ -1066,13 +1068,13 @@ public:
 	 *
 	 * 	@param sendType Тип команды на передачу.
 	 */
-	void setSendType(eGB_SEND_TYPE sendType) {
+	void setSendType(eGB_SEND_WR_TYPE sendType) {
 		this->sendType = sendType;
 	}
 
 private:
 	// тип передаваемой команды
-	eGB_SEND_TYPE sendType;
+	eGB_SEND_WR_TYPE sendType;
 	// срочная команда (на изменение)
 	eGB_COM comFast_[MAX_NUM_FAST_COM];
 	// первый буфер команд

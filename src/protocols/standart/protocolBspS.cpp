@@ -92,29 +92,26 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 	if (mask == GB_COM_MASK_GROUP_WRITE_PARAM) {
 		// команды изменения параметров
 
-		eGB_SEND_TYPE sendType = sParam_->TxComBuf.getSendType();
-
 		if (com == GB_COM_SET_TIME) {
 			num = addCom(com, 6, sParam_->TxComBuf.getBuferAddress());
-		} else 	if (sendType != GB_SEND_NO) {
+		} else 	{
 			uint8_t val = sParam_->TxComBuf.getInt8(0);
 			uint8_t dop = sParam_->TxComBuf.getInt8(1);
-
-			switch(sendType) {
-				case GB_SEND_INT8:
+			switch(sParam_->TxComBuf.getSendWrType()) {
+				case GB_SEND_WR_INT8:
 					num = addCom(com, val);
 					break;
-				case GB_SEND_INT8_DOP:
+				case GB_SEND_WR_INT8_DOP:
 					num = addCom(com, val, dop);
 					break;
-				case GB_SEND_DOP_INT8:	// DOWN
-				case GB_SEND_DOP_BITES:
+				case GB_SEND_WR_DOP_INT8:	// DOWN
+				case GB_SEND_WR_DOP_BITES:
 					num = addCom(com, dop, val);
 					break;
-				case GB_SEND_INT16_BE:
+				case GB_SEND_WR_INT16_BE:
 					num = addCom(com, val, dop);
 					break;
-				case GB_SEND_NO:
+				case GB_SEND_WR_NO:
 					break;
 			}
 		}
@@ -125,11 +122,6 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 		if (com == GB_COM_SET_CONTROL) {
 			num = addCom(com, sParam_->TxComBuf.getInt8());
 		} else {
-			// GB_COM_PRM_ENTER
-			// GB_COM_SET_REG_DISABLED
-			// GB_COM_SET_REG_ENABLED
-			// GB_COM_SET_REG_TEST_2
-			// GB_COM_SET_REG_TEST_1
 			num = addCom(com);
 		}
 	} else if (mask == GB_COM_MASK_GROUP_READ_PARAM) {
@@ -137,8 +129,21 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 		// по умолчанию отправляется только код команды
 		if (com == GB_COM_GET_MEAS)
 			num = addCom(com, 0);
-		else
+		else if (com == sParam_->local.getCom()) {
+			switch(sParam_->local.getSendRdType()) {
+				case GB_SEND_RD_NO_DATA:
+					num = addCom(com);
+					break;
+				case GB_SEND_RD_DOP:
+					num = addCom(com, sParam_->local.getSendDop());
+					break;
+				case GB_SEND_RD_NO:
+					break;
+			}
+		} else {
 			num = addCom(com);
+		}
+
 	} else if (mask == GB_COM_MASK_GROUP_READ_JOURNAL) {
 		// команды считывания журналов, в том числе и кол-ва записей
 		num = sendReadJrnCommand(com);
@@ -171,12 +176,12 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 
 		case GB_COM_GET_SOST: {
 			// режим / состояние терминала
-			stat =  sParam_->Rps.Status.setRegime((eGB_REGIME) buf[B1]);
-			stat &= sParam_->Rps.Status.setState(buf[B2]);
-			stat &= sParam_->Rps.Status.setDopByte(buf[B3]);
+			stat =  sParam_->Rps.Status.setRegime((eGB_REGIME) buf[B7]);
+			stat &= sParam_->Rps.Status.setState(buf[B8]);
+			stat &= sParam_->Rps.Status.setDopByte(buf[B9]);
 
 			// общий режим
-			stat &= sParam_->Glb.Status.setRegime((eGB_REGIME) buf[B1]);
+			stat &= sParam_->Glb.Status.setRegime((eGB_REGIME) buf[B7]);
 		}
 		break;
 

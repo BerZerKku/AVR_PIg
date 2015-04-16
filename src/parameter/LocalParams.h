@@ -41,6 +41,10 @@ public:
 	 *	значение 0 или 1 дл€ текущего под.номера \a currSameParam. »наче
 	 *	возвращаетс€ текущее значение параметра.
 	 *
+	 *	≈сли в одном байте содержутс€ биты данных дл€ разных параметров
+	 *	(\a Param::PARAM_BITE), то возвращаетс€ значение бит, кол-во которых
+	 *	определ€етс€ по максимуму.
+	 *
 	 * 	@return “екущее значение параметра.
 	 */
 	int16_t getValue() const;
@@ -233,8 +237,16 @@ public:
 	 *
 	 * 	@return “ип параметра дл€ сохранени€ нового значени€.
 	 */
-	eGB_SEND_TYPE getSendType() const {
-		return (eGB_SEND_TYPE) pgm_read_byte(&getPtrParam()->send);
+	eGB_SEND_WR_TYPE getSendWrType() const {
+		return (eGB_SEND_WR_TYPE) pgm_read_byte(&getPtrParam()->sendWr);
+	}
+
+	/**	¬озвращает тип параметра дл€ чтени€ значени€.
+	 *
+	 * 	@return “ип параметра дл€ чтени€ значени€.
+	 */
+	eGB_SEND_RD_TYPE getSendRdType() const {
+		return (eGB_SEND_RD_TYPE) pgm_read_byte(&getPtrParam()->sendRd);
 	}
 
 	/**	¬озвращает значение байта доп. информации дл€ сохранени€ нового значени€.
@@ -315,6 +327,21 @@ public:
 		return (Param::CHANGE_COND) pgm_read_byte(&getPtrParam()->changeCond);
 	}
 
+	/**	¬озвращает положение первого бита дл€ параметров \a Param::PARAM_BITE.
+	 *
+	 * 	@return ѕоложение первого бита.
+	 */
+	uint8_t getPosBite() const {
+		return pgm_read_byte(&getPtrParam()->posBite);
+	}
+
+	/**	”становка значени€ неоднородного битового параметра \a Param::PARAM_BITE.
+	 *
+	 *	@param nval[in] Ќовое значение текущего неоднородного параметра.
+	 * 	@return ¬озвращает байт данных с новым значением параметра.
+	 */
+	uint8_t getNewBiteValue(uint8_t nval) const;
+
 private:
 
 	const Param** fps;		///< ћассив значений параметров.
@@ -362,6 +389,12 @@ private:
 	Param* getPtrParam() const {
 		return (Param*) pgm_read_word(&fps[param[currParam]]);
 	}
+
+	/**	¬озвращает маску дл€ неоднородных битовых параметров \a Param::PARAM_BITE.
+	 *
+	 * 	@return ћаска дл€ неоднородного битового параметра.
+	 */
+	uint8_t getMaskBite() const ;
 };
 
 #endif /* LOCALPARAMS_H_ */

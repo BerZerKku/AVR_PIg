@@ -73,6 +73,8 @@ clMenu::clMenu() {
 	// установка режима работы подсветки
 	vLCDsetLed(LED_REGIME);
 #endif
+
+	sParam.local.setFlashParams(fParams);
 }
 
 void clMenu::main(void) {
@@ -984,36 +986,6 @@ void clMenu::lvlSetupParam() {
  */
 void clMenu::lvlSetupParamGlb() {
 	static char title[] PROGMEM = "Параметры\\Общие";
-	//								   12345678901234567890
-	static char punkt1[] PROGMEM = "Компенсация задержки";
-	static char punkt2[] PROGMEM = "Максимальный ток";
-	static char punkt3[] PROGMEM = "Минимальный ток";
-	static char punkt4[] PROGMEM = "Миним. напряжение";
-
-	if (lvlCreate_) {
-		lvlCreate_ = false;
-		cursorLine_ = 1;
-		cursorEnable_ = true;
-		lineParam_ = 1;
-		curCom_ = 1;
-		EnterParam.setDisable();
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
-
-
-		Punkts_.clear();
-		Punkts_.add(punkt1, GB_COM_GET_COMP_DELAY);
-		Punkts_.add(punkt2, GB_COM_GET_CURR_MAX);
-		Punkts_.add(punkt3, GB_COM_GET_CURR_MIN);
-		Punkts_.add(punkt4, GB_COM_GET_VOLT_MIN);
-
-		sParam.TxComBuf.clear();
-		// команда первого параметра из списка
-		sParam.TxComBuf.addCom1(Punkts_.getCom(0), 0);
-		// команда измеряемых параметров
-//		sParam.TxComBuf.addCom2(GB_COM_GET_MEAS);
-	}
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -1025,10 +997,7 @@ void clMenu::lvlSetupParamGlb() {
 		sParam.TxComBuf.clear();
 
 		sParam.local.clearParams();
-		sParam.local.addParam(GB_PARAM_COMP_D);
-		sParam.local.addParam(GB_PARAM_CURR_MAX);
-		sParam.local.addParam(GB_PARAM_CURR_MIN);
-		sParam.local.addParam(GB_PARAM_VOLT_MIN);
+		sParam.local.addParam(GB_PARAM_FREQ);
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -1270,11 +1239,11 @@ void clMenu::lvlSetupInterface() {
 
 	switch(key_) {
 		case KEY_CANCEL:
-			lvlMenu = &clMenu::lvlSetupParam;
+			lvlMenu = &clMenu::lvlSetup;
 			lvlCreate_ = true;
 			break;
 		case KEY_MENU:
-			lvlMenu = &clMenu::lvlSetup;
+			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
 			break;
 
@@ -1758,22 +1727,18 @@ void clMenu::printValue(uint8_t pos) {
 
 	LocalParams::STATE state = sParam.local.getState();
 
-	if (state == LocalParams::STATE_ERROR) {
-		// вывод ошибочного значения
-		if (blink_) {
-			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("ошибка!!!"));
-		} else {
-			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("%d"), val);
-		}
-	} else if (state == LocalParams::STATE_READ_PARAM) {
+	if (state == LocalParams::STATE_READ_PARAM) {
 		if (blink_) {
 			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("чтение."));
 		} else {
 			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("чтение.."));
 		}
+	} else if ((state == LocalParams::STATE_ERROR) && (blink_)) {
+		snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("ошибка!!!"));
 	} else {
-		// вывод корректного значения
+		// вывод значения
 		switch(sParam.local.getParamType()) {
+			case Param::PARAM_BITE:
 			case Param::PARAM_BITES: // DOWN
 			case Param::PARAM_LIST:
 				val -= sParam.local.getMin();
@@ -1786,7 +1751,7 @@ void clMenu::printValue(uint8_t pos) {
 				break;
 			case Param::PARAM_COMP_D:
 				str = PSTR("%01d.%01d%S");
-				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val/1000, val%1000);
+				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val/1000, val%1000, dim);
 				break;
 			case Param::PARAM_NO:
 				break;
@@ -1805,7 +1770,8 @@ void clMenu::enterParameter() {
 	} else {
 
 		switch(lp->getParamType()) {
-			case Param::PARAM_BITES: // DOWN
+			case Param::PARAM_BITE:		// DOWN
+			case Param::PARAM_BITES: 	// DOWN
 			case Param::PARAM_LIST:
 				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
 				break;
@@ -1814,6 +1780,7 @@ void clMenu::enterParameter() {
 				break;
 			case Param::PARAM_NO:
 				break;
+
 		}
 
 		if (EnterParam.isEnable()) {
@@ -1872,23 +1839,23 @@ void clMenu::setupParam() {
 				// Подготовка данных для записи в БСП.
 				uint8_t dop = sParam.local.getSendDop();
 
-				switch(sParam.local.getSendType()) {
-					case GB_SEND_INT8:
+				switch(sParam.local.getSendWrType()) {
+					case GB_SEND_WR_INT8:
 						sParam.TxComBuf.setInt8(EnterParam.getValueEnter());
 						break;
 
-					case GB_SEND_INT8_DOP:
-					case GB_SEND_DOP_INT8:
+					case GB_SEND_WR_INT8_DOP:
+					case GB_SEND_WR_DOP_INT8:
 						sParam.TxComBuf.setInt8(EnterParam.getValueEnter(), 0);
 						sParam.TxComBuf.setInt8(dop, 1);
 						break;
 
-					case GB_SEND_INT16_BE:
+					case GB_SEND_WR_INT16_BE:
 						sParam.TxComBuf.setInt8(EnterParam.getValue() >> 8, 0);
 						sParam.TxComBuf.setInt8(EnterParam.getValue(), 1);
 						break;
 
-					case GB_SEND_DOP_BITES: {
+					case GB_SEND_WR_DOP_BITES: {
 						uint8_t val = sParam.local.getValueB();
 						uint8_t pos = sParam.local.getNumOfCurrSameParam() - 1;
 						if (EnterParam.getValue()) {
@@ -1901,7 +1868,15 @@ void clMenu::setupParam() {
 					}
 					break;
 
-					case GB_SEND_NO:
+					case GB_SEND_WR_DOP_BITE: {
+						uint8_t val = EnterParam.getValue();
+						val = sParam.local.getNewBiteValue(val);
+						sParam.TxComBuf.setInt8(dop, 0);
+						sParam.TxComBuf.setInt8(val, 0);
+					}
+					break;
+
+					case GB_SEND_WR_NO:
 						com = GB_COM_NO;
 						break;
 				}
@@ -1909,7 +1884,7 @@ void clMenu::setupParam() {
 				if (com != GB_COM_NO) {
 					com = (eGB_COM) (com + GB_COM_MASK_GROUP_WRITE_PARAM);
 					sParam.TxComBuf.addFastCom(com);
-					sParam.TxComBuf.setSendType(sParam.local.getSendType());
+					sParam.TxComBuf.setSendType(sParam.local.getSendWrType());
 				}
 			} else {
 				eGB_PARAM param= sParam.local.getParam();
