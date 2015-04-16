@@ -926,8 +926,11 @@ void clMenu::lvlRegime() {
  */
 void clMenu::lvlSetupParam() {
 	static char title[] PROGMEM = "Настройка\\Параметры";
-
+	//							    12345678901234567890
 	static char punkt1[] PROGMEM = "%d. Общие";
+	static char punkt2[] PROGMEM = "%d. Терминал";
+	static char punkt3[] PROGMEM = "%d. Источник пуска";
+	static char punkt4[] PROGMEM = "%d. Поиск повр.фазы";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -940,6 +943,9 @@ void clMenu::lvlSetupParam() {
 
 		// настройка меню, в зависимости от текущего устройства
 		Punkts_.clear();
+		Punkts_.add(punkt2);
+		Punkts_.add(punkt3);
+		Punkts_.add(punkt4);
 		Punkts_.add(punkt1);
 
 		// доплнительные команды
@@ -972,6 +978,15 @@ void clMenu::lvlSetupParam() {
 			if (name == punkt1) {
 				lvlMenu = &clMenu::lvlSetupParamGlb;
 				lvlCreate_ = true;
+			} else if (name == punkt2) {
+				lvlMenu = &clMenu::lvlSetupTerminal;
+				lvlCreate_ = true;
+			} else if (name == punkt3) {
+				lvlMenu = &clMenu::lvlSetupSourcePusk;
+				lvlCreate_ = true;
+			} else if (name == punkt4) {
+				lvlMenu = &clMenu::lvlSetupFindPhase;
+				lvlCreate_ = true;
 			}
 			break;
 
@@ -997,7 +1012,18 @@ void clMenu::lvlSetupParamGlb() {
 		sParam.TxComBuf.clear();
 
 		sParam.local.clearParams();
-		sParam.local.addParam(GB_PARAM_FREQ);
+		sParam.local.addParam(GB_PARAM_PUSK_THD);
+		sParam.local.addParam(GB_PARAM_SHORT_THD_DFZ);
+		sParam.local.addParam(GB_PARAM_SHORT_THD_NZ);
+		sParam.local.addParam(GB_PARAM_PHASE_EDGE);
+		sParam.local.addParam(GB_PARAM_I_MAX);
+		sParam.local.addParam(GB_PARAM_I_OTH);
+		sParam.local.addParam(GB_PARAM_Z_EDGE);
+		sParam.local.addParam(GB_PARAM_DELAY);
+		sParam.local.addParam(GB_PARAM_I_FAZ_MIN);
+		sParam.local.addParam(GB_PARAM_U_FAZ_MIN);
+		sParam.local.addParam(GB_PARAM_U_FAZ_DOP);
+		sParam.local.addParam(GB_PARAM_TIME_ON_OFF);
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -1018,6 +1044,135 @@ void clMenu::lvlSetupParamGlb() {
 			break;
 	}
 }
+
+/** Уровень меню. Конфигурация терминала.
+ * 	@param Нет
+ * 	@return Нет
+ */
+void clMenu::lvlSetupTerminal() {
+	static char title[] PROGMEM = "Параметры\\Терминал";
+
+	if (lvlCreate_) {
+		lvlCreate_ = false;
+		EnterParam.setDisable();
+
+		vLCDclear();
+		vLCDdrawBoard(lineParam_);
+
+		sParam.TxComBuf.clear();
+
+		sParam.local.clearParams();
+		sParam.local.addParam(GB_PARAM_FREQ);
+		sParam.local.addParam(GB_PARAM_SUBST_NUM);
+		sParam.local.addParam(GB_PARAM_RPS_TYPE);
+		sParam.local.addParam(GB_PARAM_BLOCK_ON);
+		sParam.local.addParam(GB_PARAM_PHASE_OFF);
+	}
+
+	snprintf_P(&vLCDbuf[0], 21, title);
+
+	setupParam();
+
+	switch(key_) {
+		case KEY_CANCEL:
+			lvlMenu = &clMenu::lvlSetupParam;
+			lvlCreate_ = true;
+			break;
+		case KEY_MENU:
+			lvlMenu = &clMenu::lvlStart;
+			lvlCreate_ = true;
+			break;
+
+		default:
+			break;
+	}
+}
+
+/** Уровень меню. Выбор источника пуска.
+ * 	@param Нет
+ * 	@return Нет
+ */
+void clMenu::lvlSetupSourcePusk() {
+	static char title[] PROGMEM = "Параметры\\Ист. пуска";
+
+	if (lvlCreate_) {
+		lvlCreate_ = false;
+		EnterParam.setDisable();
+
+		vLCDclear();
+		vLCDdrawBoard(lineParam_);
+
+		sParam.TxComBuf.clear();
+
+		sParam.local.clearParams();
+		sParam.local.addParam(GB_PARAM_PUSK_OP);
+		sParam.local.addParam(GB_PARAM_PUSK_OP_TRIG);
+		sParam.local.addParam(GB_PARAM_PUSK_NP);
+		sParam.local.addParam(GB_PARAM_PUSK_NP_TRIG);
+	}
+
+	snprintf_P(&vLCDbuf[0], 21, title);
+
+	setupParam();
+
+	switch(key_) {
+		case KEY_CANCEL:
+			lvlMenu = &clMenu::lvlSetupParam;
+			lvlCreate_ = true;
+			break;
+		case KEY_MENU:
+			lvlMenu = &clMenu::lvlStart;
+			lvlCreate_ = true;
+			break;
+
+		default:
+			break;
+	}
+}
+
+/** Уровень меню. Поиск поврежденной фазы.
+ * 	@param Нет
+ * 	@return Нет
+ */
+void clMenu::lvlSetupFindPhase() {
+	static char title[] PROGMEM = "Параметры\\Поиск повр";
+
+	if (lvlCreate_) {
+		lvlCreate_ = false;
+		EnterParam.setDisable();
+
+		vLCDclear();
+		vLCDdrawBoard(lineParam_);
+
+		sParam.TxComBuf.clear();
+
+		sParam.local.clearParams();
+		sParam.local.addParam(GB_PARAM_FIND_PH_ANGLE);
+		sParam.local.addParam(GB_PARAM_FIND_PH_I_MAX);
+		sParam.local.addParam(GB_PARAM_FIND_PH_I_OTH);
+		sParam.local.addParam(GB_PARAM_FIND_PH_Z);
+		sParam.local.addParam(GB_PARAM_FIND_PH_R_X);
+	}
+
+	snprintf_P(&vLCDbuf[0], 21, title);
+
+	setupParam();
+
+	switch(key_) {
+		case KEY_CANCEL:
+			lvlMenu = &clMenu::lvlSetupParam;
+			lvlCreate_ = true;
+			break;
+		case KEY_MENU:
+			lvlMenu = &clMenu::lvlStart;
+			lvlCreate_ = true;
+			break;
+
+		default:
+			break;
+	}
+}
+
 
 /** Уровень меню. Настройка дата/время.
  * 	@param Нет
@@ -1259,71 +1414,37 @@ void clMenu::lvlSetupInterface() {
 eMENU_ENTER_PARAM clMenu::enterValue() {
 	static char enterList[] PROGMEM = "Ввод: %S";
 	static char enterInt[] PROGMEM = "Ввод: %01u";
-	static char enterComp[] PROGMEM = "Ввод: %01u.%01u";
+	static char enterUcor[] PROGMEM = "Ввод: %01u.%01u";
 
 	eMENU_ENTER_PARAM status = EnterParam.getStatus();
-	if (status == MENU_ENTER_PARAM_MESSAGE) {
-		uint8_t poz = 40;
-
-		for (uint_fast8_t i = lineParam_ + 1; i <= NUM_TEXT_LINES; i++)
-			clearLine(i);
-
-		// вывод сообщения до тех пор, пока счетчик времени не обнулится
-		// затем возврат в исходный пункт меню
-		if (EnterParam.cnt_ < TIME_MESSAGE) {
-			static char message[3][21] PROGMEM = {
-			//		 12345678901234567890
-					" Изменить параметр  ",//
-					"  можно только в    ",		//
-					"  режиме ВЫВЕДЕН    "
-			};
-
-			EnterParam.cnt_++;
-			key_ = KEY_NO;
-
-			for (uint_fast8_t i = 0; i < 3; i++, poz += 20)
-				snprintf_P(&vLCDbuf[poz], 21, message[i]);
-		} else {
-			key_ = KEY_CANCEL;
-		}
-	} else {
-		uint8_t poz = 100;
+	if (status == MENU_ENTER_PARAM_INT) {
 		uint16_t val = EnterParam.getValue();
 		uint8_t num = EnterParam.getValueNumSymbols();
 
-		if (status == MENU_ENTER_PARAM_INT) {
-			// если кол-во символов выходит за допустимые значения, закончим ввод
-			if ((num >= 5) || (num == 0)) {
-				key_ = KEY_CANCEL;
-			} else {
-				clearLine(NUM_TEXT_LINES);
-				uint8_t poz = 100;
-				snprintf_P(&vLCDbuf[poz], 21, enterInt, val);
-			}
-		} else if (status == MENU_ENTER_PARAM_COMP_D) {
-			// если кол-во символов выходит за допустимые значения, закончим ввод
-			if ((num >= 6) || (num == 0)) {
-				key_ = KEY_CANCEL;
-			} else {
-				clearLine(NUM_TEXT_LINES);
-				uint8_t poz = 100;
-				snprintf_P(&vLCDbuf[poz], 21, enterComp, val/1000, val%1000);
-			}
-		} else if (status == MENU_ENTER_PARAM_LIST) {
-			clearLine(NUM_TEXT_LINES);
-			snprintf_P(&vLCDbuf[poz], 21, enterList,
-					EnterParam.list + STRING_LENGHT * val);
-		} else if (status == MENU_ENTER_PARAM_LIST_2) {
-			val = EnterParam.listValue[val];
-			clearLine(NUM_TEXT_LINES);
-			snprintf_P(&vLCDbuf[poz], 21, enterList,
-					EnterParam.list + STRING_LENGHT * val);
-		} else {
+		// если кол-во символов выходит за допустимые значения, закончим ввод
+		if ((num >= 5) || (num == 0)) {
 			key_ = KEY_CANCEL;
+		} else {
+			clearLine(NUM_TEXT_LINES);
+			uint8_t poz = 100;
+			snprintf_P(&vLCDbuf[poz], 21, enterInt, val);
 		}
-	}
+	} else if (status == MENU_ENTER_PARAM_LIST) {
+		uint16_t val = EnterParam.getValue();
+		clearLine(NUM_TEXT_LINES);
+		uint8_t poz = 100;
+		val = (val - EnterParam.getValueMin()) * STRING_LENGHT;
+		snprintf_P(&vLCDbuf[poz], 21, enterList, EnterParam.list + val);
+	} else if (status == MENU_ENTER_PARAM_LIST_2) {
+		uint16_t val = EnterParam.listValue[EnterParam.getValue()];
+		clearLine(NUM_TEXT_LINES);
+		uint8_t poz = 100;
+		snprintf_P(&vLCDbuf[poz], 21, enterList,
+				EnterParam.list + STRING_LENGHT * val);
+	} else
+		key_ = KEY_CANCEL;
 
-	switch (key_) {
+	switch(key_) {
 		case KEY_CANCEL:
 			EnterParam.setDisable();
 			break;
@@ -1749,10 +1870,6 @@ void clMenu::printValue(uint8_t pos) {
 				str = PSTR("%d%S");
 				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val, dim);
 				break;
-			case Param::PARAM_COMP_D:
-				str = PSTR("%01d.%01d%S");
-				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val/1000, val%1000, dim);
-				break;
 			case Param::PARAM_NO:
 				break;
 		}
@@ -1871,8 +1988,8 @@ void clMenu::setupParam() {
 					case GB_SEND_WR_DOP_BITE: {
 						uint8_t val = EnterParam.getValue();
 						val = sParam.local.getNewBiteValue(val);
-						sParam.TxComBuf.setInt8(dop, 0);
 						sParam.TxComBuf.setInt8(val, 0);
+						sParam.TxComBuf.setInt8(dop, 1);
 					}
 					break;
 

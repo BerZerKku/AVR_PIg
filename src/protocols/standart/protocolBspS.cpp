@@ -106,6 +106,7 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 					break;
 				case GB_SEND_WR_DOP_INT8:	// DOWN
 				case GB_SEND_WR_DOP_BITES:
+				case GB_SEND_WR_DOP_BITE:
 					num = addCom(com, dop, val);
 					break;
 				case GB_SEND_WR_INT16_BE:

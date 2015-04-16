@@ -112,10 +112,35 @@ enum eGB_NUM_DEVICES {
 enum eGB_PARAM {
 	GB_PARAM_NULL_PARAM = 0,	///< параметр заглушка
 	GB_PARAM_FREQ,				///< частота
+	// Конфигурация терминала
 	GB_PARAM_SUBST_NUM,			///< номер подстанции (конфигурация терминала)
 	GB_PARAM_RPS_TYPE,			///< тип защиты (конфигурация терминала)
 	GB_PARAM_BLOCK_ON,			///< включение блокировки (конфигурация терминала)
 	GB_PARAM_PHASE_OFF,			///< отключение фаз (конфигурация терминала)
+	// Выбор источника пуска
+	GB_PARAM_PUSK_OP,			///< пуск от напряжения ОП
+	GB_PARAM_PUSK_OP_TRIG,		///< по уровню или фронту
+	GB_PARAM_PUSK_NP,			///< пуск от напряжения НП
+	GB_PARAM_PUSK_NP_TRIG,		///< по уровню или фронту
+	// Поиск поврежденной фазы
+	GB_PARAM_FIND_PH_ANGLE,		///< по скачку фазового угла
+	GB_PARAM_FIND_PH_I_MAX,		///< по значению Imax
+	GB_PARAM_FIND_PH_I_OTH,		///< по величине Iотн
+	GB_PARAM_FIND_PH_Z,			///< по скачку Z
+	GB_PARAM_FIND_PH_R_X,		///< по отношению R/X
+	// Вводимые параметры
+	GB_PARAM_PUSK_THD,			///< порог пуска
+	GB_PARAM_SHORT_THD_DFZ,		///< порог КЗ при ДФЗ
+	GB_PARAM_SHORT_THD_NZ,		///< порог КЗ при НЗ
+	GB_PARAM_PHASE_EDGE,		///< скачок фазового угла
+	GB_PARAM_I_MAX,				///< значение I max
+	GB_PARAM_I_OTH,				///< величине I отн
+	GB_PARAM_Z_EDGE,			///< скачок Z/Zнорм
+	GB_PARAM_DELAY,				///< компенсация задержки
+	GB_PARAM_I_FAZ_MIN,			///< минимальный ток фазы
+	GB_PARAM_U_FAZ_MIN,			///< напряжение фазы при обрыве
+	GB_PARAM_U_FAZ_DOP,			///< минимально допустимое напряжение фазы
+	GB_PARAM_TIME_ON_OFF,		///< длительность отключения
 	// параметры интерфейса
 	GB_PARAM_INTF_INTERFACE,	///< интерфейс связи
 	GB_PARAM_INTF_PROTOCOL,		///< протокол

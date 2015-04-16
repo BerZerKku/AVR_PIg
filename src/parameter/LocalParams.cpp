@@ -136,8 +136,15 @@ int16_t LocalParams::getMax() const {
 	// списка, поэтому скорректируем максимальное значение
 
 	Param::PARAM_TYPE type = getParamType();
-	if ((type == Param::PARAM_LIST) || (type == Param::PARAM_BITES)) {
-		max = getMin() + max - 1;
+	switch(type) {
+		case Param::PARAM_NO:
+		case Param::PARAM_INT:
+			break;
+		case Param::PARAM_LIST:
+		case Param::PARAM_BITES:
+		case Param::PARAM_BITE:
+			max = getMin() + max - 1;
+			break;
 	}
 
 	return max;
@@ -233,5 +240,5 @@ uint8_t LocalParams::getMaskBite() const {
 		mask |= (1 << i++);
 	}
 
-	return mask;
+	return (mask << pgm_read_byte(&getPtrParam()->posBite));
 }

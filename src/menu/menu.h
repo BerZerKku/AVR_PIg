@@ -60,7 +60,6 @@ enum eMENU_ENTER_PARAM {
 	MENU_ENTER_PARAM_INT,		// изменение параметра, целое значение
 	MENU_ENTER_PARAM_LIST,		// изменение параметра, выбор из списка
 	MENU_ENTER_PARAM_LIST_2,	// изменение параметра, выбор из списка значений
-	MENU_ENTER_PARAM_COMP_D,	// изменение параметра, компенсация задержки
 	MENU_ENTER_PASSWORD,		// ввод пароля
 	MENU_ENTER_PASSWORD_NEW,	// ввод нового пароля
 	MENU_ENTER_PASSWORD_READY,	// введен верный пароль
@@ -168,8 +167,7 @@ public:
 	 */
 	uint16_t incValue(uint8_t velocity = 0) {
 		eMENU_ENTER_PARAM s = status_;
-		if ((s == MENU_ENTER_PARAM_INT) 		||
-				(s == MENU_ENTER_PARAM_COMP_D)) {
+		if (s == MENU_ENTER_PARAM_INT) {
 			// увеличение значения
 //			val_ = (val_ <= (max_ - disc_)) ? val_ + disc_ : min_;
 			uint16_t disc = disc_;
@@ -208,8 +206,7 @@ public:
 	// уменьшение текущего значения
 	uint16_t decValue(uint8_t velocity=0) {
 		eMENU_ENTER_PARAM s = status_;
-		if ((s == MENU_ENTER_PARAM_INT)
-				|| (s == MENU_ENTER_PARAM_COMP_D)) {
+		if (s == MENU_ENTER_PARAM_INT) {
 			// уменьшение значние
 			uint16_t disc = disc_;
 			if (velocity >= 1) {
@@ -549,6 +546,9 @@ private:
 	void lvlSetupParam();
 	void lvlSetupParamRps();
 	void lvlSetupParamGlb();
+	void lvlSetupTerminal();
+	void lvlSetupSourcePusk();
+	void lvlSetupFindPhase();
 	void lvlSetupDT();
 	void lvlSetupInterface();
 
