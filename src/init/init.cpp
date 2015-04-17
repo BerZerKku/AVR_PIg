@@ -9,8 +9,8 @@
 #include <avr/wdt.h>
 #include "debug.h"
 
-//void
-//low_level_init() __attribute__((__naked__)) __attribute__((section(".init3")));
+void
+low_level_init() __attribute__((__naked__)) __attribute__((section(".init3")));
 
 /**	Инициализация периферии
  * 	Неиспользуемые порты по умолчанию настроены на вход с подтяжкой к +
@@ -77,8 +77,7 @@ void low_level_init()
 	PORTG= ~0x00;
 
 #ifdef DEBUG
-	// TODO Отказывается компилироваться при включенной строке.
-//	DDRE |= (PIN_TP1 | PIN_TP2);
+	DDRE |= (PIN_TP1 | PIN_TP2);
 #endif
 
 	// Обнуление регистра

@@ -330,15 +330,20 @@ void clMenu::lvlStart() {
 			break;
 
 		case KEY_RESET_IND:
-			sParam.TxComBuf.addFastCom(GB_COM_SET_PRM_RES_IND);
+			sParam.TxComBuf.addFastCom(GB_COM_SET_PRD_RES_IND);
 			break;
 
 		case KEY_PUSK:
-			sParam.TxComBuf.addFastCom(GB_COM_SET_PRM_ENTER);
+			sParam.TxComBuf.addFastCom(GB_COM_SET_REG_ENABLED);
 			break;
 
-		case KEY_RESET:
-			sParam.TxComBuf.setInt8(GB_CONTROL_RESET_SELF);
+		case KEY_POWER_ON:
+			sParam.TxComBuf.setInt8(GB_CONTROL_POWER_ON);
+			sParam.TxComBuf.addFastCom(GB_COM_SET_CONTROL);
+			break;
+
+		case KEY_POWER_OFF:
+			sParam.TxComBuf.setInt8(GB_CONTROL_POWER_OFF);
 			sParam.TxComBuf.addFastCom(GB_COM_SET_CONTROL);
 			break;
 
@@ -1412,9 +1417,12 @@ void clMenu::lvlSetupInterface() {
  * 	@return True - по окончанию
  */
 eMENU_ENTER_PARAM clMenu::enterValue() {
-	static char enterList[] PROGMEM = "¬вод: %S";
-	static char enterInt[] PROGMEM = "¬вод: %01u";
-	static char enterUcor[] PROGMEM = "¬вод: %01u.%01u";
+	static char enterList[] 	PROGMEM = "¬вод: %S";
+	static char enterInt[] 		PROGMEM = "¬вод: %01d";
+	static char enterFloat10P[] PROGMEM = "¬вод: %01u.%01u";
+	static char enterFloat10M[] PROGMEM = "¬вод: -%01u.%01u";
+	static char enterFloat100P[] PROGMEM = "¬вод: %01u.%02u";
+	static char enterFloat100M[] PROGMEM = "¬вод: -%01u.%02u";
 
 	eMENU_ENTER_PARAM status = EnterParam.getStatus();
 	if (status == MENU_ENTER_PARAM_INT) {
@@ -1428,6 +1436,41 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 			clearLine(NUM_TEXT_LINES);
 			uint8_t poz = 100;
 			snprintf_P(&vLCDbuf[poz], 21, enterInt, val);
+		}
+	} else if (status == MENU_ENTER_PARAM_FLOAT10) {
+		int16_t val = EnterParam.getValue();
+		uint8_t num = EnterParam.getValueNumSymbols();
+
+		// если кол-во символов выходит за допустимые значени€, закончим ввод
+		if ((num >= 5) || (num == 0)) {
+			key_ = KEY_CANCEL;
+		} else {
+			clearLine(NUM_TEXT_LINES);
+			uint8_t poz = 100;
+			if (val >= 0) {
+				snprintf_P(&vLCDbuf[poz], 21, enterFloat10P, val/10, val%10);
+			} else {
+				val = -val;
+				snprintf_P(&vLCDbuf[poz], 21, enterFloat10M, val/10, val%10);
+			}
+
+		}
+	} else if (status == MENU_ENTER_PARAM_FLOAT100) {
+		int16_t val = EnterParam.getValue();
+		uint8_t num = EnterParam.getValueNumSymbols();
+
+		// если кол-во символов выходит за допустимые значени€, закончим ввод
+		if ((num >= 5) || (num == 0)) {
+			key_ = KEY_CANCEL;
+		} else {
+			clearLine(NUM_TEXT_LINES);
+			uint8_t poz = 100;
+			if (val >= 0) {
+				snprintf_P(&vLCDbuf[poz], 21, enterFloat100P, val/100, val%100);
+			} else {
+				val = -val;
+				snprintf_P(&vLCDbuf[poz], 21, enterFloat100M, val/100, val%100);
+			}
 		}
 	} else if (status == MENU_ENTER_PARAM_LIST) {
 		uint16_t val = EnterParam.getValue();
@@ -1802,38 +1845,77 @@ void clMenu::printSameNumber(uint8_t pos) {
 void clMenu::printRange(uint8_t pos) {
 	static prog_uint8_t MAX_CHARS = 11;
 
+	static const char fcList[]  PROGMEM = "список";
+	static const char fcOnOff[] PROGMEM = "вкл./выкл.";
+	static const char fcInt[]	PROGMEM = "%d..%d%S";
+	static const char fcFloat10[]	PROGMEM = "%d.%01d..%d.%01d%S";
+	static const char fcFloat10_0[] PROGMEM = "%d..%d.%01d%S";
+	static const char fcFloat100[]	PROGMEM = "%d.%02d..%d.%02d%S";
+	static const char fcFloat100_0[] PROGMEM = "%d..%d.%02d%S";
+
+
+
 	LocalParams *lp = &sParam.local;
 	int16_t min = lp->getMin();
 	int16_t max = lp->getMax();
-	PGM_P str = fcNullBuf;
+	uint16_t dmin = 0;
+	uint16_t dmax = 0;
 
+	PGM_P str = fcNullBuf;
+	PGM_P dim = fcDimension[lp->getDim()];
 	pos += snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("ƒиапазон: "));
+
 
 	switch(lp->getRangeType()) {
 		case Param::RANGE_LIST:
-			str = PSTR("список");
+			str = fcList;
 			break;
 
 		case Param::RANGE_ON_OFF:
-			str = PSTR("вкл./выкл.");
+			str = fcOnOff;
 			break;
 
 		case Param::RANGE_INT:
-			str = PSTR("%d..%d%S");
+			str = fcInt;
 			break;
 
 		case Param::RANGE_INT_NO_DIM:
-			str = PSTR("%d..%d");
+			str = fcInt;
+			dim = fcNullBuf;
 			break;
 
-		case Param::RANGE_COMP_D:
-			max /= 1000;
-			str = PSTR("%d..%d%S");
+		case Param::RANGE_FLOAT10:
+			dmin = min%10;
+			min /= 10;
+			dmax = max%10;
+			max /= 10;
+			str = fcFloat10;
+			break;
+
+		case Param::RANGE_FLOAT100:
+			dmin = min%100;
+			min /= 100;
+			dmax = max%100;
+			max /= 100;
+			str = fcFloat100;
 			break;
 	}
 
-	PGM_P dim = fcDimension[lp->getDim()];
-	snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, min, max, dim);
+	if (str == fcFloat10) {
+		if ((dmin == 0) && (min == 0)) {
+			snprintf_P(&vLCDbuf[pos], MAX_CHARS, fcFloat10_0, min, max, dmax, dim);
+		} else {
+			snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, min, dmin, max, dmax, dim);
+		}
+	} else if (str == fcFloat100) {
+		if ((dmin == 0) && (min == 0)) {
+			snprintf_P(&vLCDbuf[pos], MAX_CHARS, fcFloat100_0, min, max, dmax, dim);
+		} else {
+			snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, min, dmin, max, dmax, dim);
+		}
+	} else {
+		snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, min, max, dim);
+	}
 }
 
 // ¬ывод на экран текущего значени€ параметра.
@@ -1870,6 +1952,24 @@ void clMenu::printValue(uint8_t pos) {
 				str = PSTR("%d%S");
 				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val, dim);
 				break;
+			case Param::PARAM_FLOAT10:
+				if (val < 0) {
+					str = PSTR("-%d.%01d%S");
+					val = -val;
+				} else {
+					str = PSTR("%d.%01d%S");
+				}
+				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val/10, val%10, dim);
+				break;
+			case Param::PARAM_FLOAT100:
+				if (val < 0) {
+					str = PSTR("-%d.%02d%S");
+					val = -val;
+				} else {
+					str = PSTR("%d.%02d%S");
+				}
+				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val/100, val%100, dim);
+				break;
 			case Param::PARAM_NO:
 				break;
 		}
@@ -1894,6 +1994,12 @@ void clMenu::enterParameter() {
 				break;
 			case Param::PARAM_INT:
 				EnterParam.setEnable(MENU_ENTER_PARAM_INT);
+				break;
+			case Param::PARAM_FLOAT10:
+				EnterParam.setEnable(MENU_ENTER_PARAM_FLOAT10);
+				break;
+			case Param::PARAM_FLOAT100:
+				EnterParam.setEnable(MENU_ENTER_PARAM_FLOAT100);
 				break;
 			case Param::PARAM_NO:
 				break;

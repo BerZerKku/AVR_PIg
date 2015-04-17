@@ -39,16 +39,16 @@ enum eBUT
 	BUT_F_3R3C
 };
 
-/// Массив кнопок (для клавиатуры от Р400м)
+/// Массив кнопок (для клавиатуры от К400)
 static const eKEY fcKey[18] = { 						//
 		//		основные функции
 		KEY_FUNC, 		KEY_UP, 		KEY_EMPTY, 		//
 		KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
-		KEY_EMPTY, 		KEY_DOWN, 		KEY_CANCEL,		//
+		KEY_CANCEL,		KEY_DOWN, 		KEY_EMPTY,		//
 		//		дополнительные функции
-		KEY_EMPTY,		KEY_EMPTY,		KEY_EMPTY,	//
+		KEY_EMPTY,		KEY_POWER_ON,	KEY_RESET_IND,	//
 		KEY_PUSK, 		KEY_MENU,		KEY_EMPTY,		//
-		KEY_RESET_IND,	KEY_EMPTY,		KEY_EMPTY		//
+		KEY_EMPTY,		KEY_POWER_OFF,	KEY_EMPTY		//
 };
 
 

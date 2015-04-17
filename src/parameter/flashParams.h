@@ -554,8 +554,8 @@ static const Param fIMax PROGMEM = {
 static const Param fIOth PROGMEM = {
 		"I отн",				// название параметра
 		GB_COM_GET_RPS_PARAMS,	// команда стандартного протокола
-		Param::PARAM_INT,		// тип параметра
-		Param::RANGE_INT,		// диапазон измнения
+		Param::PARAM_FLOAT10,	// тип параметра
+		Param::RANGE_FLOAT10,	// диапазон измнения
 		Param::DIM_NO,			// размерность
 		fcNullBuf,				// массив значений
 		1,						// кол-во повторений параметра
@@ -576,8 +576,8 @@ static const Param fIOth PROGMEM = {
 static const Param fZEdge PROGMEM = {
 		"Скачок Z/Zнорм",		// название параметра
 		GB_COM_GET_RPS_PARAMS,	// команда стандартного протокола
-		Param::PARAM_INT,		// тип параметра
-		Param::RANGE_INT,		// диапазон измнения
+		Param::PARAM_FLOAT100,	// тип параметра
+		Param::RANGE_FLOAT100,	// диапазон измнения
 		Param::DIM_NO,			// размерность
 		fcNullBuf,				// массив значений
 		1,						// кол-во повторений параметра
@@ -620,8 +620,8 @@ static const Param fDelay PROGMEM = {
 static const Param fIFazMin PROGMEM = {
 		"Минимальный ток фазы",	// название параметра
 		GB_COM_GET_RPS_PARAMS,	// команда стандартного протокола
-		Param::PARAM_INT,		// тип параметра
-		Param::RANGE_INT,		// диапазон измнения
+		Param::PARAM_FLOAT10,	// тип параметра
+		Param::RANGE_FLOAT10,	// диапазон измнения
 		Param::DIM_KA,			// размерность
 		fcNullBuf,				// массив значений
 		1,						// кол-во повторений параметра
@@ -642,8 +642,8 @@ static const Param fIFazMin PROGMEM = {
 static const Param fUFazMin PROGMEM = {
 		"U фазы при обрыве",	// название параметра
 		GB_COM_GET_RPS_PARAMS,	// команда стандартного протокола
-		Param::PARAM_INT,		// тип параметра
-		Param::RANGE_INT,		// диапазон измнения
+		Param::PARAM_FLOAT10,	// тип параметра
+		Param::RANGE_FLOAT10,	// диапазон измнения
 		Param::DIM_KV,			// размерность
 		fcNullBuf,				// массив значений
 		1,						// кол-во повторений параметра

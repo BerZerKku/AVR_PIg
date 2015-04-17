@@ -20,8 +20,6 @@
 #include "protocolBspS.h"
 #include "protocolPcM.h"
 
-extern void low_level_init();
-
 /// Время работы одного цикла (зависит от настройки таймеров), мс
 #define TIME_CYLCE 100
 
@@ -303,7 +301,7 @@ static void setProtocol(TProtocol::PROTOCOL protocol, uint16_t baud) {
  */
 int __attribute__ ((OS_main))
 main(void) {
-	low_level_init();
+//	low_level_init();
 
 	// счетчик для обновления ЖКИ
 	uint8_t cnt_lcd = 0;

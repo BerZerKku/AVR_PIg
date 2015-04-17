@@ -29,10 +29,10 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0100
+#define VERS 0x0101
 
 /// преобразование двух CHAR в INT
-#define TO_INT16(high, low) (((uint16_t) (high) << 8) + (low))
+#define TO_INT16(high, low) ((int16_t) ((uint16_t) (high) << 8) + (low))
 
 /// преобразование двоично-десятичного числа в целое
 #define BCD_TO_BIN(val) ((val >> 4) * 10 + (val & 0x0F))
@@ -207,7 +207,7 @@ enum eGB_COM {
 	GB_COM_SET_CONTROL 			= 0x72,	// +
 	GB_COM_SET_PASSWORD 		= 0x73,	// + ! только с ПК
 	GB_COM_GET_PASSWORD 		= 0x74,	// + ! только с ПК
-	GB_COM_SET_PRM_RES_IND		= 0x9A,	// +
+	GB_COM_SET_PRD_RES_IND		= 0xAA,	// +
 	GB_COM_SET_TIME 			= 0xB2,	// +
 	GB_COM_SET_RPS_PARAMS		= 0xB6,	// +
 	GB_COM_SET_FREQ 			= 0xBA,	// +
@@ -235,7 +235,9 @@ enum eGB_COM_MASK {
 
 /// Значения команд управления
 enum eGB_CONTROL {
-	GB_CONTROL_RESET_SELF 	= 1,	//	сброс своего
+	GB_CONTROL_RESET_SELF 	= 1,	// Сброс своего
+	GB_CONTROL_POWER_ON		= 7,	// Включение напряжения ЛЭП
+	GB_CONTROL_POWER_OFF	= 8		// Отключение напряжения ЛЭП
 };
 
 

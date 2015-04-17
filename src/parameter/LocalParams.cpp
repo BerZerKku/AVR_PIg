@@ -139,6 +139,7 @@ int16_t LocalParams::getMax() const {
 	switch(type) {
 		case Param::PARAM_NO:
 		case Param::PARAM_INT:
+		case Param::PARAM_FLOAT10:
 			break;
 		case Param::PARAM_LIST:
 		case Param::PARAM_BITES:

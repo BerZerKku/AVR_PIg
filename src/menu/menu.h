@@ -58,6 +58,8 @@ enum eMENU_MEAS_PARAM {
 enum eMENU_ENTER_PARAM {
 	MENU_ENTER_PARAM_NO,		// отмена изменения параметра
 	MENU_ENTER_PARAM_INT,		// изменение параметра, целое значение
+	MENU_ENTER_PARAM_FLOAT10,	// изменение параметра, дробное (в 10 раз больше)
+	MENU_ENTER_PARAM_FLOAT100,	// изменение параметра, дробное (в 100 раз больше)
 	MENU_ENTER_PARAM_LIST,		// изменение параметра, выбор из списка
 	MENU_ENTER_PARAM_LIST_2,	// изменение параметра, выбор из списка значений
 	MENU_ENTER_PASSWORD,		// ввод пароля
@@ -82,8 +84,10 @@ public:
 	bool isEnable() {
 		// проверка текущего статуса на достоверное значение
 		if ((status_ < MENU_ENTER_PARAM_NO)
-				|| (status_ > MENU_ENTER_PARAM_MESSAGE))
+				|| (status_ > MENU_ENTER_PARAM_MESSAGE)) {
 			status_ = MENU_ENTER_PARAM_NO;
+		}
+
 		return (status_ != MENU_ENTER_PARAM_NO);
 	}
 
@@ -92,12 +96,7 @@ public:
 	// для пароля автоматически выставляются диапазон ввода и начальное значение
 	void setEnable(eMENU_ENTER_PARAM s = MENU_ENTER_PARAM_INT) {
 		if ((s > MENU_ENTER_PARAM_NO) && (s <= MENU_ENTER_PASSWORD_NEW)) {
-			if ((s == MENU_ENTER_PARAM_LIST)
-					|| (s == MENU_ENTER_PARAM_LIST_2)) {
-				disc_ = 1;
-				fract_ = 1;
-			} else if ((s == MENU_ENTER_PASSWORD)
-					|| (s == MENU_ENTER_PASSWORD_NEW)) {
+			if ((s == MENU_ENTER_PASSWORD) || (s == MENU_ENTER_PASSWORD_NEW)) {
 				val_ = 0;
 				min_ = 0;
 				max_ = 9999;
@@ -118,21 +117,27 @@ public:
 	}
 
 	// диапазон значений
-	void setValueRange(uint16_t min, uint16_t max) {
+	void setValueRange(int16_t min, int16_t max) {
 		uint8_t num = 0;
 		max_ = max;
 		min_ = min;
+
 		// нахождение максимального кол-ва символов при вводе
+		if (max < 0)
+			max = -max;
+		if (min < 0)
+			min = -min;
+		max = (max > min) ? max : min;
 		while (max > 0) {
 			num++;
 			max /= 10;
 		}
 		numSymbols_ = num;
 	}
-	uint16_t getValueMin() const {
+	int16_t getValueMin() const {
 		return min_;
 	}
-	uint16_t getValueMax() const {
+	int16_t getValueMax() const {
 		return max_;
 	}
 
@@ -142,19 +147,19 @@ public:
 	}
 
 	// установка текущего значения, диапазон значений должен быть задан до !
-	void setValue(uint16_t val) {
+	void setValue(int16_t val) {
 		if ((val < min_) || (val > max_))
 			val = min_;
 		val_ = val;
 	}
 
 	// возвращает текущее значение
-	uint16_t getValue() const {
+	int16_t getValue() const {
 		return val_;
 	}
 
 	// возвращает введеное значение с учетом дискретности и делителя
-	uint8_t getValueEnter() const {
+	int8_t getValueEnter() const {
 		return ((val_ / disc_) * disc_) / fract_;
 	}
 
@@ -165,12 +170,13 @@ public:
 	 * 	@argval 1 Увеличение на шаг в 10 раз больше заданной дискретности.
 	 * 	@argval 2 Увеличение на шаг в 50 раз больше заданной дискретности.
 	 */
-	uint16_t incValue(uint8_t velocity = 0) {
+	int16_t incValue(int8_t velocity = 0) {
 		eMENU_ENTER_PARAM s = status_;
-		if (s == MENU_ENTER_PARAM_INT) {
+		if ((s == MENU_ENTER_PARAM_INT) || (s == MENU_ENTER_PARAM_FLOAT10) ||
+				(s == MENU_ENTER_PARAM_FLOAT100)) {
 			// увеличение значения
 //			val_ = (val_ <= (max_ - disc_)) ? val_ + disc_ : min_;
-			uint16_t disc = disc_;
+			int16_t disc = disc_;
 			if (velocity >= 1) {
 				if ((max_ / disc) >= 10) {
 					disc *= 10;
@@ -188,7 +194,7 @@ public:
 			val_ = (val_ > min_) ? val_ - 1 : max_;
 		} else if ((s == MENU_ENTER_PASSWORD) ||
 				   (s == MENU_ENTER_PASSWORD_NEW)) {
-			uint16_t t = 0;
+			int16_t t = 0;
 
 			// находится разряд заданный дискретностью
 			// например для числа 1234 и дискрету 100, получается 2
@@ -204,11 +210,12 @@ public:
 	}
 
 	// уменьшение текущего значения
-	uint16_t decValue(uint8_t velocity=0) {
+	int16_t decValue(uint8_t velocity=0) {
 		eMENU_ENTER_PARAM s = status_;
-		if (s == MENU_ENTER_PARAM_INT) {
+		if ((s == MENU_ENTER_PARAM_INT) || (s == MENU_ENTER_PARAM_FLOAT10) ||
+				(s == MENU_ENTER_PARAM_FLOAT100)) {
 			// уменьшение значние
-			uint16_t disc = disc_;
+			int16_t disc = disc_;
 			if (velocity >= 1) {
 				if ((max_ / disc) >= 10) {
 					disc *= 10;
@@ -240,10 +247,10 @@ public:
 	}
 
 	// запись/считывание дискретности
-	void setDisc(uint16_t disc) {
+	void setDisc(int16_t disc) {
 		disc_ = disc;
 	}
-	uint16_t getDisc() const {
+	int16_t getDisc() const {
 		return disc_;
 	}
 
@@ -286,13 +293,13 @@ public:
 
 private:
 	// текущее значение
-	uint16_t val_;
+	int16_t val_;
 
 	// максимальное значение
-	uint16_t max_;
+	int16_t max_;
 
 	// минимальное значение
-	uint16_t min_;
+	int16_t min_;
 
 	// кол-во символов
 	uint8_t numSymbols_;
@@ -301,7 +308,7 @@ private:
 	uint16_t dopValue_;
 
 	// дискретность
-	uint16_t disc_;
+	int16_t disc_;
 
 	// делитель
 	uint8_t fract_;

@@ -53,20 +53,18 @@ bool clProtocolBspS::getData(bool pc) {
 				case GB_PARAM_FREQ:
 					val = TO_INT16(buf[B1], buf[B2]);
 					break;
-//				case GB_PARAM_PRD_COM_LONG:		// DOWN
-//				case GB_PARAM_PRD_COM_BLOCK:	// DOWN
-//				case GB_PARAM_PRD_DR_COM_BLOCK:	// DOWN
-//				case GB_PARAM_PRM_COM_BLOCK:	// DOWN
 //				case GB_PARAM_PRM_DR_COM_BLOCK:
 //					val = buf[B1 + (lp->getNumOfCurrSameParam() - 1) / 8];
 //					break;
 				default:
-					val = buf[B1 + lp->getNumOfCurrSameParam() - 1];
+					if (lp->getMin() < 0) {
+						val = (int8_t) buf[B1 + lp->getNumOfCurrSameParam() - 1];
+					} else {
+						val = buf[B1 + lp->getNumOfCurrSameParam() - 1];
+					}
+
 					break;
 			}
-
-			// Для битовых переменных передается указатель на начало данных,
-			// а для остальных текущее значение.
 			lp->setValue(val);
 		}
 	}

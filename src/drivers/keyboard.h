@@ -30,15 +30,10 @@ enum eKEY {
 	KEY_MENU,		// Вход в Меню
 	KEY_RESET,		// Сброс
 	KEY_PUSK,		// Пуск	(ввод приемника в работу)
-	KEY_PUSK_UD,	// Удал. Пуск ПРД
-	KEY_PUSK_NALAD,	// н.Пуск / н.Пуск ПРД (наладочный пуск)
 	KEY_RESET_IND,	// Сброс инд.
-	KEY_CALL,		// Вызов
 
-	KEY_AC_PUSK,	// Пуск АК
-	KEY_AC_PUSK_UD,	// Удал. Пуск АК
-	KEY_AC_RESET,	// Сброс АК
-	KEY_AC_REGIME	// Режим АК
+	KEY_POWER_ON,	// Включение напряжения ЛЭП
+	KEY_POWER_OFF	// Выключение напряжения ЛЭП
 };
 
 void vKEYmain	();
