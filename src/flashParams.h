@@ -175,7 +175,7 @@ static char fcStopBits[TStopBits::MAX][STRING_LENGHT] PROGMEM = {
 };
 
 // параметр заглушка
-static const Param fNullParam = {
+static const Param fNullParam PROGMEM = {
 		"",						// название параметра
 		GB_COM_NO,				// команда стандартного протокола
 		Param::PARAM_NO,		// тип параметра

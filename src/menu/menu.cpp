@@ -3025,11 +3025,11 @@ void clMenu::lvlSetupInterface() {
 
 	switch(key_) {
 		case KEY_CANCEL:
-			lvlMenu = &clMenu::lvlSetupParam;
+			lvlMenu = &clMenu::lvlSetup;
 			lvlCreate_ = true;
 			break;
 		case KEY_MENU:
-			lvlMenu = &clMenu::lvlSetup;
+			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
 			break;
 
