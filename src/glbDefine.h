@@ -578,8 +578,8 @@ public:
 		parPOut_ = 0;
 		parUCtrl_= 0;
 		parSN_ 	 = 0;
-		parNOut_ = 0;
-		parNin_  = 0;
+		parTBack_ = 0;
+		parDFi_  = 0;
 		parFazA_ = 0;
 		parFazB_ = 0;
 		parFazC_ = 0;
@@ -657,17 +657,17 @@ public:
 		return parSN_;
 	}
 
-	/**	Установка параметра N_out.
+	/**	Установка параметра Тзад.
 	 *	@param Новое значние параметра.
 	 *	@retval True В случае корректного значния.
 	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
 	 */
-	bool setNOut(uint8_t val) {
+	bool setTBack(uint8_t val) {
 		bool stat = false;
-
-		parNOut_ = val;
-		stat = true;
-
+		if (val <= 9) {
+			parTBack_ = val;
+			stat = true;
+		}
 		return stat;
 	}
 
@@ -675,19 +675,19 @@ public:
 	 *
 	 * 	@return Значение параметра.
 	 */
-	int8_t getNOut() const {
-		return parNOut_;
+	uint8_t getTBack() const {
+		return parTBack_;
 	}
 
-	/**	Установка параметра N_in.
+	/**	Установка параметра dFi_dfz.
 	 *	@param Новое значние параметра.
 	 *	@retval True В случае корректного значния.
 	 *	@retval False В случае ошибочного значения (выходит за диапазон значений).
 	 */
-	bool setNIn(int8_t val) {
+	bool setDFi(int8_t val) {
 		bool stat = false;
 
-		parNin_ = val;
+		parDFi_ = (int16_t) val * 360 / 256;
 		stat = true;
 
 		return stat;
@@ -697,8 +697,8 @@ public:
 	 *
 	 * 	@return Значение параметра.
 	 */
-	int8_t getNIn() const {
-		return parNin_;
+	int16_t getDFi() const {
+		return parDFi_;
 	}
 
 	/**	Установка параметра FazA.
@@ -913,10 +913,10 @@ public:
 
 private:
 	uint8_t	 parPOut_;		///<  Pout	(   0 .. 50  )дБм
-	int8_t	 parUCtrl_;		///<  Uctrl ( -50 .. 50  )дБ
-	int8_t	 parSN_;		///<  S_N   ( -50 .. 50  )дБ
-	int8_t	 parNOut_;		///<  N_out (-128 .. 127 ]
-	int8_t	 parNin_;		///<  N_in  [-128 .. 127 ]
+	int8_t	 parUCtrl_;		///<  Uctrl [ -50 .. 50  ]дБ
+	int8_t	 parSN_;		///<  S_N   [ -50 .. 50  ]дБ
+	uint8_t	 parTBack_;		///<  N_out [	0 .. 9 	 ]
+	int16_t	 parDFi_;		///<  dFi   [-180 .. 180 )град.
 	int16_t  parFazA_;		///<  FazA  [-180 .. 180 )град.
 	int16_t  parFazB_;		///<  FazB  [-180 .. 180 )град.
 	int16_t  parFazC_;		///<  FazC  [-180 .. 180 )град.

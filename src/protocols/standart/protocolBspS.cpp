@@ -201,8 +201,8 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 				stat  = sParam_->MeasParam.setPOut(buf[B2]);
 				stat &= sParam_->MeasParam.setUCtrl(buf[B3]);
 				stat &= sParam_->MeasParam.setSN(buf[B4]);
-				stat &= sParam_->MeasParam.setNOut(buf[B5]);
-				stat &= sParam_->MeasParam.setNIn(buf[B6]);
+				stat &= sParam_->MeasParam.setTBack(buf[B5]);
+				stat &= sParam_->MeasParam.setDFi(buf[B6]);
 				stat &= sParam_->MeasParam.setFazA(buf[B7]);
 				stat &= sParam_->MeasParam.setFazB(buf[B8]);
 				stat &= sParam_->MeasParam.setFazC(buf[B9]);

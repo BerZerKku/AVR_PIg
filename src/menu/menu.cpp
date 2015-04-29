@@ -192,9 +192,9 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 	// второй экран параметров
 	measParam[0 + MAX_NUM_MEAS_PARAM] 	= MENU_MEAS_P_OUT;
 	measParam[1 + MAX_NUM_MEAS_PARAM] 	= MENU_MEAS_U_CTRL;
-	measParam[2 + MAX_NUM_MEAS_PARAM] 	= MENU_MEAS_N_IN;
+	measParam[2 + MAX_NUM_MEAS_PARAM] 	= MENU_MEAS_T_BACK;
 	measParam[3 + MAX_NUM_MEAS_PARAM] 	= MENU_MEAS_FAZ_A;
-	measParam[4 + MAX_NUM_MEAS_PARAM] 	= MENU_MEAS_N_OUT;
+	measParam[4 + MAX_NUM_MEAS_PARAM] 	= MENU_MEAS_D_FI;
 	measParam[5 + MAX_NUM_MEAS_PARAM] 	= MENU_MEAS_FAZ_B;
 	measParam[6 + MAX_NUM_MEAS_PARAM] 	= MENU_MEAS_S_N;
 	measParam[7 + MAX_NUM_MEAS_PARAM] 	= MENU_MEAS_FAZ_C;
@@ -1671,13 +1671,13 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 				snprintf_P(&vLCDbuf[poz], 10, fcSN, sParam.MeasParam.getSN());
 				break;
 
-			case MENU_MEAS_N_OUT:
-				snprintf_P(&vLCDbuf[poz], 10, fcNOut,
-						sParam.MeasParam.getNOut());
+			case MENU_MEAS_T_BACK:
+				snprintf_P(&vLCDbuf[poz], 10, fcTBack,
+						sParam.MeasParam.getTBack());
 				break;
 
-			case MENU_MEAS_N_IN:
-				snprintf_P(&vLCDbuf[poz], 10, fcNIn, sParam.MeasParam.getNIn());
+			case MENU_MEAS_D_FI:
+				snprintf_P(&vLCDbuf[poz], 10, fcDFi, sParam.MeasParam.getDFi());
 				break;
 
 			case MENU_MEAS_FAZ_A:

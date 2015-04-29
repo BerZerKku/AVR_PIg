@@ -1,3 +1,9 @@
 /html
-/Release
-Debug/
+*.map
+*.mk
+*.lss
+*.elf
+*.o
+*.d
+*.eep
+makefile
