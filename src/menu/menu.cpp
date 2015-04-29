@@ -915,7 +915,7 @@ void clMenu::lvlRegime() {
 			}
 			EnterParam.setValueRange(min, max);
 			EnterParam.setValue(val);
-			EnterParam.list = fcRegimeEnter[0];
+			EnterParam.list = fcRegimeEnter[min];
 			EnterParam.com = GB_COM_NO;
 		}
 			break;
