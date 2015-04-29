@@ -836,10 +836,11 @@ void clMenu::lvlRegime() {
 		if (stat == MENU_ENTER_PARAM_READY) {
 			// проверим пароль, если пытаемся перейти в режим "Выведен"
 			// из режимов "Введен" и "Готов"
-			val = (eGB_REGIME_ENTER) EnterParam.getValueEnter();
+			val = (eGB_REGIME_ENTER) EnterParam.getValue();
 
 			if ((reg == GB_REGIME_ENABLED) || (reg == GB_REGIME_READY)) {
 				if (val == GB_REGIME_ENTER_DISABLED) {
+
 					pEnterFunc = &clMenu::enterPassword;
 					EnterParam.setEnable(MENU_ENTER_PASSWORD);
 					EnterParam.setDopValue(static_cast<uint16_t>(val));
