@@ -41,6 +41,7 @@
 								</option>
 								<option id="de.innot.avreclipse.cppcompiler.option.incpath.418544092" name="Include Paths (-I)" superClass="de.innot.avreclipse.cppcompiler.option.incpath" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/protocols/iec101}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/parameter}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/debug}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/menu}&quot;"/>
@@ -202,6 +203,7 @@
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.base.241864418" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.base">
 								<option id="gnu.cpp.compiler.option.include.paths.1500106044" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/external}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/protocols/iec101}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/test}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/protocols/modbus}&quot;"/>
 								</option>
@@ -249,7 +251,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src/parameter|src/debug/debug.cpp|src/init/init.cpp|src/menu/menu.cpp|src/drivers/uart.cpp|src/drivers/ks0108.cpp|src/drivers/keyboard.cpp|src/protocols/standart/protocolS.cpp|src/protocols/standart/protocolPcS.cpp|src/protocols/standart/protocolBspS.cpp|src/protocols/modbus/protocolPcM.cpp|main.cpp|src/uart.cpp|src/protocolS.cpp|src/protocolPcS.cpp|src/protocolPcM.cpp|src/protocolBspS.cpp|src/menu.cpp|src/ks0108.cpp|src/keyboard.cpp|src/init.cpp|src/debug.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/protocols/iec101/protocolPcI.cpp|src/parameter|src/debug/debug.cpp|src/init/init.cpp|src/menu/menu.cpp|src/drivers/uart.cpp|src/drivers/ks0108.cpp|src/drivers/keyboard.cpp|src/protocols/standart/protocolS.cpp|src/protocols/standart/protocolPcS.cpp|src/protocols/standart/protocolBspS.cpp|src/protocols/modbus/protocolPcM.cpp|main.cpp|src/uart.cpp|src/protocolS.cpp|src/protocolPcS.cpp|src/protocolPcM.cpp|src/protocolBspS.cpp|src/menu.cpp|src/ks0108.cpp|src/keyboard.cpp|src/init.cpp|src/debug.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

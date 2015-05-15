@@ -19,6 +19,7 @@
 #include "protocolPcS.h"
 #include "protocolBspS.h"
 #include "protocolPcM.h"
+#include "protocolPcI.h"
 
 /// Время работы одного цикла (зависит от настройки таймеров), мс
 #define TIME_CYLCE 100
@@ -73,8 +74,11 @@ TUart uartBSP(TUart::PORT_UART0, uBufUartBsp, BUFF_SIZE_BSP);
 clProtocolPcS protPCs(uBufUartPc, BUFF_SIZE_PC, &menu.sParam);
 /// Класс работы протокола MODBUS
 TProtocolPcM protPCm(&menu.sParam, uBufUartPc, BUFF_SIZE_PC);
+/// Класс протокола МЭК 101 работающего с ПК
+TProtocolPcI protPCi(&menu.sParam, uBufUartPc, BUFF_SIZE_PC);
 /// Класс стандартного протокола работающего с БСП
 clProtocolBspS protBSPs(uBufUartBsp, BUFF_SIZE_BSP, &menu.sParam);
+
 
 static bool uartRead();
 static bool uartWrite();
@@ -153,6 +157,10 @@ static bool uartRead() {
 		if (protPCm.isReadData()) {
 			protPCm.readData();
 		}
+	} else if (protPCi.isEnable()) {
+		if (protPCi.isReadData()) {
+			protPCi.readData();
+		}
 	}
 
 	return stat;
@@ -178,6 +186,8 @@ static bool uartWrite() {
 		}
 	} else if (protPCm.isEnable()) {
 		uartPC.trData(protPCm.sendData());
+	} else if (protPCi.isEnable()) {
+		uartPC.trData(protPCi.sendData());
 	}
 
 	// Перед передачей проверим статус протокола на залипание.
@@ -214,10 +224,15 @@ static void setInterface(TUartData *uart) {
 	// если идет связь по Лок.сети, то настройки пользователя
 	switch (val) {
 		case TInterface::USB:
-			setProtocol(TProtocol::STANDART, 19200);
 			// во время отладки интерфейс USB можно настраивать
-			uartPC.open(19200, TDataBits::_8, TParity::NONE,
-					TStopBits::TWO);
+			// TODO
+//			setProtocol(TProtocol::STANDART, 19200);
+//			uartPC.open(19200, TDataBits::_8, TParity::NONE,
+//					TStopBits::TWO);
+
+			setProtocol(TProtocol::IEC_101, 19200);
+			uartPC.open(19200, TDataBits::_8, TParity::EVEN,
+								TStopBits::ONE);
 			break;
 		case TInterface::RS485:
 			setProtocol(uart->Protocol.get(), uart->BaudRate.getValue());
@@ -288,15 +303,20 @@ static void setProtocol(TProtocol::PROTOCOL protocol, uint16_t baud) {
 	switch(protocol) {
 		case TProtocol::STANDART:
 			protPCs.setEnable(PRTS_STATUS_READ);
+			protPCi.setDisable();
 			protPCm.setDisable();
 			break;
 		case TProtocol::MODBUS:
 			protPCm.setTick(baud, 50);
 			protPCm.setEnable();
+			protPCi.setDisable();
 			protPCs.setDisable();
 			break;
 		case TProtocol::IEC_101:
-			// TODO МЭК 101
+			protPCi.setTick(baud, 50);
+			protPCi.setEnable();
+			protPCm.setDisable();
+			protPCs.setDisable();
 			break;
 		case TProtocol::MAX:		// заглушка
 			break;
@@ -390,6 +410,8 @@ main(void) {
 				uint8_t nadr = menu.sParam.glb.getNetAddress();
 				if (protPCm.getAddressLan() != nadr) {
 					protPCm.setAddressLan(nadr);
+				} else if (protPCi.getAddressLan() != nadr) {
+					protPCi.setAddressLan(nadr);
 				}
 
 				// обновление настроек пользователя в ЕЕПРОМ
@@ -416,6 +438,8 @@ ISR(TIMER0_COMP_vect) {
 	// для работы протокола MODBUS
 	if (protPCm.isEnable()) {
 		protPCm.tick();
+	} else if (protPCi.isEnable()) {
+		protPCi.tick();
 	}
 }
 
@@ -442,6 +466,8 @@ ISR(USART1_TX_vect) {
 		protPCs.setCurrentStatus(PRTS_STATUS_READ);
 	} else if (protPCm.isEnable()) {
 		protPCm.setReadState();
+	} else if (protPCi.isEnable()) {
+		protPCi.setReadState();
 	}
 }
 
@@ -461,6 +487,8 @@ ISR(USART1_RX_vect) {
 		} else if (protPCm.isEnable()) {
 			// протокол MODBUS
 			protPCm.push(byte);
+		} else if (protPCi.isEnable()) {
+			protPCi.push(byte);
 		}
 	}
 }
