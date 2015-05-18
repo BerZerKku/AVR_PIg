@@ -149,7 +149,7 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 		eGB_SEND_TYPE sendType = sParam_->txComBuf.getSendType();
 
 		if (com == GB_COM_SET_TIME) {
-			num = addCom(com, 6, sParam_->txComBuf.getBuferAddress());
+			num = addCom(com, 8, sParam_->txComBuf.getBuferAddress());
 		} else 	if (sendType != GB_SEND_NO) {
 			uint8_t val = sParam_->txComBuf.getInt8(0);
 			uint8_t dop = sParam_->txComBuf.getInt8(1);

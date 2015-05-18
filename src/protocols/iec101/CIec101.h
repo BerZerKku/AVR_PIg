@@ -226,6 +226,140 @@ class CIec101 {
 	/// Минимальный размер кадра с переменной длиной.
 	static const uint8_t s_u8SizeOfFrameVarLenghtMin = 15;
 
+protected:
+	///	Флаги текущих функций.
+	typedef enum __attribute__ ((__packed__)) {
+		FUNCTION_NO				= 0x00,	///< \b <0x00> Нет текущих функций.
+		FUNCTION_RESET_WAIT		= 0x01,	///< \b <0x01> Ожидание команды сброса.
+		FUNCTION_RESET_END		= 0x02,	///< \b <0x02> Окончание сброса.
+		FUNCTION_RESET			= 0x03,	///< \b <0x03> Ожидание сброса (общее).
+		FUNCTION_INTERROG_CONF	= 0x04,	///< \b <0x04> Подтверждение опроса.
+		FUNCTION_INTERROG_MONIT	= 0x08,	///< \b <0x08> Данные опроса, либо его окончание.
+//		FUNCTION_INTERROG		= 0x0C,	///< \b <0x0C> Наличие опроса (общее).
+		FUNCTION_TIME_SYNCH_CONF= 0x10,	///< \b <0x10> Подтверждение синхронизации времени.
+		FUNCTION_TIME_SYNCH_END	= 0x20,	///< \b <0x20> Окончание синхронизации времени.
+		FUNCTION_EVENT			= 0x40,	///< \b <0x40> Наличие данных класса 1(2) на передачу.
+		FUNCTION_IS_ACD			= 0x48	///< \b <0x48> Проверка флагов с наличием данных на передачу.
+	} EFunction;
+
+	/**	\brief Причина передачи (Сause of Transmission).
+	 *
+	 * 	\note МЭК 870-5-101-2006 7.2.3 Причина передачи.
+	 *	\note IEC 870-5-101 4.2.8 Cause of transmission
+	 */
+	typedef enum __attribute__ ((__packed__)) {
+		COT_NOT_USED	= 0,	///< \b <0> Не используется (not used).
+		COT_PER_CYC	 	= 1,	///< \b <1> Периодически, циклически (per/cyc).
+		COT_BACK		= 2,	///< \b <2> Фоновое сканирование (background scan).
+		COT_SPONT		= 3,	///< \b <3> Спорадически (spontaneous).
+		COT_INIT		= 4,	///< \b <4> Сообщение об инициализации (initialised).
+		COT_REQ			= 5,	///< \b <5> Запрос или запрашиваемые данные (request or requested).
+		COT_ACT			= 6,	///< \b <6> Активация (activation).
+		COT_ACTCON		= 7,	///< \b <7> Подтверждение активации (activation confirmation).
+		COT_DEACT		= 8,	///< \b <8> Деактивация (deactivation).
+		COT_DEACTON		= 9,	///< \b <9> Подтверждение деактивации (deactivation confirmation).
+		COT_ACTTERM		= 10,	///< \b <10> Завершенеи активации (activation termination).
+		COT_RETREM		= 11,	///< \b <11> Обратная информация, вызванная удаленной командой (return information caused by a remote command).
+		COT_RETLOC		= 12,	///< \b <12> Обратная информация, вызванная местной командой (return information caused by a local command).
+		COT_FILE		= 13, 	///< \b <13> Передача файлов (file transfer).
+		COT_INROGEN		= 20 	///< \b <20> Ответ на опрос станции (interrogated by general interrogation).
+	} ECot;
+
+	/**	\struct SCp56Time2a
+	 * 	\brief Метка времени "Время 2а в двоичном коде" CP56time2a.
+	 *
+	 * 	\note
+	 * 	В значении миллисекунд храняться также и секунды.
+	 *
+	 * 	\var SCp56Time2a::milliseconds
+	 * 		UI16[1..16] <0..59999>
+	 *
+	 *	\var SCp56Time2a::minutes
+	 *		 UI6[17..22] <0..59>
+	 *
+	 *	\var SCp56Time2a::res1
+	 *		BS1[23]
+	 *		\details Бит может использоваться в направлении контроля для указания,
+	 * 		добавлена ли метка времени к объекту информации, когда он получен от RTU
+	 * 		время), или метка времени установлена промежуточным оборудованием,
+	 * 		таким как станция-концентратор, или самой контролирующей станцией
+	 * 		(измененное время):
+	 * 		- <0> - истинное время,
+	 * 		- <1> - измененное время.
+	 *
+	 *	\var SCp56Time2a::iv
+	 *		BS1[24] <0..1>
+	 * 		- <0> - действительно,
+	 * 		- <1> - недействительно.
+	 *
+	 * 	\var SCp56Time2a::hours
+	 * 		UI5[25..29] <0..23>
+	 *
+	 * 	\var SCp56Time2a::res2
+	 *		BS2[30..31]
+	 *
+	 *	\var SCp56Time2a::su
+	 *		BS1[32] <0..1>
+	 *		\details Бит летнего времени \a SU опционально используется как
+	 * 		дополнительная информация для укзания, какое время (стандартное или
+	 * 		летнее) действует в настоящий момент. Это может быть полезно для
+	 * 		присвоения правильного времени объектам информации, генерируемым в
+	 * 		течение первого часа после переключения со стандартного на летнее время:
+	 * 		- <0> - стандартное время,
+	 * 		- <1> - летнее время.
+	 *
+	 *	\var SCp56Time2a::dayOfMonth
+	 *		UI5[33..37] <1..31>
+	 *
+	 *	\var SCp56Time2a::dayOfWeek
+	 *		UI3[38..40] <1..7>
+	 * 		- <0> - день недели не используется.
+	 *
+	 *	\var SCp56Time2a::months
+	 *		UI4[41..44] <1..12>
+	 *
+	 *	\var SCp56Time2a::res3
+	 *		BS4[45..48]
+	 *
+	 *	\var SCp56Time2a::years
+	 * 		UI7[49..55] <0..99>
+	 *
+	 * 	\var SCp56Time2a::res4
+	 * 		BS1[56]
+	 */
+	typedef struct __attribute__ ((__packed__)) {
+		uint16_t milliseconds 	: 16;	///< Миллисекунды.
+		uint8_t minutes 		: 6;	///< Минуты.
+		uint8_t res1 			: 1;	///< Резерв 1 - RES1.
+		uint8_t iv 				: 1;	///< Недействительно - IV.
+		uint8_t hours 			: 5;	///< Часы.
+		uint8_t res2 			: 2;	///< Резерв 2 - RES2.
+		uint8_t su 				: 1;	///< Летнее время - SU .
+		uint8_t dayOfMonth 		: 5;	///< День месяца.
+		uint8_t dayOfWeek 		: 3;	///< День недели.
+		uint8_t months 			: 4;	///< Месяцы.
+		uint8_t res3 			: 4;	///< Резерв 3 - RES3.
+		uint8_t years 			: 7;	///< Годы.
+		uint8_t res4 			: 1;	///< Резерв 4 - RES4.
+	} SCp56Time2a;
+
+	/**	Установка активной функции протокола.
+	 *
+	 * 	@param[in] func Функция протокола.
+	 */
+	void setFunc(EFunction func) {
+		m_u8Func |= func;
+	}
+
+	/**	Сброс активной функции протокола.
+	 *
+	 * 	@param[in] func Функция протокола.
+	 */
+	void clrFunc(EFunction func) {
+		m_u8Func &= ~func;
+	}
+
+private:
 	/// Формат кадра (стартовое слово).
 	typedef enum __attribute__ ((__packed__)) {
 		FRAME_START_CHARACTER_FIX = 0x10,	///< \b <0x10> Cтартовое слово кадра с постоянной длиной.
@@ -353,107 +487,6 @@ class CIec101 {
 //		LINK_SERV_NOT_FUNC		= 14,	///< \b <14> Канальный сервис не работает ("Услуги канала не работают").
 		LINK_SERV_NOT_IMPL 		= 15 	///< \b <15> Канальный сервис не встроен.
 	} EFcSecondary;
-
-	/**	\struct SCp56Time2a
-	 * 	\brief Метка времени "Время 2а в двоичном коде" CP56time2a.
-	 *
-	 * 	\note
-	 * 	В значении миллисекунд храняться также и секунды.
-	 *
-	 * 	\var SCp56Time2a::milliseconds
-	 * 		UI16[1..16] <0..59999>
-	 *
-	 *	\var SCp56Time2a::minutes
-	 *		 UI6[17..22] <0..59>
-	 *
-	 *	\var SCp56Time2a::res1
-	 *		BS1[23]
-	 *		\details Бит может использоваться в направлении контроля для указания,
-	 * 		добавлена ли метка времени к объекту информации, когда он получен от RTU
-	 * 		время), или метка времени установлена промежуточным оборудованием,
-	 * 		таким как станция-концентратор, или самой контролирующей станцией
-	 * 		(измененное время):
-	 * 		- <0> - истинное время,
-	 * 		- <1> - измененное время.
-	 *
-	 *	\var SCp56Time2a::iv
-	 *		BS1[24] <0..1>
-	 * 		- <0> - действительно,
-	 * 		- <1> - недействительно.
-	 *
-	 * 	\var SCp56Time2a::hours
-	 * 		UI5[25..29] <0..23>
-	 *
-	 * 	\var SCp56Time2a::res2
-	 *		BS2[30..31]
-	 *
-	 *	\var SCp56Time2a::su
-	 *		BS1[32] <0..1>
-	 *		\details Бит летнего времени \a SU опционально используется как
-	 * 		дополнительная информация для укзания, какое время (стандартное или
-	 * 		летнее) действует в настоящий момент. Это может быть полезно для
-	 * 		присвоения правильного времени объектам информации, генерируемым в
-	 * 		течение первого часа после переключения со стандартного на летнее время:
-	 * 		- <0> - стандартное время,
-	 * 		- <1> - летнее время.
-	 *
-	 *	\var SCp56Time2a::dayOfMonth
-	 *		UI5[33..37] <1..31>
-	 *
-	 *	\var SCp56Time2a::dayOfWeek
-	 *		UI3[38..40] <1..7>
-	 * 		- <0> - день недели не используется.
-	 *
-	 *	\var SCp56Time2a::months
-	 *		UI4[41..44] <1..12>
-	 *
-	 *	\var SCp56Time2a::res3
-	 *		BS4[45..48]
-	 *
-	 *	\var SCp56Time2a::years
-	 * 		UI7[49..55] <0..99>
-	 *
-	 * 	\var SCp56Time2a::res4
-	 * 		BS1[56]
-	 */
-	typedef struct __attribute__ ((__packed__)) {
-		uint16_t milliseconds 	: 16;	///< Миллисекунды.
-		uint8_t minutes 		: 6;	///< Минуты.
-		uint8_t res1 			: 1;	///< Резерв 1 - RES1.
-		uint8_t iv 				: 1;	///< Недействительно - IV.
-		uint8_t hours 			: 5;	///< Часы.
-		uint8_t res2 			: 2;	///< Резерв 2 - RES2.
-		uint8_t su 				: 1;	///< Летнее время - SU .
-		uint8_t dayOfMonth 		: 5;	///< День месяца.
-		uint8_t dayOfWeek 		: 3;	///< День недели.
-		uint8_t months 			: 4;	///< Месяцы.
-		uint8_t res3 			: 4;	///< Резерв 3 - RES3.
-		uint8_t years 			: 7;	///< Годы.
-		uint8_t res4 			: 1;	///< Резерв 4 - RES4.
-	} SCp56Time2a;
-
-	/**	\brief Причина передачи (Сause of Transmission).
-	 *
-	 * 	\note МЭК 870-5-101-2006 7.2.3 Причина передачи.
-	 *	\note IEC 870-5-101 4.2.8 Cause of transmission
-	 */
-	typedef enum __attribute__ ((__packed__)) {
-		COT_NOT_USED	= 0,	///< \b <0> Не используется (not used).
-		COT_PER_CYC	 	= 1,	///< \b <1> Периодически, циклически (per/cyc).
-		COT_BACK		= 2,	///< \b <2> Фоновое сканирование (background scan).
-		COT_SPONT		= 3,	///< \b <3> Спорадически (spontaneous).
-		COT_INIT		= 4,	///< \b <4> Сообщение об инициализации (initialised).
-		COT_REQ			= 5,	///< \b <5> Запрос или запрашиваемые данные (request or requested).
-		COT_ACT			= 6,	///< \b <6> Активация (activation).
-		COT_ACTCON		= 7,	///< \b <7> Подтверждение активации (activation confirmation).
-		COT_DEACT		= 8,	///< \b <8> Деактивация (deactivation).
-		COT_DEACTON		= 9,	///< \b <9> Подтверждение деактивации (deactivation confirmation).
-		COT_ACTTERM		= 10,	///< \b <10> Завершенеи активации (activation termination).
-		COT_RETREM		= 11,	///< \b <11> Обратная информация, вызванная удаленной командой (return information caused by a remote command).
-		COT_RETLOC		= 12,	///< \b <12> Обратная информация, вызванная местной командой (return information caused by a local command).
-		COT_FILE		= 13, 	///< \b <13> Передача файлов (file transfer).
-		COT_INROGEN		= 20 	///< \b <20> Ответ на опрос станции (interrogated by general interrogation).
-	} ECot;
 
 	/**	\brief Причина инициализации (Cause of initialisation).
 	 *
@@ -772,7 +805,7 @@ class CIec101 {
 		SDataUnitId dataUnitId;	///< Идентификатор блока данных.
 		uint16_t informationObjectAddress;		///< Адрес объекта информации.
 		SSiq siq;								///< Одноэлементная информация с описателем качества.
-		SCp56Time2a cp56time2a;					///< Метка времени "Время 2а в двоичном коде" CP56time2a.
+		SCp56Time2a cp56time2a;		///< Метка времени "Время 2а в двоичном коде" CP56time2a.
 	} SMSpTb1;
 
 	/**	\brief Окончание инициализации (End of initialisation).
@@ -991,21 +1024,6 @@ public:
 		// vvv - всегда в конце
 		STATE_ERROR			= 7  ///< \b <7> Ошибка в работе протокола.
 	} EState;
-
-	///	Флаги текущих функций.
-	typedef enum __attribute__ ((__packed__)) {
-		FUNCTION_NO				= 0x00,	///< \b <0x00> Нет текущих функций.
-		FUNCTION_RESET_WAIT		= 0x01,	///< \b <0x01> Ожидание команды сброса.
-		FUNCTION_RESET_END		= 0x02,	///< \b <0x02> Окончание сброса.
-		FUNCTION_RESET			= 0x03,	///< \b <0x03> Ожидание сброса (общее).
-		FUNCTION_INTERROG_CONF	= 0x04,	///< \b <0x04> Подтверждение опроса.
-		FUNCTION_INTERROG_MONIT	= 0x08,	///< \b <0x08> Данные опроса, либо его окончание.
-//		FUNCTION_INTERROG		= 0x0C,	///< \b <0x0C> Наличие опроса (общее).
-		FUNCTION_TIME_SYNCH_CONF= 0x10,	///< \b <0x10> Подтверждение синхронизации времени.
-		FUNCTION_TIME_SYNCH_END	= 0x20,	///< \b <0x20> Окончание синхронизации времени.
-		FUNCTION_EVENT			= 0x40,	///< \b <0x40> Наличие данных класса 1(2) на передачу.
-		FUNCTION_IS_ACD			= 0x48	///< \b <0x48> Проверка флагов с наличием данных на передачу.
-	} EFunction;
 
 	/// Ошибки проверки принятого кадра.
 	typedef enum __attribute__ ((__packed__)) {
@@ -1261,6 +1279,10 @@ public:
 	 * 	синхронизации нет, изменений в переданном времени не будет и возратится
 	 * 	\a False.
 	 *
+	 * 	При вызове данной функции сбрасывается флаг функции синхронизации
+	 * 	\a #FUNCTION_TIME_SYNCH_CONF, и устанавливается флаг окончания синхронизации
+	 * 	\a #FUNCTION_TIME_SYNCH_END.
+	 *
 	 * 	В данной функции, массив куда копируется имеет вид:
 	 * 	- UI8[1..8]<0..99> год;
 	 * 	- UI8[1..8]<1..12> месяц;
@@ -1310,7 +1332,6 @@ private:
 	uint8_t m_u8Fcb;			///< Ожидаемый бит счета кадров. <0> или <1>.
 
 	uint16_t m_u16CntInterrog;	///< Счетчик для отправки сообщений опроса.
-
 	SCp56Time2a m_stCp56time2a;	///< Хранилище времени.
 	SFrameVarLength m_stFrameVar;///< Блок данных прикладного уровня \a Asdu.
 
@@ -1335,22 +1356,6 @@ private:
 	 */
 	bool isFunc(EFunction func) const {
 		return (m_u8Func & func);
-	}
-
-	/**	Установка активной функции протокола.
-	 *
-	 * 	@param[in] func Функция протокола.
-	 */
-	void setFunc(EFunction func) {
-		m_u8Func |= func;
-	}
-
-	/**	Сброс активной функции протокола.
-	 *
-	 * 	@param[in] func Функция протокола.
-	 */
-	void clrFunc(EFunction func) {
-		m_u8Func &= ~func;
 	}
 
 	/**	Проверка бита счета кадров.
@@ -1538,8 +1543,8 @@ private:
 	/**	Обработка принятого кадра с переменной длиной.
 	 *
 	 *	@param[in] asdu Принятый блок данных.
-	 *	@retval True - кадр обработан.
-	 * 	@retval False - кадр не обработан.
+	 *	@retval True Кадр обработан.
+	 * 	@retval False Кадр не обработан.
 	 */
 	bool procFrameVarLenght(UAsdu asdu);
 
@@ -1551,8 +1556,8 @@ private:
 	 * 	- адрес 256, true,  16 июля		2014 10:25:18.100, acd = 1;
 	 * 	- адрес 257, true,  17 августа 	2015 11:26:19.101, acd = 0;
 	 *
-	 * 	@retval True - подготовлены данные для передачи.
-	 *	@retval False - данных нет.
+	 * 	@retval True Подготовлены данные для передачи.
+	 *	@retval False Данных нет.
 	 *
 	 */
 	virtual bool procEvent();
@@ -1566,10 +1571,23 @@ private:
 	 *	- адреса 201, 202 = false;
 	 *	- адреса 203, 204 = true;
 	 *
-	 *	@retval True - подготовлены данные для передачи.
-	 *	@retval False - данных нет.
+	 *	@param adr[out] Адрес.
+	 *	@param val[out] Значение.
+	 *	@retval True Подготовлены данные для передачи.
+	 *	@retval False Данных нет.
 	 */
-	virtual bool procInterrog(void);
+	virtual bool procInterrog(uint16_t &adr, bool &val);
+
+	/**	Установка времени.
+	 *
+	 *	Вызывается автоматически, при получении кадра синхронизации времени.
+	 *
+	 * 	@retval True Время установлено.
+	 * 	@retval False Время не установлено.
+	 */
+	virtual bool procSetTime() {
+		return false;
+	}
 
 	/**	Обработка принятого кадра синхронизации часов.
 	 *
@@ -1583,9 +1601,12 @@ private:
 	 *
 	 *	К текущим функциям добавится \a #FUNCTION_TIME_SYNCH_CONF.
 	 *
+	 *	Производится вызов функции \a procSetTime(), в кторой по умолчанию
+	 *	происходит установка времени, т.е. вызов \a getTime().
+	 *
 	 * 	@param[in] stCCsNa1 Кадр синхронизации часов.
-	 * 	@retval True - кадр обработан.
-	 * 	@retval False - кадр не обработан.
+	 * 	@retval True Кадр обработан.
+	 * 	@retval False Кадр не обработан.
 	 */
 	bool procFrameCCsNa1(SCCsNa1 stCCsNa1);
 
@@ -1603,8 +1624,8 @@ private:
 	 *	Счетчик опроса будет сброшен.
 	 *
 	 *	@param[in] stCIcNa1 Кадр опроса.
-	 * 	@retval True - кадр обработан.
-	 * 	@retval False - кадр не обработан.
+	 * 	@retval True Кадр обработан.
+	 * 	@retval False Кадр не обработан.
 	 */
 	bool procFrameCIcNa1(SCIcNa1 stCIcNa1);
 

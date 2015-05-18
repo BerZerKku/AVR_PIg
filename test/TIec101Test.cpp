@@ -1090,30 +1090,28 @@ TEST_F(TIec101_Full, readData_Iterrog) {
 
 		uint16_t i = 200;
 		while(i < 332) {
-			uint8_t req[] = FIX_FRAME_IN(10, true);
 			i++;
 			printTestName(" Данные опроса. \n" );
 			posMsg += sprintf(&msg[posMsg], " Адрес %d. \n", i);
-			resp[10] = (uint8_t) i;
-			resp[11] = (uint8_t) (i >> 8);
-			if (i <= 202) {
-				resp[12] = 0x00;
-			} else if (i <= 204) {
-				resp[12] = 0x01;
-				if (i == 204)
-					i = 300;
-			} else if (i <= 316) {
-				resp[12] = 0x00;
-			} else if (i <= 332) {
-				resp[12] = 0x01;
+			if (i <= 204) {
+				uint8_t req[] = FIX_FRAME_IN(10, true);
+				resp[10] = (uint8_t) i;
+				resp[11] = (uint8_t) (i >> 8);
+				if (i <= 202) {
+					resp[12] = 0x00;
+				} else if (i <= 204) {
+					resp[12] = 0x01;
+				} else {
+					break;
+				}
+				resp[sizeof(resp) - 2] = getCrcVarLenght(resp);	// подсчет CRC
+				putData(iec101, req, sizeof(req));
+				ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+				ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
+				ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 			} else {
-				break;
+
 			}
-			resp[sizeof(resp) - 2] = getCrcVarLenght(resp);	// подсчет CRC
-			putData(iec101, req, sizeof(req));
-			ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
-			ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
-			ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 		}
 	}
 

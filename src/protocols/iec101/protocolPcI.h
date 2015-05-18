@@ -63,18 +63,17 @@ private:
 		IE_DEF_ERROR_END	= 616,	///< Конечный адрес неисправностей защиты.
 		IE_DEF_WARNING_START= 617,	///< Начальный адрес предупреждений защиты.
 		IE_DEF_WARNING_END	= 632,	///< Конечный адрес предупреждений защиты.
-		IE_DEF_PUSK			= 650,	///< Сигнал Пуск.
-		IE_DEF_STOP			= 652,	///< Сигнал Стоп.
-		IE_DEF_MAN			= 654,	///< Сигнал Манипуляция.
-		IE_DEF_PRD			= 656,	///< Сигнал Прд.
-		IE_DEF_PRM			= 658,	///< Сигнал Прм.
-		IE_DRF_OUT			= 670,	///< Сигнал Рз-выход.
+		// TODO добавить сигналы защиты
+//		IE_DEF_PUSK			= 650,	///< Сигнал Пуск.
+//		IE_DEF_STOP			= 652,	///< Сигнал Стоп.
+//		IE_DEF_MAN			= 654,	///< Сигнал Манипуляция.
+//		IE_DEF_PRD			= 656,	///< Сигнал Прд.
+//		IE_DEF_PRM			= 658,	///< Сигнал Прм.
+//		IE_DRF_OUT			= 670,	///< Сигнал Рз-выход.
 		// vvv Всегда в конце.
 		IE_MAX						///< Максимальный используемый адрес + 1.
 
 	} EInfoElement;
-
-private:
 
 	/**	Обработка ответа на команду опроса.
 	 *
@@ -87,10 +86,64 @@ private:
 	 *	- адреса 301- 316 = false;
 	 *	- адреса 317- 332 = true;
 	 *
-	 *	@retval True - подготовлены данные для передачи.
-	 *	@retval False - данных нет.
+	 *	@param adr[out] Адрес флага.
+	 *	@param val[out] Значение флага.
+	 *	@retval True Подготовлены данные для передачи.
+	 *	@retval False Данных нет.
 	 */
-//	virtual bool procInterrog(void);
+	virtual bool procInterrog(uint16_t &adr, bool &val);
+
+	/**	Установка времени.
+	 *
+	 *	Вызывается автоматически, при получении кадра синхронизации времени.
+	 *
+	 *	Подгатавливается команда для передачи времени в БСП и сохраняется
+	 *	текущее время, для ответного кадра протокола 101.
+	 *
+	 * 	@retval True Время установлено.
+	 * 	@retval False Время не установлено.
+	 */
+	virtual bool procSetTime();
+
+	/**	Возвращает флаги общие для аппарата.
+	 *
+	 * 	@param[in] adr Адрес флага.
+	 *	@retval True Флаг установлен.
+	 *	@retval False Флаг сброшен.
+	 */
+	bool getDevice(uint16_t adr) const;
+
+	/**	Возвращает флаги общего состояния.
+	 *
+	 * 	@param[in] adr Адрес флага.
+	 *	@retval True Флаг установлен.
+	 *	@retval False Флаг сброшен.
+	 */
+	bool getGlb(uint16_t adr) const;
+
+	/**	Возвращает флаги передатчика.
+	 *
+	 * 	@param[in] adr Адрес флага.
+	 *	@retval True Флаг установлен.
+	 *	@retval False Флаг сброшен.
+	 */
+	bool getPrd(uint16_t adr) const;
+
+	/**	Возвращает флаги приемника.
+	 *
+	 * 	@param[in] adr Адрес флага.
+	 *	@retval True Флаг установлен.
+	 *	@retval False Флаг сброшен.
+	 */
+	bool getPrm(uint16_t adr) const;
+
+	/**	Возвращает флаги защиты.
+	 *
+	 * 	@param[in] adr Адрес флага.
+	 *	@retval True Флаг установлен.
+	 *	@retval False Флаг сброшен.
+	 */
+	bool getDef(uint16_t adr) const;
 
 };
 

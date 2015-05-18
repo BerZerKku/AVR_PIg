@@ -1150,7 +1150,7 @@ private:
 
 // класс для передачи команд
 class TTxCom {
-	static const uint8_t BUFFER_SIZE = 6;
+	static const uint8_t BUFFER_SIZE = 8;
 
 public:
 	TTxCom() {

@@ -66,14 +66,6 @@ uint8_t CIec101::push(uint8_t u8Byte) {
 	}
 	m_u8Tick = 0;	// сброс счетчика времени
 
-	sDebug.byte1 = m_pBuf[0];
-	sDebug.byte2 = m_pBuf[1];
-	sDebug.byte3 = m_pBuf[2];
-	sDebug.byte4 = m_pBuf[3];
-	sDebug.byte5 = m_pBuf[4];
-	sDebug.byte6 = m_pBuf[5];
-	sDebug.byte8++;
-
 	return (m_u8Cnt = cnt);
 }
 
@@ -103,8 +95,6 @@ void CIec101::tick() {
 			setState(STATE_READ);
 		}
 	}
-
-	sDebug.byte7 = getState();
 
 	m_u8Tick = tick;
 }
@@ -169,11 +159,11 @@ bool CIec101::getTime(uint8_t *pDist, uint8_t *pSource) {
 	if (!isFunc(FUNCTION_TIME_SYNCH_CONF))
 		return false;
 
-	*pDist++ = stTime.years;					// год
-	*pDist++ = stTime.months;					// месяц
-	*pDist++ = stTime.dayOfMonth;				// день месяца
-	*pDist++ = stTime.hours;					// часы
-	*pDist++ = stTime.minutes;				// мимнуты
+	*pDist++ = stTime.years;				// год
+	*pDist++ = stTime.months;				// месяц
+	*pDist++ = stTime.dayOfMonth;			// день месяца
+	*pDist++ = stTime.hours;				// часы
+	*pDist++ = stTime.minutes;				// минуты
 	*pDist++ = stTime.milliseconds / 1000;	// секунды
 
 	// очистка метки времени
@@ -185,13 +175,14 @@ bool CIec101::getTime(uint8_t *pDist, uint8_t *pSource) {
 	pSource++;								// мс, младший байт
 	pSource++;								// мс, старший байт
 	stTime.milliseconds = (*pSource++) * 1000;// секунды
-	stTime.minutes = *pSource++;				// минуты
+	stTime.minutes = *pSource++;			// минуты
 	stTime.hours = *pSource++;				// часы
 	pSource++;								// день недели
 	stTime.dayOfMonth = *pSource++;			// день месяца
 	stTime.months = *pSource++;				// месяц
-	stTime.years = *pSource;					// год
+	stTime.years = *pSource;				// год
 
+	// Должно быть всегда !!!
 	clrFunc(FUNCTION_TIME_SYNCH_CONF);
 	setFunc(FUNCTION_TIME_SYNCH_END);
 
@@ -535,7 +526,10 @@ void CIec101::procFrameFixLenghtUserData(SFrameFixLength &rFrame) {
 
 	// Проверка на отправку данных опроса
 	if (isFunc(FUNCTION_INTERROG_MONIT)) {
-		if (!procInterrog()) {
+		bool val = false;
+		if (procInterrog(m_u16CntInterrog, val)) {
+			prepareFrameMSpNa1(m_u16CntInterrog, COT_INROGEN, val);
+		} else {
 			// Данных на передачу больше нет, завершим опрос.
 			clrFunc(FUNCTION_INTERROG_MONIT);
 			prepareFrameCIcNa1(COT_ACTTERM);
@@ -605,37 +599,27 @@ bool CIec101::procEvent(void) {
 }
 
 // Обработка ответа на команду опроса.
-bool CIec101::procInterrog(void) {
+bool CIec101::procInterrog(uint16_t &adr, bool &val) {
 	bool state = true;
-	uint16_t cnt = m_u16CntInterrog + 1;
-	bool val = false;
 
-	if (cnt == 1) {
-		m_u16CntInterrog = 200;
-		cnt = 201;
-	}
+	if (adr > 204)
+		return false;
 
-	if ((cnt >= 201) && (cnt <= 204)) {
-		if (cnt == 201) {
+	adr = (adr < 201) ? 201 : (adr + 1);
+
+	if ((adr >= 201) && (adr <= 204)) {
+		if (adr == 201) {
 			val = false;
-		} else if (cnt == 202) {
+		} else if (adr == 202) {
 			val = false;
-		} else if (cnt == 203) {
+		} else if (adr == 203) {
 			val = true;
-		} else if (cnt == 204) {
+		} else if (adr == 204) {
 			val = true;
 		}
 	} else {
 		state = false;
 	}
-
-	if (state) {
-		// тут подставляем исходный адрес + 1, т.к. в cnt может лежать
-		// сдвинутый адрес
-		prepareFrameMSpNa1(m_u16CntInterrog + 1, COT_INROGEN, val);
-	}
-
-	m_u16CntInterrog = cnt;
 
 	return state;
 }
@@ -648,6 +632,7 @@ bool CIec101::procFrameCCsNa1(SCCsNa1 stCCsNa1) {
 
 	setFunc(FUNCTION_TIME_SYNCH_CONF);
 	copyCp56time2a(stTime, stCCsNa1.cp56Time2a);
+	procSetTime();
 
 	return true;
 }
