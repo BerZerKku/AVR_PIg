@@ -231,7 +231,7 @@ protected:
 	typedef enum __attribute__ ((__packed__)) {
 		FUNCTION_NO				= 0x00,	///< \b <0x00> Нет текущих функций.
 		FUNCTION_RESET_WAIT		= 0x01,	///< \b <0x01> Ожидание команды сброса.
-		FUNCTION_RESET_END		= 0x02,	///< \b <0x02> Окончание сброса.
+		FUNCTION_RESET_END		= 0x02,	///< \b <0x02> Сообщение об окончани сброса.
 		FUNCTION_RESET			= 0x03,	///< \b <0x03> Ожидание сброса (общее).
 		FUNCTION_INTERROG_CONF	= 0x04,	///< \b <0x04> Подтверждение опроса.
 		FUNCTION_INTERROG_MONIT	= 0x08,	///< \b <0x08> Данные опроса, либо его окончание.
@@ -362,6 +362,7 @@ protected:
 private:
 	/// Формат кадра (стартовое слово).
 	typedef enum __attribute__ ((__packed__)) {
+		FRAME_START_ERROR		  = 0x00,	///< \b <0x00> Ошибочное стартовое слово кадра (нет в МЭК).
 		FRAME_START_CHARACTER_FIX = 0x10,	///< \b <0x10> Cтартовое слово кадра с постоянной длиной.
 		FRAME_START_CHARACTER_VAR = 0x68	///< \b <0x68> Cтартовое слово кадра с переменной длиной.
 	} EFrameStartCharacter;
@@ -954,7 +955,7 @@ private:
 	} SFrameFixLength;
 
 	/**	\struct SFrameVarLength
-	 * 	\brief Формат кадра с постоянной длиной.
+	 * 	\brief Формат кадра с переменной длиной.
 	 *
 	 * 	\var SFrameVarLength::startCharacter
 	 * 		Должно быть равно \a #EFrameStartCharacter.
@@ -1269,7 +1270,7 @@ public:
 	 * 	@retval False - протокол ожидает сброса.
 	 */
 	bool isReset() const{
-		return !(m_u8Func & FUNCTION_RESET);
+		return !(m_u8Func & FUNCTION_RESET_WAIT);
 	}
 
 	/**	Синхронизация времени.
@@ -1333,7 +1334,9 @@ private:
 
 	uint16_t m_u16CntInterrog;	///< Счетчик для отправки сообщений опроса.
 	SCp56Time2a m_stCp56time2a;	///< Хранилище времени.
-	SFrameVarLength m_stFrameVar;///< Блок данных прикладного уровня \a Asdu.
+	SFrameFixLength m_stFrameFix;///< Кадр фиксированной длины.
+	SFrameVarLength m_stFrameVar;///< Кадр переменной длины.
+	EFrameStartCharacter m_eFrameSend;	///< Кадр подготовленный для передачи.
 
 	/**	Проверка необходимости передать новое сообщении класса 1.
 	 *
@@ -1429,17 +1432,20 @@ private:
 	 */
 	void readFrameVarLenght(SFrameVarLength &rFrame);
 
+	/**	Отправка подготовленного кадра.
+	 *
+	 * 	Состояние изменяется на \a #STATE_WRITE_READY.
+	 */
+	void sendFrame();
+
 	/**	Отправка кадра с фиксированной длиной.
 	 *
-	 *	Формируется кадр фиксированной длины с полем управления содержащим
-	 *	функциональный код \a function и бит требования запроса данных  \a acd.
+	 *	Отправлен будет последний подготовленный кадр, переменной или постоянной
+	 *	длины.
 	 *
 	 *	Состояние изменяется на \a #STATE_WRITE_READY.
-	 *
-	 *	@see ControlFieldSecondary
-	 *	@param[in] eFunction Функциональный код.
 	 */
-	void sendFrameFixLenght(EFcSecondary eFunction);
+	void sendFrameFixLenght();
 
 	/**	Отправка кадра с переменной длиной.
 	 *
@@ -1456,6 +1462,18 @@ private:
 	 * 	Состояние изменяется на \a #STATE_WRITE_READY.
 	 */
 	void sendFrameVarLenght();
+
+	/**	Подготовка кадра с постоянной длиной к отправке.
+	 *
+	 * 	Формируется кадр фиксированной длины с полем управления содержащим
+	 *	функциональный код \a function и бит требования запроса данных  \a acd.
+	 *
+	 *	Состояние изменяется на \a #STATE_WRITE_READY.
+	 *
+	 *	@see ControlFieldSecondary
+	 *	@param[in] eFunction Функциональный код.
+	 */
+	void prepareFrameFixLenght(EFcSecondary eFunction);
 
 	/**	Подготовка кадра с переменной длиной к отправке.
 	 *

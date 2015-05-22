@@ -226,13 +226,13 @@ static void setInterface(TUartData *uart) {
 		case TInterface::USB:
 			// во врем€ отладки интерфейс USB можно настраивать
 			// TODO
-//			setProtocol(TProtocol::STANDART, 19200);
-//			uartPC.open(19200, TDataBits::_8, TParity::NONE,
-//					TStopBits::TWO);
+			setProtocol(TProtocol::STANDART, 19200);
+			uartPC.open(19200, TDataBits::_8, TParity::NONE,
+					TStopBits::TWO);
 
-			setProtocol(TProtocol::IEC_101, 19200);
-			uartPC.open(19200, TDataBits::_8, TParity::EVEN,
-								TStopBits::ONE);
+//			setProtocol(TProtocol::IEC_101, 19200);
+//			uartPC.open(19200, TDataBits::_8, TParity::EVEN,
+//								TStopBits::ONE);
 			break;
 		case TInterface::RS485:
 			setProtocol(uart->Protocol.get(), uart->BaudRate.getValue());

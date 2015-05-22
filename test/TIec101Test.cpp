@@ -145,7 +145,7 @@ public:
 			ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg;
 			ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 			ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
-			ASSERT_TRUE(!iec101->isReset()) << msg;
+			ASSERT_TRUE(iec101->isReset()) << msg;
 		}
 
 		{
@@ -156,7 +156,7 @@ public:
 			ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg;
 			ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 			ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
-			ASSERT_TRUE(!iec101->isReset()) << msg;
+			ASSERT_TRUE(iec101->isReset()) << msg;
 		}
 
 		{

@@ -449,7 +449,9 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			stat &= sParam_->DateTime.setHour(BCD_TO_BIN(buf[B4]));
 			stat &= sParam_->DateTime.setMinute(BCD_TO_BIN(buf[B5]));
 			stat &= sParam_->DateTime.setSecond(BCD_TO_BIN(buf[B6]));
-
+			// миллисекунды устанавливаются, только если они есть в посылке
+			uint16_t ms =  buf[NUM] >= 8 ? *((uint16_t *) &buf[B7]) : 0;
+			stat &= sParam_->DateTime.setMsSecond(ms);
 			stat = true;
 		}
 		break;

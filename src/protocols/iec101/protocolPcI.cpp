@@ -42,8 +42,8 @@ bool TProtocolPcI::procInterrog(uint16_t &adr, bool &val) {
 			adr = IE_PRM_ON;
 		val = getPrm(adr);
 	} else if (adr <= IE_DEF_WARNING_END) {
-		if (adr < IE_DEF_WARNING_END)
-			adr = IE_DEF_WARNING_END;
+		if (adr < IE_DEF_ON)
+			adr = IE_DEF_ON;
 		val = getDef(adr);
 	}
 

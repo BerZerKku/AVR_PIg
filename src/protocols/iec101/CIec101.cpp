@@ -17,6 +17,7 @@ m_pBuf(pBuf), m_u8Size(u8Size) {
 
 	m_u8Tick = 0;
 	m_u16TickStep = 0;
+	m_eFrameSend = FRAME_START_ERROR;
 
 	m_u16CntInterrog = 0;
 
@@ -144,11 +145,21 @@ CIec101::EError CIec101::readData() {
 			}
 		}
 		break;
+		default:
+			break;
 	}
 
 	if (error != ERROR_NO) {
 		// в случае обнаружени€ ошибки, ожидаем следующий пакет через 33 бита
 		setState(STATE_READ_ERROR);
+		sDebug.byte1++;
+	} else {
+		// ≈сли в процессе обработки кадра, режим не был изменен на "чтение"
+		// отправим кадр
+		if (isReadData()) {
+			sendFrame();
+		}
+		sDebug.byte2++;
 	}
 
 	return error;
@@ -279,15 +290,13 @@ CIec101::EError CIec101::checkFrameVarLenght(SFrameVarLength &rFrame)  const {
 
 // ќбработка кадра с фиксированной длиной.
 void CIec101::readFrameFixLenght(SFrameFixLength &rFrame) {
-	if (isFunc(FUNCTION_RESET_WAIT)) {
+	if (!isReset()) {
 		// если сброса от первичной станции небыло и это не команды сброса
 		// прин€тый кадр обработан не будет
 		switch(rFrame.controlField.primary.function) {
 			case RESET_REMOTE_LINK:
 			case REQUEST_STATUS_OF_LINK:
 				break;
-			case REQUEST_USER_DATA_CLASS_1:	// DOWN
-			case REQUEST_USER_DATA_CLASS_2: // DOWN
 			default:
 				setReadState();
 				return;
@@ -297,29 +306,29 @@ void CIec101::readFrameFixLenght(SFrameFixLength &rFrame) {
 	uint8_t fcb = rFrame.controlField.primary.fcb;
 
 	switch(rFrame.controlField.primary.function) {
-		case RESET_REMOTE_LINK:
-			// в следующем кадре должно быть FCB = 1
-			rFrame.controlField.primary.fcb = 0;
-			sendFrameFixLenght(CONFIRM_ACK);
-			clrFunc(FUNCTION_RESET_WAIT);
-			setFunc(FUNCTION_RESET_END);
-			break;
-		case USER_DATA_NO_REPLY:
-			setReadState();
-			break;
-		case REQUEST_STATUS_OF_LINK:
-			sendFrameFixLenght(RESPOND_STATUS_OF_LINK);
-			break;
 		case REQUEST_USER_DATA_CLASS_1:	// DOWN
 		case REQUEST_USER_DATA_CLASS_2:
 			procFrameFixLenghtUserData(rFrame);
 			break;
+		case USER_DATA_NO_REPLY:
+			setReadState();
+			break;
+		case RESET_REMOTE_LINK:
+			// в следующем кадре должно быть FCB = 1
+			rFrame.controlField.primary.fcb = 0;
+			prepareFrameFixLenght(CONFIRM_ACK);
+			clrFunc(FUNCTION_RESET_WAIT);
+			setFunc(FUNCTION_RESET_END);
+			break;
+		case REQUEST_STATUS_OF_LINK:
+			prepareFrameFixLenght(RESPOND_STATUS_OF_LINK);
+			break;
 		case USER_DATA_CONFIRM:
 			// Ќедопустимые запросы дл€ кадра фиксированной длинны - вернуть NACK
-			sendFrameFixLenght(CONFIRM_NACK);
+			prepareFrameFixLenght(CONFIRM_NACK);
 			break;
 		default:
-			sendFrameFixLenght(LINK_SERV_NOT_IMPL);
+			prepareFrameFixLenght(LINK_SERV_NOT_IMPL);
 	}
 
 	// в слудющем кадре бит счета кадров должен быть другим
@@ -327,7 +336,7 @@ void CIec101::readFrameFixLenght(SFrameFixLength &rFrame) {
 }
 
 void CIec101::readFrameVarLenght(SFrameVarLength &rFrame) {
-	if (isFunc(FUNCTION_RESET_WAIT)) {
+	if (!isReset()) {
 		// если сброса от первичной станции небыло прин€тый кадр обработан не будет
 		setReadState();
 		return;
@@ -337,16 +346,13 @@ void CIec101::readFrameVarLenght(SFrameVarLength &rFrame) {
 
 	switch(rFrame.controlField.primary.function) {
 		case USER_DATA_CONFIRM:
-			if (!checkFcb(rFrame.controlField.primary)) {
-				// надо повторить предыдущий кадр
-				sendFrameVarLenght();
-			} else {
+			if (checkFcb(rFrame.controlField.primary)) {
 				// обработаем прин€тый кадр и отправим положительное поддтверждение
 				// или отрицательное подтверждение
 				if (procFrameVarLenght(rFrame.asdu)) {
-					sendFrameFixLenght(CONFIRM_ACK);
+					prepareFrameFixLenght(CONFIRM_ACK);
 				} else {
-					sendFrameFixLenght(CONFIRM_NACK);
+					prepareFrameFixLenght(CONFIRM_NACK);
 				}
 			}
 			break;
@@ -360,31 +366,38 @@ void CIec101::readFrameVarLenght(SFrameVarLength &rFrame) {
 		case REQUEST_STATUS_OF_LINK:	// DOWN
 		case REQUEST_USER_DATA_CLASS_1:	// DOWN
 		case REQUEST_USER_DATA_CLASS_2:
-			sendFrameFixLenght(CONFIRM_NACK);
+			prepareFrameFixLenght(CONFIRM_NACK);
 			break;
 
 		default:
-			sendFrameFixLenght(LINK_SERV_NOT_IMPL);
+			prepareFrameFixLenght(LINK_SERV_NOT_IMPL);
 	}
 
 	// в слудющем кадре бит счета кадров должен быть другим
 	m_u8Fcb = fcb ^ 1;
 }
 
-// ќтправка кадра с фиксированной длиной.
-void CIec101::sendFrameFixLenght(EFcSecondary function) {
-	SFrameFixLength &frame = *((SFrameFixLength *) m_pBuf);
+// ќтправка кадра.
+void CIec101::sendFrame() {
+	switch(m_eFrameSend) {
+		case FRAME_START_CHARACTER_FIX:
+			sendFrameFixLenght();
+			break;
+		case FRAME_START_CHARACTER_VAR:
+			sendFrameVarLenght();
+			break;
+		default:
+			setReadState();
+	}
+}
 
-	frame.startCharacter = FRAME_START_CHARACTER_FIX;
-	frame.controlField.common = 0;
-	frame.controlField.secondary.function = function;
-//	frame.controlField.secondary.dfc = 0;	// прием сообщений всегда возможен
-	frame.controlField.secondary.acd = isAcd();
-//	frame.controlField.secondary.prm = 0;	// направление передачи от вторичной станции = 0
-//	frame.controlField.secondary.res = 0;	// резерв всегда 0
-	frame.linkAddress = getAddressLan();
-	frame.checkSum = getCrcFixFrame(frame);
-	frame.stopCharacter = s_u8FrameStopCharacter;
+// ќтправка кадра с фиксированной длиной.
+void CIec101::sendFrameFixLenght() {
+	uint8_t *ptr = (uint8_t *) &m_stFrameFix;
+
+	for(uint8_t i = 0; i < s_u8SizeOfFrameFixLenght; i++) {
+		m_pBuf[i] = *ptr++;
+	}
 
 	m_u8Cnt = s_u8SizeOfFrameFixLenght;
 	setState(STATE_WRITE_READY);
@@ -405,6 +418,24 @@ void CIec101::sendFrameVarLenght() {
 
 	m_u8Cnt = i;
 	setState(STATE_WRITE_READY);
+}
+
+
+
+// ѕодготовка кадра с посто€нной длиной к отправке.
+void CIec101::prepareFrameFixLenght(EFcSecondary eFunction) {
+	m_stFrameFix.startCharacter = FRAME_START_CHARACTER_FIX;
+	m_stFrameFix.controlField.common = 0;
+	m_stFrameFix.controlField.secondary.function = eFunction;
+	//	frame.controlField.secondary.dfc = 0;	// прием сообщений всегда возможен
+	m_stFrameFix.controlField.secondary.acd = isAcd();
+	//	frame.controlField.secondary.prm = 0;	// направление передачи от вторичной станции = 0
+	//	frame.controlField.secondary.res = 0;	// резерв всегда 0
+	m_stFrameFix.linkAddress = getAddressLan();
+	m_stFrameFix.checkSum = getCrcFixFrame(m_stFrameFix);
+	m_stFrameFix.stopCharacter = s_u8FrameStopCharacter;
+
+	m_eFrameSend = FRAME_START_CHARACTER_FIX;
 }
 
 // ѕодготовка кадра с переменной длиной к отправке.
@@ -436,6 +467,7 @@ void CIec101::prepareFrameVarLenght(ETypeId eId, ECot eCot, uint8_t u8SizeAsdu) 
 
 //	m_stFrameVar.checkSum =  getCrcVarFrame(m_stFrameVar);
 	m_stFrameVar.stopCharacter = s_u8FrameStopCharacter;
+	m_eFrameSend = FRAME_START_CHARACTER_VAR;
 }
 
 //ѕодготовка кадра одноэелементной информации без метки времени.
@@ -494,16 +526,14 @@ void CIec101::procFrameFixLenghtUserData(SFrameFixLength &rFrame) {
 			// окончание инициализации
 			clrFunc(FUNCTION_RESET_END);
 			prepareFrameMEiNa1(COI_LOCAL_MANUAL_RESET);
-			sendFrameVarLenght();
 		} else {
-			sendFrameFixLenght(RESPOND_NACK);
+			prepareFrameFixLenght(RESPOND_NACK);
 		}
 		return;
 	}
 
 	// ѕроверка на повтор передачи кадра.
 	if (!checkFcb(rFrame.controlField.primary)) {
-		sendFrameVarLenght();
 		return;
 	}
 
@@ -511,7 +541,6 @@ void CIec101::procFrameFixLenghtUserData(SFrameFixLength &rFrame) {
 	if (isFunc(FUNCTION_TIME_SYNCH_END)) {
 		clrFunc(FUNCTION_TIME_SYNCH_END);
 		prepareFrameCCsNa1(COT_ACTCON);
-		sendFrameVarLenght();
 		return;
 	}
 
@@ -520,7 +549,6 @@ void CIec101::procFrameFixLenghtUserData(SFrameFixLength &rFrame) {
 		clrFunc(FUNCTION_INTERROG_CONF);
 		setFunc(FUNCTION_INTERROG_MONIT);
 		prepareFrameCIcNa1(COT_ACTCON);
-		sendFrameVarLenght();
 		return;
 	}
 
@@ -534,7 +562,6 @@ void CIec101::procFrameFixLenghtUserData(SFrameFixLength &rFrame) {
 			clrFunc(FUNCTION_INTERROG_MONIT);
 			prepareFrameCIcNa1(COT_ACTTERM);
 		}
-		sendFrameVarLenght();
 		return;
 	}
 
@@ -543,12 +570,11 @@ void CIec101::procFrameFixLenghtUserData(SFrameFixLength &rFrame) {
 		if (!procEvent()) {
 			clrFunc(FUNCTION_EVENT);
 		}
-		sendFrameVarLenght();
 		return;
 	}
 
 	// Ќет данных на передачу.
-	sendFrameFixLenght(RESPOND_NACK);
+	prepareFrameFixLenght(RESPOND_NACK);
 }
 
 // ќбработка прин€того кадра с переменной длиной.
