@@ -29,7 +29,24 @@ bool clProtocolBspS::getData(bool pc) {
 	// ответ на команду изменения параметра/режима не требуется
 	if ((mask == GB_COM_MASK_GROUP_WRITE_PARAM)
 			|| (mask == GB_COM_MASK_GROUP_WRITE_REGIME)) {
-		stat = true;
+		if (com == GB_COM_SET_TIME) {
+			if (buf[NUM] >= 8) {
+				stat =  sParam_->DateTimeReq.setYear(BCD_TO_BIN(buf[B1]));
+				stat &= sParam_->DateTimeReq.setMonth(BCD_TO_BIN(buf[B2]));
+				stat &= sParam_->DateTimeReq.setDay(BCD_TO_BIN(buf[B3]));
+				stat &= sParam_->DateTimeReq.setHour(BCD_TO_BIN(buf[B4]));
+				stat &= sParam_->DateTimeReq.setMinute(BCD_TO_BIN(buf[B5]));
+				stat &= sParam_->DateTimeReq.setSecond(BCD_TO_BIN(buf[B6]));
+				// миллисекунды устанавливаются, только если они есть в посылке
+				uint16_t ms =  (buf[NUM] >= 8) ? *((uint16_t *) &buf[B7]) : 0;
+				stat &= sParam_->DateTimeReq.setMsSecond(ms);
+				sParam_->DateTimeReq.setTimeBsp_ = true;
+			} else {
+				stat = true;
+			}
+		} else {
+			stat = true;
+		}
 	} else {
 		mask = com & GB_COM_MASK_DEVICE;
 
@@ -150,6 +167,8 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 
 		if (com == GB_COM_SET_TIME) {
 			num = addCom(com, 8, sParam_->txComBuf.getBuferAddress());
+		} else if (com ==  GB_COM_PRM_RES_IND) {
+			num = addCom(com);
 		} else 	if (sendType != GB_SEND_NO) {
 			uint8_t val = sParam_->txComBuf.getInt8(0);
 			uint8_t dop = sParam_->txComBuf.getInt8(1);
@@ -453,6 +472,16 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			uint16_t ms =  buf[NUM] >= 8 ? *((uint16_t *) &buf[B7]) : 0;
 			stat &= sParam_->DateTime.setMsSecond(ms);
 			stat = true;
+//			sParam_->DateTimeReq.setYear(BCD_TO_BIN(buf[B1]));
+//			sParam_->DateTimeReq.setMonth(BCD_TO_BIN(buf[B2]));
+//			sParam_->DateTimeReq.setDay(BCD_TO_BIN(buf[B3]));
+//			sParam_->DateTimeReq.setHour(BCD_TO_BIN(buf[B4]));
+//			sParam_->DateTimeReq.setMinute(BCD_TO_BIN(buf[B5]));
+//			sParam_->DateTimeReq.setSecond(BCD_TO_BIN(buf[B6]));
+//			// миллисекунды устанавливаются, только если они есть в посылке
+//			ms =  (buf[NUM] >= 8) ? *((uint16_t *) &buf[B7]) : 0;
+//			sParam_->DateTimeReq.setMsSecond(ms);
+//			sParam_->DateTimeReq.setTimeBsp_ = true;
 		}
 		break;
 

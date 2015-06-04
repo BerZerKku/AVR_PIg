@@ -56,7 +56,7 @@ enum ePRTS_DATA_BYTE_NAME {
 class clProtocolS {
 	/** Кол-во циклов, после которого залипшее текущее состояние будет сброшено в состояние по-умолчанию
 	 */
-	static const uint8_t MAX_CYCLE_TO_REST_SOST = 10;
+	static const uint8_t MAX_CYCLE_TO_REST_SOST = 3;
 
 public:
 	clProtocolS(uint8_t *buf, uint8_t size, stGBparam *sParam);

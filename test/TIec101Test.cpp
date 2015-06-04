@@ -896,7 +896,7 @@ TEST_F(TIec101_Full, readData_reset) {
 	ASSERT_TRUE(!iec101->isReset()) << "Не сбрасывается флаг сброса при отключении протокола";
 }
 
-TEST_F(TIec101_Full, readData_C_CS_NA_1) {
+TEST_F(TIec101_Full, readData_TimeSynch) {
 	// синхронизация часов
 
 	iec101->setEnable();
@@ -975,14 +975,14 @@ TEST_F(TIec101_Full, readData_C_CS_NA_1) {
 		ASSERT_TRUE(checkMass((uint8_t *) &iec101->stTime, sizeof(iec101->stTime), time_exp , sizeof(time_exp))) << msg;
 	}
 
-	{
-		printTestName(" Проверка функции обработки принятого времени. \n");
-		uint8_t time_now[9] = {0x00, 0x00, 0x01, 0x02, 0x03, 0x00, 0x04, 0x05, 0x06};
-		uint8_t time_exp[6] = {0x0A, 0x09, 0x08, 0x07, 0x06, 0x0C};
-		uint8_t tmp_exp[6] = {0};
-		ASSERT_TRUE(iec101->getTime(tmp_exp, time_now)) << msg;
-		ASSERT_TRUE(checkMass(tmp_exp, sizeof(tmp_exp), time_exp , sizeof(time_exp))) << msg;
-	}
+//	{
+//		printTestName(" Проверка функции обработки принятого времени. \n");
+//		uint8_t time_now[9] = {0x00, 0x00, 0x01, 0x02, 0x03, 0x00, 0x04, 0x05, 0x06};
+//		uint8_t time_exp[6] = {0x0A, 0x09, 0x08, 0x07, 0x06, 0x0C};
+//		uint8_t tmp_exp[6] = {0};
+//		ASSERT_TRUE(iec101->getTime(tmp_exp, time_now)) << msg;
+//		ASSERT_TRUE(checkMass(tmp_exp, sizeof(tmp_exp), time_exp , sizeof(time_exp))) << msg;
+//	}
 
 	{
 		printTestName(" Команда окончания синхронизации часов. \n");

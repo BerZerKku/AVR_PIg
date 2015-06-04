@@ -15,44 +15,55 @@ sParam_(sParam), CIec101(buf, size) {
 
 //	Функция отправки сообщения.
 uint8_t TProtocolPcI::send() {
-
 	return sendData();
 }
 
 // Обработка ответа на команду опроса.
 bool TProtocolPcI::procInterrog(uint16_t &adr, bool &val) {
-
-	if (adr >= IE_MAX)
-		return false;
-
-	adr = (adr < IE_MIN) ? IE_MIN : (adr + 1);
+	adr++;
 
 	if (adr <= IE_PRM_COM) {
+		if (adr < IE_ERROR)
+			adr = IE_ERROR;
 		val = getDevice(adr);
-	} else if (adr <= IE_GLB_WARNING_END) {
+		return true;
+	}
+
+	if (adr <= IE_GLB_WARNING_END) {
 		if (adr < IE_GLB_ERROR_START)
 			adr = IE_GLB_ERROR_START;
 		val = getGlb(adr);
-	} else if (adr <= IE_PRD_COM_END) {
+		return true;
+	}
+
+	if (sParam_->prd.status.isEnable() && (adr <= IE_PRD_COM_END)) {
 		if (adr < IE_PRD_ON)
 			adr = IE_PRD_ON;
 		val = getPrd(adr);
-	} else if (adr <= IE_PRM_COM_END) {
+		return true;
+	}
+
+	if (sParam_->prm.status.isEnable() && (adr <= IE_PRM_COM_END)) {
 		if (adr < IE_PRM_ON)
 			adr = IE_PRM_ON;
 		val = getPrm(adr);
-	} else if (adr <= IE_DEF_WARNING_END) {
+		return true;
+	}
+
+	if (sParam_->def.status.isEnable() &&(adr <= IE_DEF_WARNING_END)) {
 		if (adr < IE_DEF_ON)
 			adr = IE_DEF_ON;
 		val = getDef(adr);
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 // Установка времени
 bool TProtocolPcI::procSetTime() {
 	// Заполнение команды для передачи нового времени в БСП
+
 	uint8_t i = 0;
 	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.years), i++);
 	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.months), i++);
@@ -65,24 +76,37 @@ bool TProtocolPcI::procSetTime() {
 	sParam_->txComBuf.setInt8(BIN_TO_BCD((uint8_t) (ms >> 8)), i++);
 	sParam_->txComBuf.addFastCom(GB_COM_SET_TIME);
 
+	// сброс флага наличия ответа на команду установки времени в БСП
+	sParam_->DateTimeReq.setTimeBsp_ = false;
+
+	return true;
+}
+
+// Установка времени, сообщение об окочнании.
+bool TProtocolPcI::procSetTimeEnd() {
+	sDebug.byte2++;
+
+	if (!sParam_->DateTimeReq.setTimeBsp_)
+		return false;
+
+	sDebug.byte3++;
+
 	// очистка метки времени
 	uint8_t *ptr = (uint8_t *) &stTime;
-	for(i = 0; i < sizeof(SCp56Time2a); i++) {
+	for(uint8_t i = 0; i < sizeof(SCp56Time2a); i++) {
 		*ptr++ = 0;
 	}
 
-	// Заполнение буфера метки времени, для передачи подтверждения синхронизации
-	stTime.milliseconds = sParam_->DateTime.getMsSecond();		// миллисекунды +
-	stTime.milliseconds += sParam_->DateTime.getSecond() * 1000;// секунды
-	stTime.minutes = sParam_->DateTime.getMinute();				// минуты
-	stTime.hours = sParam_->DateTime.getHour();					// часы
-	stTime.dayOfMonth = sParam_->DateTime.getDay();				// день месяца
-	stTime.months = sParam_->DateTime.getMonth();				// месяц
-	stTime.years = sParam_->DateTime.getYear();					// год
+	stTime.years = sParam_->DateTimeReq.getYear();
+	stTime.months = sParam_->DateTimeReq.getMonth();
+	stTime.dayOfMonth = sParam_->DateTimeReq.getDay();
+	stTime.hours = sParam_->DateTimeReq.getHour();
+	stTime.minutes = sParam_->DateTimeReq.getMinute();
+	stTime.milliseconds = 1000 * sParam_->DateTimeReq.getSecond();
+	stTime.milliseconds +=	sParam_->DateTimeReq.getMsSecond();
 
-	// Должно быть всегда !!!
-	clrFunc(FUNCTION_TIME_SYNCH_CONF);
-	setFunc(FUNCTION_TIME_SYNCH_END);
+	// сброс флага наличия принятых даты/времени в момент синхронизации БСП
+	sParam_->DateTimeReq.setTimeBsp_ = false;
 
 	return true;
 }

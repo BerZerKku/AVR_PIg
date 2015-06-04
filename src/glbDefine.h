@@ -520,6 +520,9 @@ enum eGB_K400_NUM_COM {
 ///  ласс дл€ даты и времени
 class TDataTime {
 public:
+	// флаг установки нового времени
+	bool setTimeBsp_;
+
 	TDataTime() {
 		msSecond_ = 0;
 		second_ = 0;
@@ -529,6 +532,8 @@ public:
 		month_ = 1;
 		year_ = 0;
 		dayWeek_ = 0;
+
+		setTimeBsp_ = false;
 	}
 
 	// —читывание и установка секунд

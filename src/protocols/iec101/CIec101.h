@@ -237,33 +237,12 @@ protected:
 		FUNCTION_INTERROG_MONIT	= 0x08,	///< \b <0x08> Данные опроса, либо его окончание.
 //		FUNCTION_INTERROG		= 0x0C,	///< \b <0x0C> Наличие опроса (общее).
 		FUNCTION_TIME_SYNCH_CONF= 0x10,	///< \b <0x10> Подтверждение синхронизации времени.
-		FUNCTION_TIME_SYNCH_END	= 0x20,	///< \b <0x20> Окончание синхронизации времени.
+//		FUNCTION_TIME_SYNCH_END	= 0x20,	///< \b <0x20> Окончание синхронизации времени.
 		FUNCTION_EVENT			= 0x40,	///< \b <0x40> Наличие данных класса 1(2) на передачу.
 		FUNCTION_IS_ACD			= 0x48	///< \b <0x48> Проверка флагов с наличием данных на передачу.
 	} EFunction;
 
-	/**	\brief Причина передачи (Сause of Transmission).
-	 *
-	 * 	\note МЭК 870-5-101-2006 7.2.3 Причина передачи.
-	 *	\note IEC 870-5-101 4.2.8 Cause of transmission
-	 */
-	typedef enum __attribute__ ((__packed__)) {
-		COT_NOT_USED	= 0,	///< \b <0> Не используется (not used).
-		COT_PER_CYC	 	= 1,	///< \b <1> Периодически, циклически (per/cyc).
-		COT_BACK		= 2,	///< \b <2> Фоновое сканирование (background scan).
-		COT_SPONT		= 3,	///< \b <3> Спорадически (spontaneous).
-		COT_INIT		= 4,	///< \b <4> Сообщение об инициализации (initialised).
-		COT_REQ			= 5,	///< \b <5> Запрос или запрашиваемые данные (request or requested).
-		COT_ACT			= 6,	///< \b <6> Активация (activation).
-		COT_ACTCON		= 7,	///< \b <7> Подтверждение активации (activation confirmation).
-		COT_DEACT		= 8,	///< \b <8> Деактивация (deactivation).
-		COT_DEACTON		= 9,	///< \b <9> Подтверждение деактивации (deactivation confirmation).
-		COT_ACTTERM		= 10,	///< \b <10> Завершенеи активации (activation termination).
-		COT_RETREM		= 11,	///< \b <11> Обратная информация, вызванная удаленной командой (return information caused by a remote command).
-		COT_RETLOC		= 12,	///< \b <12> Обратная информация, вызванная местной командой (return information caused by a local command).
-		COT_FILE		= 13, 	///< \b <13> Передача файлов (file transfer).
-		COT_INROGEN		= 20 	///< \b <20> Ответ на опрос станции (interrogated by general interrogation).
-	} ECot;
+
 
 	/**	\struct SCp56Time2a
 	 * 	\brief Метка времени "Время 2а в двоичном коде" CP56time2a.
@@ -343,23 +322,8 @@ protected:
 		uint8_t res4 			: 1;	///< Резерв 4 - RES4.
 	} SCp56Time2a;
 
-	/**	Установка активной функции протокола.
-	 *
-	 * 	@param[in] func Функция протокола.
-	 */
-	void setFunc(EFunction func) {
-		m_u8Func |= func;
-	}
-
-	/**	Сброс активной функции протокола.
-	 *
-	 * 	@param[in] func Функция протокола.
-	 */
-	void clrFunc(EFunction func) {
-		m_u8Func &= ~func;
-	}
-
 private:
+
 	/// Формат кадра (стартовое слово).
 	typedef enum __attribute__ ((__packed__)) {
 		FRAME_START_ERROR		  = 0x00,	///< \b <0x00> Ошибочное стартовое слово кадра (нет в МЭК).
@@ -488,6 +452,29 @@ private:
 //		LINK_SERV_NOT_FUNC		= 14,	///< \b <14> Канальный сервис не работает ("Услуги канала не работают").
 		LINK_SERV_NOT_IMPL 		= 15 	///< \b <15> Канальный сервис не встроен.
 	} EFcSecondary;
+
+	/**	\brief Причина передачи (Сause of Transmission).
+	 *
+	 * 	\note МЭК 870-5-101-2006 7.2.3 Причина передачи.
+	 *	\note IEC 870-5-101 4.2.8 Cause of transmission
+	 */
+	typedef enum __attribute__ ((__packed__)) {
+		COT_NOT_USED	= 0,	///< \b <0> Не используется (not used).
+		COT_PER_CYC	 	= 1,	///< \b <1> Периодически, циклически (per/cyc).
+		COT_BACK		= 2,	///< \b <2> Фоновое сканирование (background scan).
+		COT_SPONT		= 3,	///< \b <3> Спорадически (spontaneous).
+		COT_INIT		= 4,	///< \b <4> Сообщение об инициализации (initialised).
+		COT_REQ			= 5,	///< \b <5> Запрос или запрашиваемые данные (request or requested).
+		COT_ACT			= 6,	///< \b <6> Активация (activation).
+		COT_ACTCON		= 7,	///< \b <7> Подтверждение активации (activation confirmation).
+		COT_DEACT		= 8,	///< \b <8> Деактивация (deactivation).
+		COT_DEACTON		= 9,	///< \b <9> Подтверждение деактивации (deactivation confirmation).
+		COT_ACTTERM		= 10,	///< \b <10> Завершенеи активации (activation termination).
+		COT_RETREM		= 11,	///< \b <11> Обратная информация, вызванная удаленной командой (return information caused by a remote command).
+		COT_RETLOC		= 12,	///< \b <12> Обратная информация, вызванная местной командой (return information caused by a local command).
+		COT_FILE		= 13, 	///< \b <13> Передача файлов (file transfer).
+		COT_INROGEN		= 20 	///< \b <20> Ответ на опрос станции (interrogated by general interrogation).
+	} ECot;
 
 	/**	\brief Причина инициализации (Cause of initialisation).
 	 *
@@ -1202,7 +1189,7 @@ public:
 
 	/**	Счет времени прошедшего с момента прихода последнего байта.
 	 *
-	 *	Счетчик считает только в состояниях \a #STATE_READ и \a #STATE_READ_ERROR.
+	 *	Счетчик считает всегда.
 	 *
 	 *	Как только счетчик времени достигнет (превысит) \a #s_u16DelayFinish, т.е.
 	 *	будет обнаружен необходимый интервал спокойного состояния:
@@ -1307,7 +1294,7 @@ public:
 	 *	@retval True - надо устновить новое время.
 	 *	@retval False - новое время устанавливать не надо.
 	 */
-	virtual bool getTime(uint8_t *pDist, uint8_t *pSource);
+//	virtual bool getTime(uint8_t *pDist, uint8_t *pSource);
 
 	/**	Проверка наличия данных класса 1(2) на передачу.
 	 *
@@ -1327,7 +1314,9 @@ private:
 	uint8_t m_u8Address;		///< Адрес устройства в сети.
 	volatile uint8_t m_u8Cnt;	///< Кол-во принятых байт.
 	volatile uint16_t m_u8Tick;	///< Время прошедшее с момента приема последнего байта.
+	volatile uint16_t m_u16Time;///< Время прошедшее с момента приема
 	uint16_t m_u16TickStep;		///< Шаг счетчика паузы.
+	uint16_t m_u16TickTime;		///< Шаг счета паузы.
 
 	uint8_t m_u8Func;			///< Флаги текущих функций протокола (\a #EFunction).
 	uint8_t m_u8Fcb;			///< Ожидаемый бит счета кадров. <0> или <1>.
@@ -1351,16 +1340,6 @@ private:
 		return isFunc(FUNCTION_IS_ACD) ? 1 : 0;
 	}
 
-	/**	Проверка активности функции протокола.
-	 *
-	 * 	@param[in] func Проверяемая функция протокола.
-	 * 	@retval True Функция протокола активна.
-	 * 	@retval False Фунция протокола не активна.
-	 */
-	bool isFunc(EFunction func) const {
-		return (m_u8Func & func);
-	}
-
 	/**	Проверка бита счета кадров.
 	 *
 	 *	@param[in] rCf Поле управления при передаче от первичной станции к вторичной.
@@ -1369,6 +1348,32 @@ private:
 	 */
 	bool checkFcb(SControlFieldPrimary &rCf) const {
 		return (!rCf.fcv) || (rCf.fcb == m_u8Fcb);
+	}
+
+	/**	Установка активной функции протокола.
+	 *
+	 * 	@param[in] func Функция протокола.
+	 */
+	void setFunc(EFunction func) {
+		m_u8Func |= func;
+	}
+
+	/**	Сброс активной функции протокола.
+	 *
+	 * 	@param[in] func Функция протокола.
+	 */
+	void clrFunc(EFunction func) {
+		m_u8Func &= ~func;
+	}
+
+	/**	Проверка активности функции протокола.
+	 *
+	 * 	@param[in] func Проверяемая функция протокола.
+	 * 	@retval True Функция протокола активна.
+	 * 	@retval False Фунция протокола не активна.
+	 */
+	bool isFunc(EFunction func) const {
+		return (m_u8Func & func);
 	}
 
 	/** Подсчет контрольной суммы для кадра с фиксированной длиной.
@@ -1545,8 +1550,9 @@ private:
 	 *	что бит счета кадров равен 1;
 	 *	- Если принятый бит счета кадров не равен ожидаемому повторно передается
 	 *	предыдущий кадр;
-	 *	- \a #FUNCTION_TIME_SYNCH_END - отправляется кадр окончания синхронизации
-	 *	времени, с мектой локального времени в момент синхронизации;
+	 *	- \a #FUNCTION_TIME_SYNCH_CONF - проверяется наличие времения для отправки
+	 *	кадра окончания синхронизации времени, с мектой локального времени в
+	 *	момент синхронизации;
 	 *	- \a #FUNCTION_INTERROG_CONF - отправляется кадр подтверждения начала
 	 *	опроса;
 	 *	- \a #FUNCTION_INTERROG_MONIT - отправляется кадр с данными опроса, либо
@@ -1600,12 +1606,28 @@ private:
 	 *
 	 *	Вызывается автоматически, при получении кадра синхронизации времени.
 	 *
+	 *	При вызове формируется метка времени:
+	 *	4.05.06 03:02:01.000
+	 *
 	 * 	@retval True Время установлено.
 	 * 	@retval False Время не установлено.
 	 */
 	virtual bool procSetTime() {
-		return false;
+		return true;
 	}
+
+	/**	Наличие полученного времени в момент синхронизации.
+	 *
+	 * 	Вызывается автоматически при принятии пакетов фиксированой длины, просле
+	 * 	кадра синхронизации времени.
+	 *
+	 *	При вызове формируется метка времени:
+	 *	4.05.06 03:02:01.000
+	 *
+	 * 	@retval bool True Время в момент синхронизации получено.
+	 * 	@retval bool False Времени для ответа нет.
+	 */
+	virtual bool procSetTimeEnd();
 
 	/**	Обработка принятого кадра синхронизации часов.
 	 *

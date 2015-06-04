@@ -64,8 +64,8 @@ uint8_t CIec101::push(uint8_t u8Byte) {
 		if (cnt < m_u8Size) {
 			m_pBuf[cnt++] = u8Byte;
 		}
+		m_u8Tick = 0;	// сброс счетчика времени
 	}
-	m_u8Tick = 0;	// сброс счетчика времени
 
 	return (m_u8Cnt = cnt);
 }
@@ -74,16 +74,22 @@ uint8_t CIec101::push(uint8_t u8Byte) {
 uint16_t CIec101::setTick(uint16_t u16Baudrate, uint8_t u8Period) {
 	uint16_t step = (((1UL * u16Baudrate * u8Period) / 1100)* s_u16DelayFinish)
 			/ 15000;
+
+	// 1500 * 1000 = 1.5 * 1000000
+	// ,где 1000000 - это мкс,
+	//		1.5 - интервал ожидания
+	m_u16TickTime = (((11 * 1500) / u8Period) * 1000) / u16Baudrate;
+
 	return (m_u16TickStep = step);
 }
 
 // Счет времени прошедшего с момента прихода последнего байта.
 void CIec101::tick() {
-	uint16_t tick = m_u8Tick;
+	uint16_t tick = m_u8Tick + m_u16TickStep;
 
 	if (checkState(STATE_READ)) {
-		tick += m_u16TickStep;
 		if (tick >= s_u16DelayFinish) {
+
 			if (m_u8Cnt >= s_u8SizeOfFrameFixLenght) {
 				setState(STATE_READ_OK);
 			} else {
@@ -91,7 +97,6 @@ void CIec101::tick() {
 			}
 		}
 	} else if (checkState(STATE_READ_ERROR)) {
-		tick += m_u16TickStep;
 		if (tick >= s_u16DelayFix) {
 			setState(STATE_READ);
 		}
@@ -152,53 +157,48 @@ CIec101::EError CIec101::readData() {
 	if (error != ERROR_NO) {
 		// в случае обнаружения ошибки, ожидаем следующий пакет через 33 бита
 		setState(STATE_READ_ERROR);
-		sDebug.byte1++;
-	} else {
-		// Если в процессе обработки кадра, режим не был изменен на "чтение"
-		// отправим кадр
-		if (isReadData()) {
-			sendFrame();
-		}
-		sDebug.byte2++;
 	}
+
+	// Если в процессе обработки кадра, режим не был изменен на "чтение"
+	// отправим кадр
+	if (isReadData()) {
+		sendFrame();
+	}
+
 
 	return error;
 }
 
 //	Синхронизация времени.
-bool CIec101::getTime(uint8_t *pDist, uint8_t *pSource) {
-	if (!isFunc(FUNCTION_TIME_SYNCH_CONF))
-		return false;
-
-	*pDist++ = stTime.years;				// год
-	*pDist++ = stTime.months;				// месяц
-	*pDist++ = stTime.dayOfMonth;			// день месяца
-	*pDist++ = stTime.hours;				// часы
-	*pDist++ = stTime.minutes;				// минуты
-	*pDist++ = stTime.milliseconds / 1000;	// секунды
-
-	// очистка метки времени
-	uint8_t *ptr = (uint8_t *) &stTime;
-	for(uint8_t i = 0; i < sizeof(SCp56Time2a); i++) {
-		*ptr++ = 0;
-	}
-
-	pSource++;								// мс, младший байт
-	pSource++;								// мс, старший байт
-	stTime.milliseconds = (*pSource++) * 1000;// секунды
-	stTime.minutes = *pSource++;			// минуты
-	stTime.hours = *pSource++;				// часы
-	pSource++;								// день недели
-	stTime.dayOfMonth = *pSource++;			// день месяца
-	stTime.months = *pSource++;				// месяц
-	stTime.years = *pSource;				// год
-
-	// Должно быть всегда !!!
-	clrFunc(FUNCTION_TIME_SYNCH_CONF);
-	setFunc(FUNCTION_TIME_SYNCH_END);
-
-	return true;
-}
+//bool CIec101::getTime(uint8_t *pDist, uint8_t *pSource) {
+//	if (!isFunc(FUNCTION_TIME_SYNCH_CONF))
+//		return false;
+//
+//	*pDist++ = stTime.years;				// год
+//	*pDist++ = stTime.months;				// месяц
+//	*pDist++ = stTime.dayOfMonth;			// день месяца
+//	*pDist++ = stTime.hours;				// часы
+//	*pDist++ = stTime.minutes;				// минуты
+//	*pDist++ = stTime.milliseconds / 1000;	// секунды
+//
+//	// очистка метки времени
+//	uint8_t *ptr = (uint8_t *) &stTime;
+//	for(uint8_t i = 0; i < sizeof(SCp56Time2a); i++) {
+//		*ptr++ = 0;
+//	}
+//
+//	pSource++;								// мс, младший байт
+//	pSource++;								// мс, старший байт
+//	stTime.milliseconds = (*pSource++) * 1000;// секунды
+//	stTime.minutes = *pSource++;			// минуты
+//	stTime.hours = *pSource++;				// часы
+//	pSource++;								// день недели
+//	stTime.dayOfMonth = *pSource++;			// день месяца
+////	stTime.months = *pSource++;				// месяц
+////	stTime.years = *pSource;				// год
+//
+//	return true;
+//}
 
 //	Проверка наличия данных класса 1(2) на передачу.
 void CIec101::checkEvent() {
@@ -538,10 +538,12 @@ void CIec101::procFrameFixLenghtUserData(SFrameFixLength &rFrame) {
 	}
 
 	// Проверка на отправку кадра окончания синхронизации времени.
-	if (isFunc(FUNCTION_TIME_SYNCH_END)) {
-		clrFunc(FUNCTION_TIME_SYNCH_END);
-		prepareFrameCCsNa1(COT_ACTCON);
-		return;
+	if (isFunc(FUNCTION_TIME_SYNCH_CONF)) {
+		if (procSetTimeEnd()) {
+			clrFunc(FUNCTION_TIME_SYNCH_CONF);
+			prepareFrameCCsNa1(COT_ACTCON);
+			return;
+		}
 	}
 
 	// Проверка на подтверждение начала опроса
@@ -650,11 +652,28 @@ bool CIec101::procInterrog(uint16_t &adr, bool &val) {
 	return state;
 }
 
+// Наличие полученного времени в момент синхронизации.
+
+bool CIec101::procSetTimeEnd() {
+
+	stTime.milliseconds = 0x03E8;
+	stTime.minutes = 0x02;
+	stTime.hours = 0x03;
+	stTime.dayOfMonth = 0x04;
+	stTime.months = 0x05;
+	stTime.years = 0x06;
+
+	return true;
+}
+
 //	Обработка принятого кадра синхронизации часов.
 bool CIec101::procFrameCCsNa1(SCCsNa1 stCCsNa1) {
 
 	if (stCCsNa1.dataUnitId.causeOfTramsmission.cot != COT_ACT)
 		return false;
+
+//	if (isFunc(FUNCTION_TIME_SYNCH_CONF))
+//		return false;
 
 	setFunc(FUNCTION_TIME_SYNCH_CONF);
 	copyCp56time2a(stTime, stCCsNa1.cp56Time2a);
