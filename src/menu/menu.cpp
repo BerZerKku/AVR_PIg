@@ -3122,6 +3122,8 @@ void clMenu::lvlSetupDT() {
 				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getDay()), 2);
 				sParam.txComBuf.addFastCom(EnterParam.com);
 			}
+			sParam.txComBuf.setInt8(0, 6);	// мс всегда 0
+			sParam.txComBuf.setInt8(0, 7);	//
 			EnterParam.setDisable();
 		}
 	} else

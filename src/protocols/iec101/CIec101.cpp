@@ -6,6 +6,9 @@
  */
 
 #include "CIec101.h"
+#ifdef AVR
+#include "debug.h"
+#endif
 
 // Контструктор.
 CIec101::CIec101(uint8_t *pBuf, uint8_t u8Size) :
@@ -16,7 +19,9 @@ m_pBuf(pBuf), m_u8Size(u8Size) {
 	m_u8Func = FUNCTION_RESET_WAIT;
 
 	m_u8Tick = 0;
-	m_u16TickStep = 0;
+	m_u16TickTime = s_u16TickMax;
+	m_u8TickPeriod = 0;
+	m_u16DelayPc = 0;
 	m_eFrameSend = FRAME_START_ERROR;
 
 	m_u16CntInterrog = 0;
@@ -72,37 +77,58 @@ uint8_t CIec101::push(uint8_t u8Byte) {
 
 // Настройка счетчика времени.
 uint16_t CIec101::setTick(uint16_t u16Baudrate, uint8_t u8Period) {
-	uint16_t step = (((1UL * u16Baudrate * u8Period) / 1100)* s_u16DelayFinish)
-			/ 15000;
+	m_u16TickTime = (((11UL * 1500) / u8Period) * 1000) / u16Baudrate;
+	m_u16DelayPc = (11000UL * (sizeof(SCCsNa1) + 8)) / u16Baudrate;	// время в мс
+	m_u8TickPeriod = u8Period;
 
-	// 1500 * 1000 = 1.5 * 1000000
-	// ,где 1000000 - это мкс,
-	//		1.5 - интервал ожидания
-	m_u16TickTime = (((11 * 1500) / u8Period) * 1000) / u16Baudrate;
-
-	return (m_u16TickStep = step);
+	return m_u16TickTime;
 }
 
 // Счет времени прошедшего с момента прихода последнего байта.
 void CIec101::tick() {
-	uint16_t tick = m_u8Tick + m_u16TickStep;
+	uint16_t tick = m_u8Tick;
+	if (tick < s_u16TickMax)
+		tick++;
 
 	if (checkState(STATE_READ)) {
-		if (tick >= s_u16DelayFinish) {
-
+		if (tick >= m_u16TickTime) {
 			if (m_u8Cnt >= s_u8SizeOfFrameFixLenght) {
+				if ((m_pBuf[0] == 0x68) && (m_pBuf[6] == 0x67)) {
+#if DEBUG
+					SET_TP1;
+#endif
+				}
 				setState(STATE_READ_OK);
 			} else {
 				setState(STATE_READ);
 			}
 		}
 	} else if (checkState(STATE_READ_ERROR)) {
-		if (tick >= s_u16DelayFix) {
+		if (tick >= (2 * m_u16TickTime)) {
 			setState(STATE_READ);
 		}
 	}
 
 	m_u8Tick = tick;
+}
+
+// Возвращает задержку времени.
+uint16_t CIec101::getDelay() const {
+	// время для передачи команды измненеия времени (14 байт на скорости 4800) в БСП
+	static const uint8_t delayPiToBsp = (14 * 11000UL) / 4800;	// мс
+
+	uint16_t delay = 0;
+	delay += m_u16DelayPc;
+	delay += m_u8Tick / (1000 / m_u8TickPeriod) + 2;	// +2мс небольшая коррекция
+	delay += delayPiToBsp;
+
+#if DEBUG
+	sDebug.byte8++;
+	sDebug.byte6 = m_u8Tick >> 8;
+	sDebug.byte7 = m_u8Tick;
+#endif
+
+	return  delay;
 }
 
 // Установка адреса устройства в сети.
@@ -165,40 +191,8 @@ CIec101::EError CIec101::readData() {
 		sendFrame();
 	}
 
-
 	return error;
 }
-
-//	Синхронизация времени.
-//bool CIec101::getTime(uint8_t *pDist, uint8_t *pSource) {
-//	if (!isFunc(FUNCTION_TIME_SYNCH_CONF))
-//		return false;
-//
-//	*pDist++ = stTime.years;				// год
-//	*pDist++ = stTime.months;				// месяц
-//	*pDist++ = stTime.dayOfMonth;			// день месяца
-//	*pDist++ = stTime.hours;				// часы
-//	*pDist++ = stTime.minutes;				// минуты
-//	*pDist++ = stTime.milliseconds / 1000;	// секунды
-//
-//	// очистка метки времени
-//	uint8_t *ptr = (uint8_t *) &stTime;
-//	for(uint8_t i = 0; i < sizeof(SCp56Time2a); i++) {
-//		*ptr++ = 0;
-//	}
-//
-//	pSource++;								// мс, младший байт
-//	pSource++;								// мс, старший байт
-//	stTime.milliseconds = (*pSource++) * 1000;// секунды
-//	stTime.minutes = *pSource++;			// минуты
-//	stTime.hours = *pSource++;				// часы
-//	pSource++;								// день недели
-//	stTime.dayOfMonth = *pSource++;			// день месяца
-////	stTime.months = *pSource++;				// месяц
-////	stTime.years = *pSource;				// год
-//
-//	return true;
-//}
 
 //	Проверка наличия данных класса 1(2) на передачу.
 void CIec101::checkEvent() {

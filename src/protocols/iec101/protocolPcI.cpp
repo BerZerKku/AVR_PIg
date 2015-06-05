@@ -71,7 +71,7 @@ bool TProtocolPcI::procSetTime() {
 	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.hours), i++);
 	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.minutes), i++);
 	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.milliseconds / 1000), i++);
-	uint16_t ms = stTime.milliseconds % 1000;
+	uint16_t ms = stTime.milliseconds % 1000 + getDelay();
 	sParam_->txComBuf.setInt8(BIN_TO_BCD((uint8_t) ms), i++);
 	sParam_->txComBuf.setInt8(BIN_TO_BCD((uint8_t) (ms >> 8)), i++);
 	sParam_->txComBuf.addFastCom(GB_COM_SET_TIME);
@@ -79,17 +79,17 @@ bool TProtocolPcI::procSetTime() {
 	// сброс флага наличия ответа на команду установки времени в БСП
 	sParam_->DateTimeReq.setTimeBsp_ = false;
 
+	uint16_t d = getDelay();
+	sDebug.byte1 = d >> 8;
+	sDebug.byte2 = d;
+
 	return true;
 }
 
 // Установка времени, сообщение об окочнании.
 bool TProtocolPcI::procSetTimeEnd() {
-	sDebug.byte2++;
-
 	if (!sParam_->DateTimeReq.setTimeBsp_)
 		return false;
-
-	sDebug.byte3++;
 
 	// очистка метки времени
 	uint8_t *ptr = (uint8_t *) &stTime;

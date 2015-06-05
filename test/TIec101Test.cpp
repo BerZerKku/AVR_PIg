@@ -352,10 +352,34 @@ TEST_F(TIec101_Full, isReadData) {
 }
 
 TEST_F(TIec101_Full, setTick) {
-	ASSERT_EQ(872, iec101->setTick(19200, 50));
-	ASSERT_EQ(1745, iec101->setTick(19200, 100));
-	ASSERT_EQ(13, iec101->setTick(300, 50));
-	ASSERT_EQ(27, iec101->setTick(300, 100));
+	ASSERT_EQ(17, iec101->setTick(19200, 50));
+	ASSERT_EQ(8, iec101->setTick(19200, 100));
+	ASSERT_EQ(1100, iec101->setTick(300, 50));
+	ASSERT_EQ(550, iec101->setTick(300, 100));
+}
+
+TEST_F(TIec101_Full, getDelay) {
+	iec101->setReadState();
+	iec101->setTick(19200, 50);
+	ASSERT_EQ(46, iec101->getDelay());	// 12 до ПИ, 2 внутри ПИ, 32 до БСП
+	for(uint8_t i = 0; i < 20; i++)
+		iec101->tick();
+	ASSERT_EQ(47, iec101->getDelay());	// 12 до ПИ, 2+1 внутри ПИ, 32 до БСП
+
+	iec101->setReadState();
+	iec101->setTick(19200, 100);
+	ASSERT_EQ(46, iec101->getDelay());	// 12 до ПИ, 2 внутри ПИ, 32 до БСП
+	for(uint8_t i = 0; i < 80; i++)
+			iec101->tick();
+	ASSERT_EQ(54, iec101->getDelay());	// 12 до ПИ, 2+8 внутри ПИ, 32 до БСП
+
+	iec101->setReadState();
+	iec101->setTick(300, 50);
+	ASSERT_EQ(804, iec101->getDelay());	// 770 до ПИ, 2 внутри ПИ, 32 до БСП
+	for(uint8_t i = 0; i < 80; i++)
+		iec101->tick();
+	ASSERT_EQ(808, iec101->getDelay());	// 770 до ПИ, 2+4 внутри ПИ, 32 до БСП
+
 }
 
 TEST_F(TIec101_Full, push) {
@@ -443,12 +467,13 @@ TEST_F(TIec101_Full, tick) {
 			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK, 	5, 57600, 50, 35},
 			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK, 	6, 57600, 50, 35},
 			// проверка на обнаружение интервала спокойного состояния
-			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK, 	6, 19200, 50, 41},
-			{CIec101::STATE_READ, 		CIec101::STATE_READ, 		8, 19200, 50, 17},
+			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK, 	6, 19200, 50, 40},
+			{CIec101::STATE_READ, 		CIec101::STATE_READ, 		8, 19200, 50, 16},
+			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK,		8, 19200, 50, 17},
 			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK, 	8, 19200, 50, 41},
 			// проверка работы в состоянии обнаружения ошибки
-			{CIec101::STATE_READ_ERROR, CIec101::STATE_READ, 		8, 19200, 50, 35},
-			{CIec101::STATE_READ_ERROR, CIec101::STATE_READ_ERROR,	8, 19200, 50, 34},
+			{CIec101::STATE_READ_ERROR, CIec101::STATE_READ, 		8, 19200, 50, 34},
+			{CIec101::STATE_READ_ERROR, CIec101::STATE_READ_ERROR,	8, 19200, 50, 33},
 			// проверка на работу в состояниях не STATE_READ
 			{CIec101::STATE_OFF, 		CIec101::STATE_OFF, 		8, 19200, 50, 50},
 			{CIec101::STATE_READ_OK, 	CIec101::STATE_READ_OK, 	8, 19200, 50, 50},

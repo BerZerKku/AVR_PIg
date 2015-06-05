@@ -167,6 +167,7 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 
 		if (com == GB_COM_SET_TIME) {
 			num = addCom(com, 8, sParam_->txComBuf.getBuferAddress());
+			CLR_TP1;
 		} else if (com ==  GB_COM_PRM_RES_IND) {
 			num = addCom(com);
 		} else 	if (sendType != GB_SEND_NO) {
@@ -472,16 +473,6 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			uint16_t ms =  buf[NUM] >= 8 ? *((uint16_t *) &buf[B7]) : 0;
 			stat &= sParam_->DateTime.setMsSecond(ms);
 			stat = true;
-//			sParam_->DateTimeReq.setYear(BCD_TO_BIN(buf[B1]));
-//			sParam_->DateTimeReq.setMonth(BCD_TO_BIN(buf[B2]));
-//			sParam_->DateTimeReq.setDay(BCD_TO_BIN(buf[B3]));
-//			sParam_->DateTimeReq.setHour(BCD_TO_BIN(buf[B4]));
-//			sParam_->DateTimeReq.setMinute(BCD_TO_BIN(buf[B5]));
-//			sParam_->DateTimeReq.setSecond(BCD_TO_BIN(buf[B6]));
-//			// миллисекунды устанавливаются, только если они есть в посылке
-//			ms =  (buf[NUM] >= 8) ? *((uint16_t *) &buf[B7]) : 0;
-//			sParam_->DateTimeReq.setMsSecond(ms);
-//			sParam_->DateTimeReq.setTimeBsp_ = true;
 		}
 		break;
 
