@@ -13,9 +13,48 @@ sParam_(sParam), CIec101(buf, size) {
 	// NONE
 }
 
-//	Функция отправки сообщения.
+// Функция отправки сообщения.
 uint8_t TProtocolPcI::send() {
 	return sendData();
+}
+
+// Проверка наличия данных класса 1(2) на передачу.
+bool TProtocolPcI::checkEvent() {
+	SNumEntries *ptr = &sParam_->jrnEntry.m_stNumEntries;
+
+	if (sParam_->jrnEntry.val) {
+		uint8_t years = sParam_->jrnEntry.dateTime.getYear();
+		uint8_t months = sParam_->jrnEntry.dateTime.getMonth();
+		uint8_t day = sParam_->jrnEntry.dateTime.getDay();
+		uint8_t hours = sParam_->jrnEntry.dateTime.getHour();
+		uint8_t minutes = sParam_->jrnEntry.dateTime.getMinute();
+		uint8_t seconds = 1000 * sParam_->jrnEntry.dateTime.getSecond();
+		uint16_t ms =	sParam_->jrnEntry.dateTime.getMsSecond();
+
+
+		SCp56Time2a time;
+		writeCp56Time2a(time, years, months, day, hours, minutes, seconds, ms);
+
+		uint16_t adr = sParam_->jrnEntry.getCurrentEntry();
+
+		prepareFrameMSpTb1(adr, COT_SPONT, val, time);
+
+
+		sParam_->jrnEntry.val = false;
+	}
+
+	// проверка на необходимость считать запись журнала
+	if (ptr->numGlbPwr != ptr->numGlbTr) {
+
+	} else if (ptr->numDefPwr != ptr->numDefTr) {
+
+	} else if (ptr->numPrmPwr != ptr->numPrmTr) {
+
+	} else if (ptr->numPrdPwr != ptr->numPrdTr) {
+
+	}
+
+	return false;
 }
 
 // Обработка ответа на команду опроса.
@@ -80,8 +119,6 @@ bool TProtocolPcI::procSetTime() {
 	sParam_->DateTimeReq.setTimeBsp_ = false;
 
 	uint16_t d = getDelay();
-	sDebug.byte1 = d >> 8;
-	sDebug.byte2 = d;
 
 	return true;
 }

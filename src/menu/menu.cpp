@@ -195,6 +195,8 @@ void clMenu::main(void) {
 		// если связь с БСП только восстановилась
 		// дважды пошлем команду опроса версии
 		sParam.txComBuf.addFastCom(GB_COM_GET_VERS);
+		// очистим кол-во записей в журнале после восстановления связи
+		sParam.jrnEntry.clearNumEntries();
 		//		sParam.txComBuf.addFastCom(GB_COM_GET_VERS);
 	}
 	lastConnection = connection;
@@ -870,6 +872,16 @@ void clMenu::lvlStart() {
 		} else if (sParam.typeDevice == AVANT_K400) {
 			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
 		}
+		sParam.txComBuf.addCom1(GB_COM_GET_JRN_CNT);
+		if (sParam.def.status.isEnable()) {
+			sParam.txComBuf.addCom1(GB_COM_DEF_GET_JRN_CNT);
+		}
+		if (sParam.prd.status.isEnable()) {
+			sParam.txComBuf.addCom1(GB_COM_PRD_GET_JRN_CNT);
+		}
+		if (sParam.prm.status.isEnable()) {
+			sParam.txComBuf.addCom1(GB_COM_PRM_GET_JRN_CNT);
+		}
 	}
 
 	// вывод на экран измеряемых параметров
@@ -935,6 +947,10 @@ void clMenu::lvlStart() {
 	if (sParam.prd.status.isEnable()) {
 		printDevicesStatus(poz, &sParam.prd.status);
 	}
+
+	*((uint16_t *) &sDebug.byte1) = sParam.jrnEntry.m_stNumEntries.numGlb;
+	*((uint16_t *) &sDebug.byte3) = sParam.jrnEntry.m_stNumEntries.numGlbPwr;
+	*((uint16_t *) &sDebug.byte5) = sParam.jrnEntry.m_stNumEntries.numGlbTr;
 
 	switch(key_) {
 		case KEY_MENU:

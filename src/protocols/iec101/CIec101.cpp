@@ -195,8 +195,8 @@ CIec101::EError CIec101::readData() {
 }
 
 //	ѕроверка наличи€ данных класса 1(2) на передачу.
-void CIec101::checkEvent() {
-	setFunc(FUNCTION_EVENT);
+bool CIec101::checkEvent() {
+	return false;
 }
 
 // ¬озвращает прин€тый в посылке CRC.
@@ -297,6 +297,9 @@ void CIec101::readFrameFixLenght(SFrameFixLength &rFrame) {
 		}
 	}
 
+	if (checkEvent())
+		setFunc(FUNCTION_EVENT);
+
 	uint8_t fcb = rFrame.controlField.primary.fcb;
 
 	switch(rFrame.controlField.primary.function) {
@@ -335,6 +338,9 @@ void CIec101::readFrameVarLenght(SFrameVarLength &rFrame) {
 		setReadState();
 		return;
 	}
+
+	if (checkEvent())
+		setFunc(FUNCTION_EVENT);
 
 	uint8_t fcb = rFrame.controlField.primary.fcb;
 

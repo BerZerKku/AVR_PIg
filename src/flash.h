@@ -210,7 +210,6 @@ static const char fcPrmFault0100rzsk[] 	PROGMEM = "Неиспр.зап. БСК";	///<
 static const char fcPrmFault0200rzsk[] 	PROGMEM = "Неиспр.выкл. КСК";	///<
 static const char fcPrmFault0400rzsk[] 	PROGMEM = "Неиспр.вкл. КСК";	///<
 static const char fcPrmFault0800rzsk[] 	PROGMEM = "Неиспр.контр.КСК";	///<
-static const char fcPrmFault1000rzsk[] 	PROGMEM = "Предупр.нет КЧ";		///<
 static const char fcPrmFault8000rzsk[] 	PROGMEM = "Прием блок. Ком";	///<
 
 // предупреждения приемника

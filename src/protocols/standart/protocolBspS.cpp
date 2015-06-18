@@ -273,9 +273,14 @@ bool clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
 		//				t += buf[B5];
 		stat |= sParam_->def.setTimeToAC(*((uint32_t *) &buf[B2]));
 	} else if (com == GB_COM_DEF_GET_JRN_CNT) {
-		//				stat = sParam_->def.setNumJrnEntry(TO_INT16(buf[B2], buf[B1]));
-		uint16_t t = TO_INT16(buf[B2], buf[B1]);
-		stat = sParam_->jrnEntry.setNumJrnEntry(t);
+		uint16_t t = *((uint16_t *) &buf[B1]);
+		sParam_->jrnEntry.m_stNumEntries.numDef = t;
+		if (buf[NUM] >= 4) {
+			sParam_->jrnEntry.setNumEntries(GB_DEVICE_DEF, *((uint16_t *) &buf[B3]));
+		}
+		if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_DEF) {
+			stat = sParam_->jrnEntry.setNumJrnEntry(t);
+		}
 	} else if (com == GB_COM_DEF_GET_JRN_ENTRY) {
 		if ((sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_DEF) && (!pc)){
 			sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B16]));
@@ -324,8 +329,12 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
 		break;
 
 		case GB_COM_PRM_GET_JRN_CNT: {
+			uint16_t t = *((uint16_t *) &buf[B1]);
+			sParam_->jrnEntry.m_stNumEntries.numPrm = t;
+			if (buf[NUM] >= 4) {
+				sParam_->jrnEntry.setNumEntries(GB_DEVICE_PRM, *((uint16_t *) &buf[B3]));
+			}
 			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRM) {
-				uint16_t t = TO_INT16(buf[B2], buf[B1]);
 				stat = sParam_->jrnEntry.setNumJrnEntry(t);
 			}
 		}
@@ -399,8 +408,12 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 		break;
 
 		case GB_COM_PRD_GET_JRN_CNT: {
+			uint16_t t = *((uint16_t *) &buf[B1]);
+			sParam_->jrnEntry.m_stNumEntries.numPrd = t;
+			if (buf[NUM] >= 4) {
+				sParam_->jrnEntry.setNumEntries(GB_DEVICE_PRD, *((uint16_t *) &buf[B3]));
+			}
 			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRD) {
-				uint16_t t = TO_INT16(buf[B2], buf[B1]);
 				stat = sParam_->jrnEntry.setNumJrnEntry(t);
 			}
 		}
@@ -408,6 +421,7 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 
 		case GB_COM_PRD_GET_JRN_ENTRY: {
 			if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_PRD)&& (!pc)) {
+				val = true;
 				if (sParam_->typeDevice == AVANT_OPTO) {
 					// дата
 					sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B5]));
@@ -677,8 +691,12 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 		break;
 
 		case GB_COM_GET_JRN_CNT: {
+			uint16_t t = *((uint16_t *) &buf[B1]);
+			sParam_->jrnEntry.m_stNumEntries.numGlb = t;
+			if (buf[NUM] >= 4) {
+				sParam_->jrnEntry.setNumEntries(GB_DEVICE_GLB, *((uint16_t *) &buf[B3]));
+			}
 			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_GLB) {
-				uint16_t t = TO_INT16(buf[B2], buf[B1]);
 				stat = sParam_->jrnEntry.setNumJrnEntry(t);
 			}
 		}

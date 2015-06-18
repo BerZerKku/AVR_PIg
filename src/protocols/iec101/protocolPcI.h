@@ -24,6 +24,17 @@ public:
 	 */
 	uint8_t send();
 
+	/**	Проверка наличия данных класса 1(2) на передачу.
+	 *
+	 *	- Проверяется наличие данных для передачи.
+	 *	- Проверяются счетчики журналов и при необходимости формируется запрос
+	 *	в БСП.
+	 *
+	 * 	@retval False Нет данных на передачу.
+	 * 	@retval True Есть данные на передачу.
+	 */
+	virtual bool checkEvent();
+
 private:
 	stGBparam * const sParam_;	///< Структура параметров
 
@@ -150,7 +161,6 @@ private:
 	 *	@retval False Флаг сброшен.
 	 */
 	bool getDef(uint16_t adr) const;
-
 };
 
 #endif /* PROTOCOLPCI_H_ */
