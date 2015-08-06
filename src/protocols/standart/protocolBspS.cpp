@@ -167,9 +167,10 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 
 		if (com == GB_COM_SET_TIME) {
 			num = addCom(com, 8, sParam_->txComBuf.getBuferAddress());
-			CLR_TP1;
 		} else if (com ==  GB_COM_PRM_RES_IND) {
 			num = addCom(com);
+		} else if (com == GB_COM_DEF_SET_TYPE_AC) {
+			num = addCom(com, sParam_->txComBuf.getInt8());
 		} else 	if (sendType != GB_SEND_NO) {
 			uint8_t val = sParam_->txComBuf.getInt8(0);
 			uint8_t dop = sParam_->txComBuf.getInt8(1);
@@ -421,7 +422,6 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 
 		case GB_COM_PRD_GET_JRN_ENTRY: {
 			if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_PRD)&& (!pc)) {
-				val = true;
 				if (sParam_->typeDevice == AVANT_OPTO) {
 					// дата
 					sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B5]));
@@ -704,6 +704,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 
 		case GB_COM_GET_JRN_ENTRY: {
 			if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_GLB)&& (!pc)) {
+				sParam_->jrnEntry.val = true;
 				if (sParam_->typeDevice == AVANT_OPTO) {
 					// дата
 					sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B6]));

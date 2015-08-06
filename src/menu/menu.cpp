@@ -948,10 +948,6 @@ void clMenu::lvlStart() {
 		printDevicesStatus(poz, &sParam.prd.status);
 	}
 
-	*((uint16_t *) &sDebug.byte1) = sParam.jrnEntry.m_stNumEntries.numGlb;
-	*((uint16_t *) &sDebug.byte3) = sParam.jrnEntry.m_stNumEntries.numGlbPwr;
-	*((uint16_t *) &sDebug.byte5) = sParam.jrnEntry.m_stNumEntries.numGlbTr;
-
 	switch(key_) {
 		case KEY_MENU:
 			lvlMenu = &clMenu::lvlFirst;
@@ -2224,11 +2220,13 @@ void clMenu::lvlControl() {
 			} else if (name == punkt07) {
 				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_OFF);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			} else if (name == punkt08) {
+				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
 			} else if (name == punkt09) {
 				sParam.txComBuf.setInt8(GB_CONTROL_MAN_1);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			} else if (name == punkt10) {
-				sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
+				sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK);
 				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
 			} else if (name == punkt11) {
 				sParam.txComBuf.setInt8(GB_CONTROL_RESET_AC);

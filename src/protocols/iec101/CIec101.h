@@ -302,6 +302,29 @@ protected:
 		uint8_t res4 			: 1;	///< Резерв 4 - RES4.
 	} SCp56Time2a;
 
+	/**	\brief Причина передачи (Сause of Transmission).
+	 *
+	 * 	\note МЭК 870-5-101-2006 7.2.3 Причина передачи.
+	 *	\note IEC 870-5-101 4.2.8 Cause of transmission
+	 */
+	typedef enum __attribute__ ((__packed__)) {
+		COT_NOT_USED	= 0,	///< \b <0> Не используется (not used).
+		COT_PER_CYC	 	= 1,	///< \b <1> Периодически, циклически (per/cyc).
+		COT_BACK		= 2,	///< \b <2> Фоновое сканирование (background scan).
+		COT_SPONT		= 3,	///< \b <3> Спорадически (spontaneous).
+		COT_INIT		= 4,	///< \b <4> Сообщение об инициализации (initialised).
+		COT_REQ			= 5,	///< \b <5> Запрос или запрашиваемые данные (request or requested).
+		COT_ACT			= 6,	///< \b <6> Активация (activation).
+		COT_ACTCON		= 7,	///< \b <7> Подтверждение активации (activation confirmation).
+		COT_DEACT		= 8,	///< \b <8> Деактивация (deactivation).
+		COT_DEACTON		= 9,	///< \b <9> Подтверждение деактивации (deactivation confirmation).
+		COT_ACTTERM		= 10,	///< \b <10> Завершенеи активации (activation termination).
+		COT_RETREM		= 11,	///< \b <11> Обратная информация, вызванная удаленной командой (return information caused by a remote command).
+		COT_RETLOC		= 12,	///< \b <12> Обратная информация, вызванная местной командой (return information caused by a local command).
+		COT_FILE		= 13, 	///< \b <13> Передача файлов (file transfer).
+		COT_INROGEN		= 20 	///< \b <20> Ответ на опрос станции (interrogated by general interrogation).
+	} ECot;
+
 private:
 
 	///	Флаги текущих функций.
@@ -447,29 +470,6 @@ private:
 //		LINK_SERV_NOT_FUNC		= 14,	///< \b <14> Канальный сервис не работает ("Услуги канала не работают").
 		LINK_SERV_NOT_IMPL 		= 15 	///< \b <15> Канальный сервис не встроен.
 	} EFcSecondary;
-
-	/**	\brief Причина передачи (Сause of Transmission).
-	 *
-	 * 	\note МЭК 870-5-101-2006 7.2.3 Причина передачи.
-	 *	\note IEC 870-5-101 4.2.8 Cause of transmission
-	 */
-	typedef enum __attribute__ ((__packed__)) {
-		COT_NOT_USED	= 0,	///< \b <0> Не используется (not used).
-		COT_PER_CYC	 	= 1,	///< \b <1> Периодически, циклически (per/cyc).
-		COT_BACK		= 2,	///< \b <2> Фоновое сканирование (background scan).
-		COT_SPONT		= 3,	///< \b <3> Спорадически (spontaneous).
-		COT_INIT		= 4,	///< \b <4> Сообщение об инициализации (initialised).
-		COT_REQ			= 5,	///< \b <5> Запрос или запрашиваемые данные (request or requested).
-		COT_ACT			= 6,	///< \b <6> Активация (activation).
-		COT_ACTCON		= 7,	///< \b <7> Подтверждение активации (activation confirmation).
-		COT_DEACT		= 8,	///< \b <8> Деактивация (deactivation).
-		COT_DEACTON		= 9,	///< \b <9> Подтверждение деактивации (deactivation confirmation).
-		COT_ACTTERM		= 10,	///< \b <10> Завершенеи активации (activation termination).
-		COT_RETREM		= 11,	///< \b <11> Обратная информация, вызванная удаленной командой (return information caused by a remote command).
-		COT_RETLOC		= 12,	///< \b <12> Обратная информация, вызванная местной командой (return information caused by a local command).
-		COT_FILE		= 13, 	///< \b <13> Передача файлов (file transfer).
-		COT_INROGEN		= 20 	///< \b <20> Ответ на опрос станции (interrogated by general interrogation).
-	} ECot;
 
 	/**	\brief Причина инициализации (Cause of initialisation).
 	 *
@@ -1493,18 +1493,6 @@ private:
 	 */
 	void prepareFrameMSpNa1(uint16_t u16Address, ECot eCause, bool bVal);
 
-	/**	Подготовка кадра одноэелементной информации с меткой времени.
-	 *
-	 * 	Все эелементы \a SSiq, за исключением значения элемента, обнуляются.
-	 *
-	 * 	@param[in] u16Address Адрес объекта информации.
-	 *	@param[in] eCause Причина передачи \a #ECot.
-	 *	@param[in] bVal Передаваемое значение.
-	 *	@param[in] rTime Массив с текущим временем.
-	 */
-	void prepareFrameMSpTb1(uint16_t u16Address, ECot eCause,
-			bool bVal, SCp56Time2a &rTime);
-
 	/**	Подготовка кадра окончания инициализации.
 	 *
 	 *	@param[in] eCause Причина инициализации \a #ECoi.
@@ -1672,6 +1660,20 @@ private:
 	 *	@param[in] rSource Откуда копируется метка времени.
 	 */
 	void copyCp56time2a(SCp56Time2a &rDist, const SCp56Time2a &rSource);
+
+protected:
+
+	/**	Подготовка кадра одноэелементной информации с меткой времени.
+	 *
+	 * 	Все эелементы \a SSiq, за исключением значения элемента, обнуляются.
+	 *
+	 * 	@param[in] u16Address Адрес объекта информации.
+	 *	@param[in] eCause Причина передачи \a #ECot.
+	 *	@param[in] bVal Передаваемое значение.
+	 *	@param[in] rTime Массив с текущим временем.
+	 */
+	void prepareFrameMSpTb1(uint16_t u16Address, ECot eCause,
+			bool bVal, SCp56Time2a &rTime);
 
 	/**	Заполнение метки времени Cp56Time2a.
 	 *

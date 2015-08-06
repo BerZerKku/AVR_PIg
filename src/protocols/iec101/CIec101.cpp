@@ -94,9 +94,6 @@ void CIec101::tick() {
 		if (tick >= m_u16TickTime) {
 			if (m_u8Cnt >= s_u8SizeOfFrameFixLenght) {
 				if ((m_pBuf[0] == 0x68) && (m_pBuf[6] == 0x67)) {
-#if DEBUG
-					SET_TP1;
-#endif
 				}
 				setState(STATE_READ_OK);
 			} else {
@@ -121,12 +118,6 @@ uint16_t CIec101::getDelay() const {
 	delay += m_u16DelayPc;
 	delay += m_u8Tick / (1000 / m_u8TickPeriod) + 2;	// +2мс небольшая коррекция
 	delay += delayPiToBsp;
-
-#if DEBUG
-	sDebug.byte8++;
-	sDebug.byte6 = m_u8Tick >> 8;
-	sDebug.byte7 = m_u8Tick;
-#endif
 
 	return  delay;
 }

@@ -24,7 +24,11 @@ public:
 	 * 	По умолчанию устанваливает связь по USB.
 	 */
 	TInterface() {
+
 		interface_ = USB;
+#ifdef  DEBUG
+		interface_ = RS485;
+#endif
 	}
 
 	/**	Запись.
@@ -68,6 +72,10 @@ public:
 	 */
 	TProtocol() {
 		protocol_ = STANDART;
+
+#ifdef  DEBUG
+		protocol_ = IEC_101;
+#endif
 	}
 
 	/**	Запись.
@@ -318,6 +326,10 @@ public:
 		DataBits.set(TDataBits::_8);
 		Parity.set(TParity::EVEN);
 		StopBits.set(TStopBits::ONE);
+#ifdef IEC101
+		Interface.set(TInterface::RS485);
+		Protocol.set(TProtocol::IEC_101);
+#endif
 	}
 
 	/// Интерфейс связи

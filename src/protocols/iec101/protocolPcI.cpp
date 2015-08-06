@@ -22,26 +22,29 @@ uint8_t TProtocolPcI::send() {
 bool TProtocolPcI::checkEvent() {
 	SNumEntries *ptr = &sParam_->jrnEntry.m_stNumEntries;
 
-	if (sParam_->jrnEntry.val) {
-		uint8_t years = sParam_->jrnEntry.dateTime.getYear();
-		uint8_t months = sParam_->jrnEntry.dateTime.getMonth();
-		uint8_t day = sParam_->jrnEntry.dateTime.getDay();
-		uint8_t hours = sParam_->jrnEntry.dateTime.getHour();
-		uint8_t minutes = sParam_->jrnEntry.dateTime.getMinute();
-		uint8_t seconds = 1000 * sParam_->jrnEntry.dateTime.getSecond();
-		uint16_t ms =	sParam_->jrnEntry.dateTime.getMsSecond();
-
-
-		SCp56Time2a time;
-		writeCp56Time2a(time, years, months, day, hours, minutes, seconds, ms);
-
-		uint16_t adr = sParam_->jrnEntry.getCurrentEntry();
-
-		prepareFrameMSpTb1(adr, COT_SPONT, val, time);
-
-
-		sParam_->jrnEntry.val = false;
-	}
+//	sDebug.byte1++;
+//
+//	if (sParam_->jrnEntry.val) {
+//		uint8_t years = sParam_->jrnEntry.dateTime.getYear();
+//		uint8_t months = sParam_->jrnEntry.dateTime.getMonth();
+//		uint8_t day = sParam_->jrnEntry.dateTime.getDay();
+//		uint8_t hours = sParam_->jrnEntry.dateTime.getHour();
+//		uint8_t minutes = sParam_->jrnEntry.dateTime.getMinute();
+//		uint8_t seconds = 1000 * sParam_->jrnEntry.dateTime.getSecond();
+//		uint16_t ms =	sParam_->jrnEntry.dateTime.getMsSecond();
+//
+//
+//		SCp56Time2a time;
+//		writeCp56Time2a(time, years, months, day, hours, minutes, seconds, ms);
+//
+//		uint16_t adr = sParam_->jrnEntry.getCurrentEntry();
+//
+//		prepareFrameMSpTb1(adr, COT_SPONT, true, time);
+//
+//		sParam_->jrnEntry.val = false;
+//		sDebug.byte2++;
+//		return true;
+//	}
 
 	// проверка на необходимость считать запись журнала
 	if (ptr->numGlbPwr != ptr->numGlbTr) {
@@ -60,6 +63,9 @@ bool TProtocolPcI::checkEvent() {
 // Обработка ответа на команду опроса.
 bool TProtocolPcI::procInterrog(uint16_t &adr, bool &val) {
 	adr++;
+
+	// TODO
+	return false;
 
 	if (adr <= IE_PRM_COM) {
 		if (adr < IE_ERROR)
