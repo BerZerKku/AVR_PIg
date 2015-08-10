@@ -13,7 +13,7 @@
 static const char fcNull[] PROGMEM = "";
 
 /// Типы автоконтролей для отображения в начальном меню.
-static const char fcAcType[GB_TYPE_AC_MAX + 2][9] PROGMEM = {
+static const char fcAcType[GB_TYPE_AC_MAX + 3][9] PROGMEM = {
 // 		12345678
 		"АК-ошиб",		///< Ошибочное значение.
 		"АК-норм",		///< АК нормальный (ускоренный).
@@ -25,7 +25,8 @@ static const char fcAcType[GB_TYPE_AC_MAX + 2][9] PROGMEM = {
 		"АК-пуск",		///< АК пуск (для совместимости)..
 		"АК-однос",		///< АК односторонний (для совместимости).
 		"АК-ошиб",		///< Ошибочное значение.
-		"АК-авто"		///< Подмена  GB_TYPE_AC_AUTO_NORM в Р400м->ЛинияР.
+		"АК-авто",		///< Подмена GB_TYPE_AC_AUTO_NORM в Р400м->ЛинияР.
+		"АК-пров"		///< Подмена GB_TYPE_AC_CHECK в Р400м->АВЗК-80 и ПВЗ-90.
 };
 
 /// Режимы работы устройств.
@@ -189,7 +190,7 @@ static const char fcDefFault0400[] 		PROGMEM = "Удал.без отв.%S";	///<
 static const char fcDefFault0800[] 		PROGMEM = "Неиспр.цепь. ВЫХ";	///<
 static const char fcDefFault1000[] 		PROGMEM = "Удал.обн.пом.%S";	///<
 static const char fcDefFault2000[] 		PROGMEM = "Неиспр.зап. ВЫХ";	///<
-static const char fcDefFault4000[] 		PROGMEM = "Длительн. помеха";	///<
+static const char fcDefFault4000[] 		PROGMEM = "Помеха в линии";		///<
 static const char fcDefFault4000rzsk[]	PROGMEM = "Нет сигнала РЗ";		///<
 static const char fcDefFault8000[] 		PROGMEM = "Неиспр. ДФЗ";		///<
 
@@ -380,10 +381,10 @@ static char fcJrnEventR400_MSK[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 		"Отсут-е сигнала Пуск",    	///< 23
 		"Отсут-е сигн Останов",    	///< 24
 		"Выключение аппарата",      ///< 25
-		"Помеха в полосе",         	///< 26
+		"Помеха в линии",         	///< 26
 		"Неисправность ДФЗ",       	///< 27
 		"Уд: АК - нет ответа",     	///< 28
-		"Уд: Помеха в полосе",		///< 29
+		"Уд: Помеха в линии",		///< 29
 		"Уд: Неиспр. ДФЗ",         	///< 30
 		"Уд: Неиспр. цепи вых",    	///< 31
 		"Порог по помехе",         	///< 32

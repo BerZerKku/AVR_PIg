@@ -911,13 +911,23 @@ void clMenu::lvlStart() {
 						fcCompatibility[static_cast<uint8_t>(comp)]);
 			}
 
-			// в Р400м совместимость ЛинияР подменяем название ""АК-норм"
-			// на "АК-авто"
-			if ((comp == GB_COMPATIBILITY_LINER)
-					&& (ac == GB_TYPE_AC_AUTO_NORM)) {
-				ac = GB_TYPE_AC_AUTO;
+			if (comp == GB_COMPATIBILITY_LINER) {
+				// в Р400м совместимость ЛинияР подменяем название ""АК-норм"
+				// на "АК-авто"
+				if  (ac == GB_TYPE_AC_AUTO_NORM) {
+					ac = GB_TYPE_AC_AUTO;
+				}
+			} else if (comp == GB_COMPATIBILITY_AVZK80) {
+				// в Р400м совместимость АВЗК-80 подменяем название ""АК-бегл"
+				// на "АК-пров"
+				if (ac == GB_TYPE_AC_CHECK) {
+					ac = GB_TYPE_AC_CHECK_1;
+				}
+			} else if (comp == GB_COMPATIBILITY_PVZ90) {
+				if (ac == GB_TYPE_AC_CHECK) {
+					ac = GB_TYPE_AC_CHECK_1;
+				}
 			}
-
 			uint8_t t = poz + 20;
 			t += snprintf_P(&vLCDbuf[t], 11,
 					fcAcType[static_cast<uint8_t>(ac)]);
@@ -999,9 +1009,14 @@ void clMenu::lvlStart() {
 		case KEY_AC_PUSK:
 			if (sParam.def.status.isEnable()) {
 				if (sParam.typeDevice == AVANT_R400M) {
-					if (sParam.glb.getCompatibility()
-							!= GB_COMPATIBILITY_LINER) {
-						sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
+					eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
+					if (comp != GB_COMPATIBILITY_LINER) {
+						if ((comp == GB_COMPATIBILITY_AVZK80) ||
+								(comp == GB_COMPATIBILITY_PVZ90)) {
+							sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK);
+						} else {
+							sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
+						}
 						sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
 					}
 				}
@@ -1987,6 +2002,7 @@ void clMenu::lvlControl() {
 					Punkts_.add(punkt16);
 					Punkts_.add(punkt17);
 				}
+				Punkts_.add(punkt05);
 			} else if (compatibility == GB_COMPATIBILITY_PVZ90) {
 				Punkts_.add(punkt04);
 				Punkts_.add(punkt19);
@@ -2016,6 +2032,7 @@ void clMenu::lvlControl() {
 					Punkts_.add(punkt10);
 					Punkts_.add(punkt17);
 				}
+				Punkts_.add(punkt05);
 			} else if (compatibility == GB_COMPATIBILITY_AVZK80) {
 				Punkts_.add(punkt19);
 				Punkts_.add(punkt16);
@@ -2029,8 +2046,8 @@ void clMenu::lvlControl() {
 				Punkts_.add(punkt14);
 				Punkts_.add(punkt31);
 				Punkts_.add(punkt17);
+				Punkts_.add(punkt05);
 			} else if (compatibility == GB_COMPATIBILITY_LINER) {
-				eGB_NUM_DEVICES numDevices = sParam.def.getNumDevices();
 				if (numDevices == GB_NUM_DEVICES_2) {
 					Punkts_.add(punkt04);
 					Punkts_.add(punkt02);
@@ -2044,9 +2061,8 @@ void clMenu::lvlControl() {
 				Punkts_.add(punkt15);
 				Punkts_.add(punkt16);
 				Punkts_.add(punkt17);
+				Punkts_.add(punkt05);
 			}
-			// Вызов есть во всех совместимостях
-			Punkts_.add(punkt05);
 		} else if (device == AVANT_RZSK) {
 			eGB_NUM_DEVICES numDevices = sParam.def.getNumDevices();
 			if (sParam.def.status.isEnable()) {
@@ -2221,6 +2237,7 @@ void clMenu::lvlControl() {
 				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_OFF);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			} else if (name == punkt08) {
+				sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK);
 				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
 			} else if (name == punkt09) {
 				sParam.txComBuf.setInt8(GB_CONTROL_MAN_1);

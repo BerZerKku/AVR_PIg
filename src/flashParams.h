@@ -657,7 +657,7 @@ static const Param fPvzueAcType PROGMEM = {
 
 // период беглого режима АК (ПВЗУ-Е)
 static const Param fPvzueAcPeriod PROGMEM = {
-		 "Период беглого АК",	// название параметра
+		"Период беглого АК",	// название параметра
 		GB_COM_GET_TIME_RERUN,	// команда стандартного протокола
 		Param::PARAM_INT,		// тип параметра
 		Param::RANGE_INT,		// диапазон измнения

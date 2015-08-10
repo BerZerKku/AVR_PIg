@@ -25,7 +25,8 @@ enum eGB_TYPE_AC {
 	GB_TYPE_AC_PUSK = 7,		// АК пуск
 	GB_TYPE_AC_ONE_SIDE = 8,	// АК односторонний
 	GB_TYPE_AC_MAX,				// максимальное принимаемое значение
-	GB_TYPE_AC_AUTO				// подмена  GB_TYPE_AC_AUTO_NORM в Р400м->ЛинияР
+	GB_TYPE_AC_AUTO,			// подмена  GB_TYPE_AC_AUTO_NORM в Р400м->ЛинияР
+	GB_TYPE_AC_CHECK_1			// подмена GB_TYPE_AC_CHECK в Р400м->АВЗК-80 и ПВЗ-90
 };
 
 /// класс для параметров и настроек защиты
