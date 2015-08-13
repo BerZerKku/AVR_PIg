@@ -55,6 +55,9 @@
 /// максимальное кол-во предупреждений для любого устройства
 #define MAX_NUM_WARNINGS 16
 
+/// минимальное кол-во команд передаваемых за одну секунду
+#define MIN_NUM_COM_SEND_IN_1_SEK 8
+
 ///	максимальное кол-во быстрых команды
 // на данный момент надо только для ТЕСТов РЗСК, т.к. там посылаются 2 команды
 #define MAX_NUM_FAST_COM 2
@@ -63,7 +66,11 @@
 #define MAX_NUM_COM_BUF1 10
 
 /// максимальное кол-во команд во втором буфере
-#define MAX_NUM_COM_BUF2 5
+#define MAX_NUM_COM_BUF2 4
+
+#if (MIN_NUM_COM_SEND_IN_1_SEK- (MAX_NUM_FAST_COM + MAX_NUM_COM_BUF2) < 2)
+#error Слишком мало второстепенных команд отправляется в БСП за один период!!!
+#endif
 
 /// максимальное кол-во сигналов в тестах
 #define MAX_NUM_TEST_SIGNAL 40
@@ -1205,9 +1212,15 @@ public:
 	 * 	@return Код текущей команды.
 	 */
 	eGB_COM getCom1() {
-		if (cnt1_ >= numCom1_)
+		eGB_COM com= GB_COM_NO;
+
+		if (cnt1_ < numCom1_) {
+			com = com1_[cnt1_++];
+		} else {
 			cnt1_ = 0;
-		return com1_[cnt1_++];
+		}
+
+		return com;
 	}
 
 	/** Запись команды в буфер 2.
@@ -1228,9 +1241,15 @@ public:
 	 * 	@return Код текущей команды.
 	 */
 	eGB_COM getCom2() {
-		if (cnt2_ >= numCom2_)
+		eGB_COM com= GB_COM_NO;
+
+		if (cnt2_ < numCom2_) {
+			com = com2_[cnt2_++];
+		} else {
 			cnt2_ = 0;
-		return com2_[cnt2_++];
+		}
+
+		return com;
 	}
 
 	/**	Запись срочной команды в конец очереди.
@@ -1263,6 +1282,7 @@ public:
 		}
 		return com;
 	}
+
 
 	/**	Запись байт данных в буфер.
 	 * 	@param byte	Байт данных.

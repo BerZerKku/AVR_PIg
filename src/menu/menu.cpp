@@ -746,22 +746,40 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 
 eGB_COM clMenu::getTxCommand() {
 	static uint8_t cnt = 0;
+
+	// быстрая команда идет с самым высоким приоритетом
 	eGB_COM com = sParam.txComBuf.getFastCom();
 
 	if (com == GB_COM_NO) {
-		cnt++;
-		if (cnt == 1)
-			com = GB_COM_GET_SOST;
-		else if (cnt == 2)
-			com = sParam.txComBuf.getCom1();
 
-		// если нет команды, посылаем команду из буфера 2
-		if (com == GB_COM_NO)
-			com = sParam.txComBuf.getCom2();
-
-		// начинаем цикл сначала, если отправлено 4 посылки
-		if (cnt >= 4)
+		if (cnt >= MIN_NUM_COM_SEND_IN_1_SEK)
 			cnt = 0;
+
+		if (cnt > 0) {
+			// команды которые должны передаваться минимум раз в секунду
+			if (cnt <= MAX_NUM_COM_BUF2) {
+				com = sParam.txComBuf.getCom2();
+
+				if (com == GB_COM_NO) {
+					cnt = MAX_NUM_COM_BUF2 + 1;
+				}
+			}
+
+			// команды которые должны передаваться постоянно
+			if (com == GB_COM_NO) {
+				com = sParam.txComBuf.getCom1();
+
+				if (com == GB_COM_NO) {
+					cnt = 0;
+				}
+			}
+		}
+
+		if (cnt == 0) {
+			com = GB_COM_GET_SOST;
+		}
+
+		cnt++;
 	}
 
 	return com;
@@ -855,19 +873,19 @@ void clMenu::lvlStart() {
 		// дополнительные команды
 		// время измеряемые параметры (в ВЧ)
 		sParam.txComBuf.addCom2(GB_COM_GET_TIME);
+		sParam.txComBuf.addCom2(GB_COM_GET_FAULT);
 		if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
-
-		// буфер 2
+		if (sParam.typeDevice == AVANT_R400M) {
+			sParam.txComBuf.addCom2(GB_COM_DEF_GET_TYPE_AC);
+		}
+ 		// буфер 2
 		// неисправности + кол-во аппаратов в линии + сетевой адрес
 		// в Р400м + АК + совместимость
 		// в К400  + совместимость
-
-		sParam.txComBuf.addCom1(GB_COM_GET_FAULT);
 		sParam.txComBuf.addCom1(GB_COM_DEF_GET_LINE_TYPE);
 		sParam.txComBuf.addCom1(GB_COM_GET_NET_ADR);
 		if (sParam.typeDevice == AVANT_R400M) {
-			sParam.txComBuf.addCom1(GB_COM_DEF_GET_TYPE_AC);
 			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
 		} else if (sParam.typeDevice == AVANT_K400) {
 			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
@@ -2443,7 +2461,7 @@ void clMenu::lvlRegime() {
 		// доплнительные команды
 		sParam.txComBuf.clear();
 		// кол-во аппаратов в линии
-		sParam.txComBuf.addCom1(GB_COM_GET_DEVICE_NUM);
+		sParam.txComBuf.addCom2(GB_COM_GET_DEVICE_NUM);
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -2929,9 +2947,9 @@ void clMenu::lvlSetupParamGlb() {
 			// для переформирования меню добавляются команды опроса:
 			// совместимости и кол-ва аппаратов в линии
 			// измеряемые параметры для коррекции
-			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
-			sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
+			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
+			sParam.txComBuf.addCom1(GB_COM_DEF_GET_LINE_TYPE);
 
 			sParam.local.addParam(GB_PARAM_COMP_P400);
 			if (comp == GB_COMPATIBILITY_AVANT) {
