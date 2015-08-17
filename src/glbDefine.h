@@ -1185,24 +1185,25 @@ public:
 
 	/** Запись команды в буфер 1.
 	 *
-	 * 	Если num > 0 то происходит замена имеющейся команды в буфере,
-	 * 	если num < 0 команда добавляется.
+	 * 	Если num > 0, то заменяется последняя команда в буфере;
+	 * 	Если num = 0 команда добавляется.
 	 * 	@param com Код команды.
 	 * 	@param num Индекс элемента в буфере.
 	 * 	@retval True - в случае успешной записи.
 	 * 	@retval False - если не удалось поместить команду в буфер.
 	 */
-	bool addCom1(eGB_COM com, int8_t num = -1) {
+	bool addCom1(eGB_COM com, uint8_t num = 0) {
 		bool stat = false;
-		if (numCom1_ < MAX_NUM_COM_BUF1) {
-			if (num >= 0) {
-				if (num > numCom1_)
-					numCom1_ = num;
-				com1_[num] = com;
-				stat = true;
-			} else {
+
+		if (num > 0) {
+			if (numCom1_ == 0)
+				numCom1_ = 1;
+			com1_[numCom1_ - 1] = com;
+			stat = true;
+		} else {
+			if (numCom1_ < MAX_NUM_COM_BUF1) {
 				com1_[numCom1_++] = com;
-				stat = true;
+					stat = true;
 			}
 		}
 		return stat;

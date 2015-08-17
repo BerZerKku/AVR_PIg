@@ -2261,7 +2261,7 @@ void clMenu::lvlControl() {
 				sParam.txComBuf.setInt8(GB_CONTROL_MAN_1);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			} else if (name == punkt10) {
-				sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK);
+				sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
 				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
 			} else if (name == punkt11) {
 				sParam.txComBuf.setInt8(GB_CONTROL_RESET_AC);
@@ -4410,7 +4410,7 @@ void clMenu::setupParam() {
 
 		eGB_COM com = sParam.local.getCom();
 		sParam.txComBuf.addFastCom(com);
-		sParam.txComBuf.addCom1(com, 0);
+		sParam.txComBuf.addCom1(com, 1);
 	}
 
 	// выход из текущего уровня меню, если кол-во параметров равно 0
