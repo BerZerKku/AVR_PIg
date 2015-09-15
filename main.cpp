@@ -300,23 +300,27 @@ static bool isUartPcReinit(sEeprom *current, TUartData *newparam) {
 
 static void setProtocol(TProtocol::PROTOCOL protocol, uint16_t baud) {
 
+	protPCs.setDisable();
+	protPCi.setDisable();
+	protPCm.setDisable();
+
 	switch(protocol) {
 		case TProtocol::STANDART:
 			protPCs.setEnable(PRTS_STATUS_READ);
-			protPCi.setDisable();
-			protPCm.setDisable();
+//			protPCi.setDisable();
+//			protPCm.setDisable();
 			break;
 		case TProtocol::MODBUS:
 			protPCm.setTick(baud, 50);
 			protPCm.setEnable();
-			protPCi.setDisable();
-			protPCs.setDisable();
+//			protPCi.setDisable();
+//			protPCs.setDisable();
 			break;
 		case TProtocol::IEC_101:
 			protPCi.setTick(baud, 50);
 			protPCi.setEnable();
-			protPCm.setDisable();
-			protPCs.setDisable();
+//			protPCm.setDisable();
+//			protPCs.setDisable();
 			break;
 		case TProtocol::MAX:		// заглушка
 			break;
@@ -375,18 +379,7 @@ main(void) {
 			menu.setConnectionBsp(connect);
 
 			cnt_wdt++;
-			// обновление экрана
-			// где 100 - время рабочего цикла
-			if (++cnt_lcd >= (MENU_TIME_CYLCE / TIME_CYLCE)) {
-				cnt_lcd = 0;
-				menu.main();
-			}
-
-			cnt_wdt++;
-			// отправка сообщений в БСП/ПК
-			uartWrite();
-
-			cnt_wdt++;
+			// TODO Если стоит после menu.main(); то сбоит смена интерфейса или настроек порта!!!
 			// задачи выполняемые раз в 1с
 			if (++cnt_1s >= 10) {
 				cnt_1s = 0;
@@ -419,6 +412,18 @@ main(void) {
 						sizeof(eeprom));
 				EEAR = 0;	// сброс адреса ЕЕПРОМ в 0, для защиты данных
 			}
+
+			cnt_wdt++;
+			// обновление экрана
+			// где 100 - время рабочего цикла
+			if (++cnt_lcd >= (MENU_TIME_CYLCE / TIME_CYLCE)) {
+				cnt_lcd = 0;
+				menu.main();
+			}
+
+			cnt_wdt++;
+			// отправка сообщений в БСП/ПК
+			uartWrite();
 
 			// сброс wdt, если все шаги цикла были пройдены
 			if (cnt_wdt == 4)

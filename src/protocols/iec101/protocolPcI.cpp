@@ -64,9 +64,6 @@ bool TProtocolPcI::checkEvent() {
 bool TProtocolPcI::procInterrog(uint16_t &adr, bool &val) {
 	adr++;
 
-	// TODO
-	return false;
-
 	if (adr <= IE_PRM_COM) {
 		if (adr < IE_ERROR)
 			adr = IE_ERROR;
@@ -81,14 +78,14 @@ bool TProtocolPcI::procInterrog(uint16_t &adr, bool &val) {
 		return true;
 	}
 
-	if (sParam_->prd.status.isEnable() && (adr <= IE_PRD_COM_END)) {
+	if (sParam_->prd.status.isEnable() && (adr <= IE_PRD_TEST)) {
 		if (adr < IE_PRD_ON)
 			adr = IE_PRD_ON;
 		val = getPrd(adr);
 		return true;
 	}
 
-	if (sParam_->prm.status.isEnable() && (adr <= IE_PRM_COM_END)) {
+	if (sParam_->prm.status.isEnable() && (adr <= IE_PRM_TEST)) {
 		if (adr < IE_PRM_ON)
 			adr = IE_PRM_ON;
 		val = getPrm(adr);
@@ -119,6 +116,7 @@ bool TProtocolPcI::procSetTime() {
 	uint16_t ms = stTime.milliseconds % 1000 + getDelay();
 	sParam_->txComBuf.setInt8(BIN_TO_BCD((uint8_t) ms), i++);
 	sParam_->txComBuf.setInt8(BIN_TO_BCD((uint8_t) (ms >> 8)), i++);
+	sParam_->txComBuf.setInt8(1, i++);
 	sParam_->txComBuf.addFastCom(GB_COM_SET_TIME);
 
 	// сброс флага наличия ответа на команду установки времени в БСП
@@ -198,7 +196,14 @@ bool TProtocolPcI::getGlb(uint16_t adr) const {
 bool TProtocolPcI::getPrd(uint16_t adr) const {
 	bool val = false;
 
-	if (adr >= IE_PRD_COM_START) {
+	if (adr == IE_PRD_TEST) {
+		val = (sParam_->prd.status.getRegime() == GB_REGIME_TEST_1) ||
+				(sParam_->prd.status.getRegime() == GB_REGIME_TEST_2);
+	} else if (adr == IE_PRD_ENABLED) {
+		val = (sParam_->prd.status.getRegime() == GB_REGIME_ENABLED);
+	} else if (adr == IE_PRD_DISABLED) {
+		val = (sParam_->prd.status.getRegime() == GB_REGIME_DISABLED);
+	} if (adr >= IE_PRD_COM_START) {
 		if (adr <= IE_PRD_COM_END) {
 			val = sParam_->prd.getIndCom(adr - IE_PRD_COM_START);
 		}
@@ -221,7 +226,16 @@ bool TProtocolPcI::getPrd(uint16_t adr) const {
 bool TProtocolPcI::getPrm(uint16_t adr) const {
 	bool val = false;
 
-	if (adr >= IE_PRM_COM_START) {
+	if (adr == IE_PRM_TEST) {
+		val = (sParam_->prm.status.getRegime() == GB_REGIME_TEST_1) ||
+				(sParam_->prm.status.getRegime() == GB_REGIME_TEST_2);
+	} else if (adr == IE_PRM_ENABLED) {
+		val = (sParam_->prm.status.getRegime() == GB_REGIME_ENABLED);
+	} else if (adr == IE_PRM_READY) {
+		val = (sParam_->prm.status.getRegime() == GB_REGIME_READY);
+	} else if (adr == IE_PRM_DISABLED) {
+		val = (sParam_->prm.status.getRegime() == GB_REGIME_DISABLED);
+	} else if (adr >= IE_PRM_COM_START) {
 		if (adr <= IE_PRM_COM_END) {
 			val = sParam_->prm.getIndCom(adr - IE_PRM_COM_START);
 		}

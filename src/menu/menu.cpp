@@ -337,9 +337,9 @@ bool clMenu::setDeviceK400() {
 	sParam.prm.status.faultText[2] = fcPrmFault0004rzsk;
 	// 3-7 нет
 	sParam.prm.status.faultText[8] = fcPrmFault0100rzsk;
-	sParam.prm.status.faultText[9] = fcPrmFault0200rzsk;
-	sParam.prm.status.faultText[10] = fcPrmFault0400rzsk;
-	sParam.prm.status.faultText[11] = fcPrmFault0800rzsk;
+	sParam.prm.status.faultText[9] = fcPrmFault0200k400;
+	sParam.prm.status.faultText[10] = fcPrmFault0400k400;
+	sParam.prm.status.faultText[11] = fcPrmFault0800k400;
 	// 12-15 нет
 	// заполнение массива предупреждений приемника
 	sParam.prm.status.warningText[0] = fcPrmWarning01rzsk;
@@ -355,7 +355,7 @@ bool clMenu::setDeviceK400() {
 	sParam.prd.status.faultText[8] = fcPrdFault0100rzsk;
 	sParam.prd.status.faultText[9] = fcPrdFault0200rzsk;
 	sParam.prd.status.faultText[10] = fcPrdFault0400rzsk;
-	sParam.prd.status.faultText[11] = fcPrdFault0800rzsk;
+	sParam.prd.status.faultText[11] = fcPrdFault0800k400;
 	// 12-15 нет
 	// заполнение массива предупреждений передатчика
 	// 0 нет
@@ -3231,6 +3231,7 @@ void clMenu::lvlSetupDT() {
 			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getHour()), 3);
 			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMinute()), 4);
 			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getSecond()), 5);
+			sParam.txComBuf.setInt8(0, 8);	//
 			break;
 
 		case KEY_CANCEL:

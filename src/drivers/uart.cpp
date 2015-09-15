@@ -109,14 +109,17 @@ bool TUart::open(uint16_t baud, TDataBits::DATA_BITS databits,
 			break;
 	}
 
+	// разрешение работы передатчика/приемника и прервани€ по приему
+	ucsrb |= (1 << TXEN1) | (1 << RXEN1) | (1 << RXCIE1);
+
 	*ubbrh_ = (uint8_t) (ibaud >> 8);
 	*ubbrl_ = (uint8_t) (ibaud);
 	*ucsra_ = ucsra;
-	*ucsrb_ = ucsrb;
 	*ucsrc_ = ucsrc;
+	*ucsrb_ = ucsrb;
 
-	// разрешение работы передатчика/приемника и прервани€ по приему
-	*ucsrb_ |= (1 << TXEN1) | (1 << RXEN1) | (1 << RXCIE1);
+//	// разрешение работы передатчика/приемника и прервани€ по приему
+//	*ucsrb_ |= (1 << TXEN1) | (1 << RXEN1) | (1 << RXCIE1);
 
 	return sost;
 }
@@ -124,8 +127,9 @@ bool TUart::open(uint16_t baud, TDataBits::DATA_BITS databits,
 // «акрывает порт
 void TUart::close() {
 	// запрет работы передатчика/приемника и всех прерываний
-	*ucsrb_ &= ~((1 << TXEN1) | (1 << RXEN1) | (1 << RXCIE1) |
-			(1 << UDRIE1) | (1 << TXCIE1));
+//	*ucsrb_ &= ~((1 << TXEN1) | (1 << RXEN1) | (1 << RXCIE1) |
+//			(1 << UDRIE1) | (1 << TXCIE1));
+	*ucsrb_ = 0;
 }
 
 // ѕередача заданного кол-ва данных, заранее помещенных в буфер

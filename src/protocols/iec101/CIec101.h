@@ -1104,7 +1104,7 @@ public:
 	 * 	@retval True - при наличии принятой посылки.
 	 * 	@retval False - при отсутствии принятой посылки
 	 */
-	bool isReadData() const{
+	bool isReadData() const {
 		return (m_eState == STATE_READ_OK);
 	}
 

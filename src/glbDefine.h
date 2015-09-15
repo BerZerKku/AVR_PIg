@@ -29,7 +29,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0116
+#define VERS 0x0117
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -521,7 +521,6 @@ enum eGB_K400_NUM_COM {
 	GB_K400_NUM_COM_32	= 6,	///<
 	GB_K400_NUM_COM_MAX			///< кол-во пунктов в списке
 };
-
 
 
 /// Класс для даты и времени
@@ -1162,7 +1161,7 @@ private:
 
 // класс для передачи команд
 class TTxCom {
-	static const uint8_t BUFFER_SIZE = 8;
+	static const uint8_t BUFFER_SIZE = 16;
 
 public:
 	TTxCom() {

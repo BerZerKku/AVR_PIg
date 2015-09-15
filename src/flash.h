@@ -209,9 +209,12 @@ static const char fcPrmFault0004rzsk[] 	PROGMEM = "Нет КЧ";				///<
 static const char fcPrmFault0008rzsk[] 	PROGMEM = "Прев.дл-сти.ком.";	///<
 static const char fcPrmFault0100rzsk[] 	PROGMEM = "Неиспр.зап. БСК";	///<
 static const char fcPrmFault0200rzsk[] 	PROGMEM = "Неиспр.выкл. КСК";	///<
+static const char fcPrmFault0200k400[] 	PROGMEM = "Неиспр.выкл.ком.";	///<
 static const char fcPrmFault0400rzsk[] 	PROGMEM = "Неиспр.вкл. КСК";	///<
+static const char fcPrmFault0400k400[] 	PROGMEM = "Неиспр.вкл. ком.";	///<
 static const char fcPrmFault0800rzsk[] 	PROGMEM = "Неиспр.контр.КСК";	///<
-static const char fcPrmFault8000rzsk[] 	PROGMEM = "Прием блок. Ком";	///<
+static const char fcPrmFault0800k400[] 	PROGMEM = "Неиспр.контр.ком";	///<
+static const char fcPrmFault8000rzsk[] 	PROGMEM = "Прием блок. ком.";	///<
 
 // предупреждения приемника
 static const char fcPrmWarning01rzsk[] 	PROGMEM = "Сниж. уровня ПРМ";	///<
@@ -226,6 +229,7 @@ static const char fcPrdFault0100rzsk[] 	PROGMEM = "Неиспр.чт.команд";	///<
 static const char fcPrdFault0200rzsk[] 	PROGMEM = "Неиспр.выкл.Тест";	///<
 static const char fcPrdFault0400rzsk[] 	PROGMEM = "Неиспр.вкл. Тест";	///<
 static const char fcPrdFault0800rzsk[] 	PROGMEM = "Неиспр.вход. КСК";	///<
+static const char fcPrdFault0800k400[] 	PROGMEM = "Неиспр.вход. ком";	///<
 
 // предупреждения передатчика
 static const char fcPrdWarning02k400[] 	PROGMEM = "Ошибка работы ЦС";	///<
@@ -284,14 +288,14 @@ static char fcJrnEventK400[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 		"Изменение параметров",    	///< 4
 		"Неиспр теста ПРД",         ///< 5
 		"Неиспр теста ПРМ",         ///< 6
-		"Неиспр блока БСЗ",         ///< 7
+		"Событие - 7",		        ///< 7
 		"Неиспр блока БСК",         ///< 8
 		"Изменение дата/время",   	///< 9
-		"Нет сигнала манипул.",     ///< 10
-		"Неиспр выходной цепи",     ///< 11
-		"Нет сигнала РЗ",           ///< 12
-		"Отсут-е сигнала Пуск",    	///< 13
-		"Отсут-е сигнала Стоп",    	///< 14
+		"Событие - 10",     		///< 10
+		"Событие - 11",     		///< 11
+		"Событие - 12", 	        ///< 12
+		"Событие - 13",    			///< 13
+		"Событие - 14",    			///< 14
 		"Неиспр чтения команд",     ///< 15
 		"Событие - 16",          	///< 16
 		"Неиспр. работы DSP",		///< 17

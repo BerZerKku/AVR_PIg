@@ -72,6 +72,7 @@ uint8_t CIec101::push(uint8_t u8Byte) {
 		m_u8Tick = 0;	// сброс счетчика времени
 	}
 
+
 	return (m_u8Cnt = cnt);
 }
 
@@ -93,8 +94,8 @@ void CIec101::tick() {
 	if (checkState(STATE_READ)) {
 		if (tick >= m_u16TickTime) {
 			if (m_u8Cnt >= s_u8SizeOfFrameFixLenght) {
-				if ((m_pBuf[0] == 0x68) && (m_pBuf[6] == 0x67)) {
-				}
+//				if ((m_pBuf[0] == 0x68) && (m_pBuf[6] == 0x67)) {
+//				}
 				setState(STATE_READ_OK);
 			} else {
 				setState(STATE_READ);
@@ -275,6 +276,7 @@ CIec101::EError CIec101::checkFrameVarLenght(SFrameVarLength &rFrame)  const {
 
 // Обработка кадра с фиксированной длиной.
 void CIec101::readFrameFixLenght(SFrameFixLength &rFrame) {
+
 	if (!isReset()) {
 		// если сброса от первичной станции небыло и это не команды сброса
 		// принятый кадр обработан не будет
@@ -324,6 +326,7 @@ void CIec101::readFrameFixLenght(SFrameFixLength &rFrame) {
 }
 
 void CIec101::readFrameVarLenght(SFrameVarLength &rFrame) {
+
 	if (!isReset()) {
 		// если сброса от первичной станции небыло принятый кадр обработан не будет
 		setReadState();

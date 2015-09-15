@@ -212,6 +212,7 @@ TProtocolModbus::CHECK_ERR TProtocolPcM::writeRegister(uint16_t adr, uint16_t va
 		} else if (adr == ADR_SECOND) {
 			val = (val <= 59) ? BIN_TO_BCD(val) : 1;
 			sParam_->txComBuf.addFastCom(GB_COM_SET_TIME);
+			sParam_->txComBuf.setInt8(1, 8);
 		}
 		sParam_->txComBuf.setInt8(val, adr - ADR_YEAR);
 	}
