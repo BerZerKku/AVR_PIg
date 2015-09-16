@@ -209,14 +209,11 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 			// 		при этом передается 0 байт данных
 			// отсылаются команды установки сигналов в тесте
 			// 		тут последовательно передаются две команды
-			// 		сначала команда для КЧ
-			// 		а при следующем заходе  для РЗ
-			if (sParam_->txComBuf.getInt8(0) == 1) {
-				num = addCom(com, 1, sParam_->txComBuf.getInt8(1));		// КЧ
-				sParam_->txComBuf.setInt8(0, 0);
-			} else if (sParam_->txComBuf.getInt8(2) == 2) {
-				num = addCom(com, 2, sParam_->txComBuf.getInt8(3));		// РЗ
-				sParam_->txComBuf.setInt8(2, 0);
+			// 		сначала команда для КЧ (первый байт 1)
+			// 		а при следующем заходе  для РЗ (первый байт 2)
+			uint8_t t = sParam_->txComBuf.getInt8(0);
+			if (t != 0) {
+				num = addCom(com, t, sParam_->txComBuf.getInt8(1));
 			} else {
 				num = addCom(com);										// вкл.
 			}

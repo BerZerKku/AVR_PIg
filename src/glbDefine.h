@@ -60,7 +60,8 @@
 
 ///	максимальное кол-во быстрых команды
 // на данный момент надо только для ТЕСТов РЗСК, т.к. там посылаются 2 команды
-#define MAX_NUM_FAST_COM 2
+// а так же возможно появление быстрой команды при работе с АСУ ТП
+#define MAX_NUM_FAST_COM 3
 
 /// максимальное кол-во команд в первом буфере
 #define MAX_NUM_COM_BUF1 10
@@ -68,7 +69,8 @@
 /// максимальное кол-во команд во втором буфере
 #define MAX_NUM_COM_BUF2 4
 
-#if (MIN_NUM_COM_SEND_IN_1_SEK- (MAX_NUM_FAST_COM + MAX_NUM_COM_BUF2) < 2)
+// не учитываем быстрые команды, т.к. они возникают достаточно редко
+#if (MIN_NUM_COM_SEND_IN_1_SEK - MAX_NUM_COM_BUF2 < 4)
 #error Слишком мало второстепенных команд отправляется в БСП за один период!!!
 #endif
 
@@ -1172,11 +1174,11 @@ public:
 	void clear() {
 		numCom1_ = numCom2_ = 0;
 		cnt1_ = cnt2_ = 0;
-		for(uint_fast8_t i = 0; i < MAX_NUM_FAST_COM; i++) {
-			comFast_[i] = GB_COM_NO;
-		}
-		for(uint_fast8_t i = 0; i < BUFFER_SIZE; i++) {
-			buf_[i] = 0;
+		cntComFast = 0;
+		for(uint_fast8_t j = 0; j < MAX_NUM_FAST_COM; j++) {
+			for(uint_fast8_t i = 0; i < BUFFER_SIZE; i++) {
+				buf_[j] [i] = 0;
+			}
 		}
 		com1_[0] = com2_[0] = GB_COM_NO;
 		sendType = GB_SEND_NO;
@@ -1254,31 +1256,41 @@ public:
 
 	/**	Запись срочной команды в конец очереди.
 	 *
+	 *	При добавлении срочной команды все содержимое буфера передачи сохраняется.
+	 *
 	 * 	@param com Код срочной команды
 	 */
 	void addFastCom(eGB_COM com) {
-		for(uint_fast8_t i = 0; i < MAX_NUM_FAST_COM; i++) {
-			if (comFast_[i] == GB_COM_NO) {
-				comFast_[i] = com;
-				break;
+		if (cntComFast < MAX_NUM_FAST_COM) {
+			comFast_[cntComFast] = com;
+			cntComFast++;
+
+			// сохранение данных для быстрой команды
+			for(uint_fast8_t i = 0; i < BUFFER_SIZE; i++) {
+				buf_[cntComFast] [i] = buf_[0] [i];
 			}
 		}
 	}
 
-	/**	Считывание срочной команды из начала очереди.
+	/**	Считывание срочной команды. При этом идет копирование данных
+	 *
+	 *	При извлечении срочной команды в буфер передачи копируются сохраненные
+	 *	для данной команды данные.
+	 *
 	 * 	@return Код срочной команды.
 	 */
 	eGB_COM getFastCom() {
-		eGB_COM com = comFast_[0];
-		// проверим, была ли команда в буфере
-		if (com != GB_COM_NO) {
-			// размер буфера команд достаточно мал
-			// просто свдинем весь буфер на одну позицию влево,
-			// а последнюю команду "обнулим"
-			for(uint_fast8_t i = 1; i < MAX_NUM_FAST_COM; i++) {
-				comFast_[i - 1] = comFast_[i];
+		eGB_COM com = GB_COM_NO;
+
+		if (cntComFast > 0) {
+			com = comFast_[cntComFast - 1];
+
+			// извлечение данныз для быстрой команды
+			for(uint_fast8_t i = 0; i < BUFFER_SIZE; i++) {
+				buf_[0] [i] = buf_[cntComFast] [i];
 			}
-			comFast_[MAX_NUM_FAST_COM - 1] = GB_COM_NO;
+
+			cntComFast--;
 		}
 		return com;
 	}
@@ -1290,7 +1302,7 @@ public:
 	 */
 	void setInt8(uint8_t byte, uint8_t num = 0) {
 		if (num < BUFFER_SIZE)
-			buf_[num] = byte;
+			buf_[0][num] = byte;
 	}
 
 	/** Считывание байта данных.
@@ -1300,7 +1312,7 @@ public:
 	uint8_t getInt8(uint8_t num = 0) const {
 		uint8_t byte = 0;
 		if (num < BUFFER_SIZE)
-			byte = buf_[num];
+			byte = buf_[0][num];
 		return byte;
 	}
 
@@ -1309,7 +1321,7 @@ public:
 	 * 	@param val Данные.
 	 */
 	void setInt16(uint16_t val) {
-		*((uint16_t *) (buf_ + 1)) = val;
+		*((uint16_t *) (buf_[0] + 1)) = val;
 	}
 
 	/** Считывание 2-х абйтного числа (uint16_t) из буфера.
@@ -1317,14 +1329,14 @@ public:
 	 * 	@return Данные.
 	 */
 	uint16_t getInt16() const {
-		return *((uint16_t *) (buf_ + 1));
+		return *((uint16_t *) (buf_[0] + 1));
 	}
 
 	/**	Возвращает указатель на буфер данных.
 	 * 	@return Указатель на буфер данных.
 	 */
 	uint8_t* getBuferAddress() {
-		return buf_;
+		return &buf_[0] [0];
 	}
 
 	/**	Возвращает тип команды на передачу.
@@ -1348,6 +1360,8 @@ private:
 	eGB_SEND_TYPE sendType;
 	// срочная команда (на изменение)
 	eGB_COM comFast_[MAX_NUM_FAST_COM];
+	// номер текущей срочной команды
+	uint8_t cntComFast;
 	// первый буфер команд
 	eGB_COM com1_[MAX_NUM_COM_BUF1];
 	// кол-во команд в первом буфере
@@ -1360,8 +1374,8 @@ private:
 	uint8_t numCom2_;
 	// номер текущей команды во втором буфере
 	uint8_t cnt2_;
-	// буфер данных
-	uint8_t buf_[BUFFER_SIZE];
+	// буфер данных (для каждой быстрой команды и основной )
+	uint8_t buf_[MAX_NUM_FAST_COM + 1] [BUFFER_SIZE];
 };
 
 typedef struct __attribute__ ((__packed__)) {

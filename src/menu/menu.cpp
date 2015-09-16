@@ -2571,7 +2571,7 @@ void clMenu::lvlRegime() {
 			}
 			EnterParam.setValueRange(min, max);
 			EnterParam.setValue(val);
-			EnterParam.list = fcRegimeEnter[0];
+			EnterParam.list = fcRegimeEnter[min];
 			EnterParam.com = GB_COM_NO;
 		}
 			break;
@@ -3449,6 +3449,9 @@ void clMenu::lvlTest1() {
 	snprintf_P(&vLCDbuf[0], 21, title);
 	snprintf_P(&vLCDbuf[lineParam_ * 20], 21, punkt1);
 
+	// сброс нулевого байта, для выбора отправки команды запроса
+	// далее он может быть изменен для команды установки
+	sParam.txComBuf.setInt8(0, 0);
 	if (EnterParam.isEnable()) {
 		// ввод нового значения параметра
 		eMENU_ENTER_PARAM stat = enterValue();
@@ -3465,8 +3468,8 @@ void clMenu::lvlTest1() {
 			// добавим в буфере команду для каждой из групп
 			// !!! при передаче команды надо проверять данные в буфере
 			// РЗ
-			sParam.txComBuf.setInt8(2, 2);				// группа РЗ
-			sParam.txComBuf.setInt8(rz, 3);				// текущий сигнал РЗ
+			sParam.txComBuf.setInt8(2, 0);				// группа РЗ
+			sParam.txComBuf.setInt8(rz, 1);				// текущий сигнал РЗ
 			sParam.txComBuf.addFastCom(EnterParam.com);
 			// КЧ
 			sParam.txComBuf.setInt8(1, 0);				// группа КЧ
