@@ -2902,9 +2902,10 @@ void clMenu::lvlSetupParamGlb() {
 			sParam.local.addParam(GB_PARAM_COMP_K400);
 			sParam.local.addParam(GB_PARAM_TIME_SYNCH);
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE);
-			if (sParam.prd.status.isEnable()) {
+//			TODO На данный момент в ПО БСП проверка выходного сигнала не отключается в ПРД. Поэтому параметр есть всегда!
+//			if (sParam.prd.status.isEnable()) {
 				sParam.local.addParam(GB_PARAM_OUT_CHECK);
-			}
+//			}
 			if (sParam.prm.status.isEnable()) {
 				sParam.local.addParam(GB_PARAM_WARN_THD);
 				sParam.local.addParam(GB_PARAM_TIME_RERUN);
@@ -2922,9 +2923,7 @@ void clMenu::lvlSetupParamGlb() {
 				sParam.local.addParam(GB_PARAM_COR_I);
 			}
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES);
-			if (sParam.glb.getCompK400() == GB_COMP_K400_UPKC_PRD) {
-				sParam.local.addParam(GB_PARAM_TM_K400);
-			}
+			sParam.local.addParam(GB_PARAM_TM_K400);
 		} else if (device == AVANT_RZSK) {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 
