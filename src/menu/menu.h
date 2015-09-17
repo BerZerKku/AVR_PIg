@@ -122,11 +122,11 @@ public:
 
 	// диапазон значений
 	void setValueRange(uint16_t min, uint16_t max) {
-		uint8_t num = 0;
+		uint8_t num = 1;
 		max_ = max;
 		min_ = min;
 		// нахождение максимального кол-ва символов при вводе
-		while (max > 0) {
+		while (max >= 10) {
 			num++;
 			max /= 10;
 		}
