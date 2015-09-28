@@ -102,7 +102,7 @@ static char fcRpsType[][STRING_LENGHT] PROGMEM = {
 /// Отключение фазы.
 static char fcPhaseOff[][STRING_LENGHT] PROGMEM = {
 //		 1234567890
-		"По фазное",	///<
+		"Пофазное",		///<
 		"Одноврем."		///<
 };
 
