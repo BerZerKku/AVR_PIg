@@ -186,8 +186,8 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 
 		case GB_COM_GET_FAULT: {
 			// неисправности и предупреждения терминала
-			stat =  sParam_->Rps.Status.setFault(TO_INT16(buf[B1], buf[B2]));
-			stat &= sParam_->Rps.Status.setWarning(TO_INT16(buf[B3], buf[B4]));
+			stat =  sParam_->Rps.Status.setFault(TO_INT16(buf[B9], buf[B10]));
+			stat &= sParam_->Rps.Status.setWarning(TO_INT16(buf[B11], buf[B12]));
 
 			// общие неисправности и предупреждения
  			stat &= sParam_->Glb.Status.setFault(TO_INT16(buf[B13], buf[B14]));
