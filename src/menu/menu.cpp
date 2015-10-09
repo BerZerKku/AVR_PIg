@@ -337,9 +337,9 @@ bool clMenu::setDeviceK400() {
 	sParam.prm.status.faultText[2] = fcPrmFault0004rzsk;
 	// 3-7 нет
 	sParam.prm.status.faultText[8] = fcPrmFault0100rzsk;
-	sParam.prm.status.faultText[9] = fcPrmFault0200k400;
-	sParam.prm.status.faultText[10] = fcPrmFault0400k400;
-	sParam.prm.status.faultText[11] = fcPrmFault0800k400;
+	sParam.prm.status.faultText[9] = fcPrmFault0200rzsk;
+	sParam.prm.status.faultText[10] = fcPrmFault0400rzsk;
+	sParam.prm.status.faultText[11] = fcPrmFault0800rzsk;
 	// 12-15 нет
 	// заполнение массива предупреждений приемника
 	sParam.prm.status.warningText[0] = fcPrmWarning01rzsk;
@@ -355,13 +355,10 @@ bool clMenu::setDeviceK400() {
 	sParam.prd.status.faultText[8] = fcPrdFault0100rzsk;
 	sParam.prd.status.faultText[9] = fcPrdFault0200rzsk;
 	sParam.prd.status.faultText[10] = fcPrdFault0400rzsk;
-	sParam.prd.status.faultText[11] = fcPrdFault0800k400;
+	sParam.prd.status.faultText[11] = fcPrdFault0800rzsk;
 	// 12-15 нет
 	// заполнение массива предупреждений передатчика
-	// 0 нет
-	sParam.prd.status.warningText[1] = fcPrdWarning02k400;
-	sParam.prd.status.warningText[2] = fcPrdWarning04k400;
-	// 3-15 нет
+	// 0-15 нет
 
 	return true;
 }
@@ -435,7 +432,7 @@ bool clMenu::setDeviceRZSK() {
 	// 2-15 нет
 
 	// ПРИЕМНИК
-	// заполнение массива неисправностей защиты
+	// заполнение массива неисправностей приемника
 	sParam.prm.status.faultText[0] = fcPrmFault0001rzsk;
 	sParam.prm.status.faultText[1] = fcPrmFault0002rzsk;
 	sParam.prm.status.faultText[2] = fcPrmFault0004rzsk;
@@ -445,11 +442,9 @@ bool clMenu::setDeviceRZSK() {
 	sParam.prm.status.faultText[10] = fcPrmFault0400rzsk;
 	sParam.prm.status.faultText[11] = fcPrmFault0800rzsk;
 	// 12-15 нет
-	// заполнение массива предупреждений защиты
+	// заполнение массива предупреждений приемника
 	sParam.prm.status.warningText[0] = fcPrmWarning01rzsk;
-	sParam.prm.status.warningText[1] = fcPrmWarning02k400;
-	sParam.prm.status.warningText[2] = fcPrmWarning04k400;
-	// 3-15 нет
+	// 1-15 нет
 
 	// ПЕРЕДАТЧИК
 	// заполнение массива неисправностей передатчика

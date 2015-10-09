@@ -187,7 +187,7 @@ static const char fcDefFault0080[] 		PROGMEM = "Неиспр.уд.ВЫХ%S";	///<
 static const char fcDefFault0100[] 		PROGMEM = "Неиспр.вход.ПУСК";	///<
 static const char fcDefFault0200[] 		PROGMEM = "Неиспр.вход.СТОП";	///<
 static const char fcDefFault0400[] 		PROGMEM = "Удал.без отв.%S";	///<
-static const char fcDefFault0800[] 		PROGMEM = "Неиспр.цепь. ВЫХ";	///<
+static const char fcDefFault0800[] 		PROGMEM = "Неиспр.цепь ВЫХ";	///<
 static const char fcDefFault1000[] 		PROGMEM = "Удал.обн.пом.%S";	///<
 static const char fcDefFault2000[] 		PROGMEM = "Неиспр.зап. ВЫХ";	///<
 static const char fcDefFault4000[] 		PROGMEM = "Помеха в линии";		///<
@@ -208,12 +208,9 @@ static const char fcPrmFault0002rzsk[] 	PROGMEM = "Неиспр.верс. БСК";	///<
 static const char fcPrmFault0004rzsk[] 	PROGMEM = "Нет КЧ";				///<
 static const char fcPrmFault0008rzsk[] 	PROGMEM = "Прев.дл-сти.ком.";	///<
 static const char fcPrmFault0100rzsk[] 	PROGMEM = "Неиспр.зап. БСК";	///<
-static const char fcPrmFault0200rzsk[] 	PROGMEM = "Неиспр.выкл. КСК";	///<
-static const char fcPrmFault0200k400[] 	PROGMEM = "Неиспр.выкл.ком.";	///<
-static const char fcPrmFault0400rzsk[] 	PROGMEM = "Неиспр.вкл. КСК";	///<
-static const char fcPrmFault0400k400[] 	PROGMEM = "Неиспр.вкл. ком.";	///<
-static const char fcPrmFault0800rzsk[] 	PROGMEM = "Неиспр.контр.КСК";	///<
-static const char fcPrmFault0800k400[] 	PROGMEM = "Неиспр.контр.ком";	///<
+static const char fcPrmFault0200rzsk[] 	PROGMEM = "Неиспр.выкл.ком.";	///<
+static const char fcPrmFault0400rzsk[] 	PROGMEM = "Неиспр.вкл. ком.";	///<
+static const char fcPrmFault0800rzsk[] 	PROGMEM = "Неиспр.контр.ком";	///<
 static const char fcPrmFault8000rzsk[] 	PROGMEM = "Прием блок. ком.";	///<
 
 // предупреждения приемника
@@ -228,8 +225,7 @@ static const char fcPrdFault0002rzsk[] 	PROGMEM = "Неиспр.верс. БСК";	///<
 static const char fcPrdFault0100rzsk[] 	PROGMEM = "Неиспр.чт.команд";	///<
 static const char fcPrdFault0200rzsk[] 	PROGMEM = "Неиспр.выкл.Тест";	///<
 static const char fcPrdFault0400rzsk[] 	PROGMEM = "Неиспр.вкл. Тест";	///<
-static const char fcPrdFault0800rzsk[] 	PROGMEM = "Неиспр.вход. КСК";	///<
-static const char fcPrdFault0800k400[] 	PROGMEM = "Неиспр.вход. ком";	///<
+static const char fcPrdFault0800rzsk[] 	PROGMEM = "Неиспр.вход. ком";	///<
 
 // предупреждения передатчика
 static const char fcPrdWarning02k400[] 	PROGMEM = "Ошибка работы ЦС";	///<
