@@ -29,7 +29,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0117
+#define VERS 0x0118
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -47,7 +47,7 @@
 #define BIN_TO_BCD(val) (((val / 10) << 4) + (val % 10))
 
 /// максимально возможное кол-во состояний устройств
-#define MAX_NUM_DEVICE_STATE 13
+#define MAX_NUM_DEVICE_STATE 14
 
 /// максимальное кол-во неисправностей для любого устройства
 #define MAX_NUM_FAULTS 16

@@ -116,6 +116,7 @@ static const char fcDefSost09[] PROGMEM =	"Нет РЗ";		///<
 static const char fcDefSost10[] PROGMEM =	"Речь";			///<
 static const char fcDefSost11[] PROGMEM =	"ПРД";			///<
 static const char fcDefSost12[] PROGMEM =	"ПРМ";			///<
+static const char fcDefSost13[] PROGMEM = 	"Упр. ТМ";		///<
 // состояния Приемника
 static const char fcPrmSost00[] PROGMEM = 	"Исходн.";		///<
 static const char fcPrmSost01[] PROGMEM = 	"ПРМ КЧ%01u";	///<
@@ -130,6 +131,7 @@ static const char fcPrmSost09[] PROGMEM = 	"?0x09?";		///<
 static const char fcPrmSost10[] PROGMEM = 	"Речь";			///<
 static const char fcPrmSost11[] PROGMEM =	"ПРД";			///<
 static const char fcPrmSost12[] PROGMEM =	"ПРМ";			///<
+static const char fcPrmSost13[] PROGMEM = 	"Упр. ТМ";		///<
 // состояния Передатчика
 static const char fcPrdSost00[] PROGMEM = 	"Исходн.";		///<
 static const char fcPrdSost01[] PROGMEM =	"ПРД КЧ%01u";	///<
@@ -144,6 +146,8 @@ static const char fcPrdSost09[] PROGMEM =	"Систем.";		///<
 static const char fcPrdSost10[] PROGMEM =	"Речь";			///<
 static const char fcPrdSost11[] PROGMEM =	"ПРД";			///<
 static const char fcPrdSost12[] PROGMEM =	"ПРМ";			///<
+static const char fcPrdSost13[] PROGMEM = 	"Упр. ТМ";		///<
+
 
 // общие неисправности
 static const char fcGlbFault0001[] 		PROGMEM = "Неиспр.чт. FLASH";	///<

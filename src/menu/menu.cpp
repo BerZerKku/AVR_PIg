@@ -58,6 +58,7 @@ clMenu::clMenu() {
 	sParam.def.status.stateText[10] = fcDefSost10;
 	sParam.def.status.stateText[11] = fcDefSost11;
 	sParam.def.status.stateText[12] = fcDefSost12;
+	sParam.def.status.stateText[13] = fcDefSost13;
 	sParam.def.status.stateText[MAX_NUM_DEVICE_STATE] = fcUnknownSost;
 
 	sParam.prm.status.stateText[0] = fcPrmSost00;
@@ -73,6 +74,7 @@ clMenu::clMenu() {
 	sParam.prm.status.stateText[10] = fcPrmSost10;
 	sParam.prm.status.stateText[11] = fcPrmSost11;
 	sParam.prm.status.stateText[12] = fcPrmSost12;
+	sParam.prm.status.stateText[13] = fcPrmSost13;
 	sParam.prm.status.stateText[MAX_NUM_DEVICE_STATE] = fcUnknownSost;
 
 	sParam.prd.status.stateText[0] = fcPrdSost00;
@@ -88,6 +90,7 @@ clMenu::clMenu() {
 	sParam.prd.status.stateText[10] = fcPrdSost10;
 	sParam.prd.status.stateText[11] = fcPrdSost11;
 	sParam.prd.status.stateText[12] = fcPrdSost12;
+	sParam.prd.status.stateText[13] = fcPrdSost13;
 	sParam.prd.status.stateText[MAX_NUM_DEVICE_STATE] = fcUnknownSost;
 
 	// назначим имена устройствам
@@ -150,8 +153,8 @@ void clMenu::main(void) {
 		vLCDsetLed(LED_SWITCH);
 	}
 
-	// подсветка включена всегда, если режим не "¬веден"
-	if (sParam.glb.status.getRegime() != GB_REGIME_ENABLED) {
+
+	if (checkLedOn()) {
 		vLCDsetLed(LED_SWITCH);
 	}
 
@@ -487,7 +490,8 @@ bool clMenu::setDeviceR400M() {
 	} else {
 		measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
 	}
-	measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_SD;
+	measParam[5] = MENU_MEAS_PARAM_SD;
+	measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -4213,6 +4217,7 @@ void clMenu::enterParameter() {
 					val = 0;
 				}
 				if (lp->getState() != LocalParams::STATE_NO_ERROR) {
+					val = 0;
 					max = 0;
 				}
 			} else if (lp->getParamType() == Param::PARAM_U_COR) {
@@ -4222,6 +4227,7 @@ void clMenu::enterParameter() {
 					val = 0;
 				}
 				if (lp->getState() != LocalParams::STATE_NO_ERROR) {
+					val = 0;
 					max = 0;
 				}
 			} else 	if (lp->getState() != LocalParams::STATE_NO_ERROR) {
@@ -4415,4 +4421,45 @@ void clMenu::setupParam() {
 	if (sParam.local.getNumOfParams() == 0) {
 		key_ = KEY_CANCEL;
 	}
+}
+
+bool clMenu::checkLedOn() {
+	bool ledOn = false;
+
+	if (sParam.glb.status.getRegime() != GB_REGIME_ENABLED) {
+		ledOn = true;
+	}
+
+	if (sParam.glb.status.isFault() || sParam.glb.status.isWarning()) {
+		ledOn = true;
+	}
+
+	if (sParam.def.status.isEnable()) {
+		if (sParam.def.status.getState() != 1) {
+			ledOn = true;
+		}
+		if (sParam.def.status.isFault() || sParam.def.status.isWarning()) {
+			ledOn = true;
+		}
+	}
+
+	if (sParam.prm.status.isEnable()) {
+		if (sParam.prm.status.getState() != 1) {
+			ledOn = true;
+		}
+		if (sParam.prm.status.isFault() || sParam.prm.status.isWarning()) {
+			ledOn = true;
+		}
+	}
+
+	if (sParam.prd.status.isEnable()) {
+		if (sParam.prd.status.getState() != 1) {
+			ledOn = true;
+		}
+		if (sParam.prd.status.isFault() || sParam.prd.status.isWarning()) {
+			ledOn = true;
+		}
+	}
+
+	return ledOn;
 }
