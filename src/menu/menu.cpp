@@ -262,6 +262,13 @@ bool clMenu::setDeviceK400() {
 	sParam.prd.status.setEnable(prd);
 	sParam.prm.status.setEnable(prm);
 
+	// состояния
+	sParam.prd.status.stateText[1] = fcPrdSost01;
+	sParam.prd.status.stateText[3] = fcPrdSost03;
+
+	sParam.prm.status.stateText[1] = fcPrmSost01;
+	sParam.prm.status.stateText[3] = fcPrmSost03;
+
 	// дата и время выводятся во всех вариантах
 	measParam[0] = MENU_MEAS_PARAM_TIME; // дата <-> время
 	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TIME;
@@ -337,7 +344,8 @@ bool clMenu::setDeviceK400() {
 	sParam.prm.status.faultText[0] = fcPrmFault0001rzsk;
 	sParam.prm.status.faultText[1] = fcPrmFault0002rzsk;
 	sParam.prm.status.faultText[2] = fcPrmFault0004rzsk;
-	// 3-7 нет
+	sParam.prm.status.faultText[3] = fcPrmFault0008k400;
+	// 4-7 нет
 	sParam.prm.status.faultText[8] = fcPrmFault0100rzsk;
 	sParam.prm.status.faultText[9] = fcPrmFault0200rzsk;
 	sParam.prm.status.faultText[10] = fcPrmFault0400rzsk;
@@ -347,7 +355,8 @@ bool clMenu::setDeviceK400() {
 	sParam.prm.status.warningText[0] = fcPrmWarning01rzsk;
 	sParam.prm.status.warningText[1] = fcPrmWarning02k400;
 	sParam.prm.status.warningText[2] = fcPrmWarning04k400;
-	// 3-15 нет
+	sParam.prm.status.warningText[3] = fcPrmWarning08k400;
+	// 4-15 нет
 
 	// ПЕРЕДАТЧИК
 	// заполнение массива неисправностей передатчика
@@ -375,6 +384,13 @@ bool clMenu::setDeviceRZSK() {
 
 	sParam.prm.status.setEnable(sParam.prm.getNumCom() != 0);
 	sParam.prd.status.setEnable(sParam.prd.getNumCom() != 0);
+
+	// состояния
+	sParam.prd.status.stateText[1] = fcPrdSost01;
+	sParam.prd.status.stateText[3] = fcPrdSost03;
+
+	sParam.prm.status.stateText[1] = fcPrmSost01;
+	sParam.prm.status.stateText[3] = fcPrmSost03;
 
 	// первый столбец параметров
 	measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
@@ -475,6 +491,13 @@ bool clMenu::setDeviceR400M() {
 	sParam.typeDevice = AVANT_R400M;
 	sParam.glb.setTypeDevice(AVANT_R400M);
 
+	// состояния
+	sParam.prd.status.stateText[1] = fcPrdSost01;
+	sParam.prd.status.stateText[3] = fcPrdSost03;
+
+	sParam.prm.status.stateText[1] = fcPrmSost01;
+	sParam.prm.status.stateText[3] = fcPrmSost03;
+
 	// первый столбец параметров
 	measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
 	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
@@ -556,6 +579,13 @@ bool clMenu::setDeviceOPTO() {
 
 	sParam.prm.status.setEnable(sParam.prm.getNumCom() != 0);
 	sParam.prd.status.setEnable(sParam.prd.getNumCom() != 0);
+
+	// состояния
+	sParam.prd.status.stateText[1] = fcPrdSost01opto;
+	sParam.prd.status.stateText[3] = fcPrdSost03opto;
+
+	sParam.prm.status.stateText[1] = fcPrmSost01opto;
+	sParam.prm.status.stateText[3] = fcPrmSost03opto;
 
 	measParam[0] = measParam[0 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TIME;
 	measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
@@ -705,6 +735,8 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 	// предварительная очистка массива отображаемых параметров
 	for (uint_fast8_t i = 0; i < (MAX_NUM_MEAS_PARAM * 2); i++)
 		measParam[i] = MENU_MEAS_PARAM_NO;
+
+
 
 	if (device == AVANT_K400) {
 		status = setDeviceK400();

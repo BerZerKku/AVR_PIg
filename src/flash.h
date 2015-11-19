@@ -120,8 +120,10 @@ static const char fcDefSost13[] PROGMEM = 	"Упр. ТМ";		///<
 // состояния Приемника
 static const char fcPrmSost00[] PROGMEM = 	"Исходн.";		///<
 static const char fcPrmSost01[] PROGMEM = 	"ПРМ КЧ%01u";	///<
+static const char fcPrmSost01opto[] PROGMEM = "ПРМ КC%01u";	///<
 static const char fcPrmSost02[] PROGMEM = 	"ПРМ ПА%02u";	///<
 static const char fcPrmSost03[] PROGMEM = 	"Нет КЧ";		///<
+static const char fcPrmSost03opto[] PROGMEM =  "Нет КС";	///<
 static const char fcPrmSost04[] PROGMEM = 	"Неиспр.";		///<
 static const char fcPrmSost05[] PROGMEM = 	"П.неиспр";		///<
 static const char fcPrmSost06[] PROGMEM = 	"Ожидание";		///<
@@ -135,8 +137,10 @@ static const char fcPrmSost13[] PROGMEM = 	"Упр. ТМ";		///<
 // состояния Передатчика
 static const char fcPrdSost00[] PROGMEM = 	"Исходн.";		///<
 static const char fcPrdSost01[] PROGMEM =	"ПРД КЧ%01u";	///<
+static const char fcPrdSost01opto[] PROGMEM = "ПРД КЧ%01u";	///<
 static const char fcPrdSost02[] PROGMEM =	"ПРД ПА%02u";	///<
 static const char fcPrdSost03[] PROGMEM =	"Нет КЧ";		///<
+static const char fcPrdSost03opto[] PROGMEM = "Нет КС";		///<
 static const char fcPrdSost04[] PROGMEM =	"Неиспр.";		///<
 static const char fcPrdSost05[] PROGMEM =	"П.неиспр";		///<
 static const char fcPrdSost06[] PROGMEM =	"Ожидание";		///<
@@ -210,6 +214,7 @@ static const char fcDefWarning08[] 		PROGMEM = "Автоконтроль";		///<
 static const char fcPrmFault0001rzsk[] 	PROGMEM = "Нет блока БСК";		///<
 static const char fcPrmFault0002rzsk[] 	PROGMEM = "Неиспр.верс. БСК";	///<
 static const char fcPrmFault0004rzsk[] 	PROGMEM = "Нет КЧ";				///<
+static const char fcPrmFault0008k400[]	PROGMEM	= "Низкий уровень D";	///<
 static const char fcPrmFault0008rzsk[] 	PROGMEM = "Прев.дл-сти.ком.";	///<
 static const char fcPrmFault0100rzsk[] 	PROGMEM = "Неиспр.зап. БСК";	///<
 static const char fcPrmFault0200rzsk[] 	PROGMEM = "Неиспр.выкл.ком.";	///<
@@ -222,6 +227,7 @@ static const char fcPrmWarning01rzsk[] 	PROGMEM = "Сниж. уровня ПРМ";	///<
 static const char fcPrmWarning01rzsko[] PROGMEM = "Нет КЧ";				///<
 static const char fcPrmWarning02k400[] 	PROGMEM = "Ошибка работы ЦС";	///<
 static const char fcPrmWarning04k400[]	PROGMEM = "Вход RX ЦС пуст";	///<
+static const char fcPrmWarning08k400[]	PROGMEM = "Низкий уровень D";	///<
 
 // неисправности передатчика
 static const char fcPrdFault0001rzsk[] 	PROGMEM = "Нет блока БСК";		///<
@@ -294,10 +300,10 @@ static char fcJrnEventK400[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 		"Событие - 10",     		///< 10
 		"Событие - 11",     		///< 11
 		"Событие - 12", 	        ///< 12
-		"Событие - 13",    			///< 13
-		"Событие - 14",    			///< 14
+		"Авария по D",    			///< 13
+		"Предупреждение по D",		///< 14
 		"Неиспр чтения команд",     ///< 15
-		"Событие - 16",          	///< 16
+		"Восстановление D",        	///< 16
 		"Неиспр. работы DSP",		///< 17
 		"Восстан-е работы DSP",		///< 18
 		"Низкое напр. выхода",    	///< 19

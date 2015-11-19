@@ -462,9 +462,9 @@ enum eGB_TEST_SIGNAL {
 	GB_SIGNAL_COM2_RZ,				// РЗСК
 	GB_SIGNAL_COM3_RZ,				// РЗСК
 	GB_SIGNAL_COM4_RZ,				// РЗСК
-	GB_SIGNAL_COM1,					// сигналы команд должны идти
-	GB_SIGNAL_COM2,					// подряд для заполнения К400
-	GB_SIGNAL_COM3,					// vvvvvvvvvvvvvvvvvvvvvvvvvv
+	GB_SIGNAL_COM1,					// vvvvvvvvvvvvvvvvvvvvvvvvvv
+	GB_SIGNAL_COM2,					// сигналы команд должны идти
+	GB_SIGNAL_COM3,					// подряд для заполнения К400
 	GB_SIGNAL_COM4,
 	GB_SIGNAL_COM5,
 	GB_SIGNAL_COM6,
@@ -491,9 +491,9 @@ enum eGB_TEST_SIGNAL {
 	GB_SIGNAL_COM27,
 	GB_SIGNAL_COM28,
 	GB_SIGNAL_COM29,
-	GB_SIGNAL_COM30,				// ^^^^^^^^^^^^^^^^^^^^^^^^^^
-	GB_SIGNAL_COM31,				// сигналы команд должны идти
-	GB_SIGNAL_COM32,				// подряд для заполнения К400
+	GB_SIGNAL_COM30,				// сигналы команд должны идти
+	GB_SIGNAL_COM31,				// подряд для заполнения К400
+	GB_SIGNAL_COM32,				// ^^^^^^^^^^^^^^^^^^^^^^^^^^
 	GB_SIGNAL_CF_RZ_R400M,
 	GB_SIGNAL_CF1_RZ_R400M,
 	GB_SIGNAL_CF2_RZ_R400M,
