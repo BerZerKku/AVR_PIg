@@ -235,7 +235,7 @@ enum eGB_COM {
 	GB_COM_GET_MEAS 			= 0x34,	// +
 	GB_COM_GET_TIME_SINCHR 		= 0x35,	// +
 	GB_COM_GET_COM_PRM_KEEP 	= 0x36, // + ! в Р400М это Uвых номинальное
-	GB_COM_GET_COM_PRD_KEEP 	= 0x37,	// + ! дополнительно тип удаленного аппарата, телемеханика
+	GB_COM_GET_COM_PRD_KEEP 	= 0x37,	// + ! дополнительно тип удаленного аппарата, телемеханика, предупреждение и авария по D в К400
 	GB_COM_GET_NET_ADR 			= 0x38,	// +
 	GB_COM_GET_TIME_RERUN 		= 0x39,	// + ! в Р400М это параметры для совместимостей
 	GB_COM_GET_FREQ 			= 0x3A,	// +
@@ -355,6 +355,8 @@ enum eGB_PARAM {
 	GB_PARAM_COMP_K400,			///< совместимость К400
 	GB_PARAM_NUM_OF_DEVICES,	///< тип линии (кол-во аппаратов в линии)
 	GB_PARAM_TM_K400,			///< телемеханика
+	GB_PARAM_WARN_D,			///< уровень срабатывания предупредительной сигнализации по D
+	GB_PARAM_ALARM_D,			///< уровень срабатывания аварийной сигнализации по D
 	// параметры защиты
 	GB_PARAM_DEF_TYPE,			///< тип защиты
 	GB_PARAM_TIME_NO_MAN,		///< дополнительное время без манипуляции
@@ -999,6 +1001,7 @@ public:
 		curOut_ = 0;
 		resistOut_ = 0;
 		pulseWidth_ = 0;
+		d_ = 0;
 	}
 
 	// запас по защите
@@ -1137,6 +1140,20 @@ public:
 		return stat;
 	}
 
+	// Запас по тест.команде (двухчаст) или Отношение сигнал/помеха (одночаст)
+	int8_t getD() const {
+		return d_;
+	}
+	bool setD(int8_t val) {
+		bool stat = false;
+		if ((val >= -64) && (val <= 64)) {
+			d_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+
+
 private:
 	// запас по защите (-99 .. 99)дБ
 	int8_t voltDef_;
@@ -1158,6 +1175,8 @@ private:
 	uint16_t resistOut_;
 	// длительность импульсов ВЧ блокировки на выходе применика (0..360)°
 	uint16_t pulseWidth_;
+	// запас по тест.команде (двухчаст) или Отношение сигнал/помеха (одночаст) [-64..64]дБ
+	int8_t d_;
 };
 
 

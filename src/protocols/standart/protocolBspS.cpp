@@ -72,9 +72,9 @@ bool clProtocolBspS::getData(bool pc) {
 				case GB_PARAM_FREQ:
 					val = TO_INT16(buf[B1], buf[B2]);
 					break;
-				case GB_PARAM_DETECTOR:
-					val = buf[B2];
-					break;
+//				case GB_PARAM_DETECTOR:
+//					val = buf[B2];
+//					break;
 				case GB_PARAM_COR_U:
 					val = ((int8_t) buf[B1])*10;
 					val += ((int8_t) buf[B2])/10;
@@ -82,57 +82,44 @@ bool clProtocolBspS::getData(bool pc) {
 				case GB_PARAM_COR_I:
 					val = TO_INT16(buf[B3], buf[B4]);
 					break;
-				case GB_PARAM_PVZUE_PROTOCOL:
-					val = buf[B1];
-					break;
-				case GB_PARAM_PVZUE_PARITY:
-					val = buf[B2];
-					break;
-				case GB_PARAM_PVZUE_FAIL:
-					val = buf[B3];
-					break;
-				case GB_PARAM_PVZUE_NOISE_THD:
-					val = buf[B4];
-					break;
-				case GB_PARAM_PVZUE_NOISE_LVL:
-					val = buf[B5];
-					break;
-				case GB_PARAM_PVZUE_AC_TYPE:
-					val = buf[B6];
-					break;
-				case GB_PARAM_PVZUE_AC_PERIOD:
-					val = buf[B7];
-					break;
-				case GB_PARAM_PVZUE_AC_PER_RE:
-					val = buf[B8];
-					break;
-				case GB_PARAM_COMP_K400:
-					val = buf[B2];
-					break;
-				case GB_PARAM_TM_K400:
-					val = buf[B3];
-					break;
-				case GB_PARAM_SHIFT_FRONT:
-					val = buf[B1];
-					break;
-				case GB_PARAM_SHIFT_BACK:
-					val = buf[B2];
-					break;
-				case GB_PARAM_SHIFT_PRM:
-					val = buf[B3];
-					break;
-				case GB_PARAM_SHIFT_PRD:
-					val = buf[B4];
-					break;
-				case GB_PARAM_PRD_COM_LONG:		// DOWN
-				case GB_PARAM_PRD_COM_BLOCK:	// DOWN
-				case GB_PARAM_PRD_DR_COM_BLOCK:	// DOWN
-				case GB_PARAM_PRM_COM_BLOCK:	// DOWN
-				case GB_PARAM_PRM_DR_COM_BLOCK:
-					val = buf[B1 + (lp->getNumOfCurrSameParam() - 1) / 8];
-					break;
+//				case GB_PARAM_PVZUE_PROTOCOL:
+//				case GB_PARAM_PVZUE_PARITY:
+//				case GB_PARAM_PVZUE_FAIL:
+//				case GB_PARAM_PVZUE_NOISE_THD:
+//				case GB_PARAM_PVZUE_NOISE_LVL:
+//				case GB_PARAM_PVZUE_AC_TYPE:
+//				case GB_PARAM_PVZUE_AC_PERIOD:
+//				case GB_PARAM_PVZUE_AC_PER_RE:
+//					val = buf[B1 + lp->getSendDop() - 1];
+//					break;
+//				case GB_PARAM_COMP_K400:
+//				case GB_PARAM_TM_K400:
+//				case GB_PARAM_WARN_D:
+//				case GB_PARAM_ALARM_D:
+//					val = buf[B1 + lp->getSendDop() - 1];
+//					break;
+//				case GB_PARAM_SHIFT_FRONT:
+//				case GB_PARAM_SHIFT_BACK:
+//				case GB_PARAM_SHIFT_PRM:
+//				case GB_PARAM_SHIFT_PRD:
+//					val = buf[B1 + lp->getSendDop() - 1];
+//					break;
+//				case GB_PARAM_PRD_COM_LONG:		// DOWN
+//				case GB_PARAM_PRD_COM_BLOCK:	// DOWN
+//				case GB_PARAM_PRD_DR_COM_BLOCK:	// DOWN
+//				case GB_PARAM_PRM_COM_BLOCK:	// DOWN
+//				case GB_PARAM_PRM_DR_COM_BLOCK:
+//					val = buf[B1 + (lp->getNumOfCurrSameParam() - 1) / 8];
+//					break;
 				default:
-					val = buf[B1 + lp->getNumOfCurrSameParam() - 1];
+					uint8_t pos = B1;
+					if (lp->getParamType() == Param::PARAM_BITES) {
+						pos += (lp->getNumOfCurrSameParam() - 1) / 8;
+					}
+					if (lp->getSendDop() != 0) {
+						pos += lp->getSendDop() - 1;
+					}
+					val = buf[pos];
 					break;
 			}
 
@@ -584,6 +571,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 				// т.е. если там 90, то это 0.9В.
 				sParam_->measParam.setVoltageOut(buf[B6], (buf[B7] / 10));
 				sParam_->measParam.setVoltageDef(buf[B8]);
+				sParam_->measParam.setD(buf[B8]);	// для К400
 				sParam_->measParam.setVoltageDef2(buf[B9]);
 				sParam_->measParam.setVoltageCf(buf[B10]);
 				sParam_->measParam.setVoltageCf2(buf[B11]);

@@ -53,7 +53,8 @@ enum eMENU_MEAS_PARAM {
 	MENU_MEAS_PARAM_UOUT,		///< напряжени выхода
 	MENU_MEAS_PARAM_IOUT,		///< ток выхода
 	MENU_MEAS_PARAM_ROUT,		///< сопротивление линии
-	MENU_MEAS_PARAM_SD			///< просечки в сигнале
+	MENU_MEAS_PARAM_SD,			///< просечки в сигнале
+	MENU_MEAS_PARAM_D			///< Запас по тест.команде (двухчаст) или Отношение сигнал/помеха (одночаст)
 };
 
 /// Режим работы функции ввода параметров

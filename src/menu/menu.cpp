@@ -284,7 +284,7 @@ bool clMenu::setDeviceK400() {
 			measParam[3] = MENU_MEAS_PARAM_UC;
 			measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
 			measParam[5] = MENU_MEAS_PARAM_UN;
-			measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
+			measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_D;
 		}
 	} else if (!sParam.prm.status.isEnable()) {
 		// Если чистый передатчик, не нужны Uk/Uш
@@ -308,8 +308,7 @@ bool clMenu::setDeviceK400() {
 			measParam[3] = MENU_MEAS_PARAM_UC;
 			measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
 			measParam[5] = MENU_MEAS_PARAM_UN;
-			measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
-
+			measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_D;
 		}
 	}
 
@@ -2923,6 +2922,8 @@ void clMenu::lvlSetupParamGlb() {
 			}
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES);
 			sParam.local.addParam(GB_PARAM_TM_K400);
+			sParam.local.addParam(GB_PARAM_WARN_D);
+			sParam.local.addParam(GB_PARAM_ALARM_D);
 		} else if (device == AVANT_RZSK) {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 
@@ -3831,26 +3832,27 @@ void clMenu::printPunkts() {
 /**	Вывод в указанном месте отображаемого параметра.
  * 	В одной строке выводятся два параметра.
  * 	@param poz Текущая позиция
- * 	@arg 0..eMENU_MEAS_PARAM, 0 первая строка слева, 5 - третья справа
+ * 	@arg [0, MAX_NUM_MEAS_PARAM), 0 первая строка слева, 5 - третья справа
  * 	@param par Отображаемый параметр
  * 	@return Нет
  */
 void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
-	static const char fcUout[] PROGMEM = "U=%02u.%01uВ";	// Напряжение выхода.
-	static const char fcIout[] PROGMEM = "I=%03uмА";		// Ток выхода.
-	static const char fcRout[] PROGMEM = "R=%03uОм";		// Сопротивление линии.
-	static const char fcUz[] PROGMEM = "Uз=%02dдБ";			// Запас по защите.
-	static const char fcUz1[] PROGMEM = "Uз1=%02dдБ";		// Запас по защите 1.
-	static const char fcUz2[] PROGMEM = "Uз2=%02dдБ";		// Запас по защите 2.
-	static const char fcUcf[] PROGMEM = "Uк=%02dдБ";		// Запас по КЧ.
-	static const char fcUcf1[] PROGMEM = "Uк1=%02dдБ";		// Запас по КЧ 1.
-	static const char fcUcf2[] PROGMEM = "Uк2=%02dдБ";		// Запас по КЧ 2.
-	static const char fcUn[] PROGMEM = "Uш=%02dдБ";			// Уровень шумов.
-	static const char fcUn1[] PROGMEM = "Uш1=%02dдБ";		// Уровень шумов 1.
-	static const char fcUn2[] PROGMEM = "Uш2=%02dдБ";		// Уровень шумов 2.
-	static const char fcSd[] PROGMEM = "Sд=%02u°";			// Просечки в сигнале.
-	static const char fcDate[] PROGMEM = "%02u.%02u.%02u";	// Дата.
-	static const char fcTime[] PROGMEM = "%02u:%02u:%02u";	// Время.
+	static const char fcUout[] 	PROGMEM = "U=%02u.%01uВ";	// Напряжение выхода.
+	static const char fcIout[] 	PROGMEM = "I=%03uмА";		// Ток выхода.
+	static const char fcRout[] 	PROGMEM = "R=%03uОм";		// Сопротивление линии.
+	static const char fcUz[] 	PROGMEM = "Uз=%02dдБ";		// Запас по защите.
+	static const char fcUz1[] 	PROGMEM = "Uз1=%02dдБ";		// Запас по защите 1.
+	static const char fcUz2[] 	PROGMEM = "Uз2=%02dдБ";		// Запас по защите 2.
+	static const char fcUcf[] 	PROGMEM = "Uк=%02dдБ";		// Запас по КЧ.
+	static const char fcUcf1[] 	PROGMEM = "Uк1=%02dдБ";		// Запас по КЧ 1.
+	static const char fcUcf2[] 	PROGMEM = "Uк2=%02dдБ";		// Запас по КЧ 2.
+	static const char fcUn[] 	PROGMEM = "Uш=%02dдБ";		// Уровень шумов.
+	static const char fcUn1[] 	PROGMEM = "Uш1=%02dдБ";		// Уровень шумов 1.
+	static const char fcUn2[] 	PROGMEM = "Uш2=%02dдБ";		// Уровень шумов 2.
+	static const char fcSd[] 	PROGMEM = "Sд=%02u°";		// Просечки в сигнале.
+	static const char fcDate[] 	PROGMEM = "%02u.%02u.%02u";	// Дата.
+	static const char fcTime[] 	PROGMEM = "%02u:%02u:%02u";	// Время.
+	static const char fcD[]		PROGMEM = "D=%02dдБ";		// Запас по тест.команде (двухчаст) или Отношение сигнал/помеха (одночаст)
 
 	// смещение в буфере
 	if (poz < MAX_NUM_MEAS_PARAM) {
@@ -3930,10 +3932,13 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 			case MENU_MEAS_PARAM_SD:
 				snprintf_P(&vLCDbuf[poz], 11, fcSd,
 						sParam.measParam.getPulseWidth());
-				// ничего не делаем
 				break;
 
+			case MENU_MEAS_PARAM_D:
+				snprintf_P(&vLCDbuf[poz], 11, fcD, sParam.measParam.getD());
+
 			default:
+				// ничего не делаем
 				break;
 		}
 	}
