@@ -2114,32 +2114,27 @@ void clMenu::lvlControl() {
 		} else if (device == AVANT_RZSK) {
 			eGB_NUM_DEVICES numDevices = sParam.def.getNumDevices();
 			if (sParam.def.status.isEnable()) {
+				Punkts_.add(punkt07);// далее выбирается в зависимости от текущего
+				Punkts_.add(punkt03);
 				if (numDevices == GB_NUM_DEVICES_2) {
-					Punkts_.add(punkt07);// далее выбирается в зависимости от текущего
-					Punkts_.add(punkt03);
 					Punkts_.add(punkt04);
 					Punkts_.add(punkt02);
-					Punkts_.add(punkt05);
 				} else if (numDevices == GB_NUM_DEVICES_3) {
-					Punkts_.add(punkt07);// далее выбирается в зависимости от текущего
-					Punkts_.add(punkt03);
 					Punkts_.add(punkt22);
 					Punkts_.add(punkt23);// далее выбирается в зависимости от номера
 					Punkts_.add(punkt24);// далее выбирается в зависимости от номера
 					Punkts_.add(punkt26);
-					Punkts_.add(punkt05);
 				}
+				Punkts_.add(punkt05);
 			} else {
 				// РЗСК без поста
+				Punkts_.add(punkt03);
 				if (numDevices == GB_NUM_DEVICES_2) {
-					Punkts_.add(punkt03);
 					Punkts_.add(punkt04);
-					Punkts_.add(punkt05);
 				} else if (numDevices == GB_NUM_DEVICES_3) {
-					Punkts_.add(punkt03);
 					Punkts_.add(punkt22);
-					Punkts_.add(punkt05);
 				}
+				Punkts_.add(punkt05);
 			}
 		} else if (device == AVANT_K400) {
 			Punkts_.add(punkt03);
