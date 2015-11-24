@@ -3676,34 +3676,22 @@ void clMenu::lvlTest2() {
  */
 eMENU_ENTER_PARAM clMenu::enterValue() {
 	static char enterList[] PROGMEM = "¬вод: %S";
-	static char enterInt[] PROGMEM = "¬вод: %01u";
+	static char enterInt[] PROGMEM = "¬вод: %01d";
 	static char enterUcor[] PROGMEM = "¬вод: %01u.%01u";
 
 	eMENU_ENTER_PARAM status = EnterParam.getStatus();
 	if (status == MENU_ENTER_PARAM_INT) {
-		uint16_t val = EnterParam.getValue();
-		uint8_t num = EnterParam.getValueNumSymbols();
+		int16_t val = EnterParam.getValue();
 
-		// если кол-во символов выходит за допустимые значени€, закончим ввод
-		if ((num >= 5) || (num == 0)) {
-			key_ = KEY_CANCEL;
-		} else {
-			clearLine(NUM_TEXT_LINES);
-			uint8_t poz = 100;
-			snprintf_P(&vLCDbuf[poz], 21, enterInt, val);
-		}
+		clearLine(NUM_TEXT_LINES);
+		uint8_t poz = 100;
+		snprintf_P(&vLCDbuf[poz], 21, enterInt, val);
 	} else if (status == MENU_ENTER_PARAM_U_COR) {
 		uint16_t val = EnterParam.getValue();
-		uint8_t num = EnterParam.getValueNumSymbols();
 
-		// если кол-во символов выходит за допустимые значени€, закончим ввод
-		if ((num >= 5) || (num == 0)) {
-			key_ = KEY_CANCEL;
-		} else {
-			clearLine(NUM_TEXT_LINES);
-			uint8_t poz = 100;
-			snprintf_P(&vLCDbuf[poz], 21, enterUcor, val / 10, val % 10);
-		}
+		clearLine(NUM_TEXT_LINES);
+		uint8_t poz = 100;
+		snprintf_P(&vLCDbuf[poz], 21, enterUcor, val / 10, val % 10);
 	} else if (status == MENU_ENTER_PARAM_LIST) {
 		uint16_t val = EnterParam.getValue();
 		clearLine(NUM_TEXT_LINES);

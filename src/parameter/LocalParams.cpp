@@ -90,7 +90,7 @@ int16_t LocalParams::getValue() const {
 		uint8_t cur = getNumOfCurrSameParam() - 1;
 		uint8_t bite = cur % 8;
 
-		v = ((val & (1 << bite)) > 0) ? 1 : 0;
+		v = ((val & (1 << bite)) != 0) ? 1 : 0;
 	}
 
 	return v;
@@ -126,7 +126,7 @@ int16_t LocalParams::getMax() const {
 			max = numComPrd;
 	}
 
-	// для строковых параметров в максимуме записано макс.количество элементов
+	// для строковых параметров  в максимуме записано макс.количество элементов
 	// списка, поэтому скорректируем максимальное значение
 
 	Param::PARAM_TYPE type = getParamType();

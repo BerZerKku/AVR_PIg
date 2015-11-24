@@ -122,43 +122,29 @@ public:
 	}
 
 	// диапазон значений
-	void setValueRange(uint16_t min, uint16_t max) {
-		uint8_t num = 1;
+	void setValueRange(int16_t min, int16_t max) {
 		max_ = max;
 		min_ = min;
-		// нахождение максимального кол-ва символов при вводе
-		while (max >= 10) {
-			num++;
-			max /= 10;
-		}
-		numSymbols_ = num;
 	}
-	uint16_t getValueMin() const {
+	int16_t getValueMin() const {
 		return min_;
 	}
-	uint16_t getValueMax() const {
+	int16_t getValueMax() const {
 		return max_;
 	}
 
-	// кол-во вводимых символов
-	uint16_t getValueNumSymbols() const {
-		return numSymbols_;
-	}
-
 	// установка текущего значения, диапазон значений должен быть задан до !
-	void setValue(uint16_t val) {
-		if ((val < min_) || (val > max_))
-			val = min_;
-		val_ = val;
+	void setValue(int16_t val) {
+		val_ = (val < min_) || (val > max_) ? min_ : val;
 	}
 
 	// возвращает текущее значение
-	uint16_t getValue() const {
+	int16_t getValue() const {
 		return val_;
 	}
 
 	// возвращает введеное значение с учетом дискретности и делителя
-	uint8_t getValueEnter() const {
+	int16_t getValueEnter() const {
 		return ((val_ / disc_) * disc_) / fract_;
 	}
 
@@ -174,7 +160,7 @@ public:
 		if ((s == MENU_ENTER_PARAM_INT) || (s == MENU_ENTER_PARAM_U_COR)) {
 			// увеличение значения
 //			val_ = (val_ <= (max_ - disc_)) ? val_ + disc_ : min_;
-			uint16_t disc = disc_;
+			int16_t disc = disc_;
 			if (velocity >= 1) {
 				if ((max_ / disc) >= 10) {
 					disc *= 10;
@@ -215,7 +201,7 @@ public:
 		if ((s == MENU_ENTER_PARAM_INT)
 				|| (s == MENU_ENTER_PARAM_U_COR)) {
 			// уменьшение значние
-			uint16_t disc = disc_;
+			int16_t disc = disc_;
 			if (velocity >= 1) {
 				if ((max_ / disc) >= 10) {
 					disc *= 10;
@@ -293,16 +279,13 @@ public:
 
 private:
 	// текущее значение
-	uint16_t val_;
+	int16_t val_;
 
 	// максимальное значение
-	uint16_t max_;
+	int16_t max_;
 
 	// минимальное значение
-	uint16_t min_;
-
-	// кол-во символов
-	uint8_t numSymbols_;
+	int16_t min_;
 
 	// байт с дополнительой информацией
 	uint16_t dopValue_;

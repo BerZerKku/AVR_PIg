@@ -321,7 +321,7 @@ private:
 
 	eGB_PARAM param[MAX_NUM_OF_PARAMS]; ///< Массив параметров.
 
-	uint16_t val;			///< Значение текущего параметра.
+	int16_t val;			///< Значение текущего параметра.
 
 	uint8_t currParam;		///< Номер текущего параметра.
 

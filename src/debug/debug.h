@@ -15,8 +15,8 @@
 #warning "¬ключен режим отладки!!!"
 
 // вывод отладочной информации на экран
-// #define VIEW_DEBUG_PARAM
-#define IEC101
+//#define VIEW_DEBUG_PARAM
+//#define IEC101
 
 
 // тестовые пины

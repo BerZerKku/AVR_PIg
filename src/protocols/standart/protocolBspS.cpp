@@ -115,11 +115,14 @@ bool clProtocolBspS::getData(bool pc) {
 					uint8_t pos = B1;
 					if (lp->getParamType() == Param::PARAM_BITES) {
 						pos += (lp->getNumOfCurrSameParam() - 1) / 8;
-					}
-					if (lp->getSendDop() != 0) {
+					} else 	if (lp->getSendDop() != 0) {
+						// сделано через else т.к. портит дл€ PARAM_BITES
 						pos += lp->getSendDop() - 1;
 					}
-					val = buf[pos];
+					// приведение к знаковому типу, в случае если возможно
+					// отрицательное значение параметра
+					val = (lp->getMin() < 0) ? (int8_t) buf[pos] : buf[pos];
+
 					break;
 			}
 
@@ -138,7 +141,7 @@ bool clProtocolBspS::getData(bool pc) {
  * 	ѕо-умолчанию в сообщениии изменени€ параметра посылаетс€ 1 байт данных.
  *
  * 	@param com  оманда на передачу
- * 	@return  ол-во передаваемых бйт
+ * 	@return  ол-во передаваемых байт
  */
 uint8_t clProtocolBspS::sendData(eGB_COM com) {
 	uint8_t num = 0;
