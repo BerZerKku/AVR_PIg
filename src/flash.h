@@ -120,7 +120,7 @@ static const char fcDefSost13[] PROGMEM = 	"Упр. ТМ";		///<
 // состояния Приемника
 static const char fcPrmSost00[] PROGMEM = 	"Исходн.";		///<
 static const char fcPrmSost01[] PROGMEM = 	"ПРМ КЧ%01u";	///<
-static const char fcPrmSost01opto[] PROGMEM = "ПРМ КC%01u";	///<
+static const char fcPrmSost01opto[] PROGMEM = "ПРМ КС%01u";	///<
 static const char fcPrmSost02[] PROGMEM = 	"ПРМ ПА%02u";	///<
 static const char fcPrmSost03[] PROGMEM = 	"Нет КЧ";		///<
 static const char fcPrmSost03opto[] PROGMEM =  "Нет КС";	///<
@@ -137,7 +137,7 @@ static const char fcPrmSost13[] PROGMEM = 	"Упр. ТМ";		///<
 // состояния Передатчика
 static const char fcPrdSost00[] PROGMEM = 	"Исходн.";		///<
 static const char fcPrdSost01[] PROGMEM =	"ПРД КЧ%01u";	///<
-static const char fcPrdSost01opto[] PROGMEM = "ПРД КЧ%01u";	///<
+static const char fcPrdSost01opto[] PROGMEM = "ПРД КС%01u";	///<
 static const char fcPrdSost02[] PROGMEM =	"ПРД ПА%02u";	///<
 static const char fcPrdSost03[] PROGMEM =	"Нет КЧ";		///<
 static const char fcPrdSost03opto[] PROGMEM = "Нет КС";		///<
@@ -188,7 +188,7 @@ static const char fcDefFault0002[] 		PROGMEM = "Неиспр.верс.БСЗ";	///<
 static const char fcDefFault0004[] 		PROGMEM = "Неиспр.перекл.";		///<
 static const char fcDefFault0008[] 		PROGMEM = "Неиспр.зап. БСЗ";	///<
 static const char fcDefFault0010[] 		PROGMEM = "АК-Нет ответа%S";	///<
-static const char fcDefFault0010rzsko[]	PROGMEM = "Нет сигнала ПРМ";	///<
+static const char fcDefFault0010opto[]	PROGMEM = "Нет сигнала ПРМ";	///<
 static const char fcDefFault0020[] 		PROGMEM = "Низкий ур. РЗ";		///<
 static const char fcDefFault0040[] 		PROGMEM = "Неиспр.уд.ДФЗ%S";	///<
 static const char fcDefFault0080[] 		PROGMEM = "Неиспр.уд.ВЫХ%S";	///<
@@ -205,7 +205,7 @@ static const char fcDefFault8000[] 		PROGMEM = "Неиспр. ДФЗ";		///<
 // предупреждения защиты
 static const char fcDefWarning01[] 		PROGMEM = "АК-Сн.запаса %S";	///<
 static const char fcDefWarning01rzsk[] 	PROGMEM = "Низкий уров. РЗ";	///<
-static const char fcDefWarning01rzsko[] PROGMEM = "Нет КЧ";				///<
+static const char fcDefWarning01opto[] 	PROGMEM = "Нет КС";				///<
 static const char fcDefWarning02[] 		PROGMEM = "Нет сигнала МАН";	///<
 static const char fcDefWarning04[] 		PROGMEM = "Порог по помехе";	///<
 static const char fcDefWarning08[] 		PROGMEM = "Автоконтроль";		///<
@@ -214,6 +214,7 @@ static const char fcDefWarning08[] 		PROGMEM = "Автоконтроль";		///<
 static const char fcPrmFault0001rzsk[] 	PROGMEM = "Нет блока БСК";		///<
 static const char fcPrmFault0002rzsk[] 	PROGMEM = "Неиспр.верс. БСК";	///<
 static const char fcPrmFault0004rzsk[] 	PROGMEM = "Нет КЧ";				///<
+static const char fcPrmFault0004opto[]	PROGMEM = "Нет КС";				///<
 static const char fcPrmFault0008k400[]	PROGMEM	= "Низкий уровень D";	///<
 static const char fcPrmFault0008rzsk[] 	PROGMEM = "Прев.дл-сти.ком.";	///<
 static const char fcPrmFault0100rzsk[] 	PROGMEM = "Неиспр.зап. БСК";	///<
@@ -224,7 +225,7 @@ static const char fcPrmFault8000rzsk[] 	PROGMEM = "Прием блок. ком.";	///<
 
 // предупреждения приемника
 static const char fcPrmWarning01rzsk[] 	PROGMEM = "Сниж. уровня ПРМ";	///<
-static const char fcPrmWarning01rzsko[] PROGMEM = "Нет КЧ";				///<
+static const char fcPrmWarning01opto[] 	PROGMEM = "Нет КС";				///<
 static const char fcPrmWarning02k400[] 	PROGMEM = "Ошибка работы ЦС";	///<
 static const char fcPrmWarning04k400[]	PROGMEM = "Вход RX ЦС пуст";	///<
 static const char fcPrmWarning08k400[]	PROGMEM = "Низкий уровень D";	///<
@@ -425,13 +426,13 @@ static char fcJrnEventOPTO[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 		"Изменение режима",         ///< 18
 		"Неиспр зап. вых.цепи",  	///< 19
 		"Ошиб контр. вых.цепи", 	///< 20
-		"Пропала КЧ",               ///< 21
-		"Нет КЧ 5 секунд",          ///< 22
+		"Пропал КС",              	///< 21
+		"Нет КС 5 секунд",          ///< 22
 		"Отсут-е сигнала Пуск",     ///< 23
 		"Отсут-е сигн Останов",     ///< 24
 		"Выключение питания",       ///< 25
-		"Пропала КЧ",               ///< 26
-		"Нет КЧ 5 секунд",          ///< 27
+		"Пропал КС",	            ///< 26
+		"Нет КС 5 секунд",          ///< 27
 		"Уд: пост неисправен",      ///< 28
 		"Уд: ПРД неисправен",       ///< 29
 		"Уд: ПРМ неисправен",       ///< 30

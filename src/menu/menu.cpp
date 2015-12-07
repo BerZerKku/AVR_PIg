@@ -615,7 +615,7 @@ bool clMenu::setDeviceOPTO() {
 	sParam.def.status.faultText[1] = fcDefFault0002;
 	sParam.def.status.faultText[2] = fcDefFault0004;
 	// 3
-	sParam.def.status.faultText[4] = fcDefFault0010rzsko;
+	sParam.def.status.faultText[4] = fcDefFault0010opto;
 	// 5-7 нет
 	sParam.def.status.faultText[8] = fcDefFault0100;
 	sParam.def.status.faultText[9] = fcDefFault0200;
@@ -625,7 +625,7 @@ bool clMenu::setDeviceOPTO() {
 	sParam.def.status.faultText[13] = fcDefFault2000;
 	// 14-15 нет
 	// заполнение массива предупреждений защиты
-	sParam.def.status.warningText[0] = fcDefWarning01rzsko;
+	sParam.def.status.warningText[0] = fcDefWarning01opto;
 	sParam.def.status.warningText[1] = fcDefWarning02;
 	// 2-15 нет
 
@@ -633,7 +633,7 @@ bool clMenu::setDeviceOPTO() {
 	// заполнение массива неисправностей приемника
 	sParam.prm.status.faultText[0] = fcPrmFault0001rzsk;
 	sParam.prm.status.faultText[1] = fcPrmFault0002rzsk;
-	sParam.prm.status.faultText[2] = fcPrmFault0004rzsk;
+	sParam.prm.status.faultText[2] = fcPrmFault0004opto;
 	// 3-7 нет
 	sParam.prm.status.faultText[8] = fcPrmFault0100rzsk;
 	sParam.prm.status.faultText[9] = fcPrmFault0200rzsk;
@@ -641,7 +641,7 @@ bool clMenu::setDeviceOPTO() {
 	sParam.prm.status.faultText[11] = fcPrmFault0800rzsk;
 	// 12-15 нет
 	// заполнение массива предупреждений защиты
-	sParam.prm.status.warningText[0] = fcPrmWarning01rzsko;
+	sParam.prm.status.warningText[0] = fcPrmWarning01opto;
 	// 1-15 нет
 
 	// ПЕРЕДАТЧИК
