@@ -29,7 +29,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0101
+#define VERS 0x0102
 
 /// преобразование двух CHAR в INT
 #define TO_INT16(high, low) ((int16_t) ((uint16_t) (high) << 8) + (low))

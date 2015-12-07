@@ -75,15 +75,15 @@ static const char fcDevices[GB_DEVICE_MAX + 1][4] PROGMEM = {
 static const char fcUnknownSost[] PROGMEM = "Ошибка";
 // состояния Терминала
 static const char fcRpsSost00[] PROGMEM =	"Исходн.";
-static const char fcRpsSost01[] PROGMEM =	"Контроль";
-static const char fcRpsSost02[] PROGMEM =	"Пуск";
-static const char fcRpsSost03[] PROGMEM =	"Останов";
+static const char fcRpsSost01[] PROGMEM =	"ПРД КЧ%01u";
+static const char fcRpsSost02[] PROGMEM =	"ПРД ПА%02u";
+static const char fcRpsSost03[] PROGMEM =	"Нет КЧ";
 static const char fcRpsSost04[] PROGMEM =	"Неиспр.";
 static const char fcRpsSost05[] PROGMEM =	"П.неиспр";
 static const char fcRpsSost06[] PROGMEM =	"Ожидание";
-static const char fcRpsSost07[] PROGMEM =	"Нал.пуск";
-static const char fcRpsSost08[] PROGMEM = 	"Уд.пуск";
-static const char fcRpsSost09[] PROGMEM =	"Нет РЗ";
+static const char fcRpsSost07[] PROGMEM =	"?0x07?";
+static const char fcRpsSost08[] PROGMEM = 	"?0x07?";
+static const char fcRpsSost09[] PROGMEM =	"Систем.";
 static const char fcRpsSost10[] PROGMEM =	"Речь";
 static const char fcRpsSost11[] PROGMEM =	"ПРД";
 static const char fcRpsSost12[] PROGMEM =	"ПРМ";
@@ -122,6 +122,15 @@ static const char fcGlbWarning02[] 		PROGMEM = "Отказ резерв.лин";
 static const char fcGlbWarning10[] 		PROGMEM = "Удал.ПОСТ неиспр";
 static const char fcGlbWarning20[] 		PROGMEM = "Удал.ПРД неиспр";
 static const char fcGlbWarning40[] 		PROGMEM = "Удал.ПРМ неиспр";
+
+// неисправности передатчика
+static const char fcRpsFault0001[] 		PROGMEM = "Нет блока БСК";		///<
+static const char fcRpsFault0002[] 		PROGMEM = "Неиспр.верс. БСК";	///<
+static const char fcRpsFault0100[] 		PROGMEM = "Неиспр.чт.команд";	///<
+static const char fcRpsFault0200[] 		PROGMEM = "Неиспр.выкл.Тест";	///<
+static const char fcRpsFault0400[] 		PROGMEM = "Неиспр.вкл. Тест";	///<
+static const char fcRpsFault0800[] 		PROGMEM = "Неиспр.вход. ком";	///<
+
 
 // параметры
 static const char fcEnterInt[]			PROGMEM = "Ввод: %f";

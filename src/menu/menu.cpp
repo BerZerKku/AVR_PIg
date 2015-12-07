@@ -12,7 +12,7 @@
 #include "flash.h"
 
 /// режим подсветки по умолчанию
-#define LED_REGIME LED_SWITCH
+#define LED_REGIME LED_ON
 
 /// буфер текста выводимого на ЖКИ
 static char vLCDbuf[SIZE_BUF_STRING + 1];
@@ -226,6 +226,19 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 	// 1-9 нет
 	sParam.Glb.Status.pWarningText[10] = fcGlbWarning01;
 	// 11-15 нет
+
+	// заполнение массива неисправностей защиты
+	sParam.Rps.Status.pFaultText[0] = fcRpsFault0001;
+	sParam.Rps.Status.pFaultText[1] = fcRpsFault0002;
+	// 2-7 нет
+	sParam.Rps.Status.pFaultText[8] = fcRpsFault0100;
+	sParam.Rps.Status.pFaultText[9] = fcRpsFault0200;
+	sParam.Rps.Status.pFaultText[10] = fcRpsFault0400;
+	sParam.Rps.Status.pFaultText[11] = fcRpsFault0800;
+	// 12-15 нет
+
+	// заполнение массива предупреждений защиты
+	// 0 - 15 нет
 
 	lvlCreate_ = true;
 
