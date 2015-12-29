@@ -271,21 +271,41 @@ bool clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
 		}
 	} else if (com == GB_COM_DEF_GET_JRN_ENTRY) {
 		if ((sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_DEF) && (!pc)){
-			sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B16]));
-			sParam_->jrnEntry.dateTime.setMonth(BCD_TO_BIN(buf[B15]));
-			sParam_->jrnEntry.dateTime.setDay(BCD_TO_BIN(buf[B14]));
-			// B13 - день недели
-			sParam_->jrnEntry.dateTime.setHour(BCD_TO_BIN(buf[B12]));
-			sParam_->jrnEntry.dateTime.setMinute(BCD_TO_BIN(buf[B11]));
-			sParam_->jrnEntry.dateTime.setSecond(BCD_TO_BIN(buf[B10]));
-			uint16_t t = TO_INT16(buf[B9], buf[B8]);
-			sParam_->jrnEntry.dateTime.setMsSecond(t);
-			sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
-			// sParam_->jrnEntry.setNumCom(buf[B2]);
-			sParam_->jrnEntry.setSignalDef((buf[B2] << 4) + (buf[B4] & 0x0F));
-			sParam_->jrnEntry.setEventType(buf[B3]);
-			sParam_->jrnEntry.setReady();
-			stat = true;
+			if (sParam_->typeDevice == AVANT_OPTO) {
+				// дата
+				sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B3]));
+				sParam_->jrnEntry.dateTime.setMonth(BCD_TO_BIN(buf[B4]));
+				sParam_->jrnEntry.dateTime.setDay(BCD_TO_BIN(buf[B5]));
+				// время
+				sParam_->jrnEntry.dateTime.setHour(BCD_TO_BIN(buf[B6]));
+				sParam_->jrnEntry.dateTime.setMinute(BCD_TO_BIN(buf[B7]));
+				sParam_->jrnEntry.dateTime.setSecond(BCD_TO_BIN(buf[B8]));
+				uint16_t t = TO_INT16(buf[B9], buf[B10]);
+				sParam_->jrnEntry.dateTime.setMsSecond(t);
+				//
+//				sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
+				// sParam_->jrnEntry.setNumCom(buf[B2]);
+				sParam_->jrnEntry.setSignalDef((buf[B1] << 4) + (buf[B2] & 0x0F));
+//				sParam_->jrnEntry.setEventType(buf[B3]);
+				sParam_->jrnEntry.setReady();
+				stat = true;
+			} else {
+				sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B16]));
+				sParam_->jrnEntry.dateTime.setMonth(BCD_TO_BIN(buf[B15]));
+				sParam_->jrnEntry.dateTime.setDay(BCD_TO_BIN(buf[B14]));
+				// B13 - день недели
+				sParam_->jrnEntry.dateTime.setHour(BCD_TO_BIN(buf[B12]));
+				sParam_->jrnEntry.dateTime.setMinute(BCD_TO_BIN(buf[B11]));
+				sParam_->jrnEntry.dateTime.setSecond(BCD_TO_BIN(buf[B10]));
+				uint16_t t = TO_INT16(buf[B9], buf[B8]);
+				sParam_->jrnEntry.dateTime.setMsSecond(t);
+				sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
+				// sParam_->jrnEntry.setNumCom(buf[B2]);
+				sParam_->jrnEntry.setSignalDef((buf[B2] << 4) + (buf[B4] & 0x0F));
+				sParam_->jrnEntry.setEventType(buf[B3]);
+				sParam_->jrnEntry.setReady();
+				stat = true;
+			}
 		}
 	}
 
@@ -629,6 +649,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 				comp = static_cast<eGB_COMP_K400> (buf[B11]);
 				act |= sParam_->glb.setCompK400(comp);
 			}
+
 			if (buf[3] > 16) {
 				// Тип аппарата, в сентябре 2014 появился у РЗСК и Р400
 				// в ноябре 2014 появился  у К400
@@ -638,7 +659,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			}
 
 			// проверим необходимость обновления типа аппарата
-			if (act & GB_ACT_NEW)			if (act & GB_ACT_NEW) {
+			if (act & GB_ACT_NEW) {
 				sParam_->device = false;
 			}
 

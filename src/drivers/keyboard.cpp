@@ -40,7 +40,7 @@ enum eBUT
 };
 
 /// Массив кнопок Р400м
-static const eKEY fcKeyR400M[18] = { 					//
+static const eKEY fcKeyR400M[18] PROGMEM = { 			//
 		//		основные функции
 		KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
 		KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
@@ -52,7 +52,7 @@ static const eKEY fcKeyR400M[18] = { 					//
 };
 
 /// Массив кнопок К400
-static const eKEY fcKeyK400[18] = { 					//
+static const eKEY fcKeyK400[18] PROGMEM = { 			//
 		//		основные функции
 		KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
 		KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
@@ -64,7 +64,7 @@ static const eKEY fcKeyK400[18] = { 					//
 };
 
 /// Массив кнопок РЗСК
-static const eKEY fcKeyRZSK[18] = { 					//
+static const eKEY fcKeyRZSK[18] PROGMEM = { 			//
 		//		основные функции
 		KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
 		KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
@@ -76,7 +76,7 @@ static const eKEY fcKeyRZSK[18] = { 					//
 };
 
 /// Массив кнопок ОПТИКА
-static const eKEY fcKeyOPTO[18] = { 					//
+static const eKEY fcKeyOPTO[18] PROGMEM = { 			//
 		//		основные функции
 		KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
 		KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
@@ -91,6 +91,8 @@ static const eKEY fcKeyOPTO[18] = { 					//
 static eBUT keyPressed;
 /// время нажатия на кнопку (0..10)
 static uint_fast8_t timePress = 0;
+/// текущая расскладка клаавиатуры
+static PGM_P keyboard = (PGM_P) fcKeyR400M;
 
 //
 #define PRESS_TIME_STEP 5
@@ -100,7 +102,7 @@ static uint_fast8_t timePress = 0;
  * 	@param Нет
  * 	@return eKEY Код нажатой кнопки
  */
-eKEY eKEYget(eGB_TYPE_DEVICE type) {
+eKEY eKEYget(void) {
 	uint_fast8_t but = keyPressed;
 	eKEY key = KEY_NO;
 
@@ -108,24 +110,33 @@ eKEY eKEYget(eGB_TYPE_DEVICE type) {
 		but = 1 + (but - BUT_1R1C);
 	} else if ((but >= BUT_F_1R1C) && (but <= BUT_F_3R3C)) {
 		but = 10 + (but - BUT_F_1R1C);
-	} else
+	} else {
 		but = 0;
+	}
 
 	if (but != 0) {
 		but -= 1;
-		if (type == AVANT_K400) {
-			key = fcKeyK400[but];
-		} else if (type == AVANT_R400M) {
-			key = fcKeyR400M[but];
-		} else if (type == AVANT_RZSK) {
-			key = fcKeyRZSK[but];
-		} else if (type == AVANT_OPTO) {
-			key = fcKeyOPTO[but];
-		}
+		key = (eKEY) pgm_read_byte((PGM_P) keyboard + but);
 	}
 
 	keyPressed = BUT_NO;
 	return key;
+}
+
+/**	Устанавливает текущуюю раскладку клавиатуры.
+ * 	@param type Тип устройства.
+ * 	@return Нет
+ */
+void vKEYset(eGB_TYPE_DEVICE type) {
+	if (type == AVANT_K400) {
+		keyboard = (PGM_P) fcKeyK400;
+	} else if (type == AVANT_R400M) {
+		keyboard = (PGM_P) fcKeyR400M;
+	} else if (type == AVANT_RZSK) {
+		keyboard = (PGM_P) fcKeyRZSK;
+	} else if (type == AVANT_OPTO) {
+		keyboard = (PGM_P) fcKeyOPTO;
+	}
 }
 
 /**	Возвращает флаг длительного нажатия.

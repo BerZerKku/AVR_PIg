@@ -115,6 +115,10 @@ public:
 				val = AVANT_OPTO;
 			}
 
+			if ((val == AVANT_R400) && (typeLine_ == GB_TYPE_LINE_OPTO)) {
+				val = AVANT_OPTO;
+			}
+
 			if (typeDevice_ == val) {
 				act = GB_ACT_OLD;
 			} else {

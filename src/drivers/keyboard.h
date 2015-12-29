@@ -42,7 +42,8 @@ enum eKEY {
 };
 
 void vKEYmain	(void);
-eKEY eKEYget	(eGB_TYPE_DEVICE type);
+void vKEYset	(eGB_TYPE_DEVICE type);
+eKEY eKEYget	(void);
 uint8_t timePressKey();
 
 #endif /* KEYBOARD_H_ */

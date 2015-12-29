@@ -144,7 +144,7 @@ void clMenu::main(void) {
 
 	// Считаем код с клавиатуры
 	// Если нажата любая кнопка - включится кратковременная подсветка
-	eKEY tmp = eKEYget(sParam.typeDevice);
+	eKEY tmp = eKEYget();
 	if (tmp != KEY_NO) {
 		if (tmp == KEY_EMPTY)
 			tmp = KEY_NO;
@@ -216,6 +216,7 @@ void clMenu::main(void) {
 bool clMenu::setDeviceK400() {
 	sParam.typeDevice = AVANT_K400;
 	sParam.glb.setTypeDevice(AVANT_K400);
+	vKEYset(AVANT_K400);
 
 	// включение/отключение параметров в зависимости от текущей совместимости
 	eGB_COMP_K400 comp = sParam.glb.getCompK400();
@@ -381,6 +382,7 @@ bool clMenu::setDeviceRZSK() {
 
 	sParam.typeDevice = AVANT_RZSK;
 	sParam.glb.setTypeDevice(AVANT_RZSK);
+	vKEYset(AVANT_RZSK);
 
 	sParam.prm.status.setEnable(sParam.prm.getNumCom() != 0);
 	sParam.prd.status.setEnable(sParam.prd.getNumCom() != 0);
@@ -490,6 +492,7 @@ bool clMenu::setDeviceR400M() {
 
 	sParam.typeDevice = AVANT_R400M;
 	sParam.glb.setTypeDevice(AVANT_R400M);
+	vKEYset(AVANT_R400M);
 
 	// состояния
 	sParam.prd.status.stateText[1] = fcPrdSost01;
@@ -580,6 +583,13 @@ bool clMenu::setDeviceOPTO() {
 	sParam.prm.status.setEnable(sParam.prm.getNumCom() != 0);
 	sParam.prd.status.setEnable(sParam.prd.getNumCom() != 0);
 
+	if (sParam.def.status.isEnable()) {
+		// пока для Р400/Р400м/РЗСК в оптике используется клавиатура от РЗСК
+		vKEYset(AVANT_RZSK);
+	} else {
+		vKEYset(AVANT_K400);
+	}
+
 	// состояния
 	sParam.prd.status.stateText[1] = fcPrdSost01opto;
 	sParam.prd.status.stateText[3] = fcPrdSost03opto;
@@ -602,8 +612,8 @@ bool clMenu::setDeviceOPTO() {
 	// заполнение массива общих предупреждений
 	sParam.glb.status.warningText[0] = fcGlbWarning01;
 	sParam.glb.status.warningText[1] = fcGlbWarning02;
-	sParam.glb.status.warningText[2] = fcGlbWarning04;
-	sParam.glb.status.warningText[3] = fcGlbWarning08;
+	sParam.glb.status.warningText[2] = fcGlbWarning04;	// к400 кольцо
+	sParam.glb.status.warningText[3] = fcGlbWarning08;	// к400 кольцо
 	sParam.glb.status.warningText[4] = fcGlbWarning10;
 	sParam.glb.status.warningText[5] = fcGlbWarning20;
 	sParam.glb.status.warningText[6] = fcGlbWarning40;
@@ -2139,6 +2149,9 @@ void clMenu::lvlControl() {
 		} else if (device == AVANT_K400) {
 			Punkts_.add(punkt03);
 		} else if (device == AVANT_OPTO) {
+			if (sParam.def.status.isEnable()) {
+				Punkts_.add(punkt07);// далее выбирается в зависимости от текущего
+			}
 			Punkts_.add(punkt03);
 			Punkts_.add(punkt04);
 		}
@@ -2738,6 +2751,12 @@ void clMenu::lvlSetupParamDef() {
 			}
 			sParam.local.addParam(GB_PARAM_FREQ_PRD);
 			sParam.local.addParam(GB_PARAM_FREQ_PRM);
+		} else if (device == AVANT_OPTO) {
+			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES);
+			sParam.local.addParam(GB_PARAM_DEF_TYPE);
+			sParam.local.addParam(GB_PARAM_TIME_NO_MAN);
+			sParam.local.addParam(GB_PARAM_OVERLAP_OPTO);
+			sParam.local.addParam(GB_PARAM_DELAY_OPTO);
 		}
 	}
 
@@ -3457,6 +3476,9 @@ void clMenu::lvlTest1() {
 			}
 		} else if (device == AVANT_OPTO) {
 			sParam.test.addSignalToList(GB_SIGNAL_CF);
+			if (sParam.def.status.isEnable()) {
+				sParam.test.addSignalToList(GB_SIGNAL_RZ);
+			}
 			uint8_t num_com = sParam.prd.getNumCom();
 			for (uint_fast8_t i = 0; i < num_com; i++) {
 				eGB_TEST_SIGNAL signal =

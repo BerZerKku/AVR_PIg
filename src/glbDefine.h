@@ -29,7 +29,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0118
+#define VERS 0x0119
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -362,7 +362,9 @@ enum eGB_PARAM {
 	GB_PARAM_TIME_NO_MAN,		///< дополнительное время без манипуляции
 	GB_PARAM_OVERLAP,			///< перекрытие импульсов (кроме Р400/Р400м)
 	GB_PARAM_OVERLAP_P400,		///< перекрытие импульсов (Р400/Р400м)
+	GB_PARAM_OVERLAP_OPTO,		///< перекрытие импульсов (Р400 Оптика)
 	GB_PARAM_DELAY,				///< компенсация задержки
+	GB_PARAM_DELAY_OPTO,		///< компенсация задержки
 	GB_PARAM_WARN_THD_RZ,		///< порог предупреждения по РЗ (для РЗСК)
 	GB_PARAM_SENS_DEC,			///< загрубленеи чувствительности
 	GB_PARAM_SENS_DEC_RZ,		///< загрубленеи чувствительности по РЗ
