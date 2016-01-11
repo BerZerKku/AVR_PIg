@@ -336,6 +336,7 @@ enum eGB_PARAM {
 	GB_PARAM_COM_PRM_KEEP,		///< удержание реле команд ПРМ
 	GB_PARAM_IN_DEC,			///< загрубление чувствительности ПРМ
 	GB_PARAM_NET_ADDRESS,		///< адрес в локальной сети
+	GB_PARAM_NET_ADDRESS_E,		///< адрес в локальной сети, можно изменять в Введен
 	GB_PARAM_U_OUT_NOM,			///< номинальноые выходное напряжение
 	GB_PARAM_FREQ,				///< частота
 	GB_PARAM_COMP_P400,			///< совместимость (Р400, Р400м)

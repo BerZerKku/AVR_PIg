@@ -395,6 +395,26 @@ static const Param fNetAddress PROGMEM = {
 		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
+// адрес в локальной сети, можно изменять в Введен
+static const Param fNetAddressE PROGMEM = {
+		"Сетевой адрес",		// название параметра
+		GB_COM_GET_NET_ADR,		// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		1,						// минимальное значение
+		247,					// максимальное значение
+		1,						// дискретность
+		1,						// множитель для стандартного протокола
+		GB_SEND_INT8,			// тип параметра для сохранения новго значения
+		0,						// байт дополнительной информации для сохранения
+		Param::DEPEND_MAX_NO,	// заивимость максимума
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_NO 	// условие для изменения параметра
+};
+
 // номинальноые выходное напряжение
 static const Param fUOutNom PROGMEM = {
 		"Uвых номинальное",		// название параметра
@@ -1653,6 +1673,7 @@ static const Param* fParams[] PROGMEM  = {
 		&fComPrmKeep,
 		&fInDec,
 		&fNetAddress,
+		&fNetAddressE,
 		&fUOutNom,
 		&fFreq,
 		&fCompP400,

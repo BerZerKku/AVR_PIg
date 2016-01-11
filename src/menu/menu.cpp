@@ -3082,6 +3082,7 @@ void clMenu::lvlSetupInterface() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
+		eGB_TYPE_DEVICE device = sParam.typeDevice;
 		sParam.txComBuf.clear();
 
 		sParam.local.clearParams();
@@ -3091,7 +3092,13 @@ void clMenu::lvlSetupInterface() {
 		sParam.local.addParam(GB_PARAM_INTF_INTERFACE);
 		if (sParam.Uart.Interface.get() == TInterface::RS485) {
 			sParam.local.addParam(GB_PARAM_INTF_PROTOCOL);
-			sParam.local.addParam(GB_PARAM_NET_ADDRESS);
+			// в оптике Сетевой адрес меняется в любом режиме,
+			// иначе только в Ввыведен
+			if (device == AVANT_OPTO) {
+				sParam.local.addParam(GB_PARAM_NET_ADDRESS_E);
+			} else {
+				sParam.local.addParam(GB_PARAM_NET_ADDRESS);
+			}
 			sParam.local.addParam(GB_PARAM_INTF_BAUDRATE);
 			sParam.local.addParam(GB_PARAM_INTF_DATA_BITS);
 			sParam.local.addParam(GB_PARAM_INTF_PARITY);
