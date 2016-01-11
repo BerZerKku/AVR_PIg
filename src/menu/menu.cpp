@@ -1599,8 +1599,10 @@ void clMenu::lvlJournalDef() {
 	} else {
 		// вывод состояния
 		snprintf_P(&vLCDbuf[poz], 21, fcStateJrn);
-		snprintf_P(&vLCDbuf[poz + 11], 10,
-				sParam.def.status.stateText[sParam.jrnEntry.getEventType()]);
+		if (sParam.glb.getTypeLine() != GB_TYPE_LINE_OPTO) {
+			snprintf_P(&vLCDbuf[poz + 11], 10,
+					sParam.def.status.stateText[sParam.jrnEntry.getEventType()]);
+		}
 		poz += 20;
 		// вывод даты
 		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
@@ -2154,6 +2156,9 @@ void clMenu::lvlControl() {
 			}
 			Punkts_.add(punkt03);
 			Punkts_.add(punkt04);
+			if (sParam.def.status.isEnable()) {
+				Punkts_.add(punkt02);
+			}
 		}
 
 		// доплнительные команды
