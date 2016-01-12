@@ -590,8 +590,12 @@ bool clMenu::setDeviceOPTO() {
 	sParam.prd.status.setEnable(sParam.prd.getNumCom() != 0);
 
 	if (sParam.def.status.isEnable()) {
-		// пока для Р400/Р400м/РЗСК в оптике используется клавиатура от РЗСК
-		vKEYset(AVANT_RZSK);
+		// в РЗСК будет клавиатура от РЗСК, иначе от Р400м
+		if (sParam.prm.status.isEnable() || sParam.prd.status.isEnable()) {
+			vKEYset(AVANT_RZSK);
+		} else {
+			vKEYset(AVANT_R400M);
+		}
 	} else {
 		vKEYset(AVANT_K400);
 	}
