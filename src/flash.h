@@ -113,6 +113,7 @@ static const char fcDefSost06[] PROGMEM =	"Ожидание";		///<
 static const char fcDefSost07[] PROGMEM =	"Нал.пуск";		///<
 static const char fcDefSost08[] PROGMEM = 	"Уд.пуск";		///<
 static const char fcDefSost09[] PROGMEM =	"Нет РЗ";		///<
+static const char fcDefSost09opto[] PROGMEM = "Нет КС";		///<
 static const char fcDefSost10[] PROGMEM =	"Речь";			///<
 static const char fcDefSost11[] PROGMEM =	"ПРД";			///<
 static const char fcDefSost12[] PROGMEM =	"ПРМ";			///<

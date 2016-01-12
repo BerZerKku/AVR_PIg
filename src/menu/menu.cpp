@@ -264,6 +264,8 @@ bool clMenu::setDeviceK400() {
 	sParam.prm.status.setEnable(prm);
 
 	// состояния
+	sParam.def.status.stateText[9] = fcDefSost09;
+
 	sParam.prd.status.stateText[1] = fcPrdSost01;
 	sParam.prd.status.stateText[3] = fcPrdSost03;
 
@@ -388,6 +390,8 @@ bool clMenu::setDeviceRZSK() {
 	sParam.prd.status.setEnable(sParam.prd.getNumCom() != 0);
 
 	// состояния
+	sParam.def.status.stateText[9] = fcDefSost09;
+
 	sParam.prd.status.stateText[1] = fcPrdSost01;
 	sParam.prd.status.stateText[3] = fcPrdSost03;
 
@@ -495,6 +499,8 @@ bool clMenu::setDeviceR400M() {
 	vKEYset(AVANT_R400M);
 
 	// состояния
+	sParam.def.status.stateText[9] = fcDefSost09;
+
 	sParam.prd.status.stateText[1] = fcPrdSost01;
 	sParam.prd.status.stateText[3] = fcPrdSost03;
 
@@ -591,6 +597,8 @@ bool clMenu::setDeviceOPTO() {
 	}
 
 	// состояния
+	sParam.def.status.stateText[9] = fcDefSost09opto;
+
 	sParam.prd.status.stateText[1] = fcPrdSost01opto;
 	sParam.prd.status.stateText[3] = fcPrdSost03opto;
 
