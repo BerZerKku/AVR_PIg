@@ -3499,7 +3499,7 @@ void clMenu::lvlTest1() {
 				sParam.test.addSignalToList(signal);
 			}
 		} else if (device == AVANT_OPTO) {
-			sParam.test.addSignalToList(GB_SIGNAL_CF);
+			sParam.test.addSignalToList(GB_SIGNAL_CS);
 			if (sParam.def.status.isEnable()) {
 				sParam.test.addSignalToList(GB_SIGNAL_RZ);
 			}

@@ -497,10 +497,11 @@ static const char fcTest1K400[GB_SIGNAL_MAX + 1][STRING_LENGHT] PROGMEM = {
 		"Команда31",	///<
 		"Команда32",	///<
 		"КЧ и РЗ",		///< GB_SIGNAL_CF_RZ_R400M
-		"КЧ1 и РЗ",		// GB_SIGNAL_CF1_RZ_R400M
-		"КЧ2 и РЗ",		// GB_SIGNAL_CF2_RZ_R400M
-		"КЧ3 и РЗ",		// GB_SIGNAL_CF3_RZ_R400M
-		"КЧ4 и РЗ",		// GB_SIGNAL_CF4_RZ_R400M
+		"КЧ1 и РЗ",		///< GB_SIGNAL_CF1_RZ_R400M
+		"КЧ2 и РЗ",		///< GB_SIGNAL_CF2_RZ_R400M
+		"КЧ3 и РЗ",		///< GB_SIGNAL_CF3_RZ_R400M
+		"КЧ4 и РЗ",		///< GB_SIGNAL_CF4_RZ_R400M
+		"КС",			///< в оптике вместо КЧ
 		"ошибка"		///< ошибочное значение
 };
 

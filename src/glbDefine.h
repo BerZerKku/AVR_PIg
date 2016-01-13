@@ -502,6 +502,7 @@ enum eGB_TEST_SIGNAL {
 	GB_SIGNAL_CF2_RZ_R400M,
 	GB_SIGNAL_CF3_RZ_R400M,
 	GB_SIGNAL_CF4_RZ_R400M,
+	GB_SIGNAL_CS,					// в оптике вместо КЧ
 	GB_SIGNAL_MAX
 };
 
@@ -1940,7 +1941,7 @@ public:
 		} else if ((sig>=GB_SIGNAL_COM1_NO_RZ)&&(sig<=GB_SIGNAL_COM4_NO_RZ)) {
 			rz = 1;
 			cf = 3 + sig - GB_SIGNAL_COM1_NO_RZ; // 3 - кол-во кч ?!
-		} else if (sig == GB_SIGNAL_CF) {
+		} else if ((sig == GB_SIGNAL_CF) || (sig == GB_SIGNAL_CS)) {
 			rz = 0;
 			cf = 1;
 		} else {
@@ -2190,7 +2191,7 @@ private:
 		if (t & 0x10) {
 			signal = GB_SIGNAL_RZ;
 		} else if (t & 0x01) {
-			signal = GB_SIGNAL_CF;
+			signal = GB_SIGNAL_CS;
 		} else {
 			t = getSetBit(*(++s));
 			if (t != 0) {
