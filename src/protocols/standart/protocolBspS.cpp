@@ -510,8 +510,8 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			sParam_->prd.status.setState(buf[B8]);
 			sParam_->prd.status.setDopByte(buf[B9]);
 
-			if (sParam_->typeDevice == AVANT_K400) {
-				uint8_t num = buf[NUM];
+			if ((device == AVANT_K400) || (device == AVANT_OPTO)) {
+				uint8_t num = buf[NUM];	// далее проверяется кол-во принятых байт
 				if (sParam_->prm.status.isEnable()) {
 					if (num >= 13) 	sParam_->prm.setIndCom8(0, buf[B13]);
 					if (num >= 14)  sParam_->prm.setIndCom8(1, buf[B14]);
