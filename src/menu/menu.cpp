@@ -2170,6 +2170,7 @@ void clMenu::lvlControl() {
 			Punkts_.add(punkt04);
 			if (sParam.def.status.isEnable()) {
 				Punkts_.add(punkt02);
+				Punkts_.add(punkt11);
 			}
 		}
 
