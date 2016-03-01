@@ -182,7 +182,6 @@ static const char fcGlbWarning10[] 		PROGMEM = "Удал.ПОСТ неиспр";	///<
 static const char fcGlbWarning20[] 		PROGMEM = "Удал.ПРД неиспр";	///<
 static const char fcGlbWarning40[] 		PROGMEM = "Удал.ПРМ неиспр";	///<
 
-
 // неисправности защиты
 static const char fcDefFault0001[] 		PROGMEM = "Нет блока БСЗ";		///<
 static const char fcDefFault0002[] 		PROGMEM = "Неиспр.верс.БСЗ";	///<
@@ -202,6 +201,7 @@ static const char fcDefFault2000[] 		PROGMEM = "Неиспр.зап. ВЫХ";	///<
 static const char fcDefFault4000[] 		PROGMEM = "Помеха в линии";		///<
 static const char fcDefFault4000rzsk[]	PROGMEM = "Нет сигнала РЗ";		///<
 static const char fcDefFault8000[] 		PROGMEM = "Неиспр. ДФЗ";		///<
+static const char fcDefFault8000rzsk[] 	PROGMEM = "Удал. неисправен";	///<
 
 // предупреждения защиты
 static const char fcDefWarning01[] 		PROGMEM = "АК-Сн.запаса %S";	///<
@@ -332,7 +332,7 @@ static char fcJrnEventRZSK[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 		"Вкл. питания/перезап",		///< 1
 		"Выключение питания",       ///< 2
 		"Изменение режима раб",     ///< 3
-		"Событие - %d",           	///< 4
+		"Удаленный неисправен",    	///< 4
 		"Неиспр теста ПРД",         ///< 5
 		"Неиспр теста ПРМ",         ///< 6
 		"Неиспр блока БСЗ",         ///< 7

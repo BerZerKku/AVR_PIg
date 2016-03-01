@@ -432,7 +432,7 @@ bool clMenu::setDeviceRZSK() {
 	sParam.glb.status.faultText[12] = fcGlbFault1000;
 	// 13-15 нет
 	// заполнение массива общих предупреждений
-	// 1-9 нет
+	// 0-9 нет
 	sParam.glb.status.warningText[10] = fcGlbWarning01;
 	// 11-15 нет
 
@@ -449,7 +449,7 @@ bool clMenu::setDeviceRZSK() {
 	// 12 нет
 	sParam.def.status.faultText[13] = fcDefFault2000;
 	sParam.def.status.faultText[14] = fcDefFault4000rzsk;
-	// 15 нет
+	sParam.def.status.faultText[15] = fcDefFault8000rzsk;
 	// заполнение массива предупреждений защиты
 	sParam.def.status.warningText[0] = fcDefWarning01rzsk;
 	sParam.def.status.warningText[1] = fcDefWarning02;
@@ -2031,6 +2031,7 @@ void clMenu::lvlControl() {
 	static char punkt32[] PROGMEM = "%d. —брос удален. 1";
 	static char punkt33[] PROGMEM = "%d. —брос удален. 2";
 	static char punkt34[] PROGMEM = "%d. —брос удален. 3";
+	static char punkt35[] PROGMEM = "%d. —брос индикации";
 
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
@@ -2149,6 +2150,7 @@ void clMenu::lvlControl() {
 					Punkts_.add(punkt24);// далее выбираетс€ в зависимости от номера
 					Punkts_.add(punkt26);
 				}
+				Punkts_.add(punkt35);
 				Punkts_.add(punkt05);
 			} else {
 				// –«—  без поста
@@ -2158,16 +2160,21 @@ void clMenu::lvlControl() {
 				} else if (numDevices == GB_NUM_DEVICES_3) {
 					Punkts_.add(punkt22);
 				}
+				Punkts_.add(punkt35);
 				Punkts_.add(punkt05);
 			}
 		} else if (device == AVANT_K400) {
 			Punkts_.add(punkt03);
+			Punkts_.add(punkt35);
 		} else if (device == AVANT_OPTO) {
 			if (sParam.def.status.isEnable()) {
 				Punkts_.add(punkt07);// далее выбираетс€ в зависимости от текущего
 			}
 			Punkts_.add(punkt03);
 			Punkts_.add(punkt04);
+			if (sParam.prd.status.isEnable() || sParam.prm.status.isEnable()) {
+				Punkts_.add(punkt35);
+			}
 			if (sParam.def.status.isEnable()) {
 				Punkts_.add(punkt02);
 				Punkts_.add(punkt11);
@@ -2391,6 +2398,8 @@ void clMenu::lvlControl() {
 			} else if (name == punkt34) {
 				sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD_3);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			} else if (name == punkt35) {
+				sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
 			}
 		}
 			break;
