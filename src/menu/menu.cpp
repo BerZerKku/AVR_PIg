@@ -1426,12 +1426,14 @@ void clMenu::lvlJournalEvent() {
 	poz += 20;
 
 	// вывод номер текущей записи и их кол-ва
-	if (device == AVANT_OPTO) {
-		// в оптике дополнительно выводится кол-во событий в одной записи
-		snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntriesOpto, cur_entry,
-				num_entries, sParam.jrnEntry.getNumOpticsEntries());
-	} else {
-		snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+	if (num_entries != 0) {
+		if (device == AVANT_OPTO) {
+			// в оптике дополнительно выводится кол-во событий в одной записи
+			snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntriesOpto, cur_entry,
+					num_entries, sParam.jrnEntry.getNumOpticsEntries());
+		} else {
+			snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+		}
 	}
 	poz += 20;
 
@@ -1599,7 +1601,9 @@ void clMenu::lvlJournalDef() {
 	snprintf_P(&vLCDbuf[poz], 21, title);
 	poz += 20;
 	// вывод номер текущей записи и их кол-ва
-	snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+	if (num_entries != 0) {
+		snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+	}
 	poz += 20;
 
 	if (num_entries == 0) {
@@ -1715,12 +1719,14 @@ void clMenu::lvlJournalPrm() {
 	snprintf_P(&vLCDbuf[poz], 21, title);
 	poz += 20;
 	// вывод номер текущей записи и их кол-ва
-	if (device == AVANT_OPTO) {
-		// в оптике дополнительно выводится кол-во событий в одной записи
-		snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntriesOpto, cur_entry,
-				num_entries, sParam.jrnEntry.getNumOpticsEntries());
-	} else {
-		snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+	if (num_entries != 0) {
+		if (device == AVANT_OPTO) {
+			// в оптике дополнительно выводится кол-во событий в одной записи
+			snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntriesOpto, cur_entry,
+					num_entries, sParam.jrnEntry.getNumOpticsEntries());
+		} else {
+			snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+		}
 	}
 	poz += 20;
 
@@ -1873,12 +1879,14 @@ void clMenu::lvlJournalPrd() {
 	poz += 20;
 
 	// вывод номер текущей записи и их кол-ва
-	if (device == AVANT_OPTO) {
-		// в оптике дополнительно выводится кол-во событий в одной записи
-		snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntriesOpto, cur_entry,
-				num_entries, sParam.jrnEntry.getNumOpticsEntries());
-	} else {
-		snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+	if (num_entries != 0) {
+		if (device == AVANT_OPTO) {
+			// в оптике дополнительно выводится кол-во событий в одной записи
+			snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntriesOpto, cur_entry,
+					num_entries, sParam.jrnEntry.getNumOpticsEntries());
+		} else {
+			snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+		}
 	}
 
 	poz += 20;
