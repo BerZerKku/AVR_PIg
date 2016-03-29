@@ -3124,7 +3124,7 @@ void clMenu::lvlSetupInterface() {
 			sParam.local.addParam(GB_PARAM_INTF_PROTOCOL);
 			// в оптике Сетевой адрес меняется в любом режиме,
 			// иначе только в Ввыведен
-			if (device == AVANT_OPTO) {
+			if ((device == AVANT_OPTO) || (device == AVANT_K400)) {
 				sParam.local.addParam(GB_PARAM_NET_ADDRESS_E);
 			} else {
 				sParam.local.addParam(GB_PARAM_NET_ADDRESS);
