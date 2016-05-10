@@ -29,7 +29,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0121
+#define VERS 0x0122
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -212,6 +212,7 @@ enum eGB_COM {
 	GB_COM_DEF_GET_FREQ_PRD 	= 0x08,	// +
 	GB_COM_DEF_GET_RZ_THRESH 	= 0x09,	// + ! в Р400М это частота ПРМ
 	GB_COM_DEF_GET_TYPE_AC 		= 0x0A,	// +
+	GB_COM_DEF_GET_LIMIT_PRD	= 0x0B,	//
 	GB_COM_PRM_GET_TIME_ON 		= 0x11,	// +
 	GB_COM_PRM_GET_TIME_OFF 	= 0x13,	// +
 	GB_COM_PRM_GET_BLOCK_COM 	= 0x14,	// +
@@ -262,6 +263,7 @@ enum eGB_COM {
 	GB_COM_DEF_SET_FREQ_PRD 	= 0x88,	// +
 	GB_COM_DEF_SET_RZ_THRESH 	= 0x89,	// + ! в Р400М это частота ПРМ
 	GB_COM_DEF_SET_TYPE_AC 		= 0x8A,	// +
+	GB_COM_DEF_SET_LIMIT_PRD	= 0x8B,	//
 	GB_COM_PRM_SET_TIME_ON 		= 0x91,	// +
 	GB_COM_PRM_SET_TIME_OFF 	= 0x93,	// +
 	GB_COM_PRM_SET_BLOCK_COM 	= 0x94,	// +
@@ -376,6 +378,11 @@ enum eGB_PARAM {
 	GB_PARAM_SHIFT_BACK,		///< сдвиг заднего фронта ПРД
 	GB_PARAM_SHIFT_PRM,			///< сдвиг ПРМ
 	GB_PARAM_SHIFT_PRD,			///< сдвиг ВЧ ПРД от ПУСК
+	GB_PARAM_LIMIT_PRD,			///< ограничение полосы передатчика
+	GB_PARAM_DELAY_OFF_PRM,		///< задержка выключения ПРМ
+	GB_PARAM_DELAY_ON_PRM,		///< задержка включения ПРМ
+	GB_PARAM_DELAY_OFF_PRD,		///< задержка выключения ПРД
+	GB_PARAM_MIN_TIME_PRD,		///< минимальная длительность ПРД
 	// параметры передатчика
 	GB_PARAM_PRD_IN_DELAY,		///< время включения (задержка срабатывания дискретного входа)
 	GB_PARAM_PRD_DURATION_L,	///< длительность команды ВЧ

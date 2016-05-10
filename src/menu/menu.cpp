@@ -372,7 +372,10 @@ bool clMenu::setDeviceK400() {
 	sParam.prd.status.faultText[11] = fcPrdFault0800rzsk;
 	// 12-15 нет
 	// заполнение массива предупреждений передатчика
-	// 0-15 нет
+	// 0 нет
+	sParam.prd.status.warningText[1] = fcPrdWarning02k400;
+	sParam.prd.status.warningText[2] = fcPrdWarning04k400;
+	// 3-15 нет
 
 	return true;
 }
@@ -2786,6 +2789,11 @@ void clMenu::lvlSetupParamDef() {
 			}
 			sParam.local.addParam(GB_PARAM_FREQ_PRD);
 			sParam.local.addParam(GB_PARAM_FREQ_PRM);
+			sParam.local.addParam(GB_PARAM_LIMIT_PRD);
+			sParam.local.addParam(GB_PARAM_DELAY_OFF_PRM);
+			sParam.local.addParam(GB_PARAM_DELAY_ON_PRM);
+			sParam.local.addParam(GB_PARAM_DELAY_OFF_PRD);
+			sParam.local.addParam(GB_PARAM_MIN_TIME_PRD);
 		} else if (device == AVANT_OPTO) {
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES);
 			sParam.local.addParam(GB_PARAM_DEF_TYPE);
