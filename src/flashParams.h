@@ -1237,9 +1237,9 @@ static const Param fDelayOnPrm PROGMEM = {
 		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
-// задержка выключения ПРД
+// задержка включения ПРД
 static const Param fDelayOffPrd PROGMEM = {
-		"Задержка выкл. ПРД",	// название параметра
+		"Задержка вкл. ПРД",	// название параметра
 		GB_COM_DEF_GET_LIMIT_PRD,// команда стандартного протокола
 		Param::PARAM_INT,		// тип параметра
 		Param::RANGE_INT,		// диапазон измнения

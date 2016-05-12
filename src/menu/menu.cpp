@@ -2790,9 +2790,9 @@ void clMenu::lvlSetupParamDef() {
 			sParam.local.addParam(GB_PARAM_FREQ_PRD);
 			sParam.local.addParam(GB_PARAM_FREQ_PRM);
 			sParam.local.addParam(GB_PARAM_LIMIT_PRD);
-			sParam.local.addParam(GB_PARAM_DELAY_OFF_PRM);
 			sParam.local.addParam(GB_PARAM_DELAY_ON_PRM);
-			sParam.local.addParam(GB_PARAM_DELAY_OFF_PRD);
+			sParam.local.addParam(GB_PARAM_DELAY_OFF_PRM);
+			sParam.local.addParam(GB_PARAM_DELAY_ON_PRD);
 			sParam.local.addParam(GB_PARAM_MIN_TIME_PRD);
 		} else if (device == AVANT_OPTO) {
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES);

@@ -381,7 +381,7 @@ enum eGB_PARAM {
 	GB_PARAM_LIMIT_PRD,			///< ограничение полосы передатчика
 	GB_PARAM_DELAY_OFF_PRM,		///< задержка выключения ПРМ
 	GB_PARAM_DELAY_ON_PRM,		///< задержка включения ПРМ
-	GB_PARAM_DELAY_OFF_PRD,		///< задержка выключения ПРД
+	GB_PARAM_DELAY_ON_PRD,		///< задержка включения ПРД
 	GB_PARAM_MIN_TIME_PRD,		///< минимальная длительность ПРД
 	// параметры передатчика
 	GB_PARAM_PRD_IN_DELAY,		///< время включения (задержка срабатывания дискретного входа)
