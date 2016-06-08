@@ -1164,6 +1164,18 @@ public:
 	}
 
 
+	int8_t getTemperature() const {
+		return temperature_;
+	}
+	bool setTemperature(int8_t val){
+		bool stat = false;
+		if ((val >= -100) && (val <= 125)) {
+			temperature_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+
 private:
 	// запас по защите (-99 .. 99)дЅ
 	int8_t voltDef_;
@@ -1187,6 +1199,8 @@ private:
 	uint16_t pulseWidth_;
 	// запас по тест.команде (двухчаст) или ќтношение сигнал/помеха (одночаст) [-64..64]дЅ
 	int8_t d_;
+	// температуры (-40..125), -100 - ошибка
+	int8_t temperature_;
 };
 
 

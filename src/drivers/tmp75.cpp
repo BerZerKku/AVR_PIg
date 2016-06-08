@@ -32,16 +32,13 @@ void TTmp75::readTemp() {
 	uint8_t tmp = TWCR;
 
 	if ((tmp & (1 << TWINT)) == 0) {
-		// если прерывание установлено, значит TWI занят
-		TWCR = 	(1 << TWEN) | (1 << TWIE)  | (1 << TWINT) |
-				(0 << TWEA) | (1 << TWSTA) | (0 << TWSTO);
-	} else {
-
+		// формирование СТАРТ
+		TWCR = 	(1 << TWEN) | (1 << TWIE)  | (1 << TWINT) | (1 << TWSTA);
 	}
 }
 
 
 // Считывание температуры.
-int8_t TTmp75::getTemp() {
+int8_t TTmp75::getTemperature() {
 	return temperature;
 }

@@ -276,7 +276,7 @@ bool clMenu::setDeviceK400() {
 	measParam[0] = MENU_MEAS_PARAM_TIME; // дата <-> время
 	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TIME;
 	measParam[1] = MENU_MEAS_PARAM_DATE;
-	measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
+	measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TEMPERATURE;
 
 	if (!sParam.prd.status.isEnable()) {
 		// Если чистый приемник, не нужны U и I
@@ -3936,6 +3936,7 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 	static const char fcDate[] 	PROGMEM = "%02u.%02u.%02u";	// Дата.
 	static const char fcTime[] 	PROGMEM = "%02u:%02u:%02u";	// Время.
 	static const char fcD[]		PROGMEM = "D=%02dдБ";		// Запас по тест.команде (двухчаст) или Отношение сигнал/помеха (одночаст)
+	static const char fcTemper[] PROGMEM= "T=%02d°C";		// Температура
 
 	// смещение в буфере
 	if (poz < MAX_NUM_MEAS_PARAM) {
@@ -4019,6 +4020,12 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 
 			case MENU_MEAS_PARAM_D:
 				snprintf_P(&vLCDbuf[poz], 11, fcD, sParam.measParam.getD());
+				break;
+
+			case MENU_MEAS_PARAM_TEMPERATURE:
+				snprintf_P(&vLCDbuf[poz], 11, fcTemper,
+						sParam.measParam.getTemperature());
+				break;
 
 			default:
 				// ничего не делаем

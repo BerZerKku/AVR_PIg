@@ -419,10 +419,6 @@ main(void) {
 				eeprom_update_block(&eeprom, (sEeprom*) EEPROM_START_ADDRESS,
 						sizeof(eeprom));
 				EEAR = 0;	// сброс адреса ЕЕПРОМ в 0, для защиты данных
-
-				// запуск процедуры считывания температуры c датчика
-				tmp75.readTemp();
-				sDebug.byte7++;
 			}
 
 			cnt_wdt++;
@@ -441,6 +437,10 @@ main(void) {
 			if (cnt_wdt == 4)
 				wdt_reset();
 			cnt_wdt = 0;
+
+			// запуск процедуры считывания температуры c датчика
+			menu.sParam.measParam.setTemperature(tmp75.getTemperature());
+			tmp75.readTemp();
 		}
 	}
 }
@@ -539,7 +539,7 @@ ISR(USART0_RX_vect) {
 
 /// Прерывание по получению данных TWI
 ISR(TWI_vect) {
-	uint8_t state = TWSR & 0xFC;
+	uint8_t state = TWSR & 0xF8;
 
 	tmp75.isr(state);
 

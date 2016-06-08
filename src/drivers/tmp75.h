@@ -34,7 +34,7 @@ class TTmp75 {
 		I2C_STATE_MRX_ADR_ACK  		= 0x40,	///< SLA+R has been tramsmitted and ACK received.
 //		STATE_MRX_ADR_NACK			= 0x48, ///< SLA+R has been tramsmitted and NACK received.
 		I2C_STATE_MRX_DATA_ACK		= 0x50, ///< Data byte has been received and ACK tramsmitted.
-//		STATE_MRX_DATA_NACK			= 0x58, ///< Data byte has been received and NACK tramsmitted.
+		I2C_STATE_MRX_DATA_NACK		= 0x58, ///< Data byte has been received and NACK tramsmitted.
 
 		// TWI Slave Transmitter staus codes
 //		STATE_STX_ADR_ACK			= 0xA8, ///< Own SLA+R has been received; ACK has been returned
@@ -89,57 +89,60 @@ public:
 	 *
 	 *	@return температуру считанную при последней запросе
 	 */
-	int8_t getTemp();
+	int8_t getTemperature();
 
 	/**	Обработчик прерывания TWI;
 	 *
 	 *	@param[in] twsr Значение регистра TWSR.
 	 */
 	void isr(uint8_t twsr) {
-		switch((EI2C_STATE) (twsr & 0xFC)) {
-			case I2C_STATE_START:			// --> TX ADR_IC + #WR
+		// по умолчанию включен модуль TWI, прерывания и сброшен бит прерывания
+		uint8_t twcr = 	(1 << TWEN) | (1 << TWIE)  | (1 << TWINT);
+
+		switch((EI2C_STATE) (twsr & 0xF8)) {
+			case I2C_STATE_START:			// сформирован СТАРТ
+				// передается адрес микросхемы и управляющий бит записи
 				TWDR = adrIC | (0 << s_u8ReadBit);
-				TWCR = 	(1 << TWEN) | (1 << TWIE)  | (1 << TWINT) |
-						(0 << TWEA) | (0 << TWSTA) | (0 << TWSTO);
 				break;
 
-			case I2C_STATE_REP_START:		// --> TX ADR_IC + RD
-				TWDR = adrIC | (1 << s_u8ReadBit);
-				TWCR = 	(1 << TWEN) | (1 << TWIE)  | (1 << TWINT) |
-						(0 << TWEA) | (0 << TWSTA) | (0 << TWSTO);
-				break;
-
-			case I2C_STATE_MTX_ADR_ACK: 	// --> TX ADR_REG
+			case I2C_STATE_MTX_ADR_ACK: 	// передан адрес IC и ACK получен
+				// передается адрес регистра температуры
 				TWDR =  REG_TEMP_R;
-				TWCR = 	(1 << TWEN) | (1 << TWIE)  | (1 << TWINT) |
-						(0 << TWEA) | (0 << TWSTA) | (0 << TWSTO);
 				break;
 
-			case I2C_STATE_MTX_DATA_ACK: 	// --> REP_START
-				TWCR = 	(1 << TWEN) | (1 << TWIE)  | (1 << TWINT) |
-						(0 << TWEA) | (1 << TWSTA) | (0 << TWSTO);
+			case I2C_STATE_MTX_DATA_ACK: 	// переданы данные и ACK
+				// формируется ПОВСТАРТ
+				twcr |= (1 << TWSTA);
 				break;
 
-			case I2C_STATE_MRX_DATA_ACK:	// --> TX of any data
-				// считываем только старший байт температуры
+			case I2C_STATE_REP_START:		// сформирован ПОВСТАРТ
+				// передается адрес микросхемы и управляющий бит чтения
+				TWDR = adrIC | (1 << s_u8ReadBit);
+				break;
+
+			case I2C_STATE_MRX_ADR_ACK:		// передан адрес IC и ACK получен
+				// передаются произвольные данные, с формированием ACK
+				twcr |= (1 << TWEA);
+				break;
+
+			case I2C_STATE_MRX_DATA_ACK:	// получены данные и передан ACK
+				// чтение старшего байта температур, формирование NACK
 				temperature = (int8_t) TWDR;
-				TWCR = 	(1 << TWEN) | (0 << TWIE)  | (1 << TWINT) |
-						(0 << TWEA) | (0 << TWSTA) | (1 << TWSTO);
-				sDebug.byte8++;
 				break;
 
-			case I2C_STATE_MRX_ADR_ACK:		// --> TX of any data
-				TWCR = 	(1 << TWEN) | (1 << TWIE)  | (1 << TWINT) |
-						(1 << TWEA) | (0 << TWSTA) | (0 << TWSTO);
+			case I2C_STATE_MRX_DATA_NACK:	// получены данные и передан NACK
+				// чтение младшего байта температуры с формированием СТОП
+				twcr |= (1 << TWSTO);
+				twcr &= ~(1 << TWIE);
 				break;
 
 			default:
+				// завершение работы, отмена прерываний
 				temperature = s_i8TempError;
-				TWCR = 	(1 << TWEN) | (0 << TWIE)  | (1 << TWINT) |
-						(0 << TWEA) | (0 << TWSTA) | (0 << TWSTO);
+				twcr &= ~(1 << TWIE);
 		}
 
-		sDebug.byte5 = temperature;
+		TWCR = twcr;
 	}
 
 private:
