@@ -16,6 +16,7 @@
 #include "menu.h"
 #include "keyboard.h"
 #include "uart.h"
+#include "tmp75.h"
 #include "protocolPcS.h"
 #include "protocolBspS.h"
 #include "protocolPcM.h"
@@ -35,6 +36,9 @@
 
 /// адрес пароля пользователя
 #define EEPROM_START_ADDRESS 0x10
+
+/// адрес датчика температуры
+#define TEMP_IC_ADR 0x48
 
 /// Структура параметров хранящихся в EEPROM
 struct sEeprom {
@@ -63,6 +67,10 @@ uint8_t uBufUartBsp[BUFF_SIZE_BSP];
 
 // параметры хранимые в ЕЕПРОМ
 static sEeprom eeprom;
+
+// Датчики температуры
+
+TTmp75 tmp75(TEMP_IC_ADR);
 
 /// Класс меню
 clMenu menu;
@@ -411,6 +419,10 @@ main(void) {
 				eeprom_update_block(&eeprom, (sEeprom*) EEPROM_START_ADDRESS,
 						sizeof(eeprom));
 				EEAR = 0;	// сброс адреса ЕЕПРОМ в 0, для защиты данных
+
+				// запуск процедуры считывания температуры c датчика
+				tmp75.readTemp();
+				sDebug.byte7++;
 			}
 
 			cnt_wdt++;
@@ -523,4 +535,13 @@ ISR(USART0_RX_vect) {
 		// обработчик протокола "Стандартный"
 		protBSPs.checkByte(byte);
 	}
+}
+
+/// Прерывание по получению данных TWI
+ISR(TWI_vect) {
+	uint8_t state = TWSR & 0xFC;
+
+	tmp75.isr(state);
+
+//	TWCR |= (1 << TWINT);
 }
