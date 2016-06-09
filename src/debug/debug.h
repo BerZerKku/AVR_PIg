@@ -15,7 +15,7 @@
 #warning "Включен режим отладки!!!"
 
 // вывод отладочной информации на экран
-//#define VIEW_DEBUG_PARAM
+#define VIEW_DEBUG_PARAM
 //#define IEC101
 
 

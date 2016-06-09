@@ -273,10 +273,10 @@ bool clMenu::setDeviceK400() {
 	sParam.prm.status.stateText[3] = fcPrmSost03;
 
 	// дата и время выводятся во всех вариантах
-	measParam[0] = MENU_MEAS_PARAM_TIME; // дата <-> время
+	measParam[0] = MENU_MEAS_PARAM_TIME;
 	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TIME;
 	measParam[1] = MENU_MEAS_PARAM_DATE;
-	measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TEMPERATURE;
+	measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
 
 	if (!sParam.prd.status.isEnable()) {
 		// Если чистый приемник, не нужны U и I
@@ -321,6 +321,26 @@ bool clMenu::setDeviceK400() {
 			measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_D;
 		}
 	}
+
+	// заполнение массива параметров для меню "Измерение"
+	uint8_t cnt = 0;
+	if (sParam.prd.status.isEnable()) {
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_UOUT;	// 1
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_IOUT;	// 2
+	}
+	if (sParam.prm.status.isEnable()) {
+		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC1;	// 3
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC2;	// 4
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN1; // 5
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN2;	// 6
+		} else {
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC;	// 3
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN;	// 4
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_D;	// 5
+		}
+	}
+	measParamLvl[cnt++] = MENU_MEAS_PARAM_TEMPERATURE;	// 7 или 6
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -420,6 +440,24 @@ bool clMenu::setDeviceRZSK() {
 		measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
 		measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
 	}
+
+	// заполнение массива параметров для меню "Измерение"
+	uint8_t cnt = 0;
+	measParamLvl[cnt++] = MENU_MEAS_PARAM_UOUT;	// 1
+	measParamLvl[cnt++] = MENU_MEAS_PARAM_IOUT;	// 2
+	if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_UZ1;	// 3
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_UZ2;	// 4
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_UC1;	// 5
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_UC2;	// 6
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_UN1; 	// 7
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_UN2;	// 8
+	} else {
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_UZ;	// 3
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_UC;	// 4
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_UN;	// 5
+	}
+	measParamLvl[cnt++] = MENU_MEAS_PARAM_TEMPERATURE;	// 9 или 6
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -526,6 +564,22 @@ bool clMenu::setDeviceR400M() {
 	}
 	measParam[5] = MENU_MEAS_PARAM_SD;
 	measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
+
+	// заполнение массива параметров для меню "Измерение"
+	uint8_t cnt = 0;
+	measParamLvl[cnt++] = MENU_MEAS_PARAM_UOUT;	// 1
+	measParamLvl[cnt++] = MENU_MEAS_PARAM_IOUT;	// 2
+	measParamLvl[cnt++] = MENU_MEAS_PARAM_UZ;	// 3
+	if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_UC1;	// 4
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_UC2;	// 5
+	} else {
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_UC;	// 4
+	}
+	measParamLvl[cnt++] = MENU_MEAS_PARAM_SD;	// 6 или 5
+	measParamLvl[cnt++] = MENU_MEAS_PARAM_UN;	// 7 или 6
+	measParamLvl[cnt++] = MENU_MEAS_PARAM_TEMPERATURE;	// 8 или 7
+
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -761,7 +815,9 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 	for (uint_fast8_t i = 0; i < (MAX_NUM_MEAS_PARAM * 2); i++)
 		measParam[i] = MENU_MEAS_PARAM_NO;
 
-
+	// предварительная очистка массива отображаемых параметров в "Измерение"
+	for (uint_fast8_t i = 0; i < MAX_NUM_MEAS_PARAM_LVL; i++)
+		measParamLvl[i] = MENU_MEAS_PARAM_NO;
 
 	if (device == AVANT_K400) {
 		status = setDeviceK400();
@@ -772,8 +828,6 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 	} else if (device == AVANT_OPTO) {
 		status = setDeviceOPTO();
 	} else {
-		//	}
-
 		//	if ((!status) || (device == AVANT_NO)) {
 		// если полученные данные не подходят ни под один имеющийся тип
 		// на экране отображается ошибка
@@ -959,6 +1013,9 @@ void clMenu::lvlStart() {
 
 	// вывод на экран измеряемых параметров
 	for (uint_fast8_t i = 0; i < (lineParam_ * 2); i++) {
+		if (i >= MAX_NUM_MEAS_PARAM)
+			continue;
+
 		if (blinkMeasParam_)
 			printMeasParam(i, measParam[i]);
 		else
@@ -1136,6 +1193,7 @@ void clMenu::lvlFirst() {
 	static char punkt3[] PROGMEM = "%d. Настройка";
 	static char punkt4[] PROGMEM = "%d. Тесты";
 	static char punkt5[] PROGMEM = "%d. Информация";
+	static char punkt6[] PROGMEM = "%d. Измерения";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -1153,6 +1211,9 @@ void clMenu::lvlFirst() {
 		Punkts_.add(punkt3);
 		Punkts_.add(punkt4);
 		Punkts_.add(punkt5);
+		if (sParam.glb.getTypeDevice() != AVANT_OPTO) {
+			Punkts_.add(punkt6);
+		}
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
@@ -1192,6 +1253,9 @@ void clMenu::lvlFirst() {
 					lvlMenu = &clMenu::lvlInfo;
 					lvlCreate_ = true;
 					break;
+				case 6:
+					lvlMenu = &clMenu::lvlMeasure;
+					lvlCreate_ = true;
 			}
 			break;
 
@@ -3339,6 +3403,52 @@ void clMenu::lvlSetupDT() {
 	}
 }
 
+/**	Уровень меню. Измерения.
+ *
+ * 	@param Нет
+ * 	@return Нет
+ */
+void clMenu::lvlMeasure() {
+	static char title[] PROGMEM = "Меню\\Измерения";
+
+	if (lvlCreate_) {
+		lvlCreate_ = false;
+		lineParam_ = 1;
+		cursorLine_ = 0;
+
+		vLCDclear();
+		vLCDdrawBoard(lineParam_);
+
+		// доплнительные команды
+		// обновляется версия прошивок (на случай перепрошивки)
+		sParam.txComBuf.clear();
+		sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
+		// 2 команды добавлены для уменьшения частоты опроса измеряемых параметров
+		sParam.txComBuf.addCom2(GB_COM_GET_TIME);
+		sParam.txComBuf.addCom2(GB_COM_GET_FAULT);
+	}
+
+	snprintf_P(&vLCDbuf[0], 21, title);
+
+	for(uint_fast8_t i = 0; i < MAX_NUM_MEAS_PARAM_LVL; i++) {
+		printMeasParam(lineParam_*2 + i, measParamLvl[i]);
+	}
+
+	switch(key_) {
+		case KEY_CANCEL:
+			lvlMenu = &clMenu::lvlFirst;
+			lvlCreate_ = true;
+			break;
+
+		case KEY_MENU:
+			lvlMenu = &clMenu::lvlStart;
+			lvlCreate_ = true;
+			break;
+
+		default:
+			break;
+	}
+}
 
 /** Уровень меню. Тест 1.
  * 	@param Нет
@@ -3915,7 +4025,7 @@ void clMenu::printPunkts() {
 /**	Вывод в указанном месте отображаемого параметра.
  * 	В одной строке выводятся два параметра.
  * 	@param poz Текущая позиция
- * 	@arg [0, MAX_NUM_MEAS_PARAM), 0 первая строка слева, 5 - третья справа
+ * 	@arg [0, 12), 0 первая строка слева, 11 - седьмая справа
  * 	@param par Отображаемый параметр
  * 	@return Нет
  */
@@ -3938,9 +4048,9 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 	static const char fcD[]		PROGMEM = "D=%02dдБ";		// Запас по тест.команде (двухчаст) или Отношение сигнал/помеха (одночаст)
 	static const char fcTemper[] PROGMEM= "T=%02d°C";		// Температура
 
-	// смещение в буфере
-	if (poz < MAX_NUM_MEAS_PARAM) {
+	// проверка на максимальную позицию
 		// 10 - кол-во символов отведенное на экране под 1 параметр
+	if (poz < 12) {
 		poz = (poz * 10) + 1;
 
 		switch(par) {
@@ -4027,7 +4137,7 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 						sParam.measParam.getTemperature());
 				break;
 
-			default:
+			case MENU_MEAS_PARAM_NO:
 				// ничего не делаем
 				break;
 		}

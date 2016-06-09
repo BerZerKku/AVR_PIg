@@ -24,6 +24,9 @@
 /// максимальное кол-во отображаемых на экране параметров
 #define MAX_NUM_MEAS_PARAM 6
 
+/// максимальное кол-во отображаемых параметров в меню "Измерение"
+#define MAX_NUM_MEAS_PARAM_LVL 10
+
 /// время вывода измеряемого параметра на экран, мс
 #define TIME_MEAS_PARAM (3000 / MENU_TIME_CYLCE)
 
@@ -513,6 +516,9 @@ private:
 	// измеряемые параметры
 	eMENU_MEAS_PARAM measParam[MAX_NUM_MEAS_PARAM * 2];
 
+	// измеряемые параметры для уровня меню "Измерения"
+	eMENU_MEAS_PARAM measParamLvl[MAX_NUM_MEAS_PARAM_LVL];
+
 	// текущие пункты меню
 	TMenuPunkt Punkts_;
 
@@ -569,6 +575,7 @@ private:
 	void lvlSetupParamPrd();
 	void lvlSetupParamGlb();
 	void lvlSetupDT();
+	void lvlMeasure();
 	void lvlTest();
 	void lvlTest1();
 	void lvlTest2();

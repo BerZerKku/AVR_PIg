@@ -218,10 +218,13 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 	} else if (mask == GB_COM_MASK_GROUP_READ_PARAM) {
 		// команды опроса параметров
 		// по умолчанию отправляется только код команды
-		if (com == GB_COM_GET_MEAS)
+		if (com == GB_COM_GET_MEAS) {
 			num = addCom(com, 0);
-		else
+		} else if (com == GB_COM_GET_SOST) {
+			num = addCom(com, sParam_->measParam.getTemperature());
+		} else {
 			num = addCom(com);
+		}
 	} else if (mask == GB_COM_MASK_GROUP_READ_JOURNAL) {
 		// команды считывания журналов, в том числе и кол-ва записей
 		num = sendReadJrnCommand(com);
