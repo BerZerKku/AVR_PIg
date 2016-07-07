@@ -6,6 +6,7 @@
  */
 
 #include <avr/io.h>
+#include <util/delay.h>
 #include "tmp75.h"
 
 // Конструктор
@@ -31,9 +32,9 @@ void TTmp75::readTemp() {
 
 	uint8_t tmp = TWCR;
 
-	if ((tmp & (1 << TWINT)) == 0) {
-		// формирование СТАРТ
-		TWCR = 	(1 << TWEN) | (1 << TWIE)  | (1 << TWINT) | (1 << TWSTA);
+	if (((tmp & (1 << TWINT)) == 0) || (temperature == s_i8TempError)) {
+		TWCR = (1 << TWINT);
+		TWCR = 	(1 << TWEN) | (1 << TWIE) | (1 << TWSTA);
 	}
 }
 

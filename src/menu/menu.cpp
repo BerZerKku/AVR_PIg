@@ -357,7 +357,11 @@ bool clMenu::setDeviceK400() {
 	// 13-15 нет
 	// заполнение массива общих предупреждений
 	sParam.glb.status.warningText[0] = fcGlbWarning01;
-	// 1-15 нет
+	// 1 - нет
+	sParam.glb.status.warningText[2] = fcGlbWarning04k400;
+	sParam.glb.status.warningText[3] = fcGlbWarning08k400;
+	sParam.glb.status.warningText[4] = fcGlbWarning10k400;
+	// 5-15 нет
 
 	// отключение ЗАЩИТЫ
 	sParam.def.status.setEnable(false);

@@ -177,8 +177,11 @@ static const char fcGlbFault4000[] 		PROGMEM = "ВЧ тракт восст.";	///<
 static const char fcGlbWarning01[] 		PROGMEM = "Установите часы";	///<
 static const char fcGlbWarning02[] 		PROGMEM = "Отказ резерв.лин";	///<
 static const char fcGlbWarning04[]		PROGMEM = "Кольцо 1 наруш.";	///<
+static const char fcGlbWarning04k400[]	PROGMEM = "Высокая температ";	///<
 static const char fcGlbWarning08[]		PROGMEM = "Кольцо 2 наруш.";	///<
+static const char fcGlbWarning08k400[]	PROGMEM = "Низкая температ";	///<
 static const char fcGlbWarning10[] 		PROGMEM = "Удал.ПОСТ неиспр";	///<
+static const char fcGlbWarning10k400[]	PROGMEM = "Неиспр. дат.темп";	///<
 static const char fcGlbWarning20[] 		PROGMEM = "Удал.ПРД неиспр";	///<
 static const char fcGlbWarning40[] 		PROGMEM = "Удал.ПРМ неиспр";	///<
 
@@ -322,6 +325,11 @@ static char fcJrnEventK400[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 		"Ошибка работы ЦС",        	///< 30
 		"Вход RX ЦС пуст",         	///< 31
 		"Работа ЦС восстановл",    	///< 32
+		"Высокая температура",		///< 33
+		"Низкая температура",		///< 34
+		"Нормал. температура",		///< 35
+		"Неиспр.датчик темпер",		///< 36
+		"Исправ.датчик темпер",		///< 37
 		"Событие - %d"          	///< ошибочное значение
 };
 
@@ -361,6 +369,11 @@ static char fcJrnEventRZSK[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 		"Восстан-е РЗ на %S",      	///< 30
 		"Нет РЗ на %S",         	///< 31
 		"Восст. ур.РЗ на %S",    	///< 32
+		"Событие - %d",				///< 33
+		"Событие - %d",				///< 34
+		"Событие - %d",				///< 35
+		"Событие - %d",				///< 36
+		"Событие - %d",				///< 37
 		"Событие - %d"          	///< ошибочное значение
 };
 
@@ -400,6 +413,11 @@ static char fcJrnEventR400_MSK[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 		"Уд: Неиспр. ДФЗ",         	///< 30
 		"Уд: Неиспр. цепи вых",    	///< 31
 		"Порог по помехе",         	///< 32
+		"Событие - %d",				///< 33
+		"Событие - %d",				///< 34
+		"Событие - %d",				///< 35
+		"Событие - %d",				///< 36
+		"Событие - %d",				///< 37
 		"Событие - %d"          	///< ошибочное значение
 };
 
@@ -439,6 +457,11 @@ static char fcJrnEventOPTO[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 		"Уд: ПРМ неисправен",       ///< 30
 		"Изменение дата/время",		///< 31
 		"Изменение параметров",		///< 32
+		"Событие - %d",				///< 33
+		"Событие - %d",				///< 34
+		"Событие - %d",				///< 35
+		"Событие - %d",				///< 36
+		"Событие - %d",				///< 37
 		"Событие - %d"          	///< ошибочное значение
 };
 
