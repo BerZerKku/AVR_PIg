@@ -359,6 +359,9 @@ enum eGB_PARAM {
 	GB_PARAM_TM_K400,			///< телемеханика
 	GB_PARAM_WARN_D,			///< уровень срабатывания предупредительной сигнализации по D
 	GB_PARAM_ALARM_D,			///< уровень срабатывания аварийной сигнализации по D
+	GB_PARAM_TEMP_MONITOR,		///< контроль температуры
+	GB_PARAM_TEMP_THR_HI,		///< верхнее значение температуры
+	GB_PARAM_TEMP_THR_LOW,		///< нижнее значение температуры
 	// параметры защиты
 	GB_PARAM_DEF_TYPE,			///< тип защиты
 	GB_PARAM_TIME_NO_MAN,		///< дополнительное время без манипуляции
@@ -1012,6 +1015,7 @@ public:
 		resistOut_ = 0;
 		pulseWidth_ = 0;
 		d_ = 0;
+		temperature_ = -100;
 	}
 
 	// запас по защите

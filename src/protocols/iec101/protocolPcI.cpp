@@ -122,7 +122,7 @@ bool TProtocolPcI::procSetTime() {
 	// сброс флага наличия ответа на команду установки времени в БСП
 	sParam_->DateTimeReq.setTimeBsp_ = false;
 
-	uint16_t d = getDelay();
+//	uint16_t d = getDelay();
 
 	return true;
 }

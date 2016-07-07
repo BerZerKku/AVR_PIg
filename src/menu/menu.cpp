@@ -3077,6 +3077,9 @@ void clMenu::lvlSetupParamGlb() {
 			sParam.local.addParam(GB_PARAM_TM_K400);
 			sParam.local.addParam(GB_PARAM_WARN_D);
 			sParam.local.addParam(GB_PARAM_ALARM_D);
+			sParam.local.addParam(GB_PARAM_TEMP_MONITOR);
+			sParam.local.addParam(GB_PARAM_TEMP_THR_HI);
+			sParam.local.addParam(GB_PARAM_TEMP_THR_LOW);
 		} else if (device == AVANT_RZSK) {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 
@@ -3168,14 +3171,13 @@ void clMenu::lvlSetupParamGlb() {
  */
 void clMenu::lvlSetupInterface() {
 	static char title[] PROGMEM = "Настройка\\Интерфейс";
-	static char punkt1[] PROGMEM = "Интерфейс связи";
-
-	static char punkt2[] PROGMEM = "Протокол";
-	static char punkt3[] PROGMEM = "Скорость передачи";
-	static char punkt4[] PROGMEM = "Биты данных";
-	static char punkt5[] PROGMEM = "Четность";
-	static char punkt6[] PROGMEM = "Стоповые биты";
-	static char punkt7[] PROGMEM = "Сетевой адрес";
+//	static char punkt1[] PROGMEM = "Интерфейс связи";
+//	static char punkt2[] PROGMEM = "Протокол";
+//	static char punkt3[] PROGMEM = "Скорость передачи";
+//	static char punkt4[] PROGMEM = "Биты данных";
+//	static char punkt5[] PROGMEM = "Четность";
+//	static char punkt6[] PROGMEM = "Стоповые биты";
+//	static char punkt7[] PROGMEM = "Сетевой адрес";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3184,7 +3186,7 @@ void clMenu::lvlSetupInterface() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		eGB_TYPE_DEVICE device = sParam.typeDevice;
+//		eGB_TYPE_DEVICE device = sParam.typeDevice;
 		sParam.txComBuf.clear();
 
 		sParam.local.clearParams();
