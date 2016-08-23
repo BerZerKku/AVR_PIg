@@ -17,33 +17,35 @@
 
 /// Функции кнопок
 enum eKEY {
-	KEY_NO = 0x00,	// нет нажатых кнопок
-	KEY_EMPTY,		// была нажата кнопка, но без какой-либо функции
-	KEY_FUNC,		// Функция
-	KEY_ENTER,		// Меню
-	KEY_CANCEL,		// Отмена
-	KEY_DOWN,		// Вниз
-	KEY_LEFT,		// Влево
-	KEY_RIGHT,		// Вправо
-	KEY_UP,			// Вверх
+	KEY_NO = 0,	////< Нет нажатых кнопок.
 
-	KEY_MENU,		// Вход в Меню
-	KEY_RESET,		// Сброс
-	KEY_PUSK,		// Пуск	(ввод приемника в работу)
-	KEY_PUSK_UD,	// Удал. Пуск ПРД
-	KEY_PUSK_NALAD,	// н.Пуск / н.Пуск ПРД (наладочный пуск)
-	KEY_RESET_IND,	// Сброс инд.
-	KEY_CALL,		// Вызов
+	KEY_0,		///< 0.
+	KEY_1,		///< 1.
+	KEY_2,		///< 2.
+	KEY_3,		///< 3.
+	KEY_4,		///< 4.
+	KEY_5,		///< 5.
+	KEY_6,		///< 6.
+	KEY_7,		///< 7.
+	KEY_8,		///< 8.
+	KEY_9,		///< 9.
 
-	KEY_AC_PUSK,	// Пуск АК
-	KEY_AC_PUSK_UD,	// Удал. Пуск АК
-	KEY_AC_RESET,	// Сброс АК
-	KEY_AC_REGIME	// Режим АК
+//	// временно vvv
+//	KEY_RESET_IND,
+//	KEY_PUSK,
+//	KEY_RIGHT,
+//	KEY_LEFT,
+//	// временно ^^^
+
+	KEY_ENTER,	///< Ввод ("ENT").
+	KEY_UP,		///< Вверх.
+	KEY_DOWN,	///< Вниз.
+	KEY_CANCEL,	///< Отмена ("CE/C").
+	KEY_HELP,	///< Подсказка ('#').
+	KEY_MENU	///< Меню ('*').
 };
 
 void vKEYmain	(void);
-void vKEYset	(eGB_TYPE_DEVICE type);
-eKEY eKEYget	(void);
-uint8_t timePressKey();
+eKEY eKEYget	(eGB_TYPE_DEVICE type);
 
 #endif /* KEYBOARD_H_ */

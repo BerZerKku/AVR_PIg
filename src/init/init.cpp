@@ -29,56 +29,76 @@ low_level_init()
 	PORTA= 0x00;
 
 	// Порт B
-	DDRB = 0x00;
-	PORTB = ~0x00;
+	// PORTB.0 = 		- вход +
+	// PORTB.1 = 		- вход +
+	// PORTB.2 = 		- вход +
+	// PORTB.3 = 		- вход +
+	// PORTB.4 = 		- вход +
+	// PORTB.5 = E_STR	- выход +
+	// PORTB.6 = RS		- выход +
+	// PORTB.7 = 		- вход +
+	DDRB = (1 << PB5) | (1 << PB6);
+	PORTB = 0xFF;
 
 	// Порт С
-	// PORTC.0 = KEY5	- вход +
-	// PORTC.1 = KEY6	- вход +
-	// PORTC.2 = KEY7	- вход +
-	// PORTC.3 = KEY8	- вход +
-	// PORTC.4 = KEY9	- вход +
-	// PORTC.5 = RST	- выход 0
-	// PORTC.6 = CS2	- выход 0
-	// PORTC.7 = CS1	- выход 0
-	DDRC = (1 << DDC5) | (1 << DDC6) | (1 << DDC7);
-	PORTC= (char) ~((1 << PC7) | (1 << PC6) | (1 << PC5));
+	// PORTC.0 = ROW1	- вход
+	// PORTC.1 = ROW2	- вход
+	// PORTC.2 = ROW3	- вход
+	// PORTC.3 = ROW4	- вход
+	// PORTC.4 = COL1	- вход
+	// PORTC.5 = COL2	- вход
+	// PORTC.6 = COL3	- вход
+	// PORTC.7 = COl4	- вход
+	DDRC = 0;
+	PORTC= 0;
 
 	// Порт D
-	// PORTD.0 = SCL	- альтер.
-	// PORTD.1 = SDA 	- альтер.
-	// PORTD.2 = RXD1	- альтер. вход
-	// PORTD.3 = TXD1	- альтер. выход
+	// PORTD.0 = 		- вход +.
+	// PORTD.1 = 	 	- вход +
+	// PORTD.2 = RXD1	- альтер.
+	// PORTD.3 = TXD1	- альтер.
 	// PORTD.4 = MUX	- выход 0 (переключение интерфейсов 0-USB, 1-485)
-	// PORTD.5 = LED	- выход 0
-	// PORTD.6 = KEY1	- вход +
-	// PORTD.7 = KEY2	- вход +
-	DDRD = (1 << DDD5) | (1 << DDD4);
-	PORTD= ~((1 << PD5) | (1 << PD4));
+	// PORTD.5 = 		- вход +
+	// PORTD.6 = 		- вход +
+	// PORTD.7 = 		- вход +
+	DDRD = (1 << DDD4);
+	PORTD= ~(1 << PD4);
 
 	// Порт Е
-	// PORTE.0 = RXD0	- альтер. вход
-	// PORTE.1 = TXD0	- альтер. выход
-	// PORTE.6 = TP1 	- выход 0
-	// PORTE.7 = TP2 	- выход 0
-	DDRE = (1 << PE7) | (1 << PE6);
-	PORTE = ~0x00;
+	// PORTE.0 = RXD0	- альтер.
+	// PORTE.1 = TXD0	- альтер.
+	// PORTE.2 = 		- вход +
+	// PORTE.3 = 		- вход +
+	// PORTE.4 = 		- вход +
+	// PORTE.5 = 		- вход +
+	// PORTE.6 = 		- вход +
+	// PORTE.7 = 		- вход +
+	DDRE = 0x00;
+	PORTE = 0xFF;
 
 	// Порт F
-	// PORTF.1 = RS		- выход 0
-	// PORTF.2 = RW		- выход 0
-	// PORTF.3 = E_STR	- выход 0
-	DDRF = (1 << DDF3) | (1 << DDF2) | (1 << DDF1);
-	PORTF = ~((1 << PF3) | (1 << PF2) | (1 << PF1));
+	// PORTF.0 = 		- вход +
+	// PORTF.1 = 		- вход +
+	// PORTF.2 = 		- вход (проходит сигнал E_STR)
+	// PORTF.3 = 		- вход (проходит сигнал RS)
+	// PORTF.4 = 		- вход +
+	// PORTF.5 = 		- вход +
+	// PORTF.6 = 		- вход +
+	// PORTF.7 = 		- вход +
+	DDRF = 0x00;
+	PORTF = 0xFC;
 
 	// Порт G
-	// PORTG.0 = KEY3	- вход +
-	// PORTG.1 = KEY4	- вход +
+	// PORTG.0 = 		- вход +
+	// PORTG.1 = 		- вход +
+	// PORTG.2 = 		- вход +
+	// PORTG.3 = 		- вход +
+	// PORTG.4 = 		- вход +
 	DDRG = 0x00;
 	PORTG= ~0x00;
 
 #ifdef DEBUG
-	DDR_DBG |= (PIN_TP1 | PIN_TP2);
+	DDR_DBG |= (PIN_TP);
 #endif
 
 	// Обнуление регистра

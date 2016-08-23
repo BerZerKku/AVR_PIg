@@ -28,7 +28,7 @@ static const char fcDimension[] [5] PROGMEM = {
 		"дЅ",	// Param::DIM_DB
 		"√ц",	// Param::DIM_HZ
 		"к√ц",	// Param::DIM_KHZ
-		"град"	// Param::DIM_DEG
+		"г"		// Param::DIM_DEG
 };
 
 /// ¬озможные значени€ параметра.

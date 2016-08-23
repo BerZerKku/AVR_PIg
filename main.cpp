@@ -12,11 +12,10 @@
 #include <stdio.h>
 #include "debug.h"
 #include "glbDefine.h"
-#include "ks0108.h"
+#include "hd44780.h"
 #include "menu.h"
 #include "keyboard.h"
 #include "uart.h"
-#include "tmp75.h"
 #include "protocolPcS.h"
 #include "protocolBspS.h"
 #include "protocolPcM.h"
@@ -49,6 +48,8 @@ struct sEeprom {
 	TDataBits::DATA_BITS 	dataBits;	/// Кол-во бит данных.
 	TParity::PARITY 	 	parity;		/// Четность.
 	TStopBits::STOP_BITS 	stopBits;	/// Кол-во стоп-бит.
+	eMENU_MEAS_PARAM		measParam1;	/// Первый измеряемый параметр.
+	eMENU_MEAS_PARAM 		measParam2;	/// Второй измеряемый параметр.
 };
 
 // Обработка принятых сообщений по последовательным портам
@@ -67,10 +68,6 @@ uint8_t uBufUartBsp[BUFF_SIZE_BSP];
 
 // параметры хранимые в ЕЕПРОМ
 static sEeprom eeprom;
-
-// Датчики температуры
-
-TTmp75 tmp75(TEMP_IC_ADR);
 
 /// Класс меню
 clMenu menu;
@@ -231,8 +228,8 @@ static void setInterface(TUartData *uart) {
 	// если идет связь с ПК, то настройки фиксированные
 	// если идет связь по Лок.сети, то настройки пользователя
 	switch (val) {
-		case TInterface::USB:
-			// во время отладки интерфейс USB можно настраивать
+		case TInterface::RS232:
+			// во время отладки интерфейс RS232 можно настраивать
 			// TODO
 			setProtocol(TProtocol::STANDART, 19200);
 			uartPC.open(19200, TDataBits::_8, TParity::NONE,
@@ -253,7 +250,7 @@ static void setInterface(TUartData *uart) {
 			break;
 	}
 
-	if (val == TInterface::USB) {
+	if (val == TInterface::RS232) {
 		PORTD &= ~(1 << PD4);
 	} else {
 		PORTD |= (1 << PD4);
@@ -358,6 +355,8 @@ main(void) {
 	menu.sParam.Uart.DataBits.set(eeprom.dataBits);
 	menu.sParam.Uart.Parity.set(eeprom.parity);
 	menu.sParam.Uart.StopBits.set(eeprom.stopBits);
+	menu.setViewParam(1, eeprom.measParam1);
+	menu.setViewParam(2, eeprom.measParam2);
 
 	// запуск последовательного порта для связи с БСП
 	// все настройки фиксированы
@@ -371,7 +370,6 @@ main(void) {
 
 	// настройка ЖКИ
 	vLCDinit();
-	vLCDclear();
 
 	// зададим тип аппарата
 	// menu.setTypeDevice(AVANT_NO);
@@ -415,6 +413,10 @@ main(void) {
 					protPCi.setAddressLan(nadr);
 				}
 
+				// обновленеи в структуре ЕЕПРОМ номеров измеряемых параметров
+				eeprom.measParam1 = menu.getViewParam(1);
+				eeprom.measParam2 = menu.getViewParam(2);
+
 				// обновление настроек пользователя в ЕЕПРОМ
 				eeprom_update_block(&eeprom, (sEeprom*) EEPROM_START_ADDRESS,
 						sizeof(eeprom));
@@ -437,10 +439,6 @@ main(void) {
 			if (cnt_wdt == 4)
 				wdt_reset();
 			cnt_wdt = 0;
-
-			// запуск процедуры считывания температуры c датчика
-			menu.sParam.measParam.setTemperature(tmp75.getTemperature());
-			tmp75.readTemp();
 		}
 	}
 }
@@ -449,8 +447,6 @@ main(void) {
 ISR(TIMER0_COMP_vect) {
 	// Обработчик ЖКИ
 	vLCDmain();
-	// подсветка ЖКИ
-	vLCDled();
 
 	// для работы протокола MODBUS
 	if (protPCm.isEnable()) {
@@ -535,13 +531,4 @@ ISR(USART0_RX_vect) {
 		// обработчик протокола "Стандартный"
 		protBSPs.checkByte(byte);
 	}
-}
-
-/// Прерывание по получению данных TWI
-ISR(TWI_vect) {
-	uint8_t state = TWSR & 0xF8;
-
-	tmp75.isr(state);
-
-//	TWCR |= (1 << TWINT);
 }

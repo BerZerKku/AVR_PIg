@@ -15,23 +15,17 @@
 #warning "Включен режим отладки!!!"
 
 // вывод отладочной информации на экран
-#define VIEW_DEBUG_PARAM
-//#define IEC101
-
+// #define VIEW_DEBUG_PARAM
 
 // тестовые пины
 #define DDR_DBG		DDRE
 #define PORT_DBG	PORTE
-#define PIN_TP1		(1 << 6)
-#define PIN_TP2		(1 << 7)
+#define PIN_TP		(1 << 7)
 
-#define SET_TP1 PORT_DBG |= PIN_TP1
-#define CLR_TP1 PORT_DBG &= ~PIN_TP1
-#define TOG_TP1 PORT_DBG ^= PIN_TP1
+#define SET_TP PORT_DBG |= PIN_TP
+#define CLR_TP PORT_DBG &= ~PIN_TP
+#define TOG_TP PORT_DBG ^= PIN_TP
 
-#define SET_TP2 PORT_DBG |= PIN_TP2
-#define CLR_TP2 PORT_DBG &= ~PIN_TP2
-#define TOG_TP2 PORT_DBG ^= PIN_TP2
 
 // отладочная информация
 struct stDebug

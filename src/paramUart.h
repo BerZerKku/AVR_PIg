@@ -15,20 +15,16 @@ public:
 	// интерфейс связи
 	enum INTERFACE {
 		MIN = 0,	//
-		USB = 0,	// подключение через USB на передней панели
+		RS232 = 0,	// подключение через RS232 на передней панели
 		RS485,		// подключение через 485 интерфейс на задней панели
 		MAX			//
 	};
 
 	/**	Конструктор.
-	 * 	По умолчанию устанваливает связь по USB.
+	 * 	По умолчанию устанваливает связь по RS232.
 	 */
 	TInterface() {
-
-		interface_ = USB;
-#ifdef  DEBUG
-		interface_ = RS485;
-#endif
+		interface_ = RS232;
 	}
 
 	/**	Запись.
@@ -72,10 +68,6 @@ public:
 	 */
 	TProtocol() {
 		protocol_ = STANDART;
-
-#ifdef  DEBUG
-		protocol_ = IEC_101;
-#endif
 	}
 
 	/**	Запись.
@@ -320,16 +312,12 @@ private:
 class TUartData {
 public:
 	TUartData() {
-		Interface.set(TInterface::USB);
+		Interface.set(TInterface::RS232);
 		Protocol.set(TProtocol::MODBUS);
 		BaudRate.set(TBaudRate::_19200);
 		DataBits.set(TDataBits::_8);
 		Parity.set(TParity::EVEN);
 		StopBits.set(TStopBits::ONE);
-#ifdef IEC101
-		Interface.set(TInterface::RS485);
-		Protocol.set(TProtocol::IEC_101);
-#endif
 	}
 
 	/// Интерфейс связи

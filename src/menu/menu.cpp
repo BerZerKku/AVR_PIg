@@ -8,7 +8,7 @@
 
 #include "menu.h"
 #include "debug.h"
-#include "ks0108.h"
+#include "hd44780.h"
 #include "flash.h"
 
 /// режим подсветки по умолчанию
@@ -28,6 +28,7 @@ clMenu::clMenu() {
 	blinkMeasParam_ = false;
 	curCom_ = 0;
 	delay_ = TIME_MESSAGE;
+	viewRange_ = false;
 
 	// курсор неактивен
 	cursorEnable_ = false;
@@ -98,14 +99,6 @@ clMenu::clMenu() {
 	sParam.prm.status.name = PSTR("ПРМ");	//fcDeviceName01;
 	sParam.prd.status.name = PSTR("ПРД");	//fcDeviceName02;
 
-#ifdef DEBUG
-	// в режиме отладки включена постоянная подсветка
-	vLCDsetLed(LED_ON);
-#else
-	// установка режима работы подсветки
-	vLCDsetLed(LED_REGIME);
-#endif
-
 	sParam.local.setFlashParams(fParams);
 }
 
@@ -130,7 +123,7 @@ void clMenu::main(void) {
 		cntBlinkText = 0;
 	}
 
-	if (++cntInitLcd >= TIME_TO_INIT_LCD) {
+	if (++cntInitLcd >= TIME_TO_REINIT_LCD) {
 		vLCDinit();
 		cntInitLcd = 0;
 	}
@@ -144,19 +137,7 @@ void clMenu::main(void) {
 
 	// Считаем код с клавиатуры
 	// Если нажата любая кнопка - включится кратковременная подсветка
-	eKEY tmp = eKEYget();
-	if (tmp != KEY_NO) {
-		if (tmp == KEY_EMPTY)
-			tmp = KEY_NO;
-		key_ = tmp;
-
-		vLCDsetLed(LED_SWITCH);
-	}
-
-
-	if (checkLedOn()) {
-		vLCDsetLed(LED_SWITCH);
-	}
+	key_ = eKEYget(sParam.typeDevice);
 
 	// счетчик вывода сообщения
 	if (delay_ < TIME_MESSAGE) {
@@ -171,19 +152,10 @@ void clMenu::main(void) {
 
 #ifdef VIEW_DEBUG_PARAM
 	// вывод отладочной информации
-	if (this->lvlMenu == &clMenu::lvlStart) {
-		snprintf(&vLCDbuf[20], 5, "1*%02X", sDebug.byte1);
-		snprintf(&vLCDbuf[25], 5, "2*%02X", sDebug.byte2);
-		snprintf(&vLCDbuf[30], 5, "3*%02X", sDebug.byte3);
-		snprintf(&vLCDbuf[35], 5, "4*%02X", sDebug.byte4);
-		snprintf(&vLCDbuf[40], 5, "5*%02X", sDebug.byte5);
-		snprintf(&vLCDbuf[45], 5, "6*%02X", sDebug.byte6);
-		snprintf(&vLCDbuf[50], 5, "7*%02X", sDebug.byte7);
-		snprintf(&vLCDbuf[55], 5, "8*%02X", sDebug.byte8);
-	} else {
-		snprintf(&vLCDbuf[10], 5, "1*%02X", sDebug.byte1);
-		snprintf(&vLCDbuf[15], 5, "2*%02X", sDebug.byte2);
-	}
+	snprintf(&vLCDbuf[00], 5, "1*%02X", sDebug.byte1);
+	snprintf(&vLCDbuf[05], 5, "2*%02X", sDebug.byte2);
+	snprintf(&vLCDbuf[10], 5, "3*%02X", sDebug.byte3);
+	snprintf(&vLCDbuf[15], 5, "4*%02X", sDebug.byte4);
 #endif
 
 	// вывод сообщения в случае отсутствия связи с БСП
@@ -205,7 +177,7 @@ void clMenu::main(void) {
 	lastConnection = connection;
 
 	// преобразование строки символов в данные для вывода на экран
-	vLCDputchar(vLCDbuf, lineParam_);
+	vLCDputchar(vLCDbuf);
 	// запуск обновления инф-ии на ЖКИ
 	vLCDrefresh();
 }
@@ -216,7 +188,6 @@ void clMenu::main(void) {
 bool clMenu::setDeviceK400() {
 	sParam.typeDevice = AVANT_K400;
 	sParam.glb.setTypeDevice(AVANT_K400);
-	vKEYset(AVANT_K400);
 
 	// включение/отключение параметров в зависимости от текущей совместимости
 	eGB_COMP_K400 comp = sParam.glb.getCompK400();
@@ -273,74 +244,27 @@ bool clMenu::setDeviceK400() {
 	sParam.prm.status.stateText[3] = fcPrmSost03;
 
 	// дата и время выводятся во всех вариантах
-	measParam[0] = MENU_MEAS_PARAM_TIME;
-	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TIME;
-	measParam[1] = MENU_MEAS_PARAM_DATE;
-	measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
-
-	if (!sParam.prd.status.isEnable()) {
-		// Если чистый приемник, не нужны U и I
-		// а в трех концевой при этом надо выводить Uк1, Uk2, Uш1, Uш2
-		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-			measParam[2] = MENU_MEAS_PARAM_UC1;
-			measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC1;
-			measParam[3] = MENU_MEAS_PARAM_UC2;
-			measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC2;
-			measParam[4] = MENU_MEAS_PARAM_UN1;
-			measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN1;
-			measParam[5] = MENU_MEAS_PARAM_UN2;
-			measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN2;
-		} else {
-			measParam[3] = MENU_MEAS_PARAM_UC;
-			measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
-			measParam[5] = MENU_MEAS_PARAM_UN;
-			measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_D;
-		}
-	} else if (!sParam.prm.status.isEnable()) {
-		// Если чистый передатчик, не нужны Uk/Uш
-		measParam[2] = MENU_MEAS_PARAM_UOUT;
-		measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UOUT;
-		measParam[4] = MENU_MEAS_PARAM_IOUT;
-		measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_IOUT;
-	} else {
-		// Если есть приемник и передатчик выводим U,I,Uk,Uш
-		// в 3-х концевой при этом выводятся Uк1/2, Uш1/2
-		measParam[2] = MENU_MEAS_PARAM_UOUT;
-		measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UOUT;
-		measParam[4] = MENU_MEAS_PARAM_IOUT;
-		measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_IOUT;
-		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-			measParam[3] = MENU_MEAS_PARAM_UC1;
-			measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC2;
-			measParam[5] = MENU_MEAS_PARAM_UN1;
-			measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN2;
-		} else {
-			measParam[3] = MENU_MEAS_PARAM_UC;
-			measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
-			measParam[5] = MENU_MEAS_PARAM_UN;
-			measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_D;
-		}
-	}
-
-	// заполнение массива параметров для меню "Измерение"
 	uint8_t cnt = 0;
+	measParam[cnt++] = MENU_MEAS_PARAM_TIME;
+	measParam[cnt++] = MENU_MEAS_PARAM_DATE;
+
 	if (sParam.prd.status.isEnable()) {
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UOUT;	// 1
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_IOUT;	// 2
+		measParam[cnt++] = MENU_MEAS_PARAM_UOUT;
+		measParam[cnt++] = MENU_MEAS_PARAM_IOUT;
 	}
+
 	if (sParam.prm.status.isEnable()) {
 		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC1;	// 3
-			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC2;	// 4
-			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN1; // 5
-			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN2;	// 6
+			measParam[cnt++] = MENU_MEAS_PARAM_UC1;
+			measParam[cnt++] = MENU_MEAS_PARAM_UC2;
+			measParam[cnt++] = MENU_MEAS_PARAM_UN1;
+			measParam[cnt++] = MENU_MEAS_PARAM_UN2;
 		} else {
-			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC;	// 3
-			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN;	// 4
-			measParamLvl[cnt++] = MENU_MEAS_PARAM_D;	// 5
+			measParam[cnt++] = MENU_MEAS_PARAM_UC;
+			measParam[cnt++] = MENU_MEAS_PARAM_UN;
+			measParam[cnt++] = MENU_MEAS_PARAM_D;
 		}
 	}
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_TEMPERATURE;	// 7 или 6
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -411,7 +335,6 @@ bool clMenu::setDeviceRZSK() {
 
 	sParam.typeDevice = AVANT_RZSK;
 	sParam.glb.setTypeDevice(AVANT_RZSK);
-	vKEYset(AVANT_RZSK);
 
 	sParam.prm.status.setEnable(sParam.prm.getNumCom() != 0);
 	sParam.prd.status.setEnable(sParam.prd.getNumCom() != 0);
@@ -426,42 +349,26 @@ bool clMenu::setDeviceRZSK() {
 	sParam.prm.status.stateText[3] = fcPrmSost03;
 
 	// первый столбец параметров
-	measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
-	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
-	measParam[2] = measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UOUT;
-	measParam[4] = measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_IOUT;
+	uint8_t cnt = 0;
+	measParam[cnt++] = MENU_MEAS_PARAM_TIME;	// дата <-> время
+	measParam[cnt++] = MENU_MEAS_PARAM_DATE;
+	measParam[cnt++] = MENU_MEAS_PARAM_UOUT;
+	measParam[cnt++] = MENU_MEAS_PARAM_IOUT;
+
 
 	// второй столбец параметров
 	if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-		measParam[1] = MENU_MEAS_PARAM_UZ1;
-		measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UZ2;
-		measParam[3] = MENU_MEAS_PARAM_UC1;
-		measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC2;
-		measParam[5] = MENU_MEAS_PARAM_UN1;
-		measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN2;
+		measParam[cnt++] = MENU_MEAS_PARAM_UZ1;
+		measParam[cnt++] = MENU_MEAS_PARAM_UZ2;
+		measParam[cnt++] = MENU_MEAS_PARAM_UC1;
+		measParam[cnt++] = MENU_MEAS_PARAM_UC2;
+		measParam[cnt++] = MENU_MEAS_PARAM_UN1;
+		measParam[cnt++] = MENU_MEAS_PARAM_UN2;
 	} else {
-		measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UZ;
-		measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
-		measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
+		measParam[cnt++] = MENU_MEAS_PARAM_UZ;
+		measParam[cnt++] = MENU_MEAS_PARAM_UC;
+		measParam[cnt++] = MENU_MEAS_PARAM_UN;
 	}
-
-	// заполнение массива параметров для меню "Измерение"
-	uint8_t cnt = 0;
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_UOUT;	// 1
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_IOUT;	// 2
-	if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UZ1;	// 3
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UZ2;	// 4
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UC1;	// 5
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UC2;	// 6
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UN1; 	// 7
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UN2;	// 8
-	} else {
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UZ;	// 3
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UC;	// 4
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UN;	// 5
-	}
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_TEMPERATURE;	// 9 или 6
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -541,7 +448,6 @@ bool clMenu::setDeviceR400M() {
 
 	sParam.typeDevice = AVANT_R400M;
 	sParam.glb.setTypeDevice(AVANT_R400M);
-	vKEYset(AVANT_R400M);
 
 	// состояния
 	sParam.def.status.stateText[9] = fcDefSost09;
@@ -553,37 +459,20 @@ bool clMenu::setDeviceR400M() {
 	sParam.prm.status.stateText[3] = fcPrmSost03;
 
 	// первый столбец параметров
-	measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
-	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
-	measParam[2] = measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UOUT;
-	measParam[4] = measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_IOUT;
-
-	// второй столбец параметров
-	measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UZ;
-	if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
-		measParam[3] = MENU_MEAS_PARAM_UC1;
-		measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC2;
-	} else {
-		measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
-	}
-	measParam[5] = MENU_MEAS_PARAM_SD;
-	measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
-
-	// заполнение массива параметров для меню "Измерение"
 	uint8_t cnt = 0;
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_UOUT;	// 1
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_IOUT;	// 2
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_UZ;	// 3
-	if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UC1;	// 4
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UC2;	// 5
+	measParam[cnt++] = MENU_MEAS_PARAM_TIME;	// дата <-> время
+	measParam[cnt++] = MENU_MEAS_PARAM_DATE;
+	measParam[cnt++] = MENU_MEAS_PARAM_UOUT;
+	measParam[cnt++] = MENU_MEAS_PARAM_IOUT;
+	measParam[cnt++] = MENU_MEAS_PARAM_UZ;
+	if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
+		measParam[cnt++] = MENU_MEAS_PARAM_UC1;
+		measParam[cnt++] = MENU_MEAS_PARAM_UC2;
 	} else {
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UC;	// 4
+		measParam[cnt++] = MENU_MEAS_PARAM_UC;
 	}
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_SD;	// 6 или 5
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_UN;	// 7 или 6
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_TEMPERATURE;	// 8 или 7
-
+	measParam[cnt++] = MENU_MEAS_PARAM_SD;
+	measParam[cnt++] = MENU_MEAS_PARAM_UN;
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -650,17 +539,6 @@ bool clMenu::setDeviceOPTO() {
 	sParam.prm.status.setEnable(sParam.prm.getNumCom() != 0);
 	sParam.prd.status.setEnable(sParam.prd.getNumCom() != 0);
 
-	if (sParam.def.status.isEnable()) {
-		// в РЗСК будет клавиатура от РЗСК, иначе от Р400м
-		if (sParam.prm.status.isEnable() || sParam.prd.status.isEnable()) {
-			vKEYset(AVANT_RZSK);
-		} else {
-			vKEYset(AVANT_R400M);
-		}
-	} else {
-		vKEYset(AVANT_K400);
-	}
-
 	// состояния
 	sParam.def.status.stateText[9] = fcDefSost09opto;
 
@@ -670,8 +548,8 @@ bool clMenu::setDeviceOPTO() {
 	sParam.prm.status.stateText[1] = fcPrmSost01opto;
 	sParam.prm.status.stateText[3] = fcPrmSost03opto;
 
-	measParam[0] = measParam[0 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TIME;
-	measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
+	measParam[0] = MENU_MEAS_PARAM_TIME;
+	measParam[1] = MENU_MEAS_PARAM_DATE;
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -815,13 +693,11 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 	for (uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
 		sParam.prd.status.warningText[i] = fcUnknownWarning;
 
+	measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
+	measParam[1] = MENU_MEAS_PARAM_DATE;
 	// предварительная очистка массива отображаемых параметров
-	for (uint_fast8_t i = 0; i < (MAX_NUM_MEAS_PARAM * 2); i++)
-		measParam[i] = MENU_MEAS_PARAM_NO;
-
-	// предварительная очистка массива отображаемых параметров в "Измерение"
-	for (uint_fast8_t i = 0; i < MAX_NUM_MEAS_PARAM_LVL; i++)
-		measParamLvl[i] = MENU_MEAS_PARAM_NO;
+		for (uint_fast8_t i = 0; i < MAX_NUM_MEAS_PARAM; i++)
+			measParam[i] = MENU_MEAS_PARAM_NO;
 
 	if (device == AVANT_K400) {
 		status = setDeviceK400();
@@ -836,11 +712,6 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 		// если полученные данные не подходят ни под один имеющийся тип
 		// на экране отображается ошибка
 		sParam.typeDevice = AVANT_NO;
-		// в случае неизвестного типа устройства, отключим все
-		for (uint_fast8_t i = 0; i < (MAX_NUM_MEAS_PARAM * 2); i++)
-			measParam[i] = MENU_MEAS_PARAM_NO;
-		measParam[0] = measParam[0 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TIME;
-		measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
 
 		sParam.def.status.setEnable(false);
 		sParam.prm.status.setEnable(false);
@@ -936,27 +807,23 @@ void clMenu::lvlError() {
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		cursorEnable_ = false;
-		vLCDclear();
 		// только одна строка отводится под вывод параметров
 		lineParam_ = 1;
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 		sParam.txComBuf.clear();
 		sParam.txComBuf.addCom2(GB_COM_GET_VERS);
 	}
 
 	// вывод на экран измеряемых параметров
-	printMeasParam(0, measParam[0]);
-	printMeasParam(1, measParam[1]);
+	printMeasParam(0, MENU_MEAS_PARAM_DATE);
+	printMeasParam(1, MENU_MEAS_PARAM_TIME);
 
 	// Проверка времени нахождения в неизвестном состоянии типа аппарата
-	if (time >= 25) {
+	if (time++ >= 25) {
 		snprintf_P(&vLCDbuf[40], 21, fcNoTypeDevice0);
 		snprintf_P(&vLCDbuf[60], 21, fcNoTypeDevice1);
 	} else {
 		snprintf_P(&vLCDbuf[40], 21, fcNoTypeDevice3);
 	}
-	time++;
 
 	if (sParam.typeDevice != AVANT_NO) {
 		lvlMenu = &clMenu::lvlStart;
@@ -977,9 +844,7 @@ void clMenu::lvlStart() {
 		lvlCreate_ = false;
 
 		cursorEnable_ = false;
-		lineParam_ = 3;
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
+		lineParam_ = 1;
 
 		sParam.txComBuf.clear();
 		// буфер 1
@@ -1020,10 +885,7 @@ void clMenu::lvlStart() {
 		if (i >= MAX_NUM_MEAS_PARAM)
 			continue;
 
-		if (blinkMeasParam_)
-			printMeasParam(i, measParam[i]);
-		else
-			printMeasParam(i, measParam[i + MAX_NUM_MEAS_PARAM]);
+		printMeasParam(i, measParam[i]);
 	}
 
 //	uint16_t val = sParam.glb.status.getWarnings();
@@ -1098,87 +960,16 @@ void clMenu::lvlStart() {
 			lvlCreate_ = true;
 			break;
 
-		case KEY_CALL:
-			sParam.txComBuf.setInt8(GB_CONTROL_CALL);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			break;
-
-		case KEY_PUSK_UD:
-			if (sParam.def.status.isEnable()) {
-				if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
-					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_ALL);
-				} else {
-					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
-				}
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			}
-			break;
-
-		case KEY_AC_PUSK_UD:
-			if (sParam.def.status.isEnable()) {
-				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_AC_UD);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			}
-			break;
-
-		case KEY_PUSK_NALAD:
-			if (sParam.def.status.isEnable()) {
-				if (sParam.def.status.getState() == 7) {
-					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_OFF);
-					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-				} else {
-					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_ON);
-					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-				}
-			}
-			break;
-
-		case KEY_AC_RESET:
-			if (sParam.def.status.isEnable()) {
-				sParam.txComBuf.setInt8(GB_CONTROL_RESET_AC);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			}
-			break;
-
-		case KEY_AC_PUSK:
-			if (sParam.def.status.isEnable()) {
-				if (sParam.typeDevice == AVANT_R400M) {
-					eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
-					if (comp != GB_COMPATIBILITY_LINER) {
-						if ((comp == GB_COMPATIBILITY_AVZK80) ||
-								(comp == GB_COMPATIBILITY_PVZ90)) {
-							sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK);
-						} else {
-							sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
-						}
-						sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-					}
-				}
-			}
-			break;
-
-		case KEY_AC_REGIME:
-			if (sParam.def.status.isEnable()) {
-				sParam.txComBuf.setInt8(GB_CONTROL_REG_AC);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			}
-			break;
-
-		case KEY_RESET_IND:
+		case KEY_HELP:
 			if (sParam.prd.status.isEnable() || sParam.prm.status.isEnable()) {
 				sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
 			}
 			break;
 
-		case KEY_PUSK:
+		case KEY_ENTER:
 			if (sParam.prm.status.isEnable()) {
 				sParam.txComBuf.addFastCom(GB_COM_PRM_ENTER);
 			}
-			break;
-
-		case KEY_RESET:
-			sParam.txComBuf.setInt8(GB_CONTROL_RESET_SELF);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			break;
 
 		default:
@@ -1205,9 +996,6 @@ void clMenu::lvlFirst() {
 		cursorLine_ = 1;
 		lineParam_ = 1;
 		cursorEnable_ = true;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		Punkts_.clear();
 		Punkts_.add(punkt1);
@@ -1283,16 +1071,13 @@ void clMenu::lvlFirst() {
  * 	@return Нет
  */
 void clMenu::lvlInfo() {
-	static char title[] PROGMEM = "Меню\\Информация";
+	static char title[] PROGMEM = "Меню/Информация";
 	static char versProg[] PROGMEM = "%S: %02X.%02X";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		lineParam_ = 1;
 		cursorLine_ = 0;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		Punkts_.clear();
 		Punkts_.add(GB_IC_BSP_MCU);
@@ -1369,7 +1154,7 @@ void clMenu::lvlInfo() {
  * 	@return Нет
  */
 void clMenu::lvlJournal() {
-	static char title[] PROGMEM = "Меню\\Журнал";
+	static char title[] PROGMEM = "Меню/Журнал";
 	static char punkt1[] PROGMEM = "%d. События";
 	static char punkt2[] PROGMEM = "%d. Защита";
 	static char punkt3[] PROGMEM = "%d. Приемник";
@@ -1380,9 +1165,6 @@ void clMenu::lvlJournal() {
 		cursorLine_ = 1;
 		cursorEnable_ = true;
 		lineParam_ = 1;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		sParam.txComBuf.clear();
 
@@ -1451,16 +1233,14 @@ void clMenu::lvlJournal() {
  * 	@return Нет
  */
 void clMenu::lvlJournalEvent() {
-	static char title[] PROGMEM = "Журнал\\События";
+	// TODO журнал событий
+	static char title[] PROGMEM = "Журнал/События";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		cursorEnable_ = false;
 		lineParam_ = 1;
 		curCom_ = 1;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// установка текущего журнала и максимального кол-во записей в нем
 		sParam.jrnEntry.clear();
@@ -1589,24 +1369,25 @@ void clMenu::lvlJournalEvent() {
 			}
 			break;
 
-		case KEY_LEFT:
-			if (device == AVANT_OPTO) {
-				if (curCom_ > 1) {
-					curCom_--;
-				} else {
-					curCom_ = sParam.jrnEntry.getNumOpticsEntries();
-				}
-			}
-			break;
-		case KEY_RIGHT:
-			if (device == AVANT_OPTO) {
-				if (curCom_ < sParam.jrnEntry.getNumOpticsEntries()) {
-					curCom_++;
-				} else {
-					curCom_ = 1;
-				}
-			}
-			break;
+			// TODO
+//		case KEY_LEFT:
+//			if (device == AVANT_OPTO) {
+//				if (curCom_ > 1) {
+//					curCom_--;
+//				} else {
+//					curCom_ = sParam.jrnEntry.getNumOpticsEntries();
+//				}
+//			}
+//			break;
+//		case KEY_RIGHT:
+//			if (device == AVANT_OPTO) {
+//				if (curCom_ < sParam.jrnEntry.getNumOpticsEntries()) {
+//					curCom_++;
+//				} else {
+//					curCom_ = 1;
+//				}
+//			}
+//			break;
 
 		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlJournal;
@@ -1632,15 +1413,13 @@ void clMenu::lvlJournalEvent() {
  * 	@return Нет
  */
 void clMenu::lvlJournalDef() {
-	static char title[] PROGMEM = "Журнал\\Защита";
+	// TODO Журнал Защиты
+	static char title[] PROGMEM = "Журнал/Защита";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		cursorEnable_ = false;
 		lineParam_ = 1;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// установка текущего журнала и максимального кол-во записей в нем
 		sParam.jrnEntry.clear();
@@ -1685,7 +1464,7 @@ void clMenu::lvlJournalDef() {
 		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
 	} else {
 		// вывод состояния
-		snprintf_P(&vLCDbuf[poz], 21, fcStateJrn);
+//		snprintf_P(&vLCDbuf[poz], 21, fcStateJrn);
 		if (sParam.glb.getTypeLine() != GB_TYPE_LINE_OPTO) {
 			snprintf_P(&vLCDbuf[poz + 11], 10,
 					sParam.def.status.stateText[sParam.jrnEntry.getEventType()]);
@@ -1748,15 +1527,13 @@ void clMenu::lvlJournalDef() {
  * 	@return Нет
  */
 void clMenu::lvlJournalPrm() {
-	static char title[] PROGMEM = "Журнал\\Приемник";
+	// TODO Журнал Приемника
+	static char title[] PROGMEM = "Журнал/Приемник";
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		cursorEnable_ = false;
 		lineParam_ = 1;
 		curCom_ = 1;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// установка текущего журнала и максимального кол-во записей в нем
 		sParam.jrnEntry.clear();
@@ -1863,24 +1640,25 @@ void clMenu::lvlJournalPrm() {
 			}
 			break;
 
-		case KEY_LEFT:
-			if (device == AVANT_OPTO) {
-				if (curCom_ > 1) {
-					curCom_--;
-				} else {
-					curCom_ = sParam.jrnEntry.getNumOpticsEntries();
-				}
-			}
-			break;
-		case KEY_RIGHT:
-			if (device == AVANT_OPTO) {
-				if (curCom_ < sParam.jrnEntry.getNumOpticsEntries()) {
-					curCom_++;
-				} else {
-					curCom_ = 1;
-				}
-			}
-			break;
+			// TODO
+//		case KEY_LEFT:
+//			if (device == AVANT_OPTO) {
+//				if (curCom_ > 1) {
+//					curCom_--;
+//				} else {
+//					curCom_ = sParam.jrnEntry.getNumOpticsEntries();
+//				}
+//			}
+//			break;
+//		case KEY_RIGHT:
+//			if (device == AVANT_OPTO) {
+//				if (curCom_ < sParam.jrnEntry.getNumOpticsEntries()) {
+//					curCom_++;
+//				} else {
+//					curCom_ = 1;
+//				}
+//			}
+//			break;
 
 		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlJournal;
@@ -1906,16 +1684,14 @@ void clMenu::lvlJournalPrm() {
  * 	@return Нет
  */
 void clMenu::lvlJournalPrd() {
-	static char title[] PROGMEM = "Журнал\\Передатчик";
+	// TODO Журнал Передатчика
+	static char title[] PROGMEM = "Журнал/Передатчик";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		cursorEnable_ = false;
 		lineParam_ = 1;
 		curCom_ = 1;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// установка текущего журнала и максимального кол-во записей в нем
 		sParam.jrnEntry.clear();
@@ -2030,24 +1806,25 @@ void clMenu::lvlJournalPrd() {
 			}
 			break;
 
-		case KEY_LEFT:
-			if (device == AVANT_OPTO) {
-				if (curCom_ > 1) {
-					curCom_--;
-				} else {
-					curCom_ = sParam.jrnEntry.getNumOpticsEntries();
-				}
-			}
-			break;
-		case KEY_RIGHT:
-			if (device == AVANT_OPTO) {
-				if (curCom_ < sParam.jrnEntry.getNumOpticsEntries()) {
-					curCom_++;
-				} else {
-					curCom_ = 1;
-				}
-			}
-			break;
+			// TODO
+//		case KEY_LEFT:
+//			if (device == AVANT_OPTO) {
+//				if (curCom_ > 1) {
+//					curCom_--;
+//				} else {
+//					curCom_ = sParam.jrnEntry.getNumOpticsEntries();
+//				}
+//			}
+//			break;
+//		case KEY_RIGHT:
+//			if (device == AVANT_OPTO) {
+//				if (curCom_ < sParam.jrnEntry.getNumOpticsEntries()) {
+//					curCom_++;
+//				} else {
+//					curCom_ = 1;
+//				}
+//			}
+//			break;
 
 		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlJournal;
@@ -2074,7 +1851,7 @@ void clMenu::lvlJournalPrd() {
  */
 void clMenu::lvlControl() {
 
-	static char title[] PROGMEM = "Меню\\Управление";
+	static char title[] PROGMEM = "Меню/Управление";
 	// %d - может быть двухзначным, учесть для макс. кол-ва символов !
 	//							   	"01234567890123456789"
 	static char punkt02[] PROGMEM = "%d. Пуск удаленного";
@@ -2119,9 +1896,6 @@ void clMenu::lvlControl() {
 		cursorLine_ = 1;
 		cursorEnable_ = true;
 		lineParam_ = 1;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		Punkts_.clear();
 		if (device == AVANT_R400M) {
@@ -2494,7 +2268,7 @@ void clMenu::lvlControl() {
  * 	@return Нет
  */
 void clMenu::lvlSetup() {
-	static char title[] PROGMEM = "Меню\\Настройка";
+	static char title[] PROGMEM = "Меню/Настройка";
 	static char punkt1[] PROGMEM = "%d. Режим";
 	static char punkt2[] PROGMEM = "%d. Время и дата";
 	static char punkt3[] PROGMEM = "%d. Параметры";
@@ -2506,9 +2280,6 @@ void clMenu::lvlSetup() {
 		cursorLine_ = 1;
 		cursorEnable_ = true;
 		lineParam_ = 1;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		Punkts_.clear();
 		Punkts_.add(punkt1);
@@ -2590,7 +2361,7 @@ void clMenu::lvlSetup() {
 }
 
 void clMenu::lvlRegime() {
-	static char title[] PROGMEM = "Настройка\\Режим";
+	static char title[] PROGMEM = "Настройка/Режим";
 	eGB_REGIME reg = sParam.glb.status.getRegime();
 
 	if (lvlCreate_) {
@@ -2598,9 +2369,6 @@ void clMenu::lvlRegime() {
 		cursorLine_ = 1;
 		cursorEnable_ = true;
 		lineParam_ = 1;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
@@ -2731,7 +2499,7 @@ void clMenu::lvlRegime() {
  * 	@return Нет
  */
 void clMenu::lvlSetupParam() {
-	static char title[] PROGMEM = "Настройка\\Параметры";
+	static char title[] PROGMEM = "Настройка/Параметры";
 	static char punkt1[] PROGMEM = "%d. Защита";
 	static char punkt2[] PROGMEM = "%d. Приемник";
 	static char punkt3[] PROGMEM = "%d. Передатчик";
@@ -2742,9 +2510,6 @@ void clMenu::lvlSetupParam() {
 		cursorLine_ = 1;
 		cursorEnable_ = true;
 		lineParam_ = 1;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// настройка меню, в зависимости от текущего устройства
 		Punkts_.clear();
@@ -2811,14 +2576,11 @@ void clMenu::lvlSetupParam() {
  * 	@return Нет
  */
 void clMenu::lvlSetupParamDef() {
-	static char title[] PROGMEM = "Параметры\\Защита";
+	static char title[] PROGMEM = "Параметры/Защита";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		EnterParam.setDisable();
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// заполнение массивов параметров и команд
 		eGB_TYPE_DEVICE device = sParam.typeDevice;
@@ -2869,6 +2631,8 @@ void clMenu::lvlSetupParamDef() {
 			sParam.local.addParam(GB_PARAM_OVERLAP_OPTO);
 			sParam.local.addParam(GB_PARAM_DELAY_OPTO);
 		}
+
+		viewRange_ = false;
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -2895,14 +2659,11 @@ void clMenu::lvlSetupParamDef() {
  * 	@return Нет
  */
 void clMenu::lvlSetupParamPrm() {
-	static char title[] PROGMEM = "Параметры\\Приемник";
+	static char title[] PROGMEM = "Параметры/Приемник";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		EnterParam.setDisable();
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// заполнение массивов параметров и команд
 		eGB_TYPE_DEVICE device = sParam.typeDevice;
@@ -2939,6 +2700,8 @@ void clMenu::lvlSetupParamPrm() {
 				sParam.local.addParam(GB_PARAM_PRM_TIME_OFF);
 			}
 		}
+
+		viewRange_ = false;
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -2965,14 +2728,11 @@ void clMenu::lvlSetupParamPrm() {
  * 	@return Нет
  */
 void clMenu::lvlSetupParamPrd() {
-	static char title[] PROGMEM = "Параметры\\Передатчик";
+	static char title[] PROGMEM = "Параметры/Передатчик";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		EnterParam.setDisable();
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// заполнение массивов параметров и команд
 		eGB_TYPE_DEVICE device = sParam.typeDevice;
@@ -3010,6 +2770,8 @@ void clMenu::lvlSetupParamPrd() {
 			sParam.local.addParam(GB_PARAM_PRD_COM_LONG);
 			sParam.local.addParam(GB_PARAM_PRD_COM_BLOCK);
 		}
+
+		viewRange_ = false;
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -3036,14 +2798,11 @@ void clMenu::lvlSetupParamPrd() {
  * 	@return Нет
  */
 void clMenu::lvlSetupParamGlb() {
-	static char title[] PROGMEM = "Параметры\\Общие";
+	static char title[] PROGMEM = "Параметры/Общие";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		EnterParam.setDisable();
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// заполнение массивов параметров и команд
 		eGB_TYPE_DEVICE device = sParam.typeDevice;
@@ -3148,6 +2907,8 @@ void clMenu::lvlSetupParamGlb() {
 			}
 			sParam.local.addParam(GB_PARAM_BACKUP);
 		}
+
+		viewRange_ = false;
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -3174,7 +2935,7 @@ void clMenu::lvlSetupParamGlb() {
  * 	@return Нет
  */
 void clMenu::lvlSetupInterface() {
-	static char title[] PROGMEM = "Настройка\\Интерфейс";
+	static char title[] PROGMEM = "Настройка/Интерфейс";
 //	static char punkt1[] PROGMEM = "Интерфейс связи";
 //	static char punkt2[] PROGMEM = "Протокол";
 //	static char punkt3[] PROGMEM = "Скорость передачи";
@@ -3186,9 +2947,6 @@ void clMenu::lvlSetupInterface() {
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		EnterParam.setDisable();
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 //		eGB_TYPE_DEVICE device = sParam.typeDevice;
 		sParam.txComBuf.clear();
@@ -3253,7 +3011,7 @@ void clMenu::lvlSetupInterface() {
  * 	@return Нет
  */
 void clMenu::lvlSetupDT() {
-	static char title[] PROGMEM = "Настройка\\Время&дата";
+	static char title[] PROGMEM = "Настройка/Время&дата";
 	static char punkt1[] PROGMEM = "%d. Год";
 	static char punkt2[] PROGMEM = "%d. Месяц";
 	static char punkt3[] PROGMEM = "%d. День";
@@ -3266,9 +3024,6 @@ void clMenu::lvlSetupDT() {
 		cursorLine_ = 1;
 		cursorEnable_ = true;
 		lineParam_ = 2;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		Punkts_.clear();
 		Punkts_.add(punkt1);
@@ -3339,73 +3094,86 @@ void clMenu::lvlSetupDT() {
 	} else
 		printPunkts();
 
-	switch(key_) {
-		case KEY_UP:
-			cursorLineUp();
-			break;
-		case KEY_DOWN:
-			cursorLineDown();
-			break;
-
-		case KEY_ENTER:
-			enterFunc = &clMenu::enterValue;
-			if (name == punkt1) {
-				EnterParam.setEnable();
-				EnterParam.setValueRange(0, 99);
-				EnterParam.setValue(sParam.DateTime.getYear());
-				EnterParam.setDopValue(0);
-			} else if (name == punkt2) {
-				EnterParam.setEnable();
-				EnterParam.setValueRange(1, 12);
-				EnterParam.setValue(sParam.DateTime.getMonth());
-				EnterParam.setDopValue(1);
-			} else if (name == punkt3) {
-				EnterParam.setEnable();
-				uint8_t max = sParam.DateTime.getNumDaysInMonth();
-				EnterParam.setValueRange(1, max);
-				EnterParam.setValue(sParam.DateTime.getDay());
-				EnterParam.setDopValue(2);
-			} else if (name == punkt4) {
-				EnterParam.setEnable();
-				EnterParam.setValueRange(0, 23);
-				EnterParam.setValue(sParam.DateTime.getHour());
-				EnterParam.setDopValue(3);
-			} else if (name == punkt5) {
-				EnterParam.setEnable();
-				EnterParam.setValueRange(0, 59);
-				EnterParam.setValue(sParam.DateTime.getMinute());
-				EnterParam.setDopValue(4);
-			} else if (name == punkt6) {
-				EnterParam.setEnable();
-				EnterParam.setValueRange(0, 59);
-				EnterParam.setValue(sParam.DateTime.getSecond());
-				EnterParam.setDopValue(5);
+	if (key_ != KEY_NO) {
+		// обработка кнопок перехода в конкретный номер пункта меню
+		if ((key_ >= KEY_1) && (key_ <= KEY_9)) {
+			name = Punkts_.getName(key_ - KEY_1);
+			if (name != 0) {
+				cursorLine_ = key_ - KEY_1 + 1;
+				key_ = KEY_ENTER;
+			} else {
+				key_ = KEY_NO;
 			}
-			EnterParam.com = GB_COM_SET_TIME;
-			EnterParam.setDisc(1);
-			EnterParam.setFract(1);
-			// сохраним текущие значения даты и времени
-			// байты расположены в порядке передачи в БСП
-			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getYear()), 0);
-			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMonth()), 1);
-			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getDay()), 2);
-			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getHour()), 3);
-			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMinute()), 4);
-			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getSecond()), 5);
-			sParam.txComBuf.setInt8(0, 8);	//
-			break;
+		}
 
-		case KEY_CANCEL:
-			lvlMenu = &clMenu::lvlSetup;
-			lvlCreate_ = true;
-			break;
-		case KEY_MENU:
-			lvlMenu = &clMenu::lvlStart;
-			lvlCreate_ = true;
-			break;
+		switch(key_) {
+			case KEY_UP:
+				cursorLineUp();
+				break;
+			case KEY_DOWN:
+				cursorLineDown();
+				break;
 
-		default:
-			break;
+			case KEY_ENTER:
+				enterFunc = &clMenu::enterValue;
+				if (name == punkt1) {
+					EnterParam.setEnable();
+					EnterParam.setValueRange(0, 99);
+					EnterParam.setValue(sParam.DateTime.getYear());
+					EnterParam.setDopValue(0);
+				} else if (name == punkt2) {
+					EnterParam.setEnable();
+					EnterParam.setValueRange(1, 12);
+					EnterParam.setValue(sParam.DateTime.getMonth());
+					EnterParam.setDopValue(1);
+				} else if (name == punkt3) {
+					EnterParam.setEnable();
+					uint8_t max = sParam.DateTime.getNumDaysInMonth();
+					EnterParam.setValueRange(1, max);
+					EnterParam.setValue(sParam.DateTime.getDay());
+					EnterParam.setDopValue(2);
+				} else if (name == punkt4) {
+					EnterParam.setEnable();
+					EnterParam.setValueRange(0, 23);
+					EnterParam.setValue(sParam.DateTime.getHour());
+					EnterParam.setDopValue(3);
+				} else if (name == punkt5) {
+					EnterParam.setEnable();
+					EnterParam.setValueRange(0, 59);
+					EnterParam.setValue(sParam.DateTime.getMinute());
+					EnterParam.setDopValue(4);
+				} else if (name == punkt6) {
+					EnterParam.setEnable();
+					EnterParam.setValueRange(0, 59);
+					EnterParam.setValue(sParam.DateTime.getSecond());
+					EnterParam.setDopValue(5);
+				}
+				EnterParam.com = GB_COM_SET_TIME;
+				EnterParam.setDisc(1);
+				EnterParam.setFract(1);
+				// сохраним текущие значения даты и времени
+				// байты расположены в порядке передачи в БСП
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getYear()), 0);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMonth()), 1);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getDay()), 2);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getHour()), 3);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMinute()), 4);
+				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getSecond()), 5);
+				sParam.txComBuf.setInt8(0, 8);	//
+				break;
+
+			case KEY_CANCEL:
+				lvlMenu = &clMenu::lvlSetup;
+				lvlCreate_ = true;
+				break;
+			case KEY_MENU:
+				lvlMenu = &clMenu::lvlStart;
+				lvlCreate_ = true;
+				break;
+
+			default:
+				break;
+		}
 	}
 }
 
@@ -3415,15 +3183,12 @@ void clMenu::lvlSetupDT() {
  * 	@return Нет
  */
 void clMenu::lvlMeasure() {
-	static char title[] PROGMEM = "Меню\\Измерения";
+	static char title[] PROGMEM = "Меню/Измерения";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		lineParam_ = 1;
 		cursorLine_ = 0;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		// доплнительные команды
 		// обновляется версия прошивок (на случай перепрошивки)
@@ -3461,7 +3226,7 @@ void clMenu::lvlMeasure() {
  * 	@return Нет
  */
 void clMenu::lvlTest() {
-	static char title[] PROGMEM = "Настройка\\Тесты";
+	static char title[] PROGMEM = "Настройка/Тесты";
 	static char punkt1[] PROGMEM = "%d. Тест передатчика";
 	static char punkt2[] PROGMEM = "%d. Тест приемника";
 	static char message[][21] PROGMEM = {
@@ -3475,9 +3240,6 @@ void clMenu::lvlTest() {
 		cursorLine_ = 1;
 		cursorEnable_ = true;
 		lineParam_ = 1;
-
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 
 		Punkts_.clear();
 		// тест передатчика при наличии передатчика или защиты
@@ -3570,7 +3332,8 @@ void clMenu::lvlTest() {
  * 	@return Нет
  */
 void clMenu::lvlTest1() {
-	static char title[] PROGMEM = "Тесты\\Передатчик";
+	// TODO Изменить вывод на экран. сейчас больше 4 строк используется
+	static char title[] PROGMEM = "Тесты/Передатчик";
 	static char punkt1[] PROGMEM = "Сигналы передатчика";
 	static uint8_t cnt = 0;		// счетчик до выхода при ошибочном режиме
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
@@ -3583,8 +3346,6 @@ void clMenu::lvlTest1() {
 		// в оптике не надо выводить доп.параметры
 		lineParam_ = (device == AVANT_OPTO) ? 1 : 2;
 
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
 		cnt = 0;
 
 		// дополнительные команды
@@ -3737,7 +3498,8 @@ void clMenu::lvlTest1() {
  * 	@return Нет
  */
 void clMenu::lvlTest2() {
-	static char title[] PROGMEM = "Тесты\\Приемник";
+	// TODO Изменить вывод на экран. сейчас больше 4 строк используется
+	static char title[] PROGMEM = "Тесты/Приемник";
 	static char punkt1[] PROGMEM = "Сигналы приемника";
 	static char prm1[] PROGMEM = "ПРМ1: ";
 	static char prm2[] PROGMEM = "ПРМ2: ";
@@ -3761,8 +3523,7 @@ void clMenu::lvlTest2() {
 			// Иначе одна строка параметров
 			lineParam_ = 2;
 		}
-		vLCDclear();
-		vLCDdrawBoard(lineParam_);
+
 		cnt = 0;
 
 		// дополнительные команды
@@ -3849,6 +3610,74 @@ void clMenu::lvlTest2() {
 	}
 }
 
+/**	Листание списка параметров отображаемых на экране.
+ *
+ * 	@param num Позиция отображаемого параметра.
+ * 	@arg 1 Левый параметр.
+ * 	@arg 2 Правый параметр.
+ * 	@param dir Направление листания параметра.
+ * 	@dir 1 Вперед на 1.
+ * 	@dir -1 Назад на 1.
+ */
+void clMenu::scrollViewParam(uint8_t num, int8_t dir) {
+	eMENU_MEAS_PARAM t = MENU_MEAS_PARAM_NO;
+	uint8_t poz = MAX_NUM_MEAS_PARAM;
+
+	// в случае ошибочного номера параметра ничего не делаем
+	if ((num > 0) && (num <= NUM_VIEW_PARAM)) {
+		num--;
+		t = viewParam_[num];
+	} else {
+		return;
+	}
+
+	// поиск текущей позиции в списке параметров
+	for(uint_fast8_t i = 0; i < maxViewParam_; i++) {
+		if (measParam[i] == t) {
+			poz = i;
+			break;
+		}
+	}
+
+	// если текущий параметр не найдем, сбросим на нулевой элемент
+	if (poz < MAX_NUM_MEAS_PARAM) {
+		// листание параметра вверх или вниз по списку
+		if (dir > 0) {
+			if (++poz >= maxViewParam_)
+				poz = 0;
+		} else if (dir < 0) {
+			poz = (poz == 0) ? maxViewParam_ - 1 : poz - 1;
+		}
+	} else {
+		poz = 0;
+	}
+	viewParam_[num ] = measParam[poz];
+}
+
+/**	Проверка корректности отображаемых параметров.
+ *
+ * 	Производится проверка отображаемых параметров на наличие их в списке
+ * 	параметров для текущей версии аппарата.
+ *
+ * 	В случае ошибочного параметра, будет установлено значение по-умолчанию.
+ *	Для четных номеров отображаемых параметров это дата, для нечетных - время.
+ *
+ */
+void clMenu::checkViewParams() {
+	for(uint_fast8_t i=0, j=0; i < NUM_VIEW_PARAM; i++, j=0) {
+		eMENU_MEAS_PARAM t = viewParam_[i];
+		for(; j < maxViewParam_; j++) {
+			if (t == measParam[j]) {
+				break;
+			}
+		}
+		if (j >= maxViewParam_) {
+			t = (i % 2) ? MENU_MEAS_PARAM_TIME :MENU_MEAS_PARAM_DATE;
+		}
+		viewParam_[i] = t;
+	}
+}
+
 /** Ввод параметра.
  * 	@param нет
  * 	@return True - по окончанию
@@ -3859,32 +3688,30 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 	static char enterUcor[] PROGMEM = "Ввод: %01u.%01u";
 
 	eMENU_ENTER_PARAM status = EnterParam.getStatus();
+	uint8_t poz = 60;
 	if (status == MENU_ENTER_PARAM_INT) {
 		int16_t val = EnterParam.getValue();
 
 		clearLine(NUM_TEXT_LINES);
-		uint8_t poz = 100;
 		snprintf_P(&vLCDbuf[poz], 21, enterInt, val);
 	} else if (status == MENU_ENTER_PARAM_U_COR) {
 		uint16_t val = EnterParam.getValue();
 
 		clearLine(NUM_TEXT_LINES);
-		uint8_t poz = 100;
 		snprintf_P(&vLCDbuf[poz], 21, enterUcor, val / 10, val % 10);
 	} else if (status == MENU_ENTER_PARAM_LIST) {
 		uint16_t val = EnterParam.getValue();
 		clearLine(NUM_TEXT_LINES);
-		uint8_t poz = 100;
 		val = (val - EnterParam.getValueMin()) * STRING_LENGHT;
 		snprintf_P(&vLCDbuf[poz], 21, enterList, EnterParam.list + val);
 	} else if (status == MENU_ENTER_PARAM_LIST_2) {
 		uint16_t val = EnterParam.listValue[EnterParam.getValue()];
 		clearLine(NUM_TEXT_LINES);
-		uint8_t poz = 100;
 		snprintf_P(&vLCDbuf[poz], 21, enterList,
 				EnterParam.list + STRING_LENGHT * val);
-	} else
+	} else {
 		key_ = KEY_CANCEL;
+	}
 
 	switch(key_) {
 		case KEY_CANCEL:
@@ -3892,10 +3719,10 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 			break;
 
 		case KEY_UP:
-			EnterParam.incValue(timePressKey());
+			EnterParam.incValue();
 			break;
 		case KEY_DOWN:
-			EnterParam.decValue(timePressKey());
+			EnterParam.decValue();
 			break;
 
 		case KEY_ENTER:
@@ -3931,7 +3758,7 @@ eMENU_ENTER_PARAM clMenu::enterPassword() {
 			EnterParam.cnt_++;
 			key_ = KEY_NO;
 
-			uint8_t poz = 40;
+			uint8_t poz = 20;
 			for (uint_fast8_t i = 0; i < 3; i++, poz += 20)
 				snprintf_P(&vLCDbuf[poz], 21, message[i]);
 		} else {
@@ -3939,7 +3766,7 @@ eMENU_ENTER_PARAM clMenu::enterPassword() {
 		}
 	} else {
 
-		uint8_t poz = 100;
+		uint8_t poz = 60;
 		clearLine(NUM_TEXT_LINES);
 
 		uint16_t val = EnterParam.getValue();
@@ -3973,18 +3800,20 @@ eMENU_ENTER_PARAM clMenu::enterPassword() {
 			EnterParam.setDisc(1000);
 			EnterParam.incValue();
 			break;
-		case KEY_RIGHT:
-			EnterParam.setDisc(100);
-			EnterParam.incValue();
+			// TODO
+//		case KEY_RIGHT:
+//			EnterParam.setDisc(100);
+//			EnterParam.incValue();
 			break;
 		case KEY_DOWN:
 			EnterParam.setDisc(10);
 			EnterParam.incValue();
 			break;
-		case KEY_LEFT:
-			EnterParam.setDisc(1);
-			EnterParam.incValue();
-			break;
+			// TODO
+//		case KEY_LEFT:
+//			EnterParam.setDisc(1);
+//			EnterParam.incValue();
+//			break;
 
 		default:
 			break;
@@ -4031,9 +3860,9 @@ void clMenu::printPunkts() {
 /**	Вывод в указанном месте отображаемого параметра.
  * 	В одной строке выводятся два параметра.
  * 	@param poz Текущая позиция
- * 	@arg [0, 12), 0 первая строка слева, 11 - седьмая справа
+ * 	@arg 0 левый верхний угол
+ * 	@arg 1 правый верхний угол
  * 	@param par Отображаемый параметр
- * 	@return Нет
  */
 void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 	static const char fcUout[] 	PROGMEM = "U=%02u.%01uВ";	// Напряжение выхода.
@@ -4055,9 +3884,9 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 	static const char fcTemper[] PROGMEM= "T=%02d°C";		// Температура
 
 	// проверка на максимальную позицию
-		// 10 - кол-во символов отведенное на экране под 1 параметр
-	if (poz < 12) {
-		poz = (poz * 10) + 1;
+	// 10 - кол-во символов отведенное на экране под 1 параметр
+	if (poz < 2) {
+		poz = (poz * 10);
 
 		switch(par) {
 			case MENU_MEAS_PARAM_DATE:
@@ -4138,11 +3967,7 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 				snprintf_P(&vLCDbuf[poz], 11, fcD, sParam.measParam.getD());
 				break;
 
-			case MENU_MEAS_PARAM_TEMPERATURE:
-				snprintf_P(&vLCDbuf[poz], 11, fcTemper,
-						sParam.measParam.getTemperature());
-				break;
-
+			case MENU_MEAS_PARAM_MAX:
 			case MENU_MEAS_PARAM_NO:
 				// ничего не делаем
 				break;
@@ -4262,14 +4087,18 @@ void clMenu::printDevicesRegime(uint8_t poz, TDeviceStatus *device) {
 void clMenu::printParam() {
 	static prog_uint8_t MAX_CHARS = 21;
 
-	snprintf_P(&vLCDbuf[20], MAX_CHARS, PSTR("Параметр:%u Всего:%u"),
-			sParam.local.getNumOfCurrParam(), sParam.local.getNumOfParams());
+//	snprintf_P(&vLCDbuf[20], MAX_CHARS, PSTR("Параметр:%u Всего:%u"),
+//			sParam.local.getNumOfCurrParam(), sParam.local.getNumOfParams());
 
-	snprintf_P(&vLCDbuf[40], MAX_CHARS, sParam.local.getNameOfParam());
+	snprintf_P(&vLCDbuf[20], MAX_CHARS, sParam.local.getNameOfParam());
 
-	printSameNumber(60);
-	printRange(80);
-	printValue(100);
+	if ((sParam.local.getNumOfCurrSameParam() == 1) || (viewRange_)) {
+		printRange(40);
+	} else {
+		printSameNumber(40);
+	}
+
+	printValue(60);
 }
 
 // Вывод на экран текущего номера и их колчиество для однотипных пар-ов.
@@ -4468,7 +4297,7 @@ void clMenu::setupParam() {
 				"  можно только в    ",
 				"  режиме ВЫВЕДЕН    " };
 
-		for(uint8_t i = 0, pos = 40; i < SIZE_OF(message); i++, pos += 20) {
+		for(uint8_t i = 0, pos = 20; i < SIZE_OF(message); i++, pos += 20) {
 			snprintf_P(&vLCDbuf[pos], 21, message[i]);
 		}
 
@@ -4605,11 +4434,15 @@ void clMenu::setupParam() {
 			sParam.local.nextParam();
 			break;
 
-		case KEY_LEFT:
+		case KEY_4:
 			sParam.local.prevSameParam();
 			break;
-		case KEY_RIGHT:
+		case KEY_6:
 			sParam.local.nextSameParam();
+			break;
+
+		case KEY_HELP:
+			viewRange_ = !viewRange_;
 			break;
 
 		case KEY_ENTER:
@@ -4634,43 +4467,22 @@ void clMenu::setupParam() {
 	}
 }
 
-bool clMenu::checkLedOn() {
-	bool ledOn = false;
-
-	if (sParam.glb.status.getRegime() != GB_REGIME_ENABLED) {
-		ledOn = true;
+// Задает измеряемый параметр, отображаемый на экране.
+void clMenu::setViewParam(uint8_t num, eMENU_MEAS_PARAM param) {
+	if ((num > 0) && (num <= NUM_VIEW_PARAM)) {
+		num--;
+		if (param >= MENU_MEAS_PARAM_MAX) {
+			param = (num%2) ? MENU_MEAS_PARAM_TIME : MENU_MEAS_PARAM_DATE;
+		}
+		viewParam_[num] = param;
 	}
+}
 
-	if (sParam.glb.status.isFault() || sParam.glb.status.isWarning()) {
-		ledOn = true;
+// Возвращает измеряемый параметр, отображаемый на экране.
+eMENU_MEAS_PARAM clMenu::getViewParam(uint8_t num) {
+	eMENU_MEAS_PARAM param = MENU_MEAS_PARAM_NO;
+	if ((num > 0) && (num <= NUM_VIEW_PARAM)) {
+		param = viewParam_[num - 1];
 	}
-
-	if (sParam.def.status.isEnable()) {
-		if (sParam.def.status.getState() != 1) {
-			ledOn = true;
-		}
-		if (sParam.def.status.isFault() || sParam.def.status.isWarning()) {
-			ledOn = true;
-		}
-	}
-
-	if (sParam.prm.status.isEnable()) {
-		if (sParam.prm.status.getState() != 1) {
-			ledOn = true;
-		}
-		if (sParam.prm.status.isFault() || sParam.prm.status.isWarning()) {
-			ledOn = true;
-		}
-	}
-
-	if (sParam.prd.status.isEnable()) {
-		if (sParam.prd.status.getState() != 1) {
-			ledOn = true;
-		}
-		if (sParam.prd.status.isFault() || sParam.prd.status.isWarning()) {
-			ledOn = true;
-		}
-	}
-
-	return ledOn;
+	return param;
 }

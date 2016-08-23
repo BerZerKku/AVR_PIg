@@ -22,7 +22,7 @@
 #define TIME_TO_REINIT_LCD (10000 / MENU_TIME_CYLCE)
 
 /// максимальное кол-во отображаемых на экране параметров
-#define MAX_NUM_MEAS_PARAM 6
+#define MAX_NUM_MEAS_PARAM 11
 
 /// максимальное кол-во отображаемых параметров в меню "Измерение"
 #define MAX_NUM_MEAS_PARAM_LVL 10
@@ -58,7 +58,7 @@ enum eMENU_MEAS_PARAM {
 	MENU_MEAS_PARAM_ROUT,		///< сопротивление линии
 	MENU_MEAS_PARAM_SD,			///< просечки в сигнале
 	MENU_MEAS_PARAM_D,			///< Запас по тест.команде (двухчаст) или Отношение сигнал/помеха (одночаст)
-	MENU_MEAS_PARAM_TEMPERATURE	///< Температура на плате БСП-ПИ
+	MENU_MEAS_PARAM_MAX
 };
 
 /// Режим работы функции ввода параметров
@@ -78,6 +78,10 @@ enum eMENU_ENTER_PARAM {
 
 // структура параметров для ввода значений
 class TEnterParam {
+
+	/// Максимальное количество вводимых с клавиатуры символов.
+	static const uint8_t MAX_NUM_SYMBOLS = 4;
+
 public:
 	TEnterParam() {
 		setDisable();
@@ -106,15 +110,15 @@ public:
 				fract_ = 1;
 			} else if ((s == MENU_ENTER_PASSWORD)
 					|| (s == MENU_ENTER_PASSWORD_NEW)) {
-				val_ = 0;
-				min_ = 0;
-				max_ = 9999;
+				disc_ = 1;
+				fract_ = 1;
 			}
 			status_ = s;
 		}
 	}
 
 	/**	Отключение изменения параметра.
+	 *
 	 * 	@param Нет
 	 * 	@return Нет
 	 */
@@ -137,9 +141,43 @@ public:
 		return max_;
 	}
 
-	// установка текущего значения, диапазон значений должен быть задан до !
+	/**	Возвращает количество введенных символов.
+	 *
+	 * 	@return Количество введенных символов
+	 */
+	uint8_t getValueNumSymbols() const {
+		return numSymbols_;
+	}
+
+	/** Возвращает текущую позицию курсора (текущий символ).
+	 *
+	 * 	@return Позиция курсора. От 0 до MAX_NUM_SYMBOLS.
+	 */
+	uint8_t getValueCurSymbol() const {
+		return curSymbol_;
+	}
+
+	/** Установка текущего значения
+	 * 	Диапазон значений должен быть задан ДО !
+	 *
+	 * 	Для параметров выбираемых из списка, устанавливается переданное
+	 * 	значение, либо минимальное. Для остальных параметров устанавливается 0
+	 * 	и 0 введенных символов.
+	 *
+	 * 	@param val Текущее значение.
+	 */
 	void setValue(int16_t val) {
-		val_ = (val < min_) || (val > max_) ? min_ : val;
+		if ((status_ == MENU_ENTER_PARAM_LIST) ||
+				(status_ == MENU_ENTER_PARAM_LIST_2)) {
+			if ((val < min_) || (val > max_)) {
+				val = min_;
+			}
+			val_ = val;
+		} else {
+			val_ = 0;
+		}
+
+		curSymbol_ = 0;
 	}
 
 	// возвращает текущее значение
@@ -152,80 +190,73 @@ public:
 		return ((val_ / disc_) * disc_) / fract_;
 	}
 
-	/** Увеличение текущего значения.
-	 * 	@param velocity Скорость изменения значения (для ввода целых значений
-	 * 	и коррекции напряжения).
-	 * 	@argval 0 Увеличение на шаг заданный дискретностью.
-	 * 	@argval 1 Увеличение на шаг в 10 раз больше заданной дискретности.
-	 * 	@argval 2 Увеличение на шаг в 50 раз больше заданной дискретности.
+	/**	Ввод нового символа значения.
+	 *
+	 *	Ввод начинается со старшего символа. Далее идет проверка на максимальное
+	 *	кол-во символов и проверка на максимальное значение.
+	 *
+	 *	В случае если значение равно 0, счет введенных символов не ведется.
+	 *
+	 * 	@param dig Цифра. От 0 до 9 включительно.
 	 */
-	uint16_t incValue(uint8_t velocity = 0) {
+	void setDigit(uint8_t dig) {
 		eMENU_ENTER_PARAM s = status_;
-		if ((s == MENU_ENTER_PARAM_INT) || (s == MENU_ENTER_PARAM_U_COR)) {
-			// увеличение значения
-//			val_ = (val_ <= (max_ - disc_)) ? val_ + disc_ : min_;
-			int16_t disc = disc_;
-			if (velocity >= 1) {
-				if ((max_ / disc) >= 10) {
-					disc *= 10;
+
+		if ((s == MENU_ENTER_PARAM_INT) || (s == MENU_ENTER_PARAM_U_COR) ||
+				(s == MENU_ENTER_PASSWORD) || (s == MENU_ENTER_PASSWORD_NEW)) {
+			if (curSymbol_ < numSymbols_) {
+				uint16_t tmp = val_ * 10 + dig;
+
+				if ((tmp > 0) && (tmp <= max_)) {
+					curSymbol_++;
+					val_ = tmp;
 				}
 			}
-			if (velocity >= 2) {
-				if ((max_ / disc) >= 10) {
-					disc *= 5;
-				}
-			}
-			if (max_ != 0) {
-				val_ = (val_ <= (max_ - disc)) ? val_ + disc : min_;
-			}
-		} else if ((s == MENU_ENTER_PARAM_LIST) ||
-				   (s == MENU_ENTER_PARAM_LIST_2)) {
-			// в списке порядок обратный (уменьшение индекса массива)
-			val_ = (val_ > min_) ? val_ - 1 : max_;
-		} else if ((s == MENU_ENTER_PASSWORD) ||
-				   (s == MENU_ENTER_PASSWORD_NEW)) {
-			uint16_t t = 0;
-
-			// находится разряд заданный дискретностью
-			// например для числа 1234 и дискрету 100, получается 2
-			t = val_ % (disc_ * 10);
-			t = t / disc_;
-
-			if (t == 9)
-				val_ -= 9 * disc_;
-			else
-				val_ += disc_;
 		}
-		return val_;
 	}
 
-	// уменьшение текущего значения
-	uint16_t decValue(uint8_t velocity=0) {
+	/** Удаление последнего символа.
+	 *
+	 * 	Удалается последний введеный символ.
+	 */
+	void delDigit() {
 		eMENU_ENTER_PARAM s = status_;
-		if ((s == MENU_ENTER_PARAM_INT)
-				|| (s == MENU_ENTER_PARAM_U_COR)) {
-			// уменьшение значние
-			int16_t disc = disc_;
-			if (velocity >= 1) {
-				if ((max_ / disc) >= 10) {
-					disc *= 10;
-				}
+
+		if ((s == MENU_ENTER_PARAM_INT) || (s == MENU_ENTER_PARAM_U_COR) ||
+				(s == MENU_ENTER_PASSWORD) || (s == MENU_ENTER_PASSWORD_NEW)) {
+			if (curSymbol_ > 0) {
+				curSymbol_--;
+				val_ /= 10;
 			}
-			if (velocity >= 2) {
-				if ((max_ / disc) >= 10) {
-					disc *= 5;
-				}
-			}
-			val_ = (val_ >= (min_ + disc)) ? val_ - disc : max_;
-		} else if ((s == MENU_ENTER_PARAM_LIST)
+		}
+	}
+
+	/** Увеличение текущего значения.
+	 *
+	 * 	Листание списка параметров вверх.
+	 */
+	void incValue() {
+		eMENU_ENTER_PARAM s = status_;
+
+		if ((s == MENU_ENTER_PARAM_LIST) ||
+				(s == MENU_ENTER_PARAM_LIST_2)) {
+			// в списке порядок обратный (уменьшение индекса массива)
+			val_ = (val_ > min_) ? val_ - 1 : max_;
+		}
+	}
+
+	/**	Уменьшение текущего значения.
+	 *
+	 * 	Листание списка параметров вниз.
+	 */
+	void decValue(uint8_t velocity=0) {
+		eMENU_ENTER_PARAM s = status_;
+
+		if ((s == MENU_ENTER_PARAM_LIST)
 				|| (s == MENU_ENTER_PARAM_LIST_2)) {
 			// в списке порядок обратный (увеличие индекса массива)
 			val_ = (val_ < max_) ? val_ + 1 : min_;
-		} else if ((s == MENU_ENTER_PASSWORD)
-				|| (s == MENU_ENTER_PASSWORD_NEW)) {
-
 		}
-		return val_;
 	}
 
 	// запись/считывание дополнительного байта
@@ -266,7 +297,11 @@ public:
 
 	// установка флага окончания ввода параметра
 	void setEnterValueReady(eMENU_ENTER_PARAM status = MENU_ENTER_PARAM_READY) {
-		status_ = status;
+		if ((val_ >= min_) && (val_ <= max_)) {
+			status_ = status;
+		} else {
+			status_ = MENU_ENTER_PARAM_NO;
+		}
 	}
 
 	// указатель на первый элемент списка
@@ -290,6 +325,12 @@ private:
 
 	// минимальное значение
 	int16_t min_;
+
+	// кол-во символов
+	uint8_t numSymbols_;
+
+	// текущий символ
+	uint8_t curSymbol_;
 
 	// байт с дополнительой информацией
 	uint16_t dopValue_;
@@ -426,6 +467,10 @@ private:
 
 // класс меню
 class clMenu {
+
+	/// Количество отобржаемых на экране измеряемых параметров
+	static const uint8_t NUM_VIEW_PARAM = 2;
+
 public:
 
 	/**	Конструктор.
@@ -478,6 +523,31 @@ public:
 		connectionBsp_ = f;
 	}
 
+	/**	Задает измеряемый параметр отображаемый на экране.
+	 *
+	 *	В случае ошибочного параметра, для четных значений позиций будет
+	 *	установлено дата, для нечетных время.
+	 *
+	 * 	@param num Позиция отображаемого параметра.
+	 * 	@arg 1 Левый параметр.
+	 * 	@arg 2 Правый параметр.
+	 * 	@param param Отображаемый параметр.
+	 */
+	void setViewParam(uint8_t num, eMENU_MEAS_PARAM param);
+
+	/**	Возвращает название отображаемого параметра.
+	 *
+	 *	Если номер параметра указан не верно, будет возвращено значение
+	 *	\a MENU_MEAS_PARAM_NO.
+	 *
+	 * 	@param num Позиция отображаемого параметра.
+	 * 	@param 1 Левый параметр.
+	 * 	@param 2 Правый параметр.
+	 * 	@return	Отображаемый параметр.
+	 *
+	 */
+	eMENU_MEAS_PARAM getViewParam(uint8_t num);
+
 	/** Параметры
 	 */
 	stGBparam sParam;
@@ -498,6 +568,9 @@ private:
 	// true - необходимо вывести на экран курсор
 	bool cursorEnable_;
 
+	// true - вывод на экран диапазона значений
+	bool viewRange_;
+
 	// текущее положение курсора (номер строки)
 	uint8_t cursorLine_;
 
@@ -513,8 +586,14 @@ private:
 	// время вывода доп.сообщения на экран (например сообщения об ошибке)
 	uint8_t delay_;
 
+	// кол-во измеряемых параметров в текущей версии аппарата
+	uint8_t maxViewParam_;
+
+	// измеряемый параметр
+	eMENU_MEAS_PARAM viewParam_[NUM_VIEW_PARAM];
+
 	// измеряемые параметры
-	eMENU_MEAS_PARAM measParam[MAX_NUM_MEAS_PARAM * 2];
+	eMENU_MEAS_PARAM measParam[MAX_NUM_MEAS_PARAM];
 
 	// измеряемые параметры для уровня меню "Измерения"
 	eMENU_MEAS_PARAM measParamLvl[MAX_NUM_MEAS_PARAM_LVL];
@@ -659,6 +738,12 @@ private:
 	// текущая функция ввода
 	eMENU_ENTER_PARAM (clMenu::*enterFunc)();
 
+	// Листание списка параметров отображаемых на экране.
+	void scrollViewParam(uint8_t num, int8_t dir=1);
+
+	// Проверка корректности отображаемых параметров.
+	void checkViewParams();
+
 	// текущий уровень меню
 	void (clMenu::*lvlMenu)();
 
@@ -668,29 +753,6 @@ private:
 	 * 	к предыдущему уровню.
 	 */
 	void setupParam();
-
-	/**	Проверка необходимости в подсветке.
-	 *
-	 *	Необходимость включения подсветки проводится для каждого имеющегося
-	 *	устройства.
-	 *
-	 *	ОБЩ:
-	 *	- режим не "Введен";
-	 *	- имеется неисправность или предупреждение.
-	 *	ЗАЩ:
-	 *	- состояние не "Контроль";
-	 *	- имеется неисправность или предупреждение.
-	 *	ПРМ:
-	 *	- состояние не "ПРМ КЧ";
-	 *	- имеется неисправность или предупреждение.
-	 *	ПРД:
-	 *	- состояние не "ПРД КЧ";
-	 *	- имеется неисправность или предупреждение.
-	 *
-	 * 	@retval True Включить подсветку.
-	 * 	@retval False Необходимости в подсветке нет.
-	 */
-	bool checkLedOn();
 };
 
 #endif /* MENU_H_ */
