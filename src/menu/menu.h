@@ -25,7 +25,7 @@
 #define MAX_NUM_MEAS_PARAM 11
 
 /// максимальное кол-во отображаемых параметров в меню "Измерение"
-#define MAX_NUM_MEAS_PARAM_LVL 10
+#define MAX_NUM_MEAS_PARAM_LVL 6
 
 /// время вывода измеряемого параметра на экран, мс
 #define TIME_MEAS_PARAM (3000 / MENU_TIME_CYLCE)
@@ -79,9 +79,6 @@ enum eMENU_ENTER_PARAM {
 // структура параметров для ввода значений
 class TEnterParam {
 
-	/// Максимальное количество вводимых с клавиатуры символов.
-	static const uint8_t MAX_NUM_SYMBOLS = 4;
-
 public:
 	TEnterParam() {
 		setDisable();
@@ -134,6 +131,7 @@ public:
 		max_ = max;
 		min_ = min;
 	}
+
 	int16_t getValueMin() const {
 		return min_;
 	}
@@ -141,28 +139,11 @@ public:
 		return max_;
 	}
 
-	/**	Возвращает количество введенных символов.
-	 *
-	 * 	@return Количество введенных символов
-	 */
-	uint8_t getValueNumSymbols() const {
-		return numSymbols_;
-	}
-
-	/** Возвращает текущую позицию курсора (текущий символ).
-	 *
-	 * 	@return Позиция курсора. От 0 до MAX_NUM_SYMBOLS.
-	 */
-	uint8_t getValueCurSymbol() const {
-		return curSymbol_;
-	}
-
 	/** Установка текущего значения
 	 * 	Диапазон значений должен быть задан ДО !
 	 *
 	 * 	Для параметров выбираемых из списка, устанавливается переданное
-	 * 	значение, либо минимальное. Для остальных параметров устанавливается 0
-	 * 	и 0 введенных символов.
+	 * 	значение, либо минимальное.
 	 *
 	 * 	@param val Текущее значение.
 	 */
@@ -176,8 +157,6 @@ public:
 		} else {
 			val_ = 0;
 		}
-
-		curSymbol_ = 0;
 	}
 
 	// возвращает текущее значение
@@ -204,13 +183,11 @@ public:
 
 		if ((s == MENU_ENTER_PARAM_INT) || (s == MENU_ENTER_PARAM_U_COR) ||
 				(s == MENU_ENTER_PASSWORD) || (s == MENU_ENTER_PASSWORD_NEW)) {
-			if (curSymbol_ < numSymbols_) {
-				uint16_t tmp = val_ * 10 + dig;
 
-				if ((tmp > 0) && (tmp <= max_)) {
-					curSymbol_++;
-					val_ = tmp;
-				}
+			int16_t tmp = val_ * 10 + dig;
+
+			if (tmp <= max_) {
+				val_ = tmp;
 			}
 		}
 	}
@@ -224,8 +201,8 @@ public:
 
 		if ((s == MENU_ENTER_PARAM_INT) || (s == MENU_ENTER_PARAM_U_COR) ||
 				(s == MENU_ENTER_PASSWORD) || (s == MENU_ENTER_PASSWORD_NEW)) {
-			if (curSymbol_ > 0) {
-				curSymbol_--;
+
+			if (val_ > 0) {
 				val_ /= 10;
 			}
 		}
@@ -325,12 +302,6 @@ private:
 
 	// минимальное значение
 	int16_t min_;
-
-	// кол-во символов
-	uint8_t numSymbols_;
-
-	// текущий символ
-	uint8_t curSymbol_;
 
 	// байт с дополнительой информацией
 	uint16_t dopValue_;
@@ -594,9 +565,6 @@ private:
 
 	// измеряемые параметры
 	eMENU_MEAS_PARAM measParam[MAX_NUM_MEAS_PARAM];
-
-	// измеряемые параметры для уровня меню "Измерения"
-	eMENU_MEAS_PARAM measParamLvl[MAX_NUM_MEAS_PARAM_LVL];
 
 	// текущие пункты меню
 	TMenuPunkt Punkts_;

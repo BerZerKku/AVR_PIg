@@ -130,7 +130,7 @@ static char fcPvzueParity[][STRING_LENGHT] PROGMEM = {
 /// Интерфейс связи (параметр Интерфейс).
 static char fcInterface[TInterface::MAX][STRING_LENGHT] PROGMEM = {
 //	 	 1234567890
-		"USB",			///< TInterface::USB
+		"RS232",		///< TInterface::RS232
 		"RS485"			///< TInterface::RS485
 };
 

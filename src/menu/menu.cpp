@@ -150,6 +150,7 @@ void clMenu::main(void) {
 	(this->*lvlMenu)();
 	key_ = KEY_NO;
 
+
 #ifdef VIEW_DEBUG_PARAM
 	// вывод отладочной информации
 	snprintf(&vLCDbuf[00], 5, "1*%02X", sDebug.byte1);
@@ -265,6 +266,7 @@ bool clMenu::setDeviceK400() {
 			measParam[cnt++] = MENU_MEAS_PARAM_D;
 		}
 	}
+	maxViewParam_ = cnt;
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -369,6 +371,7 @@ bool clMenu::setDeviceRZSK() {
 		measParam[cnt++] = MENU_MEAS_PARAM_UC;
 		measParam[cnt++] = MENU_MEAS_PARAM_UN;
 	}
+	maxViewParam_ = cnt;
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -473,6 +476,7 @@ bool clMenu::setDeviceR400M() {
 	}
 	measParam[cnt++] = MENU_MEAS_PARAM_SD;
 	measParam[cnt++] = MENU_MEAS_PARAM_UN;
+	maxViewParam_ = cnt;
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -548,8 +552,10 @@ bool clMenu::setDeviceOPTO() {
 	sParam.prm.status.stateText[1] = fcPrmSost01opto;
 	sParam.prm.status.stateText[3] = fcPrmSost03opto;
 
-	measParam[0] = MENU_MEAS_PARAM_TIME;
-	measParam[1] = MENU_MEAS_PARAM_DATE;
+	uint8_t cnt = 0;
+	measParam[cnt++] = MENU_MEAS_PARAM_TIME;
+	measParam[cnt++] = MENU_MEAS_PARAM_DATE;
+	maxViewParam_ = 2;
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -693,11 +699,14 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 	for (uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
 		sParam.prd.status.warningText[i] = fcUnknownWarning;
 
-	measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
-	measParam[1] = MENU_MEAS_PARAM_DATE;
+	uint8_t cnt = 0;
+	measParam[cnt++] = MENU_MEAS_PARAM_TIME;	// дата <-> время
+	measParam[cnt++] = MENU_MEAS_PARAM_DATE;
 	// предварительная очистка массива отображаемых параметров
-		for (uint_fast8_t i = 0; i < MAX_NUM_MEAS_PARAM; i++)
-			measParam[i] = MENU_MEAS_PARAM_NO;
+	for (uint_fast8_t i = cnt; i < MAX_NUM_MEAS_PARAM; i++)
+		measParam[i] = MENU_MEAS_PARAM_NO;
+	maxViewParam_ = cnt;
+
 
 	if (device == AVANT_K400) {
 		status = setDeviceK400();
@@ -965,6 +974,23 @@ void clMenu::lvlStart() {
 				sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
 			}
 			break;
+
+			// листание правого параметра
+		case KEY_2:
+			scrollViewParam(2, 1);
+			break;
+		case KEY_8:
+			scrollViewParam(2, -1);
+			break;
+
+			// листание левого параметра
+		case KEY_4:
+			scrollViewParam(1, -1);
+			break;
+		case KEY_6:
+			scrollViewParam(1, 1);
+			break;
+
 
 		case KEY_ENTER:
 			if (sParam.prm.status.isEnable()) {
@@ -2308,8 +2334,15 @@ void clMenu::lvlSetup() {
 
 			if (sParam.password.check(val)) {
 				EnterParam.setEnable(MENU_ENTER_PASSWORD_NEW);
-			} else
-				EnterParam.setDisable();
+				enterFunc = &clMenu::enterPassword;
+				EnterParam.setValueRange(0, 9999);
+				EnterParam.setValue(0);
+				EnterParam.com = GB_COM_NO;
+			} else {
+				EnterParam.printMessage();
+//				EnterParam.setDisable();
+			}
+
 		} else if (stat == MENU_ENTER_PASSWORD_N_READY) {
 			uint16_t val = EnterParam.getValue();
 
@@ -2347,6 +2380,9 @@ void clMenu::lvlSetup() {
 			} else if (name == punkt4) {
 				enterFunc = &clMenu::enterPassword;
 				EnterParam.setEnable(MENU_ENTER_PASSWORD);
+				enterFunc = &clMenu::enterPassword;
+				EnterParam.setValueRange(0, 9999);
+				EnterParam.setValue(0);
 				EnterParam.com = GB_COM_NO;
 			} else if (name == punkt5) {
 				lvlMenu = &clMenu::lvlSetupInterface;
@@ -2412,6 +2448,10 @@ void clMenu::lvlRegime() {
 					enterFunc = &clMenu::enterPassword;
 					EnterParam.setEnable(MENU_ENTER_PASSWORD);
 					EnterParam.setDopValue(static_cast<uint16_t>(val));
+					enterFunc = &clMenu::enterPassword;
+					EnterParam.setValueRange(0, 9999);
+					EnterParam.setValue(0);
+					EnterParam.com = GB_COM_NO;
 					val = GB_REGIME_ENTER_MAX;
 				}
 			}
@@ -3184,11 +3224,21 @@ void clMenu::lvlSetupDT() {
  */
 void clMenu::lvlMeasure() {
 	static char title[] PROGMEM = "Меню/Измерения";
+	static char punkt[] PROGMEM = "";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		lineParam_ = 1;
 		cursorLine_ = 0;
+
+		// для совместимости с остальными пунктами листание
+		// параметров сделано в виде пунктов
+		Punkts_.clear();
+		int_fast8_t i = maxViewParam_ - MAX_NUM_MEAS_PARAM_LVL;
+		while(i > 0) {
+			Punkts_.add(punkt);
+			i -= 2;
+		}
 
 		// доплнительные команды
 		// обновляется версия прошивок (на случай перепрошивки)
@@ -3201,11 +3251,22 @@ void clMenu::lvlMeasure() {
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	for(uint_fast8_t i = 0; i < MAX_NUM_MEAS_PARAM_LVL; i++) {
-		printMeasParam(lineParam_*2 + i, measParamLvl[i]);
+	uint8_t cntPunkts = cursorLine_*2;
+	for (uint_fast8_t i = lineParam_; i < NUM_TEXT_LINES; i++) {
+		printMeasParam(i*2, measParam[cntPunkts++]);
+		printMeasParam(i*2 + 1, measParam[cntPunkts++]);
+		if (cntPunkts > maxViewParam_)
+			break;
 	}
 
 	switch(key_) {
+		case KEY_UP:
+			cursorLineUp();
+			break;
+		case KEY_DOWN:
+			cursorLineDown();
+			break;
+
 		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlFirst;
 			lvlCreate_ = true;
@@ -3720,15 +3781,23 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 
 		case KEY_UP:
 			EnterParam.incValue();
+			EnterParam.delDigit();
 			break;
 		case KEY_DOWN:
 			EnterParam.decValue();
+			EnterParam.delDigit();
 			break;
 
 		case KEY_ENTER:
 			EnterParam.setEnterValueReady();
 			break;
 		default:
+			if ((status == MENU_ENTER_PARAM_INT) ||
+					(status == MENU_ENTER_PARAM_U_COR)) {
+				if ((key_ >= KEY_0) && (key_ <= KEY_9)) {
+					EnterParam.setDigit(key_ - KEY_0);
+				}
+			}
 			break;
 	}
 
@@ -3797,25 +3866,16 @@ eMENU_ENTER_PARAM clMenu::enterPassword() {
 			break;
 
 		case KEY_UP:
-			EnterParam.setDisc(1000);
-			EnterParam.incValue();
-			break;
-			// TODO
-//		case KEY_RIGHT:
-//			EnterParam.setDisc(100);
-//			EnterParam.incValue();
+			EnterParam.delDigit();
 			break;
 		case KEY_DOWN:
-			EnterParam.setDisc(10);
-			EnterParam.incValue();
+			EnterParam.delDigit();
 			break;
-			// TODO
-//		case KEY_LEFT:
-//			EnterParam.setDisc(1);
-//			EnterParam.incValue();
-//			break;
 
 		default:
+			if ((key_ >= KEY_0) && (key_ <= KEY_9)) {
+				EnterParam.setDigit(key_ - KEY_0);
+			}
 			break;
 	}
 	key_ = KEY_NO;
@@ -3861,7 +3921,7 @@ void clMenu::printPunkts() {
  * 	В одной строке выводятся два параметра.
  * 	@param poz Текущая позиция
  * 	@arg 0 левый верхний угол
- * 	@arg 1 правый верхний угол
+ * 	@arg 7 правый нижний угол
  * 	@param par Отображаемый параметр
  */
 void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
@@ -3885,7 +3945,7 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 
 	// проверка на максимальную позицию
 	// 10 - кол-во символов отведенное на экране под 1 параметр
-	if (poz < 2) {
+	if (poz < 8) {
 		poz = (poz * 10);
 
 		switch(par) {
@@ -4143,12 +4203,12 @@ void clMenu::printRange(uint8_t pos) {
 		case Param::RANGE_U_COR:
 			min = 0;
 			max /= 10;
-			str = PSTR("%d..±%d%S");
+			str = PSTR("%d..%d%S");
 			break;
 
 		case Param::RANGE_I_COR:
 			min = 0;
-			str= PSTR("%d..±%d%S");
+			str= PSTR("%d..%d%S");
 			break;
 	}
 
