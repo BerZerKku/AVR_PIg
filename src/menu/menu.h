@@ -19,10 +19,10 @@
 /// время до первой инициализации дисплея, мс
 #define TIME_TO_INIT_LCD (200 / MENU_TIME_CYLCE)
 /// время до переинициализации дисплея, мс
-#define TIME_TO_REINIT_LCD (10000 / MENU_TIME_CYLCE)
+#define TIME_TO_REINIT_LCD (5000 / MENU_TIME_CYLCE)
 
 /// максимальное кол-во отображаемых на экране параметров
-#define MAX_NUM_MEAS_PARAM 11
+#define MAX_NUM_MEAS_PARAM 12
 
 /// максимальное кол-во отображаемых параметров в меню "Измерение"
 #define MAX_NUM_MEAS_PARAM_LVL 6

@@ -245,10 +245,7 @@ bool clMenu::setDeviceK400() {
 	sParam.prm.status.stateText[3] = fcPrmSost03;
 
 	// дата и время выводятся во всех вариантах
-	uint8_t cnt = 0;
-	measParam[cnt++] = MENU_MEAS_PARAM_TIME;
-	measParam[cnt++] = MENU_MEAS_PARAM_DATE;
-
+	uint8_t cnt = 2;
 	if (sParam.prd.status.isEnable()) {
 		measParam[cnt++] = MENU_MEAS_PARAM_UOUT;
 		measParam[cnt++] = MENU_MEAS_PARAM_IOUT;
@@ -351,9 +348,7 @@ bool clMenu::setDeviceRZSK() {
 	sParam.prm.status.stateText[3] = fcPrmSost03;
 
 	// первый столбец параметров
-	uint8_t cnt = 0;
-	measParam[cnt++] = MENU_MEAS_PARAM_TIME;	// дата <-> время
-	measParam[cnt++] = MENU_MEAS_PARAM_DATE;
+	uint8_t cnt = 2;
 	measParam[cnt++] = MENU_MEAS_PARAM_UOUT;
 	measParam[cnt++] = MENU_MEAS_PARAM_IOUT;
 
@@ -462,9 +457,7 @@ bool clMenu::setDeviceR400M() {
 	sParam.prm.status.stateText[3] = fcPrmSost03;
 
 	// первый столбец параметров
-	uint8_t cnt = 0;
-	measParam[cnt++] = MENU_MEAS_PARAM_TIME;	// дата <-> время
-	measParam[cnt++] = MENU_MEAS_PARAM_DATE;
+	uint8_t cnt = 2;
 	measParam[cnt++] = MENU_MEAS_PARAM_UOUT;
 	measParam[cnt++] = MENU_MEAS_PARAM_IOUT;
 	measParam[cnt++] = MENU_MEAS_PARAM_UZ;
@@ -552,10 +545,11 @@ bool clMenu::setDeviceOPTO() {
 	sParam.prm.status.stateText[1] = fcPrmSost01opto;
 	sParam.prm.status.stateText[3] = fcPrmSost03opto;
 
-	uint8_t cnt = 0;
-	measParam[cnt++] = MENU_MEAS_PARAM_TIME;
-	measParam[cnt++] = MENU_MEAS_PARAM_DATE;
-	maxViewParam_ = 2;
+	// дата и время выводятся во всех аппаратах
+//	uint8_t cnt = 2;
+//	measParam[cnt++] = MENU_MEAS_PARAM_UOUT;
+//	measParam[cnt++] = MENU_MEAS_PARAM_IOUT;
+//	maxViewParam_ = cnt;
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -891,10 +885,10 @@ void clMenu::lvlStart() {
 
 	// вывод на экран измеряемых параметров
 	for (uint_fast8_t i = 0; i < (lineParam_ * 2); i++) {
-		if (i >= MAX_NUM_MEAS_PARAM)
-			continue;
+		if (i >= NUM_VIEW_PARAM)
+			break;
 
-		printMeasParam(i, measParam[i]);
+		printMeasParam(i, viewParam_[i]);
 	}
 
 //	uint16_t val = sParam.glb.status.getWarnings();
@@ -1029,7 +1023,8 @@ void clMenu::lvlFirst() {
 		Punkts_.add(punkt3);
 		Punkts_.add(punkt4);
 		Punkts_.add(punkt5);
-		if (sParam.glb.getTypeDevice() != AVANT_OPTO) {
+		// Пункт меню Измрения добавляется, если есть что-то кроме даты и времени
+		if (maxViewParam_ > 2) {
 			Punkts_.add(punkt6);
 		}
 
@@ -3229,15 +3224,13 @@ void clMenu::lvlMeasure() {
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		lineParam_ = 1;
-		cursorLine_ = 0;
+		cursorLine_ = 1;	// 0 - это дата и время, их не выводим
 
 		// для совместимости с остальными пунктами листание
 		// параметров сделано в виде пунктов
 		Punkts_.clear();
-		int_fast8_t i = maxViewParam_ - MAX_NUM_MEAS_PARAM_LVL;
-		while(i > 0) {
+		for(int_fast8_t i = maxViewParam_; i > 0; i -= 2) {
 			Punkts_.add(punkt);
-			i -= 2;
 		}
 
 		// доплнительные команды
@@ -3252,19 +3245,28 @@ void clMenu::lvlMeasure() {
 	snprintf_P(&vLCDbuf[0], 21, title);
 
 	uint8_t cntPunkts = cursorLine_*2;
+	uint8_t numLines = NUM_TEXT_LINES - lineParam_;
 	for (uint_fast8_t i = lineParam_; i < NUM_TEXT_LINES; i++) {
-		printMeasParam(i*2, measParam[cntPunkts++]);
-		printMeasParam(i*2 + 1, measParam[cntPunkts++]);
-		if (cntPunkts > maxViewParam_)
+		printMeasParam(i*2, measParam[cntPunkts]);
+		if (++cntPunkts >= maxViewParam_)
+			break;
+		printMeasParam(i*2 + 1, measParam[cntPunkts]);
+		if (++cntPunkts >= maxViewParam_)
 			break;
 	}
 
+
 	switch(key_) {
 		case KEY_UP:
-			cursorLineUp();
+			// 0 - это дата и время, их не выводим
+			if (cursorLine_ > 1) {
+				cursorLine_--;
+			}
 			break;
 		case KEY_DOWN:
-			cursorLineDown();
+			if ((cursorLine_ + numLines) < Punkts_.getMaxNumPunkts()) {
+				cursorLine_++;
+			}
 			break;
 
 		case KEY_CANCEL:
@@ -3686,8 +3688,7 @@ void clMenu::scrollViewParam(uint8_t num, int8_t dir) {
 
 	// в случае ошибочного номера параметра ничего не делаем
 	if ((num > 0) && (num <= NUM_VIEW_PARAM)) {
-		num--;
-		t = viewParam_[num];
+		t = viewParam_[--num];
 	} else {
 		return;
 	}
@@ -3712,6 +3713,7 @@ void clMenu::scrollViewParam(uint8_t num, int8_t dir) {
 	} else {
 		poz = 0;
 	}
+
 	viewParam_[num ] = measParam[poz];
 }
 
@@ -3937,11 +3939,11 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 	static const char fcUn[] 	PROGMEM = "Uш=%02dдБ";		// Уровень шумов.
 	static const char fcUn1[] 	PROGMEM = "Uш1=%02dдБ";		// Уровень шумов 1.
 	static const char fcUn2[] 	PROGMEM = "Uш2=%02dдБ";		// Уровень шумов 2.
-	static const char fcSd[] 	PROGMEM = "Sд=%02u°";		// Просечки в сигнале.
+	static const char fcSd[] 	PROGMEM = "Sд=%02uг";		// Просечки в сигнале.
 	static const char fcDate[] 	PROGMEM = "%02u.%02u.%02u";	// Дата.
 	static const char fcTime[] 	PROGMEM = "%02u:%02u:%02u";	// Время.
 	static const char fcD[]		PROGMEM = "D=%02dдБ";		// Запас по тест.команде (двухчаст) или Отношение сигнал/помеха (одночаст)
-	static const char fcTemper[] PROGMEM= "T=%02d°C";		// Температура
+	static const char fcTemper[] PROGMEM= "T=%02град";		// Температура
 
 	// проверка на максимальную позицию
 	// 10 - кол-во символов отведенное на экране под 1 параметр

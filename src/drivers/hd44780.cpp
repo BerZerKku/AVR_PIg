@@ -1,11 +1,22 @@
 #include <avr/io.h>
-#include <util/delay.h>
+#include <avr/pgmspace.h>
+//#include <util/delay.h>
+
 
 #include "debug.h"
 #include "hd44780.h"
 
+/// размер массива
+#define SIZE_OF(mas) (sizeof(mas) / sizeof(mas[0]))
+
+// структура команд инициализации ЖКИ
+typedef struct {
+	uint8_t com;	// команда для передачи в ЖКИ
+	uint16_t time;	// время ожидания после передачи команды в ЖКИ
+} SComInit;
+
 // таблица преобразования русских символов в коды ЖКИ
-static const uint8_t decode[] = {
+static const uint8_t decode[] PROGMEM = {
 		//A	  Б    В	Г    Д    Е    Ж    З    И    й    К    Л    М    Н    О    П
 		0x41,0xA0,0x42,0xA1,0xE0,0x45,0xA3,0xA4,0xA5,0xA6,0x4B,0xA7,0x4D,0x48,0x4F,0xA8,
 		//Р   С    Т    У    Ф    Х    Ц    Ч    Ш    Щ    Ъ    Ы    Ь    Э    Ю    Я
@@ -16,8 +27,12 @@ static const uint8_t decode[] = {
 		0x70,0x63,0xBF,0x79,0xE4,0x78,0xE5,0xC0,0xC1,0xE6,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7
 };
 
+
 /// флаг необходимости обновить данные на ЖКИ
-volatile uint8_t bRefresh = 0;
+volatile bool bRefresh = false;
+/// флаг необходимости переинициализировать дисплей
+volatile bool bReInit = false;
+
 
 /// буфер данных для вывода на ЖКИ
 char *buf;
@@ -27,29 +42,7 @@ void sendCom(uint8_t val);	//	Отправка команды в ЖКИ.
 
 // Инициализация дисплея.
 void vLCDinit(void) {
-	static volatile  uint8_t poweron = 0;
-
-	// при включении идет последовательность команд, которые при повторной
-	// инициализации уже не нужны.
-	if (poweron == 0) {
-		_delay_ms(150);
-		sendCom(0x30);
-		_delay_ms(20);
-		sendCom(0x30);
-		_delay_us(200);
-		sendCom(0x30);
-		poweron = 1;
-	}
-
-	_delay_ms(2);
-	sendCom(0x38);
-	_delay_us(100);
-	sendCom(0x0C);
-	_delay_us(100);
-	sendCom(0x01);
-	_delay_ms(2);
-	sendCom(0x02);
-	_delay_us(100);
+	bReInit = true;
 };
 
 // Очистка содержимого буфера
@@ -61,41 +54,90 @@ void vLCDinit(void) {
 
 // Основная функция обновления содержимого ЖКИ.
 void vLCDmain(void) {
+	// массив команд инициализации ЖКИ
+	static const SComInit comInit[] PROGMEM = {
+			// при включении
+			{0x38,	200},	// команда 0х38 и ждем после 20мс
+			// переинициализация
+			{0x38,  42},	// команда 0x30 и ждем после 4.2мс
+			{0x38,	2},		// команда 0x30 и ждем после 0.2мс
+			{0x38, 	20},	// команда 0х30 и ждем после 2мс
+			{0x38, 	1},		// команда 0x38 и ждем после 0.1мс
+			{0x0C, 	1},		// команда 0x0C и ждем после 0.1мс
+			{0x01, 	20},	// команда 0x01 и ждем после 2мс
+			{0x02,  20}		// команда 0x02 и ждем после 2мс
+	};
+	// флаг процесса инициализации
+	static bool init = true;
+	// текущее положение в буфере символов или инициализации
+	// при старте должен быть 0, чтобы инициализация пошла с начала
 	static uint8_t cnt = 0;
+	// команда на передачу, должна быть 0
 	static uint8_t com = 0;
+	// время ожидания до передачи команды
+	static uint16_t time = 0;
 
-	if (bRefresh) {
-		if (com != 0) {
-			// отправка команды перехода на другую строку
-			sendCom(com);
-			com = 0;
+	// ожидание времени до передачи команды
+	if (time > 0) {
+		time--;
+		return;
+	}
+
+	// передача команды
+	if (com != 0) {
+		sendCom(com);
+		com = 0;
+		return;
+	}
+
+	// инициализация ЖКИ
+	if (init) {
+		if (cnt < SIZE_OF(comInit)) {
+			com = pgm_read_byte(&comInit[cnt].com);
+			time = pgm_read_byte(&comInit[cnt].time);
+			cnt++;
 		} else {
-			// отправка байта данных
-			sendData(buf[cnt++]);
+			init = false;
+			cnt = 0;
+		}
+		return;
+	}
 
-			// завершение вывода данных в ЖКИ
-			if (cnt >= SIZE_BUF_STRING) {
-				cnt = 0;
-				bRefresh = 0;
-			}
+	// проверка необходимости переинициализации
+	if (bReInit) {
+		init = true;
+		cnt = 1;
+		bReInit = false;
+		return;
+	}
 
-			// переход на другую строку
-			if (cnt == 0) {
-				com = 0x80;
-			} else if (cnt == 20) {
-				com = 0xC0;
-			} else if (cnt == 40) {
-				com = 0x94;
-			} else if (cnt == 60) {
-				com = 0xD4;
-			}
+	// обновление содержимого ЖКИ
+	if (bRefresh) {
+		// отправка байта данных
+		sendData(buf[cnt++]);
+
+		// завершение вывода данных в ЖКИ
+		if (cnt >= SIZE_BUF_STRING) {
+			cnt = 0;
+			bRefresh = false;
+		}
+
+		// переход на другую строку
+		if (cnt == 0) {
+			com = 0x80;
+		} else if (cnt == 20) {
+			com = 0xC0;
+		} else if (cnt == 40) {
+			com = 0x94;
+		} else if (cnt == 60) {
+			com = 0xD4;
 		}
 	}
 }
 
 // Начало обновления содержимого ЖКИ.
 void vLCDrefresh(void) {
-	bRefresh = 1;
+	bRefresh = true;
 }
 
 // Преобразование массива символов, в данные для вывода на ЖКИ.
@@ -103,12 +145,14 @@ void vLCDputchar(char *b) {
 	buf = b;
 	for(uint8_t i = 0; i < SIZE_BUF_STRING; i++) {
 		if ((buf[i] >= 'А') && (buf[i] <= 'я')) {
-			buf[i] = decode[buf[i] - 'А'];
+			buf[i] = pgm_read_byte(&decode[buf[i] - 'А']);
 		} else if (buf[i] == 0x00) {
 			buf[i] = ' ';
-		} else if (buf[i] == 0xB0) {
-			buf[i] = 0xEF;	// символ градуса '°'
 		}
+		// символ '°' сделан в ЖКИ довольно коряво, поэтому не используем
+//		else if (buf[i] == 0xB0) {
+//			buf[i] = 0xEF;	// символ градуса '°'
+//		}
 	}
 }
 

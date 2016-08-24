@@ -15,7 +15,7 @@
 #warning "¬ключен режим отладки!!!"
 
 // вывод отладочной информации на экран
-// #define VIEW_DEBUG_PARAM
+//#define VIEW_DEBUG_PARAM
 
 // тестовые пины
 #define DDR_DBG		DDRE
