@@ -256,7 +256,7 @@ static const char fcJrnEmpty[] 			PROGMEM = "ЖУРНАЛ ПУСТ";
 static const char fcJrnNumEntries[] 	PROGMEM = "(%u/%u)";
 /// Вывод номера текущей записи журнала, кол-во событий в текущей записи и общего
 /// количества записей в журнале (для оптики).
-static const char fcJrnNumEntriesOpto[]	PROGMEM = "Запись %u / %u (%u)";
+static const char fcJrnNumEntriesOpto[]	PROGMEM = "%u/%u";
 /// Режим устройства в котором была сделана запись.
 static const char fcRegimeJrn[]			PROGMEM = "Режим:";
 /// Состояние устройства в котором была сделана запись.
@@ -281,14 +281,14 @@ static const char fcJrnSourcePrd[GB_SOURCE_COM_MAX + 1][5] PROGMEM = {
 
 /// Состояние команды ПРМ/ПРД для которого была сделана запись.
 static const char fcJrnPrd[GB_STATE_COM_MAX + 1][21] PROGMEM = {
-		"Окончание команды",	///<
-		"Начало команды",		///<
+		"Окончание команды %u",	///<
+		"Начало команды %u",	///<
 		"Ошибочное значение"	///< ошибочное значение
 };
 /// Запись об окончании всех команд ПРМ/ПРД (оптика).
 static const char fcJrnPrdOptoComNo[] PROGMEM = "Команд нет";
 /// Запись о наличии команд на ПРД/ПРМ (оптика).
-static const char fcJrnPrdOptoComYes[] PROGMEM = "Команда передается";
+static const char fcJrnPrdOptoComYes[] PROGMEM = "Начало команды %u";
 
 /// Записи журнала событий для К400.
 static char fcJrnEventK400[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {

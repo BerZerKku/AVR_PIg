@@ -229,8 +229,7 @@ static void setInterface(TUartData *uart) {
 	// если идет связь по Лок.сети, то настройки пользователя
 	switch (val) {
 		case TInterface::RS232:
-			// во время отладки интерфейс RS232 можно настраивать
-			// TODO
+			// TODO сделать возможность настройки интверфейса RS232 во время отладки
 			setProtocol(TProtocol::STANDART, 19200);
 			uartPC.open(19200, TDataBits::_8, TParity::NONE,
 					TStopBits::TWO);
