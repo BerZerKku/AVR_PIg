@@ -1298,6 +1298,10 @@ void clMenu::lvlInfo() {
 		Punkts_.add(GB_IC_BSP_MCU);
 		if (sParam.typeDevice != AVANT_OPTO) {
 			Punkts_.add(GB_IC_BSP_DSP);				// только в оптике нет DSP
+
+			if (sParam.typeDevice == AVANT_K400) {	// в К400 отдельно прошивка DSP
+				Punkts_.add(GB_IC_BSP_DSP_PLIS);
+			}
 		}
 		Punkts_.add(GB_IC_PI_MCU);
 		if (sParam.prd.status.isEnable()) {
@@ -2916,7 +2920,7 @@ void clMenu::lvlSetupParamPrm() {
 			sParam.txComBuf.addCom2(GB_COM_PRM_GET_COM);
 
 			sParam.local.addParam(GB_PARAM_PRM_COM_NUMS);
-			sParam.local.addParam(GB_PARAM_PRM_TIME_ON);
+			sParam.local.addParam(GB_PARAM_PRM_TIME_ON_K400);
 			if (numcom != 0) {
 				sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK);
 				sParam.local.addParam(GB_PARAM_PRM_TIME_OFF);
