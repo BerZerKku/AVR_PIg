@@ -641,7 +641,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			glb->setVersProgIC8(buf[B14], GB_IC_BSK_PLIS_PRM1);
 			glb->setVersProgIC8(buf[B15], GB_IC_BSK_PLIS_PRM2);
 			glb->setVersProgIC8(buf[B16], GB_IC_BSZ_PLIS);
-			glb->setVersProgIC16(TO_INT16(buf[B20], buf[B21]), GB_IC_BSP_DSP_PLIS);
+			glb->setVersProgIC16(TO_INT16(buf[B21], buf[B22]), GB_IC_BSP_DSP_PLIS);
 
 			// совместимость, для Р400/Р400м и К400 отличаются
 			if (sParam_->def.status.isEnable()) {
