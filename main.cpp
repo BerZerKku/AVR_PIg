@@ -424,7 +424,6 @@ main(void) {
 
 			cnt_wdt++;
 			// обновление экрана
-			// где 100 - время рабочего цикла
 			if (++cnt_lcd >= (MENU_TIME_CYLCE / TIME_CYLCE)) {
 				cnt_lcd = 0;
 				menu.main();

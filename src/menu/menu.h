@@ -13,11 +13,9 @@
 #include "paramBsp.h"
 #include "LocalParams.h"
 
-/// время одно цикла работы с меню, мс
+/// время одного цикла работы с меню, мс
 #define MENU_TIME_CYLCE 200
 
-/// время до первой инициализации дисплея, мс
-#define TIME_TO_INIT_LCD (200 / MENU_TIME_CYLCE)
 /// время до переинициализации дисплея, мс
 #define TIME_TO_REINIT_LCD (5000 / MENU_TIME_CYLCE)
 
