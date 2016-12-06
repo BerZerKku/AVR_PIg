@@ -2861,11 +2861,11 @@ void clMenu::lvlSetupParamDef() {
 			}
 			sParam.local.addParam(GB_PARAM_FREQ_PRD);
 			sParam.local.addParam(GB_PARAM_FREQ_PRM);
-			sParam.local.addParam(GB_PARAM_LIMIT_PRD);
-			sParam.local.addParam(GB_PARAM_DELAY_ON_PRM);
-			sParam.local.addParam(GB_PARAM_DELAY_OFF_PRM);
-			sParam.local.addParam(GB_PARAM_DELAY_ON_PRD);
-			sParam.local.addParam(GB_PARAM_MIN_TIME_PRD);
+//			sParam.local.addParam(GB_PARAM_LIMIT_PRD);
+//			sParam.local.addParam(GB_PARAM_DELAY_ON_PRM);
+//			sParam.local.addParam(GB_PARAM_DELAY_OFF_PRM);
+//			sParam.local.addParam(GB_PARAM_DELAY_ON_PRD);
+//			sParam.local.addParam(GB_PARAM_MIN_TIME_PRD);
 		} else if (device == AVANT_OPTO) {
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES);
 			sParam.local.addParam(GB_PARAM_DEF_TYPE);
@@ -4652,8 +4652,9 @@ bool clMenu::checkLedOn() {
 	if (sParam.def.status.isEnable()) {
 		if (sParam.def.status.getState() != 1) {
 			ledOn = true;
-		}
-		if (sParam.def.status.isFault() || sParam.def.status.isWarning()) {
+		} else if (sParam.def.status.isFault()) {
+			ledOn = true;
+		} else if (sParam.def.status.isWarning()) {
 			ledOn = true;
 		}
 	}
@@ -4661,8 +4662,11 @@ bool clMenu::checkLedOn() {
 	if (sParam.prm.status.isEnable()) {
 		if (sParam.prm.status.getState() != 1) {
 			ledOn = true;
-		}
-		if (sParam.prm.status.isFault() || sParam.prm.status.isWarning()) {
+		} else if (sParam.prm.status.isFault()) {
+			ledOn = true;
+		} else if (sParam.prm.status.isWarning()) {
+			ledOn = true;
+		} else if (sParam.prm.isIndCom()) {
 			ledOn = true;
 		}
 	}
@@ -4670,10 +4674,18 @@ bool clMenu::checkLedOn() {
 	if (sParam.prd.status.isEnable()) {
 		if (sParam.prd.status.getState() != 1) {
 			ledOn = true;
-		}
-		if (sParam.prd.status.isFault() || sParam.prd.status.isWarning()) {
+		} else if (sParam.prd.status.isFault()) {
+			ledOn = true;
+		} else if (sParam.prd.status.isWarning()) {
+			ledOn = true;
+		} else if (sParam.prd.isIndCom()) {
 			ledOn = true;
 		}
+	}
+
+	if (sParam.glb.isLedOn()) {
+		ledOn = true;
+		sParam.glb.setLedOn(false);
 	}
 
 	return ledOn;

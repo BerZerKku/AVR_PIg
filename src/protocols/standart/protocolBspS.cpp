@@ -513,8 +513,10 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			sParam_->prd.status.setState(buf[B8]);
 			sParam_->prd.status.setDopByte(buf[B9]);
 
+			// далее проверяется кол-во принятых байт
+			uint8_t num = buf[NUM];
+
 			if ((device == AVANT_K400) || (device == AVANT_OPTO)) {
-				uint8_t num = buf[NUM];	// далее проверяется кол-во принятых байт
 				if (sParam_->prm.status.isEnable()) {
 					if (num >= 13) 	sParam_->prm.setIndCom8(0, buf[B13]);
 					if (num >= 14)  sParam_->prm.setIndCom8(1, buf[B14]);
@@ -527,6 +529,11 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 					if (num >= 19)  sParam_->prd.setIndCom8(2, buf[B19]);
 					if (num >= 20)  sParam_->prd.setIndCom8(3, buf[B20]);
 				}
+			}
+
+			// проверка необходимости включить подсветку
+			if (num >= 21) {
+				sParam_->glb.setLedOn((buf[B21] > 0));
 			}
 
 			eGB_REGIME reg = GB_REGIME_MAX;

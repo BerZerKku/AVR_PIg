@@ -83,6 +83,7 @@ public:
 
 		deviceNum_ = GLB_DEV_NUM_MIN_F;
 		netAdr_ = 0;
+		ledOn = false;
 
 		for(uint_fast8_t i = 0; i < GB_IC_MAX; i++) {
 			versProgIC_[i] = 0;
@@ -342,6 +343,15 @@ public:
 		return (netAdr_ * GLB_NET_ADR_FRACT);
 	}
 
+	// проверка флага включения подсветки
+	bool isLedOn() const {
+		return ledOn;
+	}
+
+	// установка значения флага включения подсветки
+	void setLedOn(bool ledOn) {
+		this->ledOn = ledOn;
+	}
 
 private:
 	// версии прошивок микросхем
@@ -367,6 +377,9 @@ private:
 
 	// сетевой адрес
 	uint8_t netAdr_;
+
+	// флаг включения подсветки
+	bool ledOn;
 };
 
 
