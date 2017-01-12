@@ -2942,6 +2942,14 @@ void clMenu::lvlSetupParamPrm() {
 				sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK);
 				sParam.local.addParam(GB_PARAM_PRM_TIME_OFF);
 			}
+			// В командном варианте добавляется ЦПП
+			if (!sParam.def.status.isEnable()) {
+				sParam.local.addParam(GB_PARAM_PRM_DR_ENABLE);
+				if (numcom != 0) {
+					sParam.local.addParam(GB_PARAM_PRM_DR_COM_BLOCK);
+					sParam.local.addParam(GB_PARAM_PRM_DR_COM_TO_HF);
+				}
+			}
 		}
 	}
 
@@ -2983,13 +2991,13 @@ void clMenu::lvlSetupParamPrd() {
 		sParam.txComBuf.clear();
 
 		sParam.local.clearParams();
+		uint8_t numcom = sParam.prd.getNumCom();
 		if (device == AVANT_K400) {
 			// для переформирования меню добавим опрос кол-ва команд
 			sParam.txComBuf.addCom2(GB_COM_PRD_GET_COM);
 			// совместимость
 			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
 
-			uint8_t numcom = sParam.prd.getNumCom();
 			sParam.local.addParam(GB_PARAM_PRD_COM_NUMS);
 			sParam.local.addParam(GB_PARAM_PRD_IN_DELAY);
 			sParam.local.addParam(GB_PARAM_PRD_DURATION_L);
@@ -3013,6 +3021,13 @@ void clMenu::lvlSetupParamPrd() {
 			sParam.local.addParam(GB_PARAM_PRD_DURATION_O);
 			sParam.local.addParam(GB_PARAM_PRD_COM_LONG);
 			sParam.local.addParam(GB_PARAM_PRD_COM_BLOCK);
+			// В командном варианте добавляется ЦПП
+			if (!sParam.def.status.isEnable()) {
+				sParam.local.addParam(GB_PARAM_PRD_DR_ENABLE);
+				if (numcom != 0) {
+					sParam.local.addParam(GB_PARAM_PRD_DR_COM_BLOCK);
+				}
+			}
 		}
 	}
 
