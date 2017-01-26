@@ -1457,9 +1457,9 @@ static const Param fPrdComBlock PROGMEM = {
 		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
-// трансляция ЦС
+// трансляция ЦП
 static const Param fPrdDrEnable PROGMEM = {
-		"Трансляция ЦС",		// название параметра
+		"Трансляция ЦП",		// название параметра
 		GB_COM_PRD_GET_DR_STATE,// команда стандартного протокола
 		Param::PARAM_LIST,		// тип параметра
 		Param::RANGE_ON_OFF,	// диапазон измнения
@@ -1477,9 +1477,9 @@ static const Param fPrdDrEnable PROGMEM = {
 		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
-// блокированные команды ЦС
+// блокированные команды ЦП
 static const Param fPrdDrComBlock PROGMEM = {
-		"Блокиров. команды ЦС",	// название параметра
+		"Блокиров. команды ЦП",	// название параметра
 		GB_COM_PRD_GET_DR_BLOCK,// команда стандартного протокола
 		Param::PARAM_BITES,		// тип параметра
 		Param::RANGE_ON_OFF,	// диапазон измнения
@@ -1618,9 +1618,9 @@ static const Param fPrmTimeOff PROGMEM = {
 		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
-// трансляция ЦС
+// трансляция ЦП
 static const Param fPrmDrEnable PROGMEM = {
-		"Трансляция ЦС",		// название параметра
+		"Трансляция ЦП",		// название параметра
 		GB_COM_PRM_GET_DR_STATE,// команда стандартного протокола
 		Param::PARAM_LIST,		// тип параметра
 		Param::RANGE_ON_OFF,	// диапазон измнения
@@ -1638,9 +1638,9 @@ static const Param fPrmDrEnable PROGMEM = {
 		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
-// блокированные команды ЦС
+// блокированные команды ЦП
 static const Param fPrmDrComBlock PROGMEM = {
-		"Блокиров. команды ЦС",	// название параметра
+		"Блокиров. команды ЦП",	// название параметра
 		GB_COM_PRM_GET_DR_BLOCK,// команда стандартного протокола
 		Param::PARAM_BITES,		// тип параметра
 		Param::RANGE_ON_OFF,	// диапазон измнения
@@ -1658,9 +1658,9 @@ static const Param fPrmDrComBlock PROGMEM = {
 		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
-// команда ВЧ в ЦС
+// команда ВЧ в ЦП
 static const Param fPrmDrComToHf PROGMEM = {
-		"Команда ВЧ в ЦС",		// название параметра
+		"Команда ВЧ в ЦП",		// название параметра
 		GB_COM_PRM_GET_DR_COM,	// команда стандартного протокола
 		Param::PARAM_INT,		// тип параметра
 		Param::RANGE_INT,		// диапазон измнения

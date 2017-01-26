@@ -392,8 +392,8 @@ enum eGB_PARAM {
 	GB_PARAM_PRD_TEST_COM,		///< тестовая команда
 	GB_PARAM_PRD_COM_LONG,		///< следящие команды
 	GB_PARAM_PRD_COM_BLOCK,		///< блокированные команды
-	GB_PARAM_PRD_DR_ENABLE,		///< трансляция ЦС
-	GB_PARAM_PRD_DR_COM_BLOCK,	///< блокированные команды ЦС
+	GB_PARAM_PRD_DR_ENABLE,		///< трансляция ЦП
+	GB_PARAM_PRD_DR_COM_BLOCK,	///< блокированные команды ЦП
 	GB_PARAM_PRD_COM_NUMS,		///< количество команд
 	GB_PARAM_PRD_COM_NUMS_A,	///< количество команд группы А
 	// параметры приемника
@@ -401,9 +401,9 @@ enum eGB_PARAM {
 	GB_PARAM_PRM_TIME_ON_K400,	///< задержка на фиксацию команды (время включения) в К400
 	GB_PARAM_PRM_COM_BLOCK,		///< блокированные команды
 	GB_PARAM_PRM_TIME_OFF,		///< задержка на выключение
-	GB_PARAM_PRM_DR_ENABLE,		///< трансляция ЦС
-	GB_PARAM_PRM_DR_COM_BLOCK,	///< блокированные команды ЦС
-	GB_PARAM_PRM_DR_COM_TO_HF,	///< команда ВЧ в ЦС
+	GB_PARAM_PRM_DR_ENABLE,		///< трансляция ЦП
+	GB_PARAM_PRM_DR_COM_BLOCK,	///< блокированные команды ЦП
+	GB_PARAM_PRM_DR_COM_TO_HF,	///< команда ВЧ в ЦП
 	GB_PARAM_PRM_COM_NUMS,		///< количество команд
 	// параметры интерфейса
 	GB_PARAM_INTF_INTERFACE,	///< интерфейс связи

@@ -147,7 +147,7 @@ static const char fcPrdSost04[] PROGMEM =	"Неиспр.";		///<
 static const char fcPrdSost05[] PROGMEM =	"П.неиспр";		///<
 static const char fcPrdSost06[] PROGMEM =	"Ожидание";		///<
 static const char fcPrdSost07[] PROGMEM = 	"?0x07?";		///<
-static const char fcPrdSost08[] PROGMEM = 	"ПРД ЦС%02u";	///<
+static const char fcPrdSost08[] PROGMEM = 	"ПРД ЦП%02u";	///<
 static const char fcPrdSost09[] PROGMEM =	"Систем.";		///<
 static const char fcPrdSost10[] PROGMEM =	"Речь";			///<
 static const char fcPrdSost11[] PROGMEM =	"ПРД";			///<
@@ -185,7 +185,7 @@ static const char fcGlbWarning10[] 		PROGMEM = "Удал.ПОСТ неиспр";	///<
 static const char fcGlbWarning10k400[]	PROGMEM = "Неиспр. дат.темп";	///<
 static const char fcGlbWarning20[] 		PROGMEM = "Удал.ПРД неиспр";	///<
 static const char fcGlbWarning40[] 		PROGMEM = "Удал.ПРМ неиспр";	///<
-static const char fcGlbWarning100[]		PROGMEM = "Ошбка работы ЦС";	///<
+static const char fcGlbWarning100[]		PROGMEM = "Ошбка работы ЦП";	///<
 
 // неисправности защиты
 static const char fcDefFault0001[] 		PROGMEM = "Нет блока БСЗ";		///<
@@ -232,8 +232,8 @@ static const char fcPrmFault8000rzsk[] 	PROGMEM = "Прием блок. ком.";	///<
 // предупреждения приемника
 static const char fcPrmWarning01rzsk[] 	PROGMEM = "Сниж. уровня ПРМ";	///<
 static const char fcPrmWarning01opto[] 	PROGMEM = "Нет КС";				///<
-static const char fcPrmWarning02k400[] 	PROGMEM = "Ошибка работы ЦС";	///<
-static const char fcPrmWarning04k400[]	PROGMEM = "Вход RX ЦС пуст";	///<
+static const char fcPrmWarning02k400[] 	PROGMEM = "Ошибка работы ЦП";	///<
+static const char fcPrmWarning04k400[]	PROGMEM = "Вход RX ЦП пуст";	///<
 static const char fcPrmWarning08k400[]	PROGMEM = "Низкий уровень D";	///<
 
 // неисправности передатчика
@@ -245,8 +245,8 @@ static const char fcPrdFault0400rzsk[] 	PROGMEM = "Неиспр.вкл. Тест";	///<
 static const char fcPrdFault0800rzsk[] 	PROGMEM = "Неиспр.вход. ком";	///<
 
 // предупреждения передатчика
-static const char fcPrdWarning02k400[] 	PROGMEM = "Ошибка работы ЦС";	///<
-static const char fcPrdWarning04k400[] 	PROGMEM = "Вход RX ЦС пуст";	///<
+static const char fcPrdWarning02k400[] 	PROGMEM = "Ошибка работы ЦП";	///<
+static const char fcPrdWarning04k400[] 	PROGMEM = "Вход RX ЦП пуст";	///<
 
 /// Текущее значение параметра.
 static const char fcValue[] 			PROGMEM = "Значение: ";
@@ -273,10 +273,10 @@ static const char fcTimeJrn[]			PROGMEM = "Время: %02u:%02u:%02u.%03u";
 static const char fcJrnNotReady[]		PROGMEM = "СЧИТЫВАНИЕ ЗАПИСИ";
 /// Вывод состояний входов/выходов защиты в момент записи журнала.
 static const char fcSignalDefJrn[]		PROGMEM = "П%dС%dМ%d ПД%dПМ%dВЫХ%d";
-/// Источник передаваемой комадны (для различия команд с ДВ и ЦС).
+/// Источник передаваемой комадны (для различия команд с ДВ и ЦП).
 static const char fcJrnSourcePrd[GB_SOURCE_COM_MAX + 1][5] PROGMEM = {
 		"",						///< команды с дискретных входов
-		"(ЦС)",					///< команды с цифровой ретрансляции
+		"(ЦП)",					///< команды с цифровой ретрансляции
 		"(ОШ)"					///< ошибочное значение
 };
 
@@ -324,9 +324,9 @@ static char fcJrnEventK400[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 		"Неиспр чт/зап FLASH",   	///< 27
 		"Неисправность часов",      ///< 28
 		"Сниж.ур. КЧ на %S",       	///< 29
-		"Ошибка работы ЦС",        	///< 30
-		"Вход RX ЦС пуст",         	///< 31
-		"Работа ЦС восстановл",    	///< 32
+		"Ошибка работы ЦП",        	///< 30
+		"Вход RX ЦП пуст",         	///< 31
+		"Работа ЦП восстановл",    	///< 32
 		"Высокая температура",		///< 33
 		"Низкая температура",		///< 34
 		"Нормал. температура",		///< 35
@@ -447,8 +447,8 @@ static char fcJrnEventOPTO[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 		"Изменение режима",         ///< 18
 		"Неиспр цепи вых.",	  		///< 19
 		"Событие - %d", 			///< 20
-		"Ошибка работы ЦС",    		///< 21
-		"Восстан-е работы ЦС",		///< 22
+		"Ошибка работы ЦП",    		///< 21
+		"Восстан-е работы ЦП",		///< 22
 		"Отсут-е сигнала Пуск",     ///< 23
 		"Отсут-е сигн Останов",     ///< 24
 		"Выключение питания",       ///< 25
