@@ -29,7 +29,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0126
+#define VERS 0x0127
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -1628,6 +1628,57 @@ public:
 		return val;
 	}
 
+	/**	Установка записей для журналов ОПТИКИ ЦПП.
+	 *
+	 * 	Считываются 4 байта, СТАРШИМ вперед.
+	 * 	Каждый установленный бит в них отвечает за свое событие.
+	 *
+	 * 	@param buf Указатель на массив из 4 байт данных.
+	 * 	@retval True - всегда.
+	 */
+	bool setOpticEntryDR(uint8_t *buf) {
+		uint8_t num = 0;
+
+		// В каждом байте записи считается кол-во установленных битов
+		for(uint_fast8_t i = 0; i <= 3; i++) {
+			uint8_t byte = *buf++;
+			opticEntryDR_[i] = byte;
+			for(uint_fast8_t j = 1; j > 0; j <<= 1) {
+				if (byte & j) {
+					num++;
+				}
+			}
+		}
+		numOpticEntriesDR_ = num;
+
+		return true;
+	}
+
+	/** Возвращает флаг команды ЦПП.
+	 *
+	 * 	@param com Номер команды для которой проверяется флаг 1..32.
+	 * 	@return 1 - если команда передана по ЦПП, 0 - с дискретного входа.
+	 */
+	uint8_t getOpticEntryDR(uint8_t com) {
+		eGB_SOURCE_COM val = GB_SOURCE_COM_DI;
+
+		if ((com > 0) && (com < MAX_NUM_COM_PRD)) {
+			com--;
+
+			uint8_t i = (MAX_NUM_COM_PRD - 1) / 8;
+			while(com > 8) {
+				com -= 8;
+				i--;
+			}
+
+			if (opticEntryDR_[i] & (1 << com)) {
+				val = GB_SOURCE_COM_DR;
+			}
+		}
+
+		return val;
+	}
+
 	// режим
 	bool setRegime(eGB_REGIME regime) {
 		bool state = false;
@@ -1880,8 +1931,14 @@ private:
 	// буфер записи для журналов ОПТИКИ
 	uint8_t opticEntry_[4];
 
+	// буфер записи для журналов ОПТИКИ ЦПП
+	uint8_t opticEntryDR_[4];
+
 	// кол-во событий в одной записи журнала ОПТИКИ
 	uint8_t numOpticEntries_;
+
+	// кол-во событий в одной записи журнала ОПТИКИ ЦПП
+	uint8_t numOpticEntriesDR_;
 
 	// кол-во записей в журнале
 	uint16_t numJrnEntries_;

@@ -445,6 +445,11 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 					sParam_->jrnEntry.dateTime.setMsSecond(t);
 					//
 					sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B1]);
+
+					if (buf[NUM] >= 16) {
+						// Â ÎÏÒÈÊÅ ïåğåäàşòñÿ ôëàãè ÖÏÏ
+						sParam_->jrnEntry.setOpticEntryDR((uint8_t *) &buf[B13]);
+					}
 					sParam_->jrnEntry.setReady();
 					stat = true;
 				} else {

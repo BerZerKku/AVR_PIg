@@ -690,7 +690,9 @@ bool clMenu::setDeviceOPTO() {
 	sParam.glb.status.warningText[4] = fcGlbWarning10;
 	sParam.glb.status.warningText[5] = fcGlbWarning20;
 	sParam.glb.status.warningText[6] = fcGlbWarning40;
-	// 7-15 нет
+	// 7 нет
+	sParam.glb.status.warningText[8] = fcGlbWarning100;
+	// 9-15 нет
 
 	// ЗАЩИТА
 	// заполнение массива неисправностей защиты
@@ -1953,12 +1955,14 @@ void clMenu::lvlJournalPrd() {
 	snprintf_P(&vLCDbuf[poz], 21, title);
 	poz += 20;
 
+	uint8_t numSubEntries = sParam.jrnEntry.getNumOpticsEntries();
+
 	// вывод номер текущей записи и их кол-ва
 	if (num_entries != 0) {
 		if (device == AVANT_OPTO) {
 			// в оптике дополнительно выводится кол-во событий в одной записи
 			snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntriesOpto, cur_entry,
-					num_entries, sParam.jrnEntry.getNumOpticsEntries());
+					num_entries, numSubEntries);
 		} else {
 			snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
 		}
@@ -1972,13 +1976,14 @@ void clMenu::lvlJournalPrd() {
 		// ифнорация о текущей записи еще не получена
 		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
 	} else {
-
 		// вывод номера команды
 		uint8_t com = 0;
 		if (device == AVANT_OPTO) {
 			// в оптике в одной записи может быть много команд
-			if (curCom_ > sParam.jrnEntry.getNumOpticsEntries())
+			if (curCom_ > numSubEntries) {
 				curCom_ = 1;
+			}
+
 			com = sParam.jrnEntry.getOpticEntry(curCom_);
 		} else {
 			com = sParam.jrnEntry.getNumCom();
@@ -1988,6 +1993,9 @@ void clMenu::lvlJournalPrd() {
 		// для команднеой ВЧ-аппаратуры, выведем источник формирования команды
 		if ((device == AVANT_K400) || (device == AVANT_RZSK)) {
 			uint8_t s = sParam.jrnEntry.getSourceCom();
+			snprintf_P(&vLCDbuf[poz + t + 1], 5, fcJrnSourcePrd[s]);
+		} else if (device == AVANT_OPTO) {
+			uint8_t s = sParam.jrnEntry.getOpticEntryDR(com);
 			snprintf_P(&vLCDbuf[poz + t + 1], 5, fcJrnSourcePrd[s]);
 		}
 
@@ -2260,7 +2268,7 @@ void clMenu::lvlControl() {
 			}
 			if (sParam.def.status.isEnable()) {
 				Punkts_.add(punkt02);
-				Punkts_.add(punkt11);
+//				Punkts_.add(punkt11);
 			}
 		}
 
@@ -2942,6 +2950,14 @@ void clMenu::lvlSetupParamPrm() {
 				sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK);
 				sParam.local.addParam(GB_PARAM_PRM_TIME_OFF);
 			}
+			// В командном варианте добавляется ЦПП
+			if (!sParam.def.status.isEnable()) {
+				sParam.local.addParam(GB_PARAM_PRM_DR_ENABLE);
+				if (numcom != 0) {
+					sParam.local.addParam(GB_PARAM_PRM_DR_COM_BLOCK);
+					sParam.local.addParam(GB_PARAM_PRM_DR_COM_TO_HF);
+				}
+			}
 		}
 	}
 
@@ -2983,13 +2999,13 @@ void clMenu::lvlSetupParamPrd() {
 		sParam.txComBuf.clear();
 
 		sParam.local.clearParams();
+		uint8_t numcom = sParam.prd.getNumCom();
 		if (device == AVANT_K400) {
 			// для переформирования меню добавим опрос кол-ва команд
 			sParam.txComBuf.addCom2(GB_COM_PRD_GET_COM);
 			// совместимость
 			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
 
-			uint8_t numcom = sParam.prd.getNumCom();
 			sParam.local.addParam(GB_PARAM_PRD_COM_NUMS);
 			sParam.local.addParam(GB_PARAM_PRD_IN_DELAY);
 			sParam.local.addParam(GB_PARAM_PRD_DURATION_L);
@@ -3013,6 +3029,13 @@ void clMenu::lvlSetupParamPrd() {
 			sParam.local.addParam(GB_PARAM_PRD_DURATION_O);
 			sParam.local.addParam(GB_PARAM_PRD_COM_LONG);
 			sParam.local.addParam(GB_PARAM_PRD_COM_BLOCK);
+			// В командном варианте добавляется ЦПП
+			if (!sParam.def.status.isEnable()) {
+				sParam.local.addParam(GB_PARAM_PRD_DR_ENABLE);
+				if (numcom != 0) {
+					sParam.local.addParam(GB_PARAM_PRD_DR_COM_BLOCK);
+				}
+			}
 		}
 	}
 

@@ -185,6 +185,7 @@ static const char fcGlbWarning10[] 		PROGMEM = "Удал.ПОСТ неиспр";	///<
 static const char fcGlbWarning10k400[]	PROGMEM = "Неиспр. дат.темп";	///<
 static const char fcGlbWarning20[] 		PROGMEM = "Удал.ПРД неиспр";	///<
 static const char fcGlbWarning40[] 		PROGMEM = "Удал.ПРМ неиспр";	///<
+static const char fcGlbWarning100[]		PROGMEM = "Ошбка работы ЦС";	///<
 
 // неисправности защиты
 static const char fcDefFault0001[] 		PROGMEM = "Нет блока БСЗ";		///<
@@ -445,9 +446,9 @@ static char fcJrnEventOPTO[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 		"Вкл.пит/Перезапуск",       ///< 17
 		"Изменение режима",         ///< 18
 		"Неиспр цепи вых.",	  		///< 19
-		"Ошиб контр. вых.цепи", 	///< 20
-		"Событие - %d",        		///< 21
-		"Событие - %d",   			///< 22
+		"Событие - %d", 			///< 20
+		"Ошибка работы ЦС",    		///< 21
+		"Восстан-е работы ЦС",		///< 22
 		"Отсут-е сигнала Пуск",     ///< 23
 		"Отсут-е сигн Останов",     ///< 24
 		"Выключение питания",       ///< 25
