@@ -1660,7 +1660,7 @@ static const Param fPrmDrComBlock PROGMEM = {
 
 // команда ВЧ в ЦП
 static const Param fPrmDrComToHf PROGMEM = {
-		"Команда ВЧ в ЦП",		// название параметра
+		"Команда ПРМ в ЦП",		// название параметра
 		GB_COM_PRM_GET_DR_COM,	// команда стандартного протокола
 		Param::PARAM_INT,		// тип параметра
 		Param::RANGE_INT,		// диапазон измнения
