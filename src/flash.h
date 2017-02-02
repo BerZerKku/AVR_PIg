@@ -185,7 +185,7 @@ static const char fcGlbWarning10[] 		PROGMEM = "Удал.ПОСТ неиспр";	///<
 static const char fcGlbWarning10k400[]	PROGMEM = "Неиспр. дат.темп";	///<
 static const char fcGlbWarning20[] 		PROGMEM = "Удал.ПРД неиспр";	///<
 static const char fcGlbWarning40[] 		PROGMEM = "Удал.ПРМ неиспр";	///<
-static const char fcGlbWarning100[]		PROGMEM = "Ошбка работы ЦП";	///<
+static const char fcGlbWarning100[]		PROGMEM = "Ошибка работы ЦП";	///<
 
 // неисправности защиты
 static const char fcDefFault0001[] 		PROGMEM = "Нет блока БСЗ";		///<
