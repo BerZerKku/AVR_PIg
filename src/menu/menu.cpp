@@ -2938,6 +2938,8 @@ void clMenu::lvlSetupParamPrm() {
 				sParam.local.addParam(GB_PARAM_PRM_DR_COM_BLOCK);
 				sParam.local.addParam(GB_PARAM_PRM_DR_COM_TO_HF);
 			}
+			sParam.local.addParam(GB_PARAM_PRM_TEST_COM);
+			sParam.local.addParam(GB_PARAM_PRM_FREQ_CORR);
 		} else if (device == AVANT_RZSK) {
 			sParam.local.addParam(GB_PARAM_PRM_TIME_ON);
 			if (numcom != 0) {
@@ -3019,6 +3021,7 @@ void clMenu::lvlSetupParamPrd() {
 			if (numcom != 0) {
 				sParam.local.addParam(GB_PARAM_PRD_DR_COM_BLOCK);
 			}
+			sParam.local.addParam(GB_PARAM_PRD_FREQ_CORR);
 		} else if (device == AVANT_RZSK) {
 			sParam.local.addParam(GB_PARAM_PRD_IN_DELAY);
 			sParam.local.addParam(GB_PARAM_PRD_DURATION_L);
@@ -3111,6 +3114,7 @@ void clMenu::lvlSetupParamGlb() {
 			sParam.local.addParam(GB_PARAM_TEMP_MONITOR);
 			sParam.local.addParam(GB_PARAM_TEMP_THR_HI);
 			sParam.local.addParam(GB_PARAM_TEMP_THR_LOW);
+			sParam.local.addParam(GB_PARAM_TM_SPEED);
 		} else if (device == AVANT_RZSK) {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 

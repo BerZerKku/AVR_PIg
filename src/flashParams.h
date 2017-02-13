@@ -174,6 +174,13 @@ static char fcStopBits[TStopBits::MAX][STRING_LENGHT] PROGMEM = {
 		"2"				///< TStopBits::TWO
 };
 
+/// Скорость ТМ
+static char fcTMSpeed[][STRING_LENGHT] PROGMEM = {
+//		 1234567890
+		"200",
+		"400"
+};
+
 // параметр заглушка
 static const Param fNullParam PROGMEM = {
 		"",						// название параметра
@@ -877,6 +884,26 @@ static const Param fTempThrLow PROGMEM = {
 		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
+// скорость ТМ
+static const Param fTmSpeed PROGMEM = {
+		"Скорость ТМ",			// название параметра
+		GB_COM_GET_COM_PRD_KEEP,// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcTMSpeed[0],			// массив значений
+		1,						// кол-во повторений параметра
+		1,						// минимальное значение
+		SIZE_OF(fcOnOff),		// максимальное значение
+		1,						// дискретность
+		1,						// множитель для стандартного протокола
+		GB_SEND_INT8_DOP,		// тип параметра для сохранения новго значения
+		9,						// байт дополнительной информации для сохранения
+		Param::DEPEND_MAX_NO,	// заивимость максимума
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+};
+
 // тип защиты
 static const Param fDefType	PROGMEM = {
 		"Тип защиты", 			// название параметра
@@ -1537,6 +1564,25 @@ static const Param fPrdComNumsA PROGMEM = {
 		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
+// количество команд
+static const Param fPrdFreqCorr PROGMEM = {
+		"Коррекция частоты",	// название параметра
+		GB_COM_PRD_GET_FREQ_CORR,// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_HZ,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		-100,					// минимальное значение
+		100,					// максимальное значение
+		1,						// дискретность
+		1,						// множитель для стандартного протокола
+		GB_SEND_INT8,			// тип параметра для сохранения новго значения
+		0,						// байт дополнительной информации для сохранения
+		Param::DEPEND_MAX_NO,	// заивимость максимума
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+};
 
 // задержка на фиксацию команды (время включения)
 static const Param fPrmTimeOn PROGMEM = {
@@ -1693,6 +1739,46 @@ static const Param fPrmComNums PROGMEM = {
 		4,						// множитель для стандартного протокола
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
+		Param::DEPEND_MAX_NO,	// заивимость максимума
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+};
+
+// Прием тестовой команды
+static const Param fPrmTestCom PROGMEM = {
+		"Прием тестовой ком.",	// название параметра
+		GB_COM_PRM_GET_TEST_COM,// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcOnOff[0],				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		SIZE_OF(fcOnOff),		// максимальное значение
+		1,						// дискретность
+		1,						// множитель для стандартного протокола
+		GB_SEND_INT8,			// тип параметра для сохранения новго значения
+		0,						// байт дополнительной информации для сохранения
+		Param::DEPEND_MAX_NO,	// заивимость максимума
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+};
+
+// количество команд
+static const Param fPrmFreqCorr PROGMEM = {
+		"Коррекция частоты",	// название параметра
+		GB_COM_PRM_GET_FREQ_CORR,// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_HZ,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		-100,					// минимальное значение
+		100,					// максимальное значение
+		1,						// дискретность
+		1,						// множитель для стандартного протокола
+		GB_SEND_INT8,			// тип параметра для сохранения новго значения
+		0,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
 		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
@@ -1856,6 +1942,7 @@ static const Param* fParams[] PROGMEM  = {
 		&fTempMonitor,
 		&fTempThrHi,
 		&fTempThrLow,
+		&fTmSpeed,
 		// Параметры защиты
 		&fDefType,
 		&fTimeNoMan,
@@ -1891,6 +1978,7 @@ static const Param* fParams[] PROGMEM  = {
 		&fPrdDrComBlock,
 		&fPrdComNums,
 		&fPrdComNumsA,
+		&fPrdFreqCorr,
 		// Параметры приемника
 		&fPrmTimeOn,
 		&fPrmTimeOnK400,
@@ -1900,6 +1988,8 @@ static const Param* fParams[] PROGMEM  = {
 		&fPrmDrComBlock,
 		&fPrmDrComToHf,
 		&fPrmComNums,
+		&fPrmTestCom,
+		&fPrmFreqCorr,
 		// Параметры интерфейса
 		&fIntfInterface,
 		&fIntfProtocol,

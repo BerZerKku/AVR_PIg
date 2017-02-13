@@ -29,7 +29,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0127
+#define VERS 0x0128
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -211,16 +211,19 @@ enum eGB_COM {
 	GB_COM_DEF_GET_FREQ_PRD 	= 0x08,	// +
 	GB_COM_DEF_GET_RZ_THRESH 	= 0x09,	// + ! в Р400М это частота ПРМ
 	GB_COM_DEF_GET_TYPE_AC 		= 0x0A,	// +
-	GB_COM_DEF_GET_LIMIT_PRD	= 0x0B,	//
+	GB_COM_DEF_GET_LIMIT_PRD	= 0x0B,	// +
 	GB_COM_PRM_GET_TIME_ON 		= 0x11,	// +
+	GB_COM_PRM_GET_TEST_COM		= 0x12,	// +
 	GB_COM_PRM_GET_TIME_OFF 	= 0x13,	// +
 	GB_COM_PRM_GET_BLOCK_COM 	= 0x14,	// +
+	GB_COM_PRM_GET_FREQ_CORR	= 0x15,	// +
 	GB_COM_PRM_GET_DR_STATE 	= 0x17, // +
 	GB_COM_PRM_GET_DR_BLOCK		= 0x18,	// +
 	GB_COM_PRM_GET_DR_COM		= 0x19,	// +
 	GB_COM_PRM_GET_COM			= 0x1C, // +
 	GB_COM_PRD_GET_TIME_ON 		= 0x21,	// +
 	GB_COM_PRD_GET_DURATION 	= 0x22,	// +
+	GB_COM_PRD_GET_FREQ_CORR	= 0x23,	// +
 	GB_COM_PRD_GET_BLOCK_COM 	= 0x24,	// +
 	GB_COM_PRD_GET_LONG_COM 	= 0x25,	// +
 	GB_COM_PRD_GET_TEST_COM 	= 0x26,	// +
@@ -264,8 +267,10 @@ enum eGB_COM {
 	GB_COM_DEF_SET_TYPE_AC 		= 0x8A,	// +
 	GB_COM_DEF_SET_LIMIT_PRD	= 0x8B,	//
 	GB_COM_PRM_SET_TIME_ON 		= 0x91,	// +
+	GB_COM_PRM_SET_TEST_COM		= 0x92,	// +
 	GB_COM_PRM_SET_TIME_OFF 	= 0x93,	// +
 	GB_COM_PRM_SET_BLOCK_COM 	= 0x94,	// +
+	GB_COM_PRM_SET_FREQ_CORR	= 0x95,	// +
 	GB_COM_PRM_SET_DR_STATE 	= 0x97, // +
 	GB_COM_PRM_SET_DR_BLOCK		= 0x98,	// +
 	GB_COM_PRM_SET_DR_COM		= 0x99,	// +
@@ -273,6 +278,7 @@ enum eGB_COM {
 	GB_COM_PRM_SET_COM			= 0x9C,	// +
 	GB_COM_PRD_SET_TIME_ON 		= 0xA1,	// +
 	GB_COM_PRD_SET_DURATION 	= 0xA2,	// +
+	GB_COM_PRD_SET_FREQ_CORR	= 0xA3,	// +
 	GB_COM_PRD_SET_BLOCK_COM 	= 0xA4,	// +
 	GB_COM_PRD_SET_LONG_COM 	= 0xA5,	// +
 	GB_COM_PRD_SET_TEST_COM 	= 0xA6,	// +
@@ -361,6 +367,7 @@ enum eGB_PARAM {
 	GB_PARAM_TEMP_MONITOR,		///< контроль температуры
 	GB_PARAM_TEMP_THR_HI,		///< верхнее значение температуры
 	GB_PARAM_TEMP_THR_LOW,		///< нижнее значение температуры
+	GB_PARAM_TM_SPEED,			///< скорость ТМ
 	// параметры защиты
 	GB_PARAM_DEF_TYPE,			///< тип защиты
 	GB_PARAM_TIME_NO_MAN,		///< дополнительное время без манипуляции
@@ -396,6 +403,7 @@ enum eGB_PARAM {
 	GB_PARAM_PRD_DR_COM_BLOCK,	///< блокированные команды ЦП
 	GB_PARAM_PRD_COM_NUMS,		///< количество команд
 	GB_PARAM_PRD_COM_NUMS_A,	///< количество команд группы А
+	GB_PARAM_PRD_FREQ_CORR,		///< коррекция частоты ПРД
 	// параметры приемника
 	GB_PARAM_PRM_TIME_ON,		///< задержка на фиксацию команды (время включения)
 	GB_PARAM_PRM_TIME_ON_K400,	///< задержка на фиксацию команды (время включения) в К400
@@ -405,6 +413,8 @@ enum eGB_PARAM {
 	GB_PARAM_PRM_DR_COM_BLOCK,	///< блокированные команды ЦП
 	GB_PARAM_PRM_DR_COM_TO_HF,	///< команда ВЧ в ЦП
 	GB_PARAM_PRM_COM_NUMS,		///< количество команд
+	GB_PARAM_PRM_TEST_COM,		///< прием тестовой команды
+	GB_PARAM_PRM_FREQ_CORR,		///< коррекция частоты ПРМ
 	// параметры интерфейса
 	GB_PARAM_INTF_INTERFACE,	///< интерфейс связи
 	GB_PARAM_INTF_PROTOCOL,		///< протокол
