@@ -2952,13 +2952,11 @@ void clMenu::lvlSetupParamPrm() {
 				sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK);
 				sParam.local.addParam(GB_PARAM_PRM_TIME_OFF);
 			}
-			// В командном варианте добавляется ЦПП
-			if (!sParam.def.status.isEnable()) {
-				sParam.local.addParam(GB_PARAM_PRM_DR_ENABLE);
-				if (numcom != 0) {
-					sParam.local.addParam(GB_PARAM_PRM_DR_COM_BLOCK);
-					sParam.local.addParam(GB_PARAM_PRM_DR_COM_TO_HF);
-				}
+
+			sParam.local.addParam(GB_PARAM_PRM_DR_ENABLE);
+			if (numcom != 0) {
+				sParam.local.addParam(GB_PARAM_PRM_DR_COM_BLOCK);
+				sParam.local.addParam(GB_PARAM_PRM_DR_COM_TO_HF);
 			}
 		}
 	}
@@ -3032,12 +3030,10 @@ void clMenu::lvlSetupParamPrd() {
 			sParam.local.addParam(GB_PARAM_PRD_DURATION_O);
 			sParam.local.addParam(GB_PARAM_PRD_COM_LONG);
 			sParam.local.addParam(GB_PARAM_PRD_COM_BLOCK);
-			// В командном варианте добавляется ЦПП
-			if (!sParam.def.status.isEnable()) {
-				sParam.local.addParam(GB_PARAM_PRD_DR_ENABLE);
-				if (numcom != 0) {
-					sParam.local.addParam(GB_PARAM_PRD_DR_COM_BLOCK);
-				}
+
+			sParam.local.addParam(GB_PARAM_PRD_DR_ENABLE);
+			if (numcom != 0) {
+				sParam.local.addParam(GB_PARAM_PRD_DR_COM_BLOCK);
 			}
 		}
 	}
