@@ -186,9 +186,11 @@ static bool uartWrite() {
 		// проверка необходимости передачи команды на ПК и ее отправка
 		ePRTS_STATUS stat = protPCs.getCurrentStatus();
 		if (stat == PRTS_STATUS_WRITE_PC) {
+			sDebug.byte5++;
 			// пересылка ответа БСП
 			uartPC.trData(protPCs.trCom());
 		} else if (stat == PRTS_STATUS_WRITE) {
+			sDebug.byte6++;
 			// отправка ответа ПИ
 			uartPC.trData(protPCs.trCom());
 		}
@@ -500,7 +502,9 @@ ISR(USART1_RX_vect) {
 	} else {
 		if (protPCs.isEnable()) {
 			// протокол "Стандартный"
-			protPCs.checkByte(byte);
+			sDebug.byte1++;
+			sDebug.byte2 = protPCs.checkByte(byte);
+			sDebug.byte3 = protPCs.getCurrentStatus();
 		} else if (protPCm.isEnable()) {
 			// протокол MODBUS
 			protPCm.push(byte);

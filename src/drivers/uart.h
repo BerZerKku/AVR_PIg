@@ -21,7 +21,8 @@ public:
 	 */
 	void isrUDR() {
 		if (cnt_ < numTrByte_) {
-			*udr_ = buf_[cnt_++];
+			*udr_ = buf_[cnt_];
+			buf_[cnt_++] = 0;
 		} else {
 			*ucsrb_ &= ~(1 << UDRIE1);
 		}

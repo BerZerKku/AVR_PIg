@@ -76,6 +76,7 @@ class TDeviceGlb {
 public:
 	TDeviceGlb() {
 		typeDevice_ = AVANT_NO;
+		typeOpto_ = TYPE_OPTO_MAX;
 		numDevices_ = GB_NUM_DEVICES_MAX;
 		typeLine_ = GB_TYPE_LINE_MAX;
 		compatibility_ = GB_COMPATIBILITY_MAX;
@@ -135,6 +136,42 @@ public:
 
 		return act;
 	}
+
+	/**	Возвращает тип оптического аппарата.
+	 *
+	 * 	@return Тип аппарата.
+	 */
+	eGB_TYPE_OPTO getTypeOpto() const {
+		return typeOpto_;
+	}
+
+	/**	Установка типа аппарата.
+		 *
+		 * 	В случае ошибки, значение не поменяется.
+		 *
+		 * 	@param Тип аппарата.
+		 * 	@return Статус установки.
+		 */
+		uint8_t setTypeOpto(eGB_TYPE_OPTO val) {
+			uint8_t act = GB_ACT_NO;
+
+			if (val > TYPE_OPTO_MAX) {
+				act = GB_ACT_ERROR;
+			} else {
+				if (typeLine_ == GB_TYPE_LINE_OPTO) {
+					if (typeOpto_ == val) {
+						act = GB_ACT_OLD;
+					} else {
+						typeOpto_ = val;
+						act = GB_ACT_NEW;
+					}
+				}
+			}
+
+			return act;
+		}
+
+
 
 	/**	Возвращает максимальное кол-во аппаратов в линии.
 	 *
@@ -359,6 +396,9 @@ private:
 
 	// тип аппарата
 	eGB_TYPE_DEVICE typeDevice_;
+
+	// тип оптического аппарата
+	eGB_TYPE_OPTO typeOpto_;
 
 	// кол-во аппаратов в линии 2 или 3
 	eGB_NUM_DEVICES numDevices_;

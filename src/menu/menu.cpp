@@ -685,8 +685,13 @@ bool clMenu::setDeviceOPTO() {
 	// заполнение массива общих предупреждений
 	sParam.glb.status.warningText[0] = fcGlbWarning01;
 	sParam.glb.status.warningText[1] = fcGlbWarning02;
-	sParam.glb.status.warningText[2] = fcGlbWarning04;	// к400 кольцо
-	sParam.glb.status.warningText[3] = fcGlbWarning08;	// к400 кольцо
+	if (sParam.glb.getTypeOpto() == TYPE_OPTO_RING_UNI) {	// к400 кольцо
+		sParam.glb.status.warningText[3] = fcGlbWarning04ring1;	// кольцо однонапр
+		sParam.glb.status.warningText[3] = fcGlbWarning08ring1;	// кольцо однонапр
+	} else {
+		sParam.glb.status.warningText[2] = fcGlbWarning04;
+		sParam.glb.status.warningText[3] = fcGlbWarning08;
+	}
 	sParam.glb.status.warningText[4] = fcGlbWarning10;
 	sParam.glb.status.warningText[5] = fcGlbWarning20;
 	sParam.glb.status.warningText[6] = fcGlbWarning40;
@@ -1459,6 +1464,9 @@ void clMenu::lvlJournal() {
 void clMenu::lvlJournalEvent() {
 	static char title[] PROGMEM = "Журнал\\События";
 
+	static char opto_ring1_13[] PROGMEM = "Кольцо восстановлено";
+	static char opto_ring1_14[] PROGMEM = "Дистанционный сброс";
+
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		cursorEnable_ = false;
@@ -1576,9 +1584,12 @@ void clMenu::lvlJournalEvent() {
 						fcJrnEventRZSK[MAX_JRN_EVENT_VALUE], event);
 			}
 		} else if (device == AVANT_OPTO) {
-			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventOPTO[event], event);
+			if (sParam.glb.getTypeOpto() == TYPE_OPTO_RING_UNI) {
+				snprintf_P(&vLCDbuf[poz], 21, fcJrnEventOPTOring[event], event);
+			} else {
+				snprintf_P(&vLCDbuf[poz], 21, fcJrnEventOPTO[event], event);
+			}
 		}
-
 	}
 
 	switch(key_) {
@@ -2123,6 +2134,7 @@ void clMenu::lvlControl() {
 	static char punkt33[] PROGMEM = "%d. Сброс удален. 2";
 	static char punkt34[] PROGMEM = "%d. Сброс удален. 3";
 	static char punkt35[] PROGMEM = "%d. Сброс индикации";
+	static char punkt36[] PROGMEM = "%d. Сброс всех";
 
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
@@ -2262,7 +2274,11 @@ void clMenu::lvlControl() {
 				Punkts_.add(punkt07);// далее выбирается в зависимости от текущего
 			}
 			Punkts_.add(punkt03);
-			Punkts_.add(punkt04);
+			if (sParam.glb.getTypeOpto() == TYPE_OPTO_STANDART) {
+				Punkts_.add(punkt04);
+			} else {
+				Punkts_.add(punkt36);
+			}
 			if (sParam.prd.status.isEnable() || sParam.prm.status.isEnable()) {
 				Punkts_.add(punkt35);
 			}
@@ -2491,9 +2507,12 @@ void clMenu::lvlControl() {
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			} else if (name == punkt35) {
 				sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
+			} else if (name == punkt36) {
+				sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD);
+				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			}
 		}
-			break;
+		break;
 
 		default:
 			break;
@@ -2748,6 +2767,7 @@ void clMenu::lvlSetupParam() {
 	static char punkt2[] PROGMEM = "%d. Приемник";
 	static char punkt3[] PROGMEM = "%d. Передатчик";
 	static char punkt4[] PROGMEM = "%d. Общие";
+	static char punkt5[] PROGMEM = "%d. Кольцо";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -2770,6 +2790,13 @@ void clMenu::lvlSetupParam() {
 			Punkts_.add(punkt3);
 		}
 		Punkts_.add(punkt4);
+
+		// в оптике для кольца добавляются новые параметры
+		if (sParam.glb.getTypeDevice() == AVANT_OPTO) {
+			if (sParam.glb.getTypeOpto() != TYPE_OPTO_STANDART) {
+				Punkts_.add(punkt5);
+			}
+		}
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
@@ -2809,6 +2836,9 @@ void clMenu::lvlSetupParam() {
 				lvlCreate_ = true;
 			} else if (name == punkt4) {
 				lvlMenu = &clMenu::lvlSetupParamGlb;
+				lvlCreate_ = true;
+			} else if (name == punkt5) {
+				lvlMenu = &clMenu::lvlSetupParamRing;
 				lvlCreate_ = true;
 			}
 			break;
@@ -2947,16 +2977,18 @@ void clMenu::lvlSetupParamPrm() {
 				sParam.local.addParam(GB_PARAM_PRM_TIME_OFF);
 			}
 		} else if (device == AVANT_OPTO) {
-			sParam.local.addParam(GB_PARAM_PRM_TIME_ON_K400);
-			if (numcom != 0) {
-				sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK);
-				sParam.local.addParam(GB_PARAM_PRM_TIME_OFF);
-			}
+				sParam.local.addParam(GB_PARAM_PRM_TIME_ON_K400);
+				if (numcom != 0) {
+					sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK);
+					sParam.local.addParam(GB_PARAM_PRM_TIME_OFF);
+				}
 
-			sParam.local.addParam(GB_PARAM_PRM_DR_ENABLE);
-			if (numcom != 0) {
-				sParam.local.addParam(GB_PARAM_PRM_DR_COM_BLOCK);
-				sParam.local.addParam(GB_PARAM_PRM_DR_COM_TO_HF);
+			if (sParam.glb.getTypeOpto() == TYPE_OPTO_STANDART) {
+				sParam.local.addParam(GB_PARAM_PRM_DR_ENABLE);
+				if (numcom != 0) {
+					sParam.local.addParam(GB_PARAM_PRM_DR_COM_BLOCK);
+					sParam.local.addParam(GB_PARAM_PRM_DR_COM_TO_HF);
+				}
 			}
 		}
 	}
@@ -3026,14 +3058,16 @@ void clMenu::lvlSetupParamPrd() {
 			sParam.local.addParam(GB_PARAM_PRD_COM_LONG);
 			sParam.local.addParam(GB_PARAM_PRD_COM_BLOCK);
 		} else if (device == AVANT_OPTO) {
-			sParam.local.addParam(GB_PARAM_PRD_IN_DELAY);
-			sParam.local.addParam(GB_PARAM_PRD_DURATION_O);
-			sParam.local.addParam(GB_PARAM_PRD_COM_LONG);
-			sParam.local.addParam(GB_PARAM_PRD_COM_BLOCK);
+				sParam.local.addParam(GB_PARAM_PRD_IN_DELAY);
+				sParam.local.addParam(GB_PARAM_PRD_DURATION_O);
+				sParam.local.addParam(GB_PARAM_PRD_COM_LONG);
+				sParam.local.addParam(GB_PARAM_PRD_COM_BLOCK);
 
-			sParam.local.addParam(GB_PARAM_PRD_DR_ENABLE);
-			if (numcom != 0) {
-				sParam.local.addParam(GB_PARAM_PRD_DR_COM_BLOCK);
+			if (sParam.glb.getTypeOpto() == TYPE_OPTO_STANDART) {
+				sParam.local.addParam(GB_PARAM_PRD_DR_ENABLE);
+				if (numcom != 0) {
+					sParam.local.addParam(GB_PARAM_PRD_DR_COM_BLOCK);
+				}
 			}
 		}
 	}
@@ -3163,7 +3197,11 @@ void clMenu::lvlSetupParamGlb() {
 			}
 		} else if (device == AVANT_OPTO) {
 			sParam.local.addParam(GB_PARAM_TIME_SYNCH);
-			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE);
+			if (sParam.glb.getTypeOpto() == TYPE_OPTO_STANDART) {
+				sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE);
+			} else {
+				sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE_RING);
+			}
 			if (sParam.prm.status.isEnable()) {
 				sParam.local.addParam(GB_PARAM_TIME_RERUN);
 			}
@@ -3173,7 +3211,9 @@ void clMenu::lvlSetupParamGlb() {
 			if (sParam.prm.status.isEnable()) {
 				sParam.local.addParam(GB_PARAM_COM_PRM_KEEP);
 			}
-			sParam.local.addParam(GB_PARAM_BACKUP);
+			if (sParam.glb.getTypeOpto() == TYPE_OPTO_STANDART) {
+				sParam.local.addParam(GB_PARAM_BACKUP);
+			}
 		}
 	}
 
@@ -3196,19 +3236,68 @@ void clMenu::lvlSetupParamGlb() {
 	}
 }
 
+/** Уровень меню. Настройка параметров кольца.
+ * 	@param Нет
+ * 	@return Нет
+ */
+void clMenu::lvlSetupParamRing() {
+	static char title[] PROGMEM = "Параметры\\Кольцо";
+
+	if (lvlCreate_) {
+		lvlCreate_ = false;
+		EnterParam.setDisable();
+
+		vLCDclear();
+		vLCDdrawBoard(lineParam_);
+
+		// заполнение массивов параметров и команд
+		eGB_TYPE_DEVICE device = sParam.typeDevice;
+		eGB_TYPE_OPTO topto = sParam.glb.getTypeOpto();
+		sParam.txComBuf.clear();
+
+		sParam.local.clearParams();
+		if (device == AVANT_OPTO) {
+			if (topto == TYPE_OPTO_RING_UNI) {
+				sParam.local.addParam(GB_PARAM_RING_TIME_WAIT);
+				sParam.local.addParam(GB_PARAM_RING_COM_TRANSIT);
+				sParam.local.addParam(GB_PARAM_RING_COM_REC);
+				sParam.local.addParam(GB_PARAM_RING_COM_TR);
+			}
+		}
+	}
+
+	snprintf_P(&vLCDbuf[0], 21, title);
+
+	setupParam();
+
+	// выход из данного пункта меню, если это не оптика кольцо
+	if (sParam.glb.getTypeDevice() != AVANT_OPTO) {
+			key_ = KEY_CANCEL;
+	} else if (sParam.glb.getTypeOpto() == TYPE_OPTO_STANDART) {
+		key_ = KEY_CANCEL;
+	}
+
+	switch(key_) {
+		case KEY_CANCEL:
+			lvlMenu = &clMenu::lvlSetupParam;
+			lvlCreate_ = true;
+			break;
+		case KEY_MENU:
+			lvlMenu = &clMenu::lvlStart;
+			lvlCreate_ = true;
+			break;
+
+		default:
+			break;
+	}
+}
+
 /** Уровень меню. Интерфейс
  * 	@param Нет
  * 	@return Нет
  */
 void clMenu::lvlSetupInterface() {
 	static char title[] PROGMEM = "Настройка\\Интерфейс";
-//	static char punkt1[] PROGMEM = "Интерфейс связи";
-//	static char punkt2[] PROGMEM = "Протокол";
-//	static char punkt3[] PROGMEM = "Скорость передачи";
-//	static char punkt4[] PROGMEM = "Биты данных";
-//	static char punkt5[] PROGMEM = "Четность";
-//	static char punkt6[] PROGMEM = "Стоповые биты";
-//	static char punkt7[] PROGMEM = "Сетевой адрес";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -4517,16 +4606,17 @@ void clMenu::setupParam() {
 			if (com != GB_COM_NO) {
 				// Подготовка данных для записи в БСП.
 				uint8_t dop = sParam.local.getSendDop();
+				uint8_t pos = sParam.local.getNumOfCurrSameParam() - 1;
 
 				switch(sParam.local.getSendType()) {
 					case GB_SEND_INT8:
 						sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 						break;
 
-					case GB_SEND_INT8_DOP:
+					case GB_SEND_INT8_DOP:	// DOWN
 					case GB_SEND_DOP_INT8:
 						sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
-						sParam.txComBuf.setInt8(dop, 1);
+						sParam.txComBuf.setInt8(pos + dop, 1);
 						break;
 
 					case GB_SEND_INT16_BE:
@@ -4534,16 +4624,16 @@ void clMenu::setupParam() {
 						sParam.txComBuf.setInt8(EnterParam.getValue(), 1);
 						break;
 
+					case GB_SEND_BITES_DOP:	// DOWN
 					case GB_SEND_DOP_BITES: {
 						uint8_t val = sParam.local.getValueB();
-						uint8_t pos = sParam.local.getNumOfCurrSameParam() - 1;
 						if (EnterParam.getValue()) {
 							val |= (1 << (pos % 8));
 						} else {
 							val &= ~(1 << (pos % 8));
 						}
 						sParam.txComBuf.setInt8(val, 0);
-						sParam.txComBuf.setInt8(1 + pos/8 , 1);
+						sParam.txComBuf.setInt8(pos/8 + dop, 1);
 					}
 					break;
 

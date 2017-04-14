@@ -21,7 +21,12 @@
 struct stGBparam {
 	// false - означает что надо настроить меню под текущий тип аппарата
 	bool device;
+
+	// тип аппарата
 	eGB_TYPE_DEVICE typeDevice;
+
+	// тип оптического аппарата
+	eGB_TYPE_OPTO typeOpto;
 
 	// пароль
 	TPassword password;

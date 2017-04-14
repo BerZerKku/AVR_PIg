@@ -29,7 +29,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0129
+#define VERS 0x0130
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -122,6 +122,14 @@ enum eGB_TYPE_DEVICE {
 	AVANT_MAX
 };
 
+/// Тип оптического аппарата
+enum eGB_TYPE_OPTO {
+	TYPE_OPTO_STANDART = 0,	// стандартная оптика
+	TYPE_OPTO_RING_UNI,		// оптическое однонаправленное кольцо
+	TYPE_OPTO_RING_BI,		// оптиеское двунаправленное кольцо
+	TYPE_OPTO_MAX
+};
+
 /// Устройство
 enum eGB_DEVICE {
 	GB_DEVICE_MIN = 0,
@@ -160,7 +168,8 @@ enum eGB_SEND_TYPE {
 	GB_SEND_INT8_DOP,	///< Передается два байта данных (значение, доп.байт).
 	GB_SEND_DOP_INT8,	///< Передается два байта данных (доп.байт, значение).
 	GB_SEND_INT16_BE,	///< Передается два байта данных (in16>>8, int16&0xFF).
-	GB_SEND_DOP_BITES,	///< Передается битовая переменная (значение, доп.байт).
+	GB_SEND_DOP_BITES,	///< Передается битовая переменная (доп.байт, значение).
+	GB_SEND_BITES_DOP,	///< Передается битовая переменная (значение, доп.байт).
 	GB_SEND_COR_U,		///< Передается коррекция напряжения.
 	GB_SEND_COR_I		///< Передается коррекция тока.
 };
@@ -220,6 +229,7 @@ enum eGB_COM {
 	GB_COM_PRM_GET_DR_STATE 	= 0x17, // +
 	GB_COM_PRM_GET_DR_BLOCK		= 0x18,	// +
 	GB_COM_PRM_GET_DR_COM		= 0x19,	// +
+	GB_COM_PRM_GET_RING_COM_REC	= 0x1B,	// +
 	GB_COM_PRM_GET_COM			= 0x1C, // +
 	GB_COM_PRD_GET_TIME_ON 		= 0x21,	// +
 	GB_COM_PRD_GET_DURATION 	= 0x22,	// +
@@ -230,6 +240,7 @@ enum eGB_COM {
 	GB_COM_PRD_GET_DR_STATE 	= 0x27, // +
 	GB_COM_PRD_GET_DR_BLOCK		= 0x28,	// +
 	GB_COM_PRD_GET_COM_A		= 0x29,	// +
+	GB_COM_PRD_GET_RING_COM_TR	= 0x2B,	// +
 	GB_COM_PRD_GET_COM			= 0x2C,	// +
 	GB_COM_GET_SOST 			= 0x30,	// +
 	GB_COM_GET_FAULT 			= 0x31,	// +
@@ -238,7 +249,7 @@ enum eGB_COM {
 	GB_COM_GET_MEAS 			= 0x34,	// +
 	GB_COM_GET_TIME_SINCHR 		= 0x35,	// +
 	GB_COM_GET_COM_PRM_KEEP 	= 0x36, // + ! в Р400М это Uвых номинальное
-	GB_COM_GET_COM_PRD_KEEP 	= 0x37,	// + ! дополнительно тип удаленного аппарата, телемеханика, предупреждение и авария по D в К400
+	GB_COM_GET_COM_PRD_KEEP 	= 0x37,	// + ! дополнительно тип удаленного аппарата, телемеханика, предупреждение и авария по D в К400 и т.д.
 	GB_COM_GET_NET_ADR 			= 0x38,	// +
 	GB_COM_GET_TIME_RERUN 		= 0x39,	// + ! в Р400М это параметры для совместимостей
 	GB_COM_GET_FREQ 			= 0x3A,	// +
@@ -275,6 +286,7 @@ enum eGB_COM {
 	GB_COM_PRM_SET_DR_BLOCK		= 0x98,	// +
 	GB_COM_PRM_SET_DR_COM		= 0x99,	// +
 	GB_COM_PRM_RES_IND			= 0x9A,	// +
+	GB_COM_PRM_SET_RING_COM_REC	= 0x9B,	// +
 	GB_COM_PRM_SET_COM			= 0x9C,	// +
 	GB_COM_PRD_SET_TIME_ON 		= 0xA1,	// +
 	GB_COM_PRD_SET_DURATION 	= 0xA2,	// +
@@ -286,6 +298,7 @@ enum eGB_COM {
 	GB_COM_PRD_SET_DR_BLOCK		= 0xA8,	// +
 	GB_COM_PRD_SET_COM_A		= 0xA9,	// +
 	GB_COM_PRD_RES_IND 			= 0xAA,	// +
+	GB_COM_PRD_SET_RING_COM_TR	= 0xAB,	// +
 	GB_COM_PRD_SET_COM			= 0xAC,	// +
 	GB_COM_SET_TIME 			= 0xB2,	// +
 	GB_COM_SET_COR_U_I 			= 0xB3,	// +
@@ -335,6 +348,7 @@ enum eGB_PARAM {
 	// общие параметры
 	GB_PARAM_TIME_SYNCH,		///< синхронизация часов
 	GB_PARAM_NUM_OF_DEVICE,		///< номер аппарата
+	GB_PARAM_NUM_OF_DEVICE_RING,///< номер аппарата в оптическом кольце
 	GB_PARAM_OUT_CHECK,			///< контроль выходного сигнала
 	GB_PARAM_WARN_THD, 			///< порог предупреждения
 	GB_PARAM_WARN_THD_CF,		///< порог предупреждения по КЧ (для РЗСК)
@@ -421,7 +435,12 @@ enum eGB_PARAM {
 	GB_PARAM_INTF_BAUDRATE,		///< скорость передачи
 	GB_PARAM_INTF_DATA_BITS,	///< биты данных
 	GB_PARAM_INTF_PARITY,		///< четность
-	GB_PARAM_INTF_STOP_BITS		///< стоповые биты
+	GB_PARAM_INTF_STOP_BITS,	///< стоповые биты
+	// параметры кольца
+	GB_PARAM_RING_TIME_WAIT,	///< время ожидания команд
+	GB_PARAM_RING_COM_TRANSIT,	///< транзитные команды
+	GB_PARAM_RING_COM_REC,		///< переназначение команд приемника
+	GB_PARAM_RING_COM_TR		///< переназначение команд дискретных входов
 };
 
 /// Значения команд управления

@@ -72,9 +72,6 @@ bool clProtocolBspS::getData(bool pc) {
 				case GB_PARAM_FREQ:
 					val = TO_INT16(buf[B1], buf[B2]);
 					break;
-//				case GB_PARAM_DETECTOR:
-//					val = buf[B2];
-//					break;
 				case GB_PARAM_COR_U:
 					val = ((int8_t) buf[B1])*10;
 					val += ((int8_t) buf[B2])/10;
@@ -82,46 +79,24 @@ bool clProtocolBspS::getData(bool pc) {
 				case GB_PARAM_COR_I:
 					val = TO_INT16(buf[B3], buf[B4]);
 					break;
-//				case GB_PARAM_PVZUE_PROTOCOL:
-//				case GB_PARAM_PVZUE_PARITY:
-//				case GB_PARAM_PVZUE_FAIL:
-//				case GB_PARAM_PVZUE_NOISE_THD:
-//				case GB_PARAM_PVZUE_NOISE_LVL:
-//				case GB_PARAM_PVZUE_AC_TYPE:
-//				case GB_PARAM_PVZUE_AC_PERIOD:
-//				case GB_PARAM_PVZUE_AC_PER_RE:
-//					val = buf[B1 + lp->getSendDop() - 1];
-//					break;
-//				case GB_PARAM_COMP_K400:
-//				case GB_PARAM_TM_K400:
-//				case GB_PARAM_WARN_D:
-//				case GB_PARAM_ALARM_D:
-//					val = buf[B1 + lp->getSendDop() - 1];
-//					break;
-//				case GB_PARAM_SHIFT_FRONT:
-//				case GB_PARAM_SHIFT_BACK:
-//				case GB_PARAM_SHIFT_PRM:
-//				case GB_PARAM_SHIFT_PRD:
-//					val = buf[B1 + lp->getSendDop() - 1];
-//					break;
-//				case GB_PARAM_PRD_COM_LONG:		// DOWN
-//				case GB_PARAM_PRD_COM_BLOCK:	// DOWN
-//				case GB_PARAM_PRD_DR_COM_BLOCK:	// DOWN
-//				case GB_PARAM_PRM_COM_BLOCK:	// DOWN
-//				case GB_PARAM_PRM_DR_COM_BLOCK:
-//					val = buf[B1 + (lp->getNumOfCurrSameParam() - 1) / 8];
-//					break;
 				default:
 					uint8_t pos = B1;
+
+					// смещение в зависимости от номера однотипного параметра
 					if (lp->getParamType() == Param::PARAM_BITES) {
 						pos += (lp->getNumOfCurrSameParam() - 1) / 8;
-					} else 	if (lp->getSendDop() != 0) {
-						// сделано через else т.к. портит для PARAM_BITES
+					} else {
+						pos += lp->getNumOfCurrSameParam() - 1;
+					}
+
+					if (lp->getSendDop() != 0) {
 						pos += lp->getSendDop() - 1;
 					}
+
 					// приведение к знаковому типу, в случае если возможно
 					// отрицательное значение параметра
 					val = (lp->getMin() < 0) ? (int8_t) buf[pos] : buf[pos];
+
 
 					break;
 			}
@@ -169,6 +144,7 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 				case GB_SEND_INT8:
 					num = addCom(com, val);
 					break;
+				case GB_SEND_BITES_DOP:
 				case GB_SEND_INT8_DOP:
 					num = addCom(com, val, dop);
 					break;
@@ -666,13 +642,31 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 				act |= sParam_->glb.setCompK400(comp);
 			}
 
-			if (buf[3] > 16) {
+			if (buf[3] >= 17) {
 				// Тип аппарата, в сентябре 2014 появился у РЗСК и Р400
 				// в ноябре 2014 появился  у К400
 				act |= glb->setTypeDevice((eGB_TYPE_DEVICE) buf[B17]);
 			} else {
 				glb->setTypeDevice(AVANT_NO);
 			}
+
+
+
+			// B18 - старший байт прошивки БСП-ПИ
+			// B19 - младший байт прошивки БСП-ПИ
+
+			// в апреле 2017  появилось однонаправленное кольцо
+			if (buf[3] >= 20) {
+				if (buf[B20] == 0xAB) {
+					glb->setTypeOpto(TYPE_OPTO_RING_UNI);
+				} else {
+					glb->setTypeOpto(TYPE_OPTO_STANDART);
+				}
+			} else {
+				glb->setTypeOpto(TYPE_OPTO_STANDART);
+			}
+
+			// B21, B22 - версия прошивки DSP, смотри выше.
 
 			// проверим необходимость обновления типа аппарата
 			if (act & GB_ACT_NEW) {

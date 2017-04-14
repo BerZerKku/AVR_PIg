@@ -574,6 +574,7 @@ private:
 	void lvlSetupParamPrm();
 	void lvlSetupParamPrd();
 	void lvlSetupParamGlb();
+	void lvlSetupParamRing();
 	void lvlSetupDT();
 	void lvlMeasure();
 	void lvlTest();
