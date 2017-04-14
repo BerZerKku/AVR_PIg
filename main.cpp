@@ -157,7 +157,8 @@ static bool uartRead() {
 					lastPcCom = protPCs.getCurrentCom();
 
 					// пересылка сообщения в БСП
-					protBSPs.copyCommandFrom(protPCs.buf);
+					if (protBSPs.getCurrentStatus() == PRTS_STATUS_NO)
+						protBSPs.copyCommandFrom(protPCs.buf);
 				}
 			}
 		}
@@ -186,11 +187,9 @@ static bool uartWrite() {
 		// проверка необходимости передачи команды на ПК и ее отправка
 		ePRTS_STATUS stat = protPCs.getCurrentStatus();
 		if (stat == PRTS_STATUS_WRITE_PC) {
-			sDebug.byte5++;
 			// пересылка ответа БСП
 			uartPC.trData(protPCs.trCom());
 		} else if (stat == PRTS_STATUS_WRITE) {
-			sDebug.byte6++;
 			// отправка ответа ПИ
 			uartPC.trData(protPCs.trCom());
 		}
@@ -316,7 +315,7 @@ static void setProtocol(TProtocol::PROTOCOL protocol, uint16_t baud) {
 
 	switch(protocol) {
 		case TProtocol::STANDART:
-			protPCs.setEnable(PRTS_STATUS_READ);
+			protPCs.setEnable(PRTS_STATUS_NO);
 //			protPCi.setDisable();
 //			protPCm.setDisable();
 			break;
@@ -482,7 +481,7 @@ ISR(USART1_UDRE_vect) {
 ISR(USART1_TX_vect) {
 	uartPC.isrTX();
 	if (protPCs.isEnable()) {
-		protPCs.setCurrentStatus(PRTS_STATUS_READ);
+		protPCs.setCurrentStatus(PRTS_STATUS_NO);
 	} else if (protPCm.isEnable()) {
 		protPCm.setReadState();
 	} else if (protPCi.isEnable()) {
@@ -502,9 +501,7 @@ ISR(USART1_RX_vect) {
 	} else {
 		if (protPCs.isEnable()) {
 			// протокол "Стандартный"
-			sDebug.byte1++;
-			sDebug.byte2 = protPCs.checkByte(byte);
-			sDebug.byte3 = protPCs.getCurrentStatus();
+			protPCs.checkByte(byte);
 		} else if (protPCm.isEnable()) {
 			// протокол MODBUS
 			protPCm.push(byte);
@@ -522,7 +519,7 @@ ISR(USART0_UDRE_vect) {
 /// Прерывание по окончанию передачи данных UART0
 ISR(USART0_TX_vect) {
 	uartBSP.isrTX();
-	protBSPs.setCurrentStatus(PRTS_STATUS_READ);
+	protBSPs.setCurrentStatus(PRTS_STATUS_NO);
 }
 
 /// Прерывание по получению данных UART0

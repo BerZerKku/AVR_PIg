@@ -252,7 +252,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src/protocols/iec101/protocolPcI.cpp|src/parameter|src/debug/debug.cpp|src/init/init.cpp|src/menu/menu.cpp|src/drivers/uart.cpp|src/drivers/ks0108.cpp|src/drivers/keyboard.cpp|src/protocols/standart/protocolS.cpp|src/protocols/standart/protocolPcS.cpp|src/protocols/standart/protocolBspS.cpp|src/protocols/modbus/protocolPcM.cpp|main.cpp|src/uart.cpp|src/protocolS.cpp|src/protocolPcS.cpp|src/protocolPcM.cpp|src/protocolBspS.cpp|src/menu.cpp|src/ks0108.cpp|src/keyboard.cpp|src/init.cpp|src/debug.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/drivers/tmp75.cpp|src/protocols/iec101/protocolPcI.cpp|src/parameter|src/debug/debug.cpp|src/init/init.cpp|src/menu/menu.cpp|src/drivers/uart.cpp|src/drivers/ks0108.cpp|src/drivers/keyboard.cpp|src/protocols/standart/protocolS.cpp|src/protocols/standart/protocolPcS.cpp|src/protocols/standart/protocolBspS.cpp|src/protocols/modbus/protocolPcM.cpp|main.cpp|src/uart.cpp|src/protocolS.cpp|src/protocolPcS.cpp|src/protocolPcM.cpp|src/protocolBspS.cpp|src/menu.cpp|src/ks0108.cpp|src/keyboard.cpp|src/init.cpp|src/debug.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

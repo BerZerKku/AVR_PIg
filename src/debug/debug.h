@@ -15,7 +15,7 @@
 #warning "Включен режим отладки!!!"
 
 // вывод отладочной информации на экран
-#define VIEW_DEBUG_PARAM
+// #define VIEW_DEBUG_PARAM
 //#define IEC101
 
 
@@ -34,8 +34,7 @@
 #define TOG_TP2 PORT_DBG ^= PIN_TP2
 
 // отладочная информация
-struct stDebug
-{
+struct stDebug {
 	uint8_t byte1;
 	uint8_t byte2;
 	uint8_t byte3;

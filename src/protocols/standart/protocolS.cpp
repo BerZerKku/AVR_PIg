@@ -27,10 +27,10 @@ bool clProtocolS::checkReadData() {
 	bool stat = false;
 
 	// Т.к. обработка посылки уже началась, сбросим счетчик принятых байт
-	cnt_ = 0;
+//	cnt_ = 0;
 
-	if (!(stat =checkCRC()))
-		stat_ = PRTS_STATUS_READ;
+	if (!(stat = checkCRC()))
+		setCurrentStatus(PRTS_STATUS_NO);
 
 	return stat;
 }
@@ -41,7 +41,7 @@ bool clProtocolS::checkReadData() {
  *  @return Кол-во байт данных приготовленных для передачи
  */
 uint8_t clProtocolS::trCom() {
-	this->stat_ = PRTS_STATUS_WRITE;
+	setCurrentStatus(PRTS_STATUS_WRITE);
 
 	return maxLen_;
 }
@@ -77,9 +77,9 @@ bool clProtocolS::copyCommandFrom(uint8_t * const bufSource) {
 
 	// в случае какой-либо ошибки, сообщенеие игнорируется
 	if (!stat) {
-		this->stat_ = PRTS_STATUS_NO;
+		setCurrentStatus(PRTS_STATUS_NO);
 	} else {
-		this->stat_ = PRTS_STATUS_WRITE_PC;
+		setCurrentStatus(PRTS_STATUS_WRITE_PC);
 		maxLen_ = cnt;
 	}
 
@@ -97,7 +97,8 @@ void clProtocolS::checkStat() {
 		if (stat_ != statDef_) {
 			cntCycle_++;
 			if (cntCycle_ >= MAX_CYCLE_TO_REST_SOST) {
-				stat_ = old_ = statDef_;
+				setCurrentStatus(statDef_);
+				old_ = statDef_;
 				cntCycle_ = 0;
 			}
 		}
@@ -126,7 +127,7 @@ uint8_t clProtocolS::addCom() {
 			buf[len - 1] = getCRC();
 			cnt = len;
 			maxLen_ = len;
-			stat_ = PRTS_STATUS_WRITE;
+			setCurrentStatus(PRTS_STATUS_WRITE);
 		}
 	}
 
@@ -153,7 +154,7 @@ uint8_t clProtocolS::addCom(uint8_t com, uint8_t size, uint8_t b[]) {
 		buf[cnt++] = getCRC();
 
 		maxLen_ = cnt;
-		stat_ = PRTS_STATUS_WRITE;
+		setCurrentStatus(PRTS_STATUS_WRITE);
 	}
 
 	return cnt;
@@ -177,7 +178,7 @@ uint8_t clProtocolS::addCom(uint8_t com, uint8_t byte1, uint8_t byte2) {
 	buf[cnt++] = com + 0x02 + byte1 + byte2;
 
 	maxLen_ = cnt;
-	stat_ = PRTS_STATUS_WRITE;
+	setCurrentStatus(PRTS_STATUS_WRITE);
 
 	return cnt;
 }
@@ -198,7 +199,7 @@ uint8_t clProtocolS::addCom(uint8_t com, uint8_t byte) {
 	buf[cnt++] = com + 0x01 + byte;
 
 	maxLen_ = cnt;
-	stat_ = PRTS_STATUS_WRITE;
+	setCurrentStatus(PRTS_STATUS_WRITE);
 
 	return cnt;
 }
@@ -217,7 +218,7 @@ uint8_t clProtocolS::addCom(uint8_t com) {
 	buf[cnt++] = com;
 
 	maxLen_ = cnt;
-	stat_ = PRTS_STATUS_WRITE;
+	setCurrentStatus(PRTS_STATUS_WRITE);
 
 	return cnt;
 }

@@ -686,7 +686,7 @@ bool clMenu::setDeviceOPTO() {
 	sParam.glb.status.warningText[0] = fcGlbWarning01;
 	sParam.glb.status.warningText[1] = fcGlbWarning02;
 	if (sParam.glb.getTypeOpto() == TYPE_OPTO_RING_UNI) {	// к400 кольцо
-		sParam.glb.status.warningText[3] = fcGlbWarning04ring1;	// кольцо однонапр
+		sParam.glb.status.warningText[2] = fcGlbWarning04ring1;	// кольцо однонапр
 		sParam.glb.status.warningText[3] = fcGlbWarning08ring1;	// кольцо однонапр
 	} else {
 		sParam.glb.status.warningText[2] = fcGlbWarning04;

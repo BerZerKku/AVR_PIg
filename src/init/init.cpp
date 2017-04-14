@@ -59,8 +59,8 @@ low_level_init()
 	// Порт Е
 	// PORTE.0 = RXD0	- альтер. вход
 	// PORTE.1 = TXD0	- альтер. выход
-	// PORTE.6 = TP1 	- выход 0
-	// PORTE.7 = TP2 	- выход 0
+	// PORTE.6 = TP1 	- выход 1
+	// PORTE.7 = TP2 	- выход 1
 	DDRE = (1 << PE7) | (1 << PE6);
 	PORTE = ~0x00;
 

@@ -23,7 +23,7 @@ bool clProtocolBspS::getData(bool pc) {
 	eGB_COM com = (eGB_COM) buf[2];
 
 	// сообщение обработано, выставим флаг на чтение
-	stat_ = PRTS_STATUS_NO;
+	 setCurrentStatus(PRTS_STATUS_NO);
 
 	mask = com & GB_COM_MASK_GROUP;
 	// ответ на команду изменения параметра/режима не требуется
@@ -207,7 +207,11 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 	}
 
 	// установка статуса, в зависимости от необходимости передачи сообщения
-	stat_ = (num != 0) ? PRTS_STATUS_WRITE : PRTS_STATUS_NO;
+	if (num != 0) {
+		 setCurrentStatus(PRTS_STATUS_WRITE);
+	} else {
+		 setCurrentStatus(PRTS_STATUS_NO);
+	}
 
 	return num;
 }

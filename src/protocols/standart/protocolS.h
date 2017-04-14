@@ -20,7 +20,7 @@
 // состо€ни€ протокола
 enum ePRTS_STATUS {
 	PRTS_STATUS_OFF = 0,	///< выключен
-	PRTS_STATUS_NO = 0,		///< состо€ние неопределенное (в т.ч. ошибочное)
+	PRTS_STATUS_NO,			///< состо€ние ожидани€ сообщени€
 	PRTS_STATUS_READ,		///< идет считывание сообщени€
 	PRTS_STATUS_READ_OK,	///< соообщение считано полностью, но  — не проверена
 	PRTS_STATUS_WRITE_PC,	///< надо передать сообщене на(с) ѕ 
@@ -76,14 +76,15 @@ public:
 
 	/// «апуск работы данного протокола
 	void setEnable(ePRTS_STATUS stat) {
-		stat_ = statDef_ = stat;
+		statDef_ = stat;
+		setCurrentStatus(stat);
 		cnt_ = 0;
 		cntCycle_ = 0;
 	}
 
 	/// ќстановка работы данного протокола
 	void setDisable() {
-		stat_ = PRTS_STATUS_OFF;
+		setCurrentStatus(PRTS_STATUS_OFF);
 	}
 
 	/// ѕроверка текущего состо€ни€ протокола
@@ -102,7 +103,12 @@ public:
 	}
 
 	/// —мена текущего статуса работы протокола
+	/// ¬ случае установки состо€ни€ ожидани€, сбрасываетс счетчик байт
 	void setCurrentStatus(ePRTS_STATUS stat) {
+		if (stat == PRTS_STATUS_NO) {
+			cnt_ = 0;
+		}
+
 		stat_ = stat;
 	}
 
@@ -130,12 +136,14 @@ public:
 	 * 	@retval ќжидание первого синхробайта.
 	 */
 	uint8_t checkByte(uint8_t byte) {
-		uint8_t cnt = 0;
+		uint8_t cnt = cnt_;
+
+		if ((cnt == 0) && (byte == 0x55)) {
+			setCurrentStatus(PRTS_STATUS_READ);
+		}
+
 		if (stat_ == PRTS_STATUS_READ) {
-			uint8_t cnt = cnt_;
-
 			buf[cnt] = byte;
-
 			switch (cnt) {
 			case 0:
 				// первый синхробайт
@@ -149,6 +157,7 @@ public:
 			case 2:
 				// прин€т байт команды
 				cnt++;
+
 				break;
 			case 3:
 				// проверка на наличие в буфере достаточного места дл€ посылки
@@ -158,7 +167,7 @@ public:
 				// ожидание приема за€вленного количества байт данных
 				cnt++;
 				if (cnt >= maxLen_) {
-					stat_ = PRTS_STATUS_READ_OK;
+					setCurrentStatus(PRTS_STATUS_READ);
 				}
 				break;
 			}
