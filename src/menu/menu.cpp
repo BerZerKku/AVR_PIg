@@ -322,6 +322,7 @@ bool clMenu::setDeviceK400() {
 		}
 	}
 
+
 	// заполнение массива параметров для меню "Измерение"
 	uint8_t cnt = 0;
 	if (sParam.prd.status.isEnable()) {
@@ -332,15 +333,16 @@ bool clMenu::setDeviceK400() {
 		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
 			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC1;	// 3
 			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC2;	// 4
-			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN1; // 5
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN1; 	// 5
 			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN2;	// 6
 		} else {
 			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC;	// 3
 			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN;	// 4
 			measParamLvl[cnt++] = MENU_MEAS_PARAM_D;	// 5
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_DF;	// 6 TODO (для 3-х концевой
 		}
 	}
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_TEMPERATURE;	// 7 или 6
+	measParamLvl[cnt++] = MENU_MEAS_PARAM_TEMPERATURE;	// 7
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -3144,7 +3146,12 @@ void clMenu::lvlSetupParamGlb() {
 			sParam.local.addParam(GB_PARAM_TEMP_MONITOR);
 			sParam.local.addParam(GB_PARAM_TEMP_THR_HI);
 			sParam.local.addParam(GB_PARAM_TEMP_THR_LOW);
-			sParam.local.addParam(GB_PARAM_TM_SPEED);
+
+			eGB_COMP_K400 comp = sParam.glb.getCompK400();
+			if ((comp == GB_COMP_K400_UPKC_PRD)
+					|| (comp == GB_COMP_K400_UPKC_PRM)) {
+				sParam.local.addParam(GB_PARAM_TM_SPEED);
+			}
 		} else if (device == AVANT_RZSK) {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 
@@ -4169,6 +4176,7 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 	static const char fcTime[] 	PROGMEM = "%02u:%02u:%02u";	// Время.
 	static const char fcD[]		PROGMEM = "D=%02dдБ";		// Запас по тест.команде (двухчаст) или Отношение сигнал/помеха (одночаст)
 	static const char fcTemper[] PROGMEM= "T=%02d°C";		// Температура
+	static const char fcFreqDev[] PROGMEM = "dF=%02dГц";		// Отклонение часоты КС на ПРМ
 
 	// проверка на максимальную позицию
 		// 10 - кол-во символов отведенное на экране под 1 параметр
@@ -4257,6 +4265,11 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 			case MENU_MEAS_PARAM_TEMPERATURE:
 				snprintf_P(&vLCDbuf[poz], 11, fcTemper,
 						sParam.measParam.getTemperature());
+				break;
+
+			case MENU_MEAS_PARAM_DF:
+				snprintf_P(&vLCDbuf[poz], 11, fcFreqDev,
+						sParam.measParam.getFreqDev());
 				break;
 
 			case MENU_MEAS_PARAM_NO:

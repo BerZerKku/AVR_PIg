@@ -1583,7 +1583,7 @@ static const Param fPrdComNumsA PROGMEM = {
 		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
-// количество команд
+// коррекция частоты ПРД
 static const Param fPrdFreqCorr PROGMEM = {
 		"Коррекция частоты",	// название параметра
 		GB_COM_PRD_GET_FREQ_CORR,// команда стандартного протокола
@@ -1783,7 +1783,7 @@ static const Param fPrmTestCom PROGMEM = {
 		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
-// количество команд
+// коррекция частоты ПРМ
 static const Param fPrmFreqCorr PROGMEM = {
 		"Коррекция частоты",	// название параметра
 		GB_COM_PRM_GET_FREQ_CORR,// команда стандартного протокола

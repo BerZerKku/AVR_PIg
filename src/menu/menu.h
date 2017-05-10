@@ -58,7 +58,8 @@ enum eMENU_MEAS_PARAM {
 	MENU_MEAS_PARAM_ROUT,		///< сопротивление линии
 	MENU_MEAS_PARAM_SD,			///< просечки в сигнале
 	MENU_MEAS_PARAM_D,			///< Запас по тест.команде (двухчаст) или Отношение сигнал/помеха (одночаст)
-	MENU_MEAS_PARAM_TEMPERATURE	///< Температура на плате БСП-ПИ
+	MENU_MEAS_PARAM_TEMPERATURE,///< Температура на плате БСП-ПИ
+	MENU_MEAS_PARAM_DF			///< Отклонение частоты КС на ПРМ (К400)
 };
 
 /// Режим работы функции ввода параметров

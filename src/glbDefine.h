@@ -29,7 +29,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0130
+#define VERS 0x0131
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -1045,6 +1045,7 @@ public:
 		pulseWidth_ = 0;
 		d_ = 0;
 		temperature_ = -100;
+		freqDev_ = 0;
 	}
 
 	// запас по защите
@@ -1209,6 +1210,20 @@ public:
 		return stat;
 	}
 
+	// отклонение частоты КС На ПРМ
+	int8_t getFreqDev() const {
+		return freqDev_;
+	}
+	bool setFreqDev(int8_t val) {
+		bool stat = false;
+		if ((val >= -100) && (val <= 100)) {
+			freqDev_ = val;
+			stat = true;
+		}
+		return stat;
+	}
+
+
 private:
 	// запас по защите (-99 .. 99)дБ
 	int8_t voltDef_;
@@ -1234,6 +1249,8 @@ private:
 	int8_t d_;
 	// температуры (-100..125), -100 - ошибка
 	int8_t temperature_;
+	// отклонение частоты КС на ПРМ (-100..100)Гц
+	int8_t freqDev_;
 };
 
 
