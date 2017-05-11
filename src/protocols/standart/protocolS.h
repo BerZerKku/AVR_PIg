@@ -78,7 +78,6 @@ public:
 	void setEnable(ePRTS_STATUS stat) {
 		statDef_ = stat;
 		setCurrentStatus(stat);
-		cnt_ = 0;
 		cntCycle_ = 0;
 	}
 
@@ -167,7 +166,7 @@ public:
 				// ожидание приема заявленного количества байт данных
 				cnt++;
 				if (cnt >= maxLen_) {
-					setCurrentStatus(PRTS_STATUS_READ);
+					setCurrentStatus(PRTS_STATUS_READ_OK);
 				}
 				break;
 			}
