@@ -2286,7 +2286,10 @@ void clMenu::lvlControl() {
 			}
 			if (sParam.def.status.isEnable()) {
 				Punkts_.add(punkt02);
-//				Punkts_.add(punkt11);
+				if (!sParam.prd.status.isEnable() && !sParam.prm.status.isEnable()) {
+					// "Ñבנמס ÀÊ" וסעü ג Ð400 ט םוע ג ÐÇÑÊ
+					Punkts_.add(punkt11);
+				}
 			}
 		}
 
