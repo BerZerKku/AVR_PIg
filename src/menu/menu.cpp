@@ -4578,6 +4578,7 @@ void clMenu::enterParameter() {
 			}
 
 			enterFunc = &clMenu::enterValue;
+			EnterParam.setParam(lp->getParam());
 			EnterParam.setValueRange(min, max);
 			EnterParam.setValue(val);
 			EnterParam.list = lp->getListOfValues();

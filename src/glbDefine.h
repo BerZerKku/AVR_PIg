@@ -29,7 +29,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0133
+#define VERS 0x0134
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -110,6 +110,27 @@
 
 /// Максимальное знаачение доп.байта в архиве событий К400/РЗСК
 #define GLB_JRN_DOP_MAX 6
+
+/// время одно цикла работы с меню, мс
+#define MENU_TIME_CYLCE 200
+
+/// время вывода доп.сообщения на экран, мс
+#define TIME_MESSAGE (3000 / MENU_TIME_CYLCE)
+
+/// Режим работы функции ввода параметров
+enum eMENU_ENTER_PARAM {
+	MENU_ENTER_PARAM_NO,		///< отмена изменения параметра
+	MENU_ENTER_PARAM_INT,		///< изменение параметра, целое значение
+	MENU_ENTER_PARAM_LIST,		///< изменение параметра, выбор из списка
+	MENU_ENTER_PARAM_LIST_2,	///< изменение параметра, выбор из списка значений
+	MENU_ENTER_PARAM_U_COR,		///< изменение параметра, коррекция напряжения
+	MENU_ENTER_PASSWORD,		///< ввод пароля
+	MENU_ENTER_PASSWORD_NEW,	///< ввод нового пароля
+	MENU_ENTER_PASSWORD_READY,	///< введен верный пароль
+	MENU_ENTER_PASSWORD_N_READY,///< новый пароль введен корректно
+	MENU_ENTER_PARAM_READY,		///< необходимо изменить параметр
+	MENU_ENTER_PARAM_MESSAGE,	///< вывод сообщения на экран при вводе параметра
+};
 
 /// Тип аппарата
 enum eGB_TYPE_DEVICE {
