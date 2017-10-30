@@ -263,6 +263,7 @@ enum eGB_COM {
 	GB_COM_PRD_GET_COM_A		= 0x29,	// +
 	GB_COM_PRD_GET_RING_COM_TR	= 0x2B,	// +
 	GB_COM_PRD_GET_COM			= 0x2C,	// +
+	GB_COM_PRD_GET_CF_TM		= 0x2D,	// +
 	GB_COM_GET_SOST 			= 0x30,	// +
 	GB_COM_GET_FAULT 			= 0x31,	// +
 	GB_COM_GET_TIME 			= 0x32,	// +
@@ -321,6 +322,7 @@ enum eGB_COM {
 	GB_COM_PRD_RES_IND 			= 0xAA,	// +
 	GB_COM_PRD_SET_RING_COM_TR	= 0xAB,	// +
 	GB_COM_PRD_SET_COM			= 0xAC,	// +
+	GB_COM_PRD_SET_CF_TM		= 0xAD,	// +
 	GB_COM_SET_TIME 			= 0xB2,	// +
 	GB_COM_SET_COR_U_I 			= 0xB3,	// +
 	GB_COM_SET_TIME_SINCHR 		= 0xB5,	// +
@@ -439,6 +441,9 @@ enum eGB_PARAM {
 	GB_PARAM_PRD_COM_NUMS,		///< количество команд
 	GB_PARAM_PRD_COM_NUMS_A,	///< количество команд группы А
 	GB_PARAM_PRD_FREQ_CORR,		///< коррекция частоты ПРД
+	GB_PARAM_PRD_DEC_CF,		///< снижение уровня КС
+	GB_PARAM_PRD_DEC_TM,		///< снижение уровня ТМ
+	GB_PARAM_PRD_DEFAULT_CF,	///< КС по умолчанию
 	// параметры приемника
 	GB_PARAM_PRM_TIME_ON,		///< задержка на фиксацию команды (время включения)
 	GB_PARAM_PRM_TIME_ON_K400,	///< задержка на фиксацию команды (время включения) в К400

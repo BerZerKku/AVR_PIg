@@ -105,8 +105,7 @@ static const char fcPvzlFreq[][STRING_LENGHT] PROGMEM = {
 };
 
 /// Протокол обмена (параметр Общий).
-static
-const char fcPvzueProtocol[][STRING_LENGHT] PROGMEM = {
+static const char fcPvzueProtocol[][STRING_LENGHT] PROGMEM = {
 //		 1234567890
 		"быстрый",		///< 1
 		"медленный"		///< 2
@@ -179,6 +178,12 @@ static char fcTMSpeed[][STRING_LENGHT] PROGMEM = {
 //		 1234567890
 		"200",
 		"400"
+};
+
+/// Сигналы КС
+static char fcCF[][STRING_LENGHT] PROGMEM = {
+		"КС1",
+		"КС2"
 };
 
 // параметр заглушка
@@ -300,9 +305,9 @@ static const Param fWarnThd PROGMEM = {
 		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
 };
 
-// порог предупреждения по КЧ (для РЗСК)
+// порог предупреждения по КC (для РЗСК)
 static const Param fWarnThdCf PROGMEM = {
-		"Порог предупр. по КЧ",	// название параметра
+		"Порог предупр. по КC",	// название параметра
 		GB_COM_GET_CF_THRESHOLD,// команда стандартного протокола
 		Param::PARAM_INT,		// тип параметра
 		Param::RANGE_INT,		// диапазон измнения
@@ -1603,6 +1608,66 @@ static const Param fPrdFreqCorr PROGMEM = {
 		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
+// снижение уровня КС
+static const Param fPrdDecCf PROGMEM = {
+		"Снижение уровня КС",	// название параметра
+		GB_COM_PRD_GET_CF_TM,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DB,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		20,						// максимальное значение
+		1,						// дискретность
+		1,						// множитель для стандартного протокола
+		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
+		1,						// байт дополнительной информации для сохранения
+		Param::DEPEND_MAX_NO,	// заивимость максимума
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+};
+
+// снижение уровня ТМ
+static const Param fPrdDecTm PROGMEM = {
+		"Снижение уровня ТМ",	// название параметра
+		GB_COM_PRD_GET_CF_TM,	// команда стандартного протокола
+		Param::PARAM_INT,		// тип параметра
+		Param::RANGE_INT,		// диапазон измнения
+		Param::DIM_DB,			// размерность
+		fcNullBuf,				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		20,						// максимальное значение
+		1,						// дискретность
+		1,						// множитель для стандартного протокола
+		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
+		2,						// байт дополнительной информации для сохранения
+		Param::DEPEND_MAX_NO,	// зависимость максимума
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+};
+
+// КС по умолчанию
+static const Param fPrdDefaultCf PROGMEM = {
+		"КС по умолчанию",		// название параметра
+		GB_COM_PRD_GET_CF_TM,	// команда стандартного протокола
+		Param::PARAM_LIST,		// тип параметра
+		Param::RANGE_LIST,		// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcCF[0],				// массив значений
+		1,						// кол-во повторений параметра
+		0,						// минимальное значение
+		SIZE_OF(fcCF),			// максимальное значение
+		1,						// дискретность
+		1,						// множитель для стандартного протокола
+		GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
+		3,						// байт дополнительной информации для сохранения
+		Param::DEPEND_MAX_NO,	// зависимость максимума
+		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+};
+
 // задержка на фиксацию команды (время включения)
 static const Param fPrmTimeOn PROGMEM = {
 		"Задержка на фикс.ком",	// название параметра
@@ -1618,7 +1683,7 @@ static const Param fPrmTimeOn PROGMEM = {
 		1,						// множитель для стандартного протокола
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
-		Param::DEPEND_MAX_NO,	// заивимость максимума
+		Param::DEPEND_MAX_NO,	// зависимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
 		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
@@ -1638,7 +1703,7 @@ static const Param fPrmTimeOnK400 PROGMEM = {
 		1,						// множитель для стандартного протокола
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
-		Param::DEPEND_MAX_NO,	// заивимость максимума
+		Param::DEPEND_MAX_NO,	// зависимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
 		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
@@ -1658,7 +1723,7 @@ static const Param fPrmComBlock PROGMEM = {
 		1,						// множитель для стандартного протокола
 		GB_SEND_DOP_BITES,		// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
-		Param::DEPEND_MAX_NO,	// заивимость максимума
+		Param::DEPEND_MAX_NO,	// зависимость максимума
 		Param::DEPEND_SAME_ON_COM_PRM,	// зависимость повторений
 		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
@@ -2079,6 +2144,9 @@ static const Param* fParams[] PROGMEM  = {
 		&fPrdComNums,
 		&fPrdComNumsA,
 		&fPrdFreqCorr,
+		&fPrdDecCf,
+		&fPrdDecTm,
+		&fPrdDefaultCf,
 		// Параметры приемника
 		&fPrmTimeOn,
 		&fPrmTimeOnK400,

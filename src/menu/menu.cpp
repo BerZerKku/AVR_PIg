@@ -3057,6 +3057,11 @@ void clMenu::lvlSetupParamPrd() {
 				sParam.local.addParam(GB_PARAM_PRD_DR_COM_BLOCK);
 			}
 			sParam.local.addParam(GB_PARAM_PRD_FREQ_CORR);
+
+			sParam.local.addParam(GB_PARAM_PRD_DEC_CF);
+			sParam.local.addParam(GB_PARAM_PRD_DEC_TM);
+			sParam.local.addParam(GB_PARAM_PRD_DEFAULT_CF);
+
 		} else if (device == AVANT_RZSK) {
 			sParam.local.addParam(GB_PARAM_PRD_IN_DELAY);
 			sParam.local.addParam(GB_PARAM_PRD_DURATION_L);
@@ -4168,9 +4173,9 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 	static const char fcUz[] 	PROGMEM = "Uз=%02dдБ";		// Запас по защите.
 	static const char fcUz1[] 	PROGMEM = "Uз1=%02dдБ";		// Запас по защите 1.
 	static const char fcUz2[] 	PROGMEM = "Uз2=%02dдБ";		// Запас по защите 2.
-	static const char fcUcf[] 	PROGMEM = "Uк=%02dдБ";		// Запас по КЧ.
-	static const char fcUcf1[] 	PROGMEM = "Uк1=%02dдБ";		// Запас по КЧ 1.
-	static const char fcUcf2[] 	PROGMEM = "Uк2=%02dдБ";		// Запас по КЧ 2.
+	static const char fcUcf[] 	PROGMEM = "Uк=%02dдБ";		// Запас по КC.
+	static const char fcUcf1[] 	PROGMEM = "Uк1=%02dдБ";		// Запас по КC 1.
+	static const char fcUcf2[] 	PROGMEM = "Uк2=%02dдБ";		// Запас по КC 2.
 	static const char fcUn[] 	PROGMEM = "Uш=%02dдБ";		// Уровень шумов.
 	static const char fcUn1[] 	PROGMEM = "Uш1=%02dдБ";		// Уровень шумов 1.
 	static const char fcUn2[] 	PROGMEM = "Uш2=%02dдБ";		// Уровень шумов 2.
