@@ -3060,8 +3060,7 @@ void clMenu::lvlSetupParamPrd() {
 
 			sParam.local.addParam(GB_PARAM_PRD_DEC_CF);
 			sParam.local.addParam(GB_PARAM_PRD_DEC_TM);
-			sParam.local.addParam(GB_PARAM_PRD_DEFAULT_CF);
-
+//			sParam.local.addParam(GB_PARAM_PRD_DEFAULT_CF); убран за ненадобностью
 		} else if (device == AVANT_RZSK) {
 			sParam.local.addParam(GB_PARAM_PRD_IN_DELAY);
 			sParam.local.addParam(GB_PARAM_PRD_DURATION_L);
