@@ -175,19 +175,21 @@ static const char fcGlbFault2000[] 		PROGMEM = "Неиспр. МК УМ";		///<
 static const char fcGlbFault4000[] 		PROGMEM = "ВЧ тракт восст.";	///<
 
 // общие предупреждения
-static const char fcGlbWarning01[] 		PROGMEM = "Установите часы";	///<
-static const char fcGlbWarning02[] 		PROGMEM = "Отказ резерв.лин";	///<
-static const char fcGlbWarning04[]		PROGMEM = "Кольцо 1 наруш.";	///<
-static const char fcGlbWarning04k400[]	PROGMEM = "Высокая температ";	///<
-static const char fcGlbWarning04ring1[] PROGMEM = "Ком.не вернулась";	///<
-static const char fcGlbWarning08[]		PROGMEM = "Кольцо 2 наруш.";	///<
-static const char fcGlbWarning08k400[]	PROGMEM = "Низкая температ";	///<
-static const char fcGlbWarning08ring1[] PROGMEM = "Кольцо нарушено";	///<
-static const char fcGlbWarning10[] 		PROGMEM = "Удал.ПОСТ неиспр";	///<
-static const char fcGlbWarning10k400[]	PROGMEM = "Неиспр. дат.темп";	///<
-static const char fcGlbWarning20[] 		PROGMEM = "Удал.ПРД неиспр";	///<
-static const char fcGlbWarning40[] 		PROGMEM = "Удал.ПРМ неиспр";	///<
-static const char fcGlbWarning100[]		PROGMEM = "Ошибка работы ЦП";	///<
+static const char fcGlbWarning01[] 		PROGMEM = "Установите часы";	///< 1
+static const char fcGlbWarning02[] 		PROGMEM = "Отказ резерв.лин";	///< 2
+static const char fcGlbWarning04[]		PROGMEM = "Кольцо 1 наруш.";	///< 3
+static const char fcGlbWarning04k400[]	PROGMEM = "Высокая температ";	///< 3
+static const char fcGlbWarning04ring1[] PROGMEM = "Ком.не вернулась";	///< 3
+static const char fcGlbWarning08[]		PROGMEM = "Кольцо 2 наруш.";	///< 4
+static const char fcGlbWarning08k400[]	PROGMEM = "Низкая температ";	///< 4
+static const char fcGlbWarning08ring1[] PROGMEM = "Кольцо нарушено";	///< 4
+static const char fcGlbWarning10[] 		PROGMEM = "Удал.ПОСТ неиспр";	///< 5
+static const char fcGlbWarning10k400[]	PROGMEM = "Неиспр. дат.темп";	///< 5
+static const char fcGlbWarning20[] 		PROGMEM = "Удал.ПРД неиспр";	///< 6
+static const char fcGlbWarning40[] 		PROGMEM = "Удал.ПРМ неиспр";	///< 7
+static const char fcGlbWarning100[]		PROGMEM = "Ошибка работы ЦП";	///< 9
+static const char fcGlbWarning100ring1[]PROGMEM = "Нет КС на БЦК1";		///< 9
+static const char fcGlbWarning200ring1[]PROGMEM = "Нет КС на БЦК2";		///< 10
 
 // неисправности защиты
 static const char fcDefFault0001[] 		PROGMEM = "Нет блока БСЗ";		///<
@@ -494,10 +496,10 @@ static char fcJrnEventOPTOring[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
 		"Изменение режима",         ///< 18
 		"Неиспр цепи вых.",	  		///< 19
 		"Восстан-е КС на ПРМ",		///< 20
-		"Ошибка работы ЦП",    		///< 21
-		"Восстан-е работы ЦП",		///< 22
-		"Отсут-е сигнала Пуск",     ///< 23
-		"Отсут-е сигн Останов",     ///< 24
+		"Восстан-е КС БЦК1",   		///< 21
+		"Восстан-е КС БЦК2",		///< 22
+		"Нет КС БЦК1",			    ///< 23
+		"Нет КС БЦК2",     			///< 24
 		"Выключение питания",       ///< 25
 		"Нет КС",	           	 	///< 26
 		"Нет КС 5 секунд",          ///< 27

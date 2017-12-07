@@ -703,8 +703,15 @@ bool clMenu::setDeviceOPTO() {
 	sParam.glb.status.warningText[5] = fcGlbWarning20;
 	sParam.glb.status.warningText[6] = fcGlbWarning40;
 	// 7 нет
-	sParam.glb.status.warningText[8] = fcGlbWarning100;
-	// 9-15 нет
+	if (sParam.glb.getTypeOpto() == TYPE_OPTO_RING_UNI) {
+		sParam.glb.status.warningText[8] = fcGlbWarning100ring1;
+		sParam.glb.status.warningText[9] = fcGlbWarning200ring1;
+		// 10-15 нет
+	} else {
+		sParam.glb.status.warningText[8] = fcGlbWarning100;
+		// 9-15 нет
+	}
+
 
 	// ЗАЩИТА
 	// заполнение массива неисправностей защиты
