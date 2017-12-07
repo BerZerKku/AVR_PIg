@@ -18,6 +18,7 @@
 //#define VIEW_DEBUG_PARAM
 //#define IEC101
 
+#define COMPILE_TIME_ASSERT(expression) switch(0) { case 0 : case (expression) : ; }
 
 // тестовые пины
 #define DDR_DBG		DDRE
@@ -46,6 +47,10 @@ struct stDebug {
 };
 
 extern stDebug sDebug;
+
+#else
+
+#define COMPILE_TIME_ASSERT(expression) (void(0))
 
 #endif
 

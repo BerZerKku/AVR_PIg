@@ -15,7 +15,7 @@ class LocalParams {
 	static const uint8_t MAX_NUM_OF_PARAMS = 25;
 
 	/// Максимальное количество байт для битовых переменных.
-	static const uint8_t MAX_BUF_BITS_VALUES = 4;
+//	static const uint8_t MAX_BUF_BITS_VALUES = 12;
 
 public:
 

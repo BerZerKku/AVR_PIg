@@ -20,7 +20,12 @@ static char vLCDbuf[SIZE_BUF_STRING + 1];
 /// кол-во строк данных отображаемых на экране
 #define NUM_TEXT_LINES (SIZE_BUF_STRING / 20)
 
+
 clMenu::clMenu() {
+
+	// Сравнение размера массива команд переназначения и максимального кол-ва транзитных команд
+	COMPILE_TIME_ASSERT(SIZE_OF(fcRingRenumber) > MAX_NUM_COM_RING);
+
 	lvlMenu = &clMenu::lvlStart;
 	lineParam_ = 3;
 	lvlCreate_ = true;

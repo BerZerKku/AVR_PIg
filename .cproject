@@ -38,6 +38,7 @@
 								<option id="de.innot.avreclipse.cppcompiler.option.optimize.79243774" name="Optimization Level" superClass="de.innot.avreclipse.cppcompiler.option.optimize" value="de.innot.avreclipse.cppcompiler.optimize.size" valueType="enumerated"/>
 								<option id="de.innot.avreclipse.cppcompiler.option.def.1867136774" name="Define Syms (-D)" superClass="de.innot.avreclipse.cppcompiler.option.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="DEBUG"/>
+									<listOptionValue builtIn="false" value="__ASSERT_USE_STDERR"/>
 								</option>
 								<option id="de.innot.avreclipse.cppcompiler.option.incpath.418544092" name="Include Paths (-I)" superClass="de.innot.avreclipse.cppcompiler.option.incpath" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src}&quot;"/>
@@ -68,6 +69,7 @@
 							<tool id="de.innot.avreclipse.tool.avrdude.app.debug.476934546" name="AVRDude" superClass="de.innot.avreclipse.tool.avrdude.app.debug"/>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="de.innot.avreclipse.configuration.app.debug.461506571.270484865" name="readme.txt" rcbsApplicability="disable" resourcePath="readme.txt" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry excluding="test|external" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>

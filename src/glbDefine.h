@@ -29,13 +29,16 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0135
+#define VERS 0x0136
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
 
 /// максимальное кол-во команд на передачу (должно быть кратно 8)
 #define MAX_NUM_COM_PRD 32
+
+/// максимальное кол-во транзитных команд (+1 - это 0 команда)
+#define MAX_NUM_COM_RING 96
 
 /// преобразование двух CHAR в INT
 #define TO_INT16(high, low) (((uint16_t) (high) << 8) + (low))
