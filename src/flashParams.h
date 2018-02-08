@@ -91,8 +91,11 @@ static const char fcCompK400[][STRING_LENGHT] PROGMEM = {
 		"сой-ж опд",	///< 7
 		"сой-ж опл",	///< 8
 		"бврн опд",		///< 9
-		"бврн опл"		///< 10
+		"бврн опл",		///< 10
+		"юмйю опд",		///< 11
+		"юмйю опл"		///< 12
 };
+
 
 /// вЮЯРНРЮ опд / опл (ОЮПЮЛЕРП гЮЫХРШ).
 static const char fcPvzlFreq[][STRING_LENGHT] PROGMEM = {

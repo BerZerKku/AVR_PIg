@@ -238,10 +238,10 @@ bool clMenu::setDeviceK400() {
 		case GB_COMP_K400_AVANT_PRM:
 			prm = true;
 			break;
-		case GB_COMP_K400_ANKA_PRD:
+		case GB_COMP_K400_AKPA_PRD:
 			prd = true;
 			break;
-		case GB_COMP_K400_ANKA_PRM:
+		case GB_COMP_K400_AKPA_PRM:
 			prm = true;
 			break;
 		case GB_COMP_K400_KEDR_PRD:
@@ -260,6 +260,12 @@ bool clMenu::setDeviceK400() {
 			prd = true;
 			break;
 		case GB_COMP_K400_VCTO_PRM:
+			prm = true;
+			break;
+		case GB_COMP_K400_ANKA_PRD:
+			prd = true;
+			break;
+		case GB_COMP_K400_ANKA_PRM:
 			prm = true;
 			break;
 		case GB_COMP_K400_MAX:	// заглушка !!!
