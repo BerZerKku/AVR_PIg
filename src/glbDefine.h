@@ -369,7 +369,7 @@ enum eGB_COM_MASK {
 };
 
 /// Параметры (связаны с fParams)
-enum eGB_PARAM {
+typedef enum {
 	GB_PARAM_NULL_PARAM = 0,	///< параметр заглушка
 	// общие параметры
 	GB_PARAM_TIME_SYNCH,		///< синхронизация часов
@@ -470,7 +470,7 @@ enum eGB_PARAM {
 	GB_PARAM_RING_COM_TRANSIT,	///< транзитные команды
 	GB_PARAM_RING_COM_REC,		///< переназначение команд приемника
 	GB_PARAM_RING_COM_TR		///< переназначение команд дискретных входов
-};
+} eGB_PARAM;
 
 /// Значения команд управления
 enum eGB_CONTROL {

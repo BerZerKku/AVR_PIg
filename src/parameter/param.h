@@ -9,15 +9,8 @@
 
 struct Param {
 
-	/// Названия параметров
-	enum NAME {
-		TIME_SYNCH,			///<
-		NUM_OF_DEVICES_2X,
-		NUM_OF_DEVICES_3X,
-	};
-
 	/// Размернось параметра (связана с fcDimension)
-	enum DIMENSION {
+	typedef enum {
 		DIM_NO = 0,		///< Нет
 		DIM_MA,			///< мА
 		DIM_A,			///< А
@@ -31,48 +24,48 @@ struct Param {
 		DIM_HZ,			///< Гц
 		DIM_KHZ,		///< кГц
 		DIM_DEG			///< град
-	};
+	} DIMENSION;
 
 	/// Тип строки для отображения диапазона значений параметра.
-	enum RANGE_TYPE {
+	typedef enum {
 		RANGE_LIST = 0,	///< Список.
 		RANGE_ON_OFF,	///< Список вкл./выкл.
 		RANGE_INT,		///< <min>..<max><dim>
 		RANGE_INT_NO_DIM,///< <min>..<max>
 		RANGE_U_COR,	///< 0..±<max/10><dim>
 		RANGE_I_COR		///< 0..±<max><dim>
-	};
+	} RANGE_TYPE;
 
 	/// Тип параметра, в плане ввода / отображения.
-	enum PARAM_TYPE {
+	typedef enum {
 		PARAM_NO = 0,	///< Неизменяемый параметр.
 		PARAM_LIST,		///< Список.
 		PARAM_INT,		///< Целое значение jn -32768..32767.
 		PARAM_U_COR,	///< Коррекция напряжения ±ХХ.Х.
 		PARAM_I_COR,	///< Коррекция тока ±XXX.
 		PARAM_BITES		///< Намор битовых значений.
-	};
+	} PARAM_TYPE;
 
 	/// Зависимость максимума параметра.
-	enum DEPEND_MAX {
+	typedef enum {
 		DEPEND_MAX_NO,				///< Нет зависимости.
 		DEPEND_MAX_ON_COM_PRD,		///< Зависит от количества команд на ПРД.
 		DEPEND_MAX_ON_NUM_DEVS		///< Зависит от количества команд на ПРМ.
-	};
+	} DEPEND_MAX;
 
 	/// Зависимость повторов параметра.
-	enum DEPEND_SAME {
+	typedef enum {
 		DEPEND_SAME_NO,				///< Нет зависимости.
 		DEPEND_SAME_ON_NUM_DEVS,	///< Зависит от количества аппаратов в линии.
 		DEPEND_SAME_ON_COM_PRD,		///< Зависит от количества команд на ПРД.
 		DEPEND_SAME_ON_COM_PRM		///< Зависит от количества команд на ПРМ.
-	};
+	} DEPEND_SAME;
 
 	/// Условие для изменения параметра.
-	enum CHANGE_COND {
+	typedef enum {
 		CHANGE_COND_NO,			///< Нет условий.
 		CHANGE_COND_REG_DISABLE	///< Изменить можно только в режиме "Выведен".
-	};
+	} CHANGE_COND;
 
 	char name[NAME_PARAM_LENGHT];	///< Имя параметра.
 	eGB_COM com;		///< Команда считывания для стандартного протокола.

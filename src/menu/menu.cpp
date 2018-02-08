@@ -4431,9 +4431,20 @@ void clMenu::printSameNumber(uint8_t pos) {
 	static prog_uint8_t MAX_CHARS = 21;
 
 	if (sParam.local.getNumOfSameParams() > 1) {
-		snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Номер: %u/%u"),
-				sParam.local.getNumOfCurrSameParam(),
-				sParam.local.getNumOfSameParams());
+		eGB_PARAM p = sParam.local.getParam();
+		uint8_t val = sParam.local.getNumOfCurrSameParam();
+		uint8_t max = sParam.local.getNumOfSameParams();
+
+		if (p == GB_PARAM_RING_COM_TRANSIT) {
+			// для транзитных команд вместо номера выводится значение типа 16A/32C
+			// доступ к массиву значений осуществляется через параметр GB_PARAM_RING_COM_REC
+			Param* param = (Param*) pgm_read_word(&fParams[GB_PARAM_RING_COM_REC]);
+			PGM_P pval =  (PGM_P) pgm_read_word(&param->listValues) + (val * STRING_LENGHT);
+			PGM_P pmax =  (PGM_P) pgm_read_word(&param->listValues) + (max * STRING_LENGHT);
+			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Номер: %S/%S"), pval, pmax);
+		} else {
+			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Номер: %u/%u"), val, max);
+		}
 	}
 }
 
