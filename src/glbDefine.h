@@ -29,7 +29,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0138
+#define VERS 0x0139
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -78,7 +78,7 @@
 #endif
 
 /// максимальное кол-во сигналов в тестах
-#define MAX_NUM_TEST_SIGNAL 40
+#define MAX_NUM_TEST_SIGNAL 100
 
 // длина половины строки (+1 - символ конца строки)
 #define STRING_LENGHT (11 + 1)
@@ -570,6 +570,102 @@ enum eGB_TEST_SIGNAL {
 	GB_SIGNAL_CF3_RZ_R400M,
 	GB_SIGNAL_CF4_RZ_R400M,
 	GB_SIGNAL_CS,					// в оптике вместо КЧ
+	GB_SIGNAL_COM1A,				// оптика однонаправленная vvv
+	GB_SIGNAL_COM2A,
+	GB_SIGNAL_COM3A,
+	GB_SIGNAL_COM4A,
+	GB_SIGNAL_COM5A,
+	GB_SIGNAL_COM6A,
+	GB_SIGNAL_COM7A,
+	GB_SIGNAL_COM8A,
+	GB_SIGNAL_COM9A,
+	GB_SIGNAL_COM10A,
+	GB_SIGNAL_COM11A,
+	GB_SIGNAL_COM12A,
+	GB_SIGNAL_COM13A,
+	GB_SIGNAL_COM14A,
+	GB_SIGNAL_COM15A,
+	GB_SIGNAL_COM16A,
+	GB_SIGNAL_COM17A,
+	GB_SIGNAL_COM18A,
+	GB_SIGNAL_COM19A,
+	GB_SIGNAL_COM20A,
+	GB_SIGNAL_COM21A,
+	GB_SIGNAL_COM22A,
+	GB_SIGNAL_COM23A,
+	GB_SIGNAL_COM24A,
+	GB_SIGNAL_COM25A,
+	GB_SIGNAL_COM26A,
+	GB_SIGNAL_COM27A,
+	GB_SIGNAL_COM28A,
+	GB_SIGNAL_COM29A,
+	GB_SIGNAL_COM30A,
+	GB_SIGNAL_COM31A,
+	GB_SIGNAL_COM32A,
+	GB_SIGNAL_COM1B,
+	GB_SIGNAL_COM2B,
+	GB_SIGNAL_COM3B,
+	GB_SIGNAL_COM4B,
+	GB_SIGNAL_COM5B,
+	GB_SIGNAL_COM6B,
+	GB_SIGNAL_COM7B,
+	GB_SIGNAL_COM8B,
+	GB_SIGNAL_COM9B,
+	GB_SIGNAL_COM10B,
+	GB_SIGNAL_COM11B,
+	GB_SIGNAL_COM12B,
+	GB_SIGNAL_COM13B,
+	GB_SIGNAL_COM14B,
+	GB_SIGNAL_COM15B,
+	GB_SIGNAL_COM16B,
+	GB_SIGNAL_COM17B,
+	GB_SIGNAL_COM18B,
+	GB_SIGNAL_COM19B,
+	GB_SIGNAL_COM20B,
+	GB_SIGNAL_COM21B,
+	GB_SIGNAL_COM22B,
+	GB_SIGNAL_COM23B,
+	GB_SIGNAL_COM24B,
+	GB_SIGNAL_COM25B,
+	GB_SIGNAL_COM26B,
+	GB_SIGNAL_COM27B,
+	GB_SIGNAL_COM28B,
+	GB_SIGNAL_COM29B,
+	GB_SIGNAL_COM30B,
+	GB_SIGNAL_COM31B,
+	GB_SIGNAL_COM32B,
+	GB_SIGNAL_COM1C,
+	GB_SIGNAL_COM2C,
+	GB_SIGNAL_COM3C,
+	GB_SIGNAL_COM4C,
+	GB_SIGNAL_COM5C,
+	GB_SIGNAL_COM6C,
+	GB_SIGNAL_COM7C,
+	GB_SIGNAL_COM8C,
+	GB_SIGNAL_COM9C,
+	GB_SIGNAL_COM10C,
+	GB_SIGNAL_COM11C,
+	GB_SIGNAL_COM12C,
+	GB_SIGNAL_COM13C,
+	GB_SIGNAL_COM14C,
+	GB_SIGNAL_COM15C,
+	GB_SIGNAL_COM16C,
+	GB_SIGNAL_COM17C,
+	GB_SIGNAL_COM18C,
+	GB_SIGNAL_COM19C,
+	GB_SIGNAL_COM20C,
+	GB_SIGNAL_COM21C,
+	GB_SIGNAL_COM22C,
+	GB_SIGNAL_COM23C,
+	GB_SIGNAL_COM24C,
+	GB_SIGNAL_COM25C,
+	GB_SIGNAL_COM26C,
+	GB_SIGNAL_COM27C,
+	GB_SIGNAL_COM28C,
+	GB_SIGNAL_COM29C,
+	GB_SIGNAL_COM30C,
+	GB_SIGNAL_COM31C,
+	GB_SIGNAL_COM32C,	// оптика однонаправленная ^^^
 	GB_SIGNAL_MAX
 };
 
@@ -2100,6 +2196,9 @@ public:
 		} else if ((sig == GB_SIGNAL_CF) || (sig == GB_SIGNAL_CS)) {
 			rz = 0;
 			cf = 1;
+		} else if ((sig >= GB_SIGNAL_COM1A) && (sig <= GB_SIGNAL_COM32C)) {
+			rz = 0;
+			cf = 3 + sig - GB_SIGNAL_COM1A;
 		} else {
 			rz = 0;
 			cf = 0;
@@ -2124,7 +2223,7 @@ public:
 	 * 	@param type Тип аппарата.
 	 * 	@param numBytes Максимальное количество команд.
 	 */
-	void setCurrentSignal(uint8_t *s, eGB_TYPE_DEVICE type) {
+	void setCurrentSignal(uint8_t *s, eGB_TYPE_DEVICE type, eGB_TYPE_OPTO opto) {
 		eGB_TEST_SIGNAL signal = GB_SIGNAL_MAX;
 		eGB_TEST_SIGNAL signal2 = GB_SIGNAL_MAX;
 
@@ -2137,7 +2236,11 @@ public:
 		} else if (type == AVANT_R400M) {
 			signal = getCurrentSignalR400M(s);
 		} else if (type == AVANT_OPTO) {
-			signal = getCurrentSignalOpto(s);
+			if (opto == TYPE_OPTO_RING_UNI) {
+				signal = getCurrentSignalOptoRingUni(s);
+			} else {
+				signal = getCurrentSignalOpto(s);
+			}
 		}
 		currentSignal_ = signal;
 		currentSignal2_ = signal2;
@@ -2373,6 +2476,46 @@ private:
 							signal = (eGB_TEST_SIGNAL) t;
 						}
 					}
+				}
+			}
+		}
+		return signal;
+	}
+
+	/** Добавление сигнала в список для ОПТИКИ.
+		 * 	бит: 7		6		5		4		3		2		1		0		;
+		 * 	b1 : x 		x 		x 		[рз]	x		x 		x 		[кч]	;
+		 * 	b2 : [к8A]	[к7A]	[к6A] 	[к5A] 	[к4A] 	[к3A] 	[к2A] 	[к1A]	;
+		 * 	b3 : [к16A]	[к15A] 	[к14A] 	[к13A] 	[к12A] 	[к11A] 	[к10A] 	[к9A]	;
+		 * 	b4 : [к24A]	[к23A] 	[к22A] 	[к21A] 	[к20A] 	[к19A] 	[к18A] 	[к17A]	;
+		 * 	b5 : [к32A]	[к31A]	[к30A] 	[к29A] 	[к28A] 	[к27A] 	[к26A] 	[к25A]	;
+		 * 	b6 : [к8B]	[к7B]	[к6B] 	[к5B] 	[к4B] 	[к3B] 	[к2B] 	[к1B]	;
+		 * 	b7 : [к16B]	[к15B] 	[к14B] 	[к13B] 	[к12B] 	[к11B] 	[к10B] 	[к9B]	;
+		 * 	b8 : [к24B]	[к23B] 	[к22B] 	[к21B] 	[к20B] 	[к19B] 	[к18B] 	[к17B]	;
+		 * 	b9 : [к32B]	[к31B]	[к30B] 	[к29B] 	[к28B] 	[к27B] 	[к26B] 	[к25B]	;
+		 * 	b10: [к8C]	[к7C]	[к6C] 	[к5C] 	[к4C] 	[к3C] 	[к2C] 	[к1C]	;
+		 * 	b11: [к16C]	[к15C] 	[к14C] 	[к13C] 	[к12C] 	[к11C] 	[к10C] 	[к9C]	;
+		 * 	b12: [к24C]	[к23C] 	[к22C] 	[к21C] 	[к20C] 	[к19C] 	[к18C] 	[к17C]	;
+		 * 	b13: [к32C]	[к31C]	[к30C] 	[к29C] 	[к28C] 	[к27C] 	[к26C] 	[к25C]	;
+		 * 	Установленный бит означает наличие данного сигнала на передачу.
+		 *	Поиск ведется до первого установленного бита.
+		 * 	@param *s Указатель на массив данных.
+		 * 	@return Текущий тестовый сигнал.
+		 */
+	eGB_TEST_SIGNAL getCurrentSignalOptoRingUni(uint8_t *s) {
+		eGB_TEST_SIGNAL signal = GB_SIGNAL_OFF;
+
+		uint8_t t = *s;
+		if (t & 0x10) {
+			signal = GB_SIGNAL_RZ;
+		} else if (t & 0x01) {
+			signal = GB_SIGNAL_CS;
+		} else {
+			for(uint8_t i = 0; i < (MAX_NUM_COM_RING / 8); i++) {
+				t = getSetBit(*(++s));
+				if (t != 0) {
+					t = (t - 1) + GB_SIGNAL_COM1A + i*8;
+					signal = (eGB_TEST_SIGNAL) t;
 				}
 			}
 		}

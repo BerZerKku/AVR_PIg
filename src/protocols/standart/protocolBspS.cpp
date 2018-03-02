@@ -709,8 +709,9 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 
 		case GB_COM_GET_TEST: {
 			eGB_TYPE_DEVICE type = sParam_->typeDevice;
+			eGB_TYPE_OPTO opto = sParam_->glb.getTypeOpto();
 			// определеим макимальное кол-во
-			sParam_->test.setCurrentSignal(&buf[B1], type);
+			sParam_->test.setCurrentSignal(&buf[B1], type, opto);
 		}
 		break;
 

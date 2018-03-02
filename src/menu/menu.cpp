@@ -3789,11 +3789,20 @@ void clMenu::lvlTest1() {
 			if (sParam.def.status.isEnable()) {
 				sParam.test.addSignalToList(GB_SIGNAL_RZ);
 			}
-			uint8_t num_com = sParam.prd.getNumCom();
-			for (uint_fast8_t i = 0; i < num_com; i++) {
-				eGB_TEST_SIGNAL signal =
-						(eGB_TEST_SIGNAL) ((uint8_t) GB_SIGNAL_COM1 + i);
-				sParam.test.addSignalToList(signal);
+
+			if (sParam.glb.getTypeOpto() == TYPE_OPTO_RING_UNI) {
+				for (uint_fast8_t i = 0; i < MAX_NUM_COM_RING; i++) {
+					eGB_TEST_SIGNAL signal =
+							(eGB_TEST_SIGNAL) ((uint8_t) GB_SIGNAL_COM1A + i);
+					sParam.test.addSignalToList(signal);
+				}
+			} else {
+				uint8_t num_com = sParam.prd.getNumCom();
+				for (uint_fast8_t i = 0; i < num_com; i++) {
+					eGB_TEST_SIGNAL signal =
+							(eGB_TEST_SIGNAL) ((uint8_t) GB_SIGNAL_COM1 + i);
+					sParam.test.addSignalToList(signal);
+				}
 			}
 		}
 	}
