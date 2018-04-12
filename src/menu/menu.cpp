@@ -1876,7 +1876,7 @@ void clMenu::lvlJournalPrm() {
 			// в оптике если есть записи - то это наличие команды
 			// иначе - команд на передачу нет
 			if (com != 0) {
-				snprintf_P(&vLCDbuf[poz], 21, fcJrnPrdOptoComYes);
+				snprintf_P(&vLCDbuf[poz], 21, fcJrnPrmOptoComYes);
 			} else {
 				snprintf_P(&vLCDbuf[poz], 21, fcJrnPrdOptoComNo);
 			}

@@ -294,6 +294,8 @@ static const char fcJrnPrd[GB_STATE_COM_MAX + 1][21] PROGMEM = {
 static const char fcJrnPrdOptoComNo[] PROGMEM = "Команд нет";
 /// Запись о наличии команд на ПРД/ПРМ (оптика).
 static const char fcJrnPrdOptoComYes[] PROGMEM = "Команда передается";
+/// запись о наличии команд на ПРМ (оптика).
+static const char fcJrnPrmOptoComYes[] PROGMEM = "Команда принимается";
 
 /// Записи журнала событий для К400.
 static char fcJrnEventK400[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
