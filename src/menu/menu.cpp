@@ -2993,6 +2993,7 @@ void clMenu::lvlSetupParamPrm() {
 			}
 			sParam.local.addParam(GB_PARAM_PRM_TEST_COM);
 			sParam.local.addParam(GB_PARAM_PRM_FREQ_CORR);
+			sParam.local.addParam(GB_PARAM_PRM_COM_SIGNAL);
 		} else if (device == AVANT_RZSK) {
 			sParam.local.addParam(GB_PARAM_PRM_TIME_ON);
 			if (numcom != 0) {
@@ -3012,6 +3013,7 @@ void clMenu::lvlSetupParamPrm() {
 					sParam.local.addParam(GB_PARAM_PRM_DR_COM_BLOCK);
 					sParam.local.addParam(GB_PARAM_PRM_DR_COM_TO_HF);
 				}
+				sParam.local.addParam(GB_PARAM_PRM_COM_SIGNAL);
 			}
 		}
 	}
@@ -3079,6 +3081,7 @@ void clMenu::lvlSetupParamPrd() {
 			sParam.local.addParam(GB_PARAM_PRD_DEC_CF);
 			sParam.local.addParam(GB_PARAM_PRD_DEC_TM);
 //			sParam.local.addParam(GB_PARAM_PRD_DEFAULT_CF); убран за ненадобностью
+			sParam.local.addParam(GB_PARAM_PRD_COM_SIGNAL);
 		} else if (device == AVANT_RZSK) {
 			sParam.local.addParam(GB_PARAM_PRD_IN_DELAY);
 			sParam.local.addParam(GB_PARAM_PRD_DURATION_L);
@@ -3095,6 +3098,7 @@ void clMenu::lvlSetupParamPrd() {
 				if (numcom != 0) {
 					sParam.local.addParam(GB_PARAM_PRD_DR_COM_BLOCK);
 				}
+				sParam.local.addParam(GB_PARAM_PRD_COM_SIGNAL);
 			}
 		}
 	}

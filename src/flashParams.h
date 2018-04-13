@@ -1685,6 +1685,26 @@ static const Param fPrdDefaultCf PROGMEM = {
 		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
+// Сигнализация команд ПРМ
+static const Param fPrdComSignal PROGMEM = {
+		"Сигнализация команд",	// название параметра
+		GB_COM_PRD_GET_COM_SIGN,// команда стандартного протокола
+		Param::PARAM_BITES,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcOnOff[0],				// массив значений
+		32,						// кол-во повторений параметра
+		0,						// минимальное значение
+		SIZE_OF(fcOnOff),		// максимальное значение
+		1,						// дискретность
+		1,						// множитель для стандартного протокола
+		GB_SEND_DOP_BITES,		// тип параметра для сохранения новго значения
+		1,						// байт дополнительной информации для сохранения
+		Param::DEPEND_MAX_NO,	// заивимость максимума
+		Param::DEPEND_SAME_ON_COM_PRM,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+};
+
 // задержка на фиксацию команды (время включения)
 static const Param fPrmTimeOn PROGMEM = {
 		"Задержка на фикс.ком",	// название параметра
@@ -1882,6 +1902,26 @@ static const Param fPrmFreqCorr PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
+		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+};
+
+// Сигнализация команд ПРМ
+static const Param fPrmComSignal PROGMEM = {
+		"Сигнализация команд",	// название параметра
+		GB_COM_PRM_GET_COM_SIGN,// команда стандартного протокола
+		Param::PARAM_BITES,		// тип параметра
+		Param::RANGE_ON_OFF,	// диапазон измнения
+		Param::DIM_NO,			// размерность
+		fcOnOff[0],				// массив значений
+		32,						// кол-во повторений параметра
+		0,						// минимальное значение
+		SIZE_OF(fcOnOff),		// максимальное значение
+		1,						// дискретность
+		1,						// множитель для стандартного протокола
+		GB_SEND_DOP_BITES,		// тип параметра для сохранения новго значения
+		1,						// байт дополнительной информации для сохранения
+		Param::DEPEND_MAX_NO,	// заивимость максимума
+		Param::DEPEND_SAME_ON_COM_PRM,	// зависимость повторений
 		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
@@ -2173,6 +2213,7 @@ static const Param* fParams[] PROGMEM  = {
 		&fPrdDecCf,
 		&fPrdDecTm,
 		&fPrdDefaultCf,
+		&fPrdComSignal,
 		// Параметры приемника
 		&fPrmTimeOn,
 		&fPrmTimeOnK400,
@@ -2184,6 +2225,7 @@ static const Param* fParams[] PROGMEM  = {
 		&fPrmComNums,
 		&fPrmTestCom,
 		&fPrmFreqCorr,
+		&fPrmComSignal,
 		// Параметры интерфейса
 		&fIntfInterface,
 		&fIntfProtocol,
