@@ -785,10 +785,10 @@ private:
 	 *		- Семь байт времени в формате СР56Время2а.
 	 */
 	typedef struct __attribute__((__packed__)) {
-		SDataUnitId dataUnitId;	///< Идентификатор блока данных.
+		SDataUnitId dataUnitId;					///< Идентификатор блока данных.
 		uint16_t informationObjectAddress;		///< Адрес объекта информации.
 		SSiq siq;								///< Одноэлементная информация с описателем качества.
-		SCp56Time2a cp56time2a;		///< Метка времени "Время 2а в двоичном коде" CP56time2a.
+		SCp56Time2a cp56time2a;					///< Метка времени "Время 2а в двоичном коде" CP56time2a.
 	} SMSpTb1;
 
 	/**	\brief Окончание инициализации (End of initialisation).
@@ -1285,9 +1285,11 @@ public:
 	 *
 	 * 	Используется только для тестирования.
 	 */
-	void setEvent() {
-		setFunc(FUNCTION_EVENT);
+	uint8_t class2 = 0;
+	void sendClass2() {
+		class2 = 4;
 	}
+
 #endif
 
 
@@ -1313,6 +1315,7 @@ private:
 	SFrameVarLength m_stFrameVar;///< Кадр переменной длины.
 	EFrameStartCharacter m_eFrameSend;	///< Кадр подготовленный для передачи.
 
+
 	/**	Проверка необходимости передать новое сообщении класса 1.
 	 *
 	 *	Флаг наличия данных для передачи устанавливается, если:
@@ -1322,9 +1325,7 @@ private:
 	 *	@retval 0 Нет данных на передачу.
 	 *	@retval 1 Есть данные на передачу.
 	 */
-	uint8_t isAcd() {
-		return isFunc(FUNCTION_IS_ACD) ? 1 : 0;
-	}
+	uint8_t isAcd();
 
 	/**	Проверка бита счета кадров.
 	 *

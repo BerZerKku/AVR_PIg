@@ -10,7 +10,10 @@
 // Конструктор
 TProtocolPcI::TProtocolPcI(stGBparam *sParam, uint8_t *buf, uint8_t size) :
 sParam_(sParam), CIec101(buf, size) {
-	// NONE
+
+	for(uint8_t i = 0; i < SIZE_OF(m_bValue); i++) {
+		m_bValue[i] = getDevice(IE_ERROR + i);
+	}
 }
 
 // Функция отправки сообщения.
@@ -20,44 +23,46 @@ uint8_t TProtocolPcI::send() {
 
 // Проверка наличия данных класса 1(2) на передачу.
 bool TProtocolPcI::checkEvent() {
-	SNumEntries *ptr = &sParam_->jrnEntry.m_stNumEntries;
+	bool state = false;
 
-//	sDebug.byte1++;
-//
-//	if (sParam_->jrnEntry.val) {
-//		uint8_t years = sParam_->jrnEntry.dateTime.getYear();
-//		uint8_t months = sParam_->jrnEntry.dateTime.getMonth();
-//		uint8_t day = sParam_->jrnEntry.dateTime.getDay();
-//		uint8_t hours = sParam_->jrnEntry.dateTime.getHour();
-//		uint8_t minutes = sParam_->jrnEntry.dateTime.getMinute();
-//		uint8_t seconds = 1000 * sParam_->jrnEntry.dateTime.getSecond();
-//		uint16_t ms =	sParam_->jrnEntry.dateTime.getMsSecond();
-//
-//
-//		SCp56Time2a time;
-//		writeCp56Time2a(time, years, months, day, hours, minutes, seconds, ms);
-//
-//		uint16_t adr = sParam_->jrnEntry.getCurrentEntry();
-//
-//		prepareFrameMSpTb1(adr, COT_SPONT, true, time);
-//
-//		sParam_->jrnEntry.val = false;
-//		sDebug.byte2++;
-//		return true;
-//	}
-
-	// проверка на необходимость считать запись журнала
-	if (ptr->numGlbPwr != ptr->numGlbTr) {
-
-	} else if (ptr->numDefPwr != ptr->numDefTr) {
-
-	} else if (ptr->numPrmPwr != ptr->numPrmTr) {
-
-	} else if (ptr->numPrdPwr != ptr->numPrdTr) {
-
+	for(uint8_t i = 0; i < SIZE_OF(m_bValue); i++) {
+		if (m_bValue[i] != getDevice(IE_ERROR + i)) {
+			state = true;
+			break;
+		}
 	}
 
-	return false;
+	return state;
+}
+
+// Отправка события.
+bool TProtocolPcI::procEvent(void) {
+	bool state = false;
+	SCp56Time2a time;
+	bool val = false;
+	uint16_t adr = 0;
+
+	for(uint8_t i = 0; i < SIZE_OF(m_bValue); i++) {
+		adr = IE_ERROR + i;
+		val = getDevice(adr);
+		if (m_bValue[i] != val) {
+			time.years 			= sParam_->DateTime.getYear();
+			time.months 		= sParam_->DateTime.getMonth();
+			time.dayOfMonth 	= sParam_->DateTime.getDay();
+			time.hours 			= sParam_->DateTime.getHour();
+			time.minutes 		= sParam_->DateTime.getMinute();
+			time.milliseconds 	= sParam_->DateTime.getSecond() * 1000;
+			time.milliseconds  += sParam_->DateTime.getMsSecond();
+
+			prepareFrameMSpTb1(adr, COT_SPONT, val, time);
+
+			m_bValue[i] = val;
+			state = true;
+			break;
+		}
+	}
+
+	return state;
 }
 
 // Обработка ответа на команду опроса.

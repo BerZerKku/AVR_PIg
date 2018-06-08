@@ -1182,7 +1182,7 @@ TEST_F(TIec101_Full, readData_Events) {
 	}
 
 	// Устанавливаем флаг наличия событий
-	iec101->setEvent();
+	iec101->sendClass2();
 
 	{
 		uint16_t adr = 254;
@@ -1245,7 +1245,7 @@ TEST_F(TIec101_Full, readData_Events) {
 	}
 
 	// Устанавливаем флаг наличия событий
-	iec101->setEvent();
+	iec101->sendClass2();
 
 	{
 		{

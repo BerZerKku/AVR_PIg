@@ -16,8 +16,11 @@
 #define GLBDEF_H_
 
 #include <stdint.h>
-#include <avr/pgmspace.h>
-#include "debug.h"
+
+#ifndef MY_TESTS
+	#include <avr/pgmspace.h>
+	#include "debug.h"
+#endif
 
 /// размер массива
 #define SIZE_OF(mas) (sizeof(mas) / sizeof(mas[0]))
@@ -29,7 +32,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0140
+#define VERS 0x0141
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32

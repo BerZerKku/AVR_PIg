@@ -7,7 +7,7 @@
 
 #include "CIec101.h"
 #ifdef AVR
-#include "debug.h"
+	#include "debug.h"
 #endif
 
 // Контструктор.
@@ -188,7 +188,20 @@ CIec101::EError CIec101::readData() {
 
 //	Проверка наличия данных класса 1(2) на передачу.
 bool CIec101::checkEvent() {
-	return false;
+	bool check = false;
+
+#ifdef MY_TESTS
+	check = (class2 > 0);
+#endif
+
+	return check;
+}
+
+//Проверка необходимости передать новое сообщении класса 1.
+uint8_t CIec101::isAcd() {
+	checkEvent() ? setFunc(FUNCTION_EVENT) : clrFunc(FUNCTION_EVENT);
+
+	return isFunc(FUNCTION_IS_ACD) ? 1 : 0;
 }
 
 // Возвращает принятый в посылке CRC.
@@ -414,8 +427,6 @@ void CIec101::sendFrameVarLenght() {
 	setState(STATE_WRITE_READY);
 }
 
-
-
 // Подготовка кадра с постоянной длиной к отправке.
 void CIec101::prepareFrameFixLenght(EFcSecondary eFunction) {
 	m_stFrameFix.startCharacter = FRAME_START_CHARACTER_FIX;
@@ -548,6 +559,16 @@ void CIec101::procFrameFixLenghtUserData(SFrameFixLength &rFrame) {
 		return;
 	}
 
+	// Проверка на отправку данных класса 1 и 2
+
+
+	if (isFunc(FUNCTION_EVENT)) {
+		if (procEvent()) {
+			return;
+		}
+		clrFunc(FUNCTION_EVENT);
+	}
+
 	// Проверка на отправку данных опроса
 	if (isFunc(FUNCTION_INTERROG_MONIT)) {
 		bool val = false;
@@ -557,14 +578,6 @@ void CIec101::procFrameFixLenghtUserData(SFrameFixLength &rFrame) {
 			// Данных на передачу больше нет, завершим опрос.
 			clrFunc(FUNCTION_INTERROG_MONIT);
 			prepareFrameCIcNa1(COT_ACTTERM);
-		}
-		return;
-	}
-
-	// Проверка на отправку данных класса 1 и 2
-	if (isFunc(FUNCTION_EVENT)) {
-		if (!procEvent()) {
-			clrFunc(FUNCTION_EVENT);
 		}
 		return;
 	}
@@ -595,27 +608,27 @@ bool CIec101::procFrameVarLenght(UAsdu asdu) {
 
 // Отправка события.
 bool CIec101::procEvent(void) {
-	static uint8_t cnt = 0;
+	bool state = false;
 
-	bool state = true;
+
+#ifdef MY_TESTS
 	SCp56Time2a time;
 	bool val = false;
 	uint16_t adr = 0;
 
-	if (cnt < 4) {
+	uint8_t cnt = 4 - class2;
+
+	if (class2 > 0) {
 		adr = 254 + cnt;
 		val = (cnt != 0);
-		writeCp56Time2a(time, 12 + cnt, 5 + cnt, 14 + cnt, 8 + cnt, 23 +cnt,
+		writeCp56Time2a(time, 12 + cnt, 5 + cnt, 14 + cnt, 8 + cnt, 23 + cnt,
 				16 + cnt, 98 + cnt);
 
 		prepareFrameMSpTb1(adr, COT_SPONT, val, time);
-		cnt++;
+		class2--;
+		state = true;
 	}
-
-	if (cnt >= 4) {
-		cnt = 0;
-		state = false;
-	}
+#endif
 
 	return state;
 }

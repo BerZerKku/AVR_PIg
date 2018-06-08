@@ -174,12 +174,22 @@
 								<option id="gnu.cpp.compiler.option.debugging.level.58684355" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.1536705466" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/test}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/protocols/iec101}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/protocols/modbus}&quot;"/>
 								</option>
+								<option id="gnu.cpp.compiler.option.include.files.610127326" name="Include files (-include)" superClass="gnu.cpp.compiler.option.include.files" valueType="includeFiles"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1767572633" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.mingw.base.570702077" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.mingw.base">
 								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.241564139" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.debugging.level.392875550" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1627942587" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="MY_TESTS"/>
+								</option>
+								<option id="gnu.c.compiler.option.include.paths.894627708" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/protocols/iec101}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/protocols/modbus}&quot;"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1839285272" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.mingw.base.180343705" name="MinGW C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.mingw.base"/>
@@ -252,7 +262,9 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src/drivers/tmp75.cpp|src/protocols/iec101/protocolPcI.cpp|src/parameter|src/debug/debug.cpp|src/init/init.cpp|src/menu/menu.cpp|src/drivers/uart.cpp|src/drivers/ks0108.cpp|src/drivers/keyboard.cpp|src/protocols/standart/protocolS.cpp|src/protocols/standart/protocolPcS.cpp|src/protocols/standart/protocolBspS.cpp|src/protocols/modbus/protocolPcM.cpp|main.cpp|src/uart.cpp|src/protocolS.cpp|src/protocolPcS.cpp|src/protocolPcM.cpp|src/protocolBspS.cpp|src/menu.cpp|src/ks0108.cpp|src/keyboard.cpp|src/init.cpp|src/debug.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src|src/drivers/tmp75.cpp|src/protocols/iec101/protocolPcI.cpp|src/parameter|src/debug/debug.cpp|src/init/init.cpp|src/menu/menu.cpp|src/drivers/uart.cpp|src/drivers/ks0108.cpp|src/drivers/keyboard.cpp|src/protocols/standart/protocolS.cpp|src/protocols/standart/protocolPcS.cpp|src/protocols/standart/protocolBspS.cpp|src/protocols/modbus/protocolPcM.cpp|main.cpp|src/uart.cpp|src/protocolS.cpp|src/protocolPcS.cpp|src/protocolPcM.cpp|src/protocolBspS.cpp|src/menu.cpp|src/ks0108.cpp|src/keyboard.cpp|src/init.cpp|src/debug.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="protocolPcI.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/protocols/iec101"/>
+						<entry excluding="protocolPcM.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/protocols/modbus"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -277,32 +289,32 @@
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.mingw.exe.debug.1496575925;cdt.managedbuild.config.gnu.mingw.exe.debug.1496575925.;cdt.managedbuild.tool.gnu.cpp.compiler.mingw.exe.debug.277450273;cdt.managedbuild.tool.gnu.cpp.compiler.input.1794456393">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.debug.461506571;de.innot.avreclipse.configuration.app.debug.461506571.;de.innot.avreclipse.tool.cppcompiler.app.debug.1590742576;de.innot.avreclipse.cppcompiler.input.381739633">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileCPP"/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.mingw.exe.debug.1496575925;cdt.managedbuild.config.gnu.mingw.exe.debug.1496575925.;cdt.managedbuild.tool.gnu.c.compiler.mingw.base.570702077;cdt.managedbuild.tool.gnu.c.compiler.input.1839285272">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
+		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.debug.461506571;de.innot.avreclipse.configuration.app.debug.461506571.;de.innot.avreclipse.tool.compiler.winavr.app.debug.1257789221;de.innot.avreclipse.compiler.winavr.input.592803172">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileC"/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.mingw.exe.debug.1496575925;cdt.managedbuild.config.gnu.mingw.exe.debug.1496575925.;cdt.managedbuild.tool.gnu.c.compiler.mingw.exe.debug.131546178;cdt.managedbuild.tool.gnu.c.compiler.input.486363076">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.debug.461506571;de.innot.avreclipse.configuration.app.debug.461506571.;de.innot.avreclipse.tool.compiler.winavr.app.debug.1257789221;de.innot.avreclipse.compiler.winavr.input.592803172">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileC"/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.mingw.exe.debug.1496575925">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.mingw.exe.debug.1496575925;cdt.managedbuild.config.gnu.mingw.exe.debug.1496575925.;cdt.managedbuild.tool.gnu.cpp.compiler.mingw.base.603944525;cdt.managedbuild.tool.gnu.cpp.compiler.input.1767572633">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP"/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.mingw.exe.debug.1496575925;cdt.managedbuild.config.gnu.mingw.exe.debug.1496575925.;cdt.managedbuild.tool.gnu.cpp.compiler.mingw.exe.debug.277450273;cdt.managedbuild.tool.gnu.cpp.compiler.input.1794456393">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.release.349138147;de.innot.avreclipse.configuration.app.release.349138147.;de.innot.avreclipse.tool.compiler.winavr.app.release.1084419061;de.innot.avreclipse.compiler.winavr.input.1738048651">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileC"/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.release.349138147;de.innot.avreclipse.configuration.app.release.349138147.;de.innot.avreclipse.tool.cppcompiler.app.release.1688964592;de.innot.avreclipse.cppcompiler.input.1626071371">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileCPP"/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.mingw.exe.debug.1496575925;cdt.managedbuild.config.gnu.mingw.exe.debug.1496575925.;cdt.managedbuild.tool.gnu.cpp.compiler.mingw.base.603944525;cdt.managedbuild.tool.gnu.cpp.compiler.input.1767572633">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.mingw.exe.debug.1496575925">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP"/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.release.349138147;de.innot.avreclipse.configuration.app.release.349138147.;de.innot.avreclipse.tool.compiler.winavr.app.release.1084419061;de.innot.avreclipse.compiler.winavr.input.1738048651">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileC"/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.mingw.exe.debug.1496575925;cdt.managedbuild.config.gnu.mingw.exe.debug.1496575925.;cdt.managedbuild.tool.gnu.c.compiler.mingw.base.570702077;cdt.managedbuild.tool.gnu.c.compiler.input.1839285272">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="de.innot.avreclipse.configuration.app.debug.461506571;de.innot.avreclipse.configuration.app.debug.461506571.;de.innot.avreclipse.tool.cppcompiler.app.debug.1590742576;de.innot.avreclipse.cppcompiler.input.381739633">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="de.innot.avreclipse.core.AVRGCCManagedMakePerProjectProfileCPP"/>
 		</scannerConfigBuildInfo>
 	</storageModule>
 </cproject>
