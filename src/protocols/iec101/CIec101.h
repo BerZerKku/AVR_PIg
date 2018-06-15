@@ -1294,8 +1294,8 @@ public:
 
 
 private:
-	const uint8_t m_u8Size;	///< Размер буфера данных
-	uint8_t * const m_pBuf;	///< Буфер принятых/передаваемых данных
+	const uint8_t m_u8Size;		///< Размер буфера данных
+	uint8_t * const m_pBuf;		///< Буфер принятых/передаваемых данных
 
 	EState m_eState;			///< Текущее состояние работы протокола.
 	uint8_t m_u8Address;		///< Адрес устройства в сети.
@@ -1309,7 +1309,7 @@ private:
 	uint8_t m_u8Func;			///< Флаги текущих функций протокола (\a #EFunction).
 	uint8_t m_u8Fcb;			///< Ожидаемый бит счета кадров. <0> или <1>.
 
-	uint16_t m_u16CntInterrog;	///< Счетчик для отправки сообщений опроса.
+	bool m_bInterrog;			///< Флаг необходимости отправки сообщений опроса.
 	SCp56Time2a m_stCp56time2a;	///< Хранилище времени.
 	SFrameFixLength m_stFrameFix;///< Кадр фиксированной длины.
 	SFrameVarLength m_stFrameVar;///< Кадр переменной длины.

@@ -24,8 +24,6 @@ m_pBuf(pBuf), m_u8Size(u8Size) {
 	m_u16DelayPc = 0;
 	m_eFrameSend = FRAME_START_ERROR;
 
-	m_u16CntInterrog = 0;
-
 	m_u8Fcb = false;
 
 #ifndef NDEBUG
@@ -572,8 +570,9 @@ void CIec101::procFrameFixLenghtUserData(SFrameFixLength &rFrame) {
 	// Проверка на отправку данных опроса
 	if (isFunc(FUNCTION_INTERROG_MONIT)) {
 		bool val = false;
-		if (procInterrog(m_u16CntInterrog, val)) {
-			prepareFrameMSpNa1(m_u16CntInterrog, COT_INROGEN, val);
+		uint16_t adr = 0;
+		if (procInterrog(adr, val)) {
+			prepareFrameMSpNa1(adr, COT_INROGEN, val);
 		} else {
 			// Данных на передачу больше нет, завершим опрос.
 			clrFunc(FUNCTION_INTERROG_MONIT);
@@ -635,12 +634,14 @@ bool CIec101::procEvent(void) {
 
 // Обработка ответа на команду опроса.
 bool CIec101::procInterrog(uint16_t &adr, bool &val) {
-	bool state = true;
+	static uint16_t a = 201;
 
-	if (adr > 204)
+	if (a > 204) {
+		a = 201;
 		return false;
+	}
 
-	adr = (adr < 201) ? 201 : (adr + 1);
+	adr = a++;
 
 	if ((adr >= 201) && (adr <= 204)) {
 		if (adr == 201) {
@@ -652,11 +653,9 @@ bool CIec101::procInterrog(uint16_t &adr, bool &val) {
 		} else if (adr == 204) {
 			val = true;
 		}
-	} else {
-		state = false;
 	}
 
-	return state;
+	return true;
 }
 
 // Наличие полученного времени в момент синхронизации.
@@ -695,7 +694,6 @@ bool CIec101::procFrameCIcNa1(SCIcNa1 stCIcNa1) {
 	if (stCIcNa1.dataUnitId.causeOfTramsmission.cot != COT_ACT)
 		return false;
 
-	m_u16CntInterrog = 0;	// сброс счетчика опроса
 	setFunc(FUNCTION_INTERROG_CONF);
 
 	return true;

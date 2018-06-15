@@ -7,13 +7,226 @@
 
 #include "protocolPcI.h"
 
+// Адреса элементов информации (EInfoElement)
+const uint16_t TProtocolPcI::c_adrIE2[IE2_MAX] PROGMEM = {
+		201,	// IE_ERROR
+		202, 	// IE_WARNING
+		203, 	// IE_PRD_COM
+		204,	// IE_PRM_COM
+		301,	// IE_GLB_ERROR_H0001
+		302,	// IE_GLB_ERROR_H0002
+		303,	// IE_GLB_ERROR_H0004
+		304,	// IE_GLB_ERROR_H0008
+		305,	// IE_GLB_ERROR_H0010
+		306,	// IE_GLB_ERROR_H0020
+		307,	// IE_GLB_ERROR_H0040
+		308,	// IE_GLB_ERROR_H0080
+		309,	// IE_GLB_ERROR_H0100
+		310,	// IE_GLB_ERROR_H0200
+		311,	// IE_GLB_ERROR_H0400
+		312,	// IE_GLB_ERROR_H0800
+		313,	// IE_GLB_ERROR_H1000
+		314,	// IE_GLB_ERROR_H2000
+		315,	// IE_GLB_ERROR_H4000
+		316,	// IE_GLB_ERROR_H8000
+		317,	// IE_GLB_WARNING_H0001
+		318,	// IE_GLB_WARNING_H0002
+		319,	// IE_GLB_WARNING_H0004
+		320,	// IE_GLB_WARNING_H0008
+		321,	// IE_GLB_WARNING_H0010
+		322,	// IE_GLB_WARNING_H0020
+		323,	// IE_GLB_WARNING_H0040
+		324,	// IE_GLB_WARNING_H0080
+		325,	// IE_GLB_WARNING_H0100
+		326,	// IE_GLB_WARNING_H0200
+		327,	// IE_GLB_WARNING_H0400
+		328,	// IE_GLB_WARNING_H0800
+		329,	// IE_GLB_WARNING_H1000
+		330,	// IE_GLB_WARNING_H2000
+		331,	// IE_GLB_WARNING_H4000
+		332,	// IE_GLB_WARNING_H8000
+		400,	// IE_PRD_ON
+		401,	// IE_PRD_ERROR_H0001
+		402,	// IE_PRD_ERROR_H0002
+		403,	// IE_PRD_ERROR_H0004
+		404,	// IE_PRD_ERROR_H0008
+		405,	// IE_PRD_ERROR_H0010
+		406,	// IE_PRD_ERROR_H0020
+		407,	// IE_PRD_ERROR_H0040
+		408,	// IE_PRD_ERROR_H0080
+		409,	// IE_PRD_ERROR_H0100
+		410,	// IE_PRD_ERROR_H0200
+		411,	// IE_PRD_ERROR_H0400
+		412,	// IE_PRD_ERROR_H0800
+		413,	// IE_PRD_ERROR_H1000
+		414,	// IE_PRD_ERROR_H2000
+		415,	// IE_PRD_ERROR_H4000
+		416,	// IE_PRD_ERROR_H8000
+		417,	// IE_PRD_WARNING_H0001
+		418,	// IE_PRD_WARNING_H0002
+		419,	// IE_PRD_WARNING_H0004
+		420,	// IE_PRD_WARNING_H0008
+		421,	// IE_PRD_WARNING_H0010
+		422,	// IE_PRD_WARNING_H0020
+		423,	// IE_PRD_WARNING_H0040
+		424,	// IE_PRD_WARNING_H0080
+		425,	// IE_PRD_WARNING_H0100
+		426,	// IE_PRD_WARNING_H0200
+		427,	// IE_PRD_WARNING_H0400
+		428,	// IE_PRD_WARNING_H0800
+		429,	// IE_PRD_WARNING_H1000
+		430,	// IE_PRD_WARNING_H2000
+		431,	// IE_PRD_WARNING_H4000
+		432,	// IE_PRD_WARNING_H8000
+		450,	// IE_PRD_COM_01
+		451,	// IE_PRD_COM_02
+		452,	// IE_PRD_COM_03
+		453,	// IE_PRD_COM_04
+		454,	// IE_PRD_COM_05
+		455,	// IE_PRD_COM_06
+		456,	// IE_PRD_COM_07
+		457,	// IE_PRD_COM_08
+		458,	// IE_PRD_COM_09
+		459,	// IE_PRD_COM_10
+		460,	// IE_PRD_COM_11
+		461,	// IE_PRD_COM_12
+		462,	// IE_PRD_COM_13
+		463,	// IE_PRD_COM_14
+		464,	// IE_PRD_COM_15
+		465,	// IE_PRD_COM_16
+		466,	// IE_PRD_COM_17
+		467,	// IE_PRD_COM_18
+		468,	// IE_PRD_COM_19
+		469,	// IE_PRD_COM_20
+		470,	// IE_PRD_COM_21
+		471,	// IE_PRD_COM_22
+		472,	// IE_PRD_COM_23
+		473,	// IE_PRD_COM_24
+		474,	// IE_PRD_COM_25
+		475,	// IE_PRD_COM_26
+		476,	// IE_PRD_COM_27
+		477,	// IE_PRD_COM_28
+		478,	// IE_PRD_COM_29
+		479,	// IE_PRD_COM_30
+		480,	// IE_PRD_COM_31
+		481,	// IE_PRD_COM_32
+		485,	// IE_PRD_DISABLED
+		486,	// IE_PRD_ENABLED
+		487,	// IE_PRD_TEST
+		500,	// IE_PRM_ON
+		501,	// IE_PRM_ERROR_H0001
+		502,	// IE_PRM_ERROR_H0002
+		503,	// IE_PRM_ERROR_H0004
+		504,	// IE_PRM_ERROR_H0008
+		505,	// IE_PRM_ERROR_H0010
+		506,	// IE_PRM_ERROR_H0020
+		507,	// IE_PRM_ERROR_H0040
+		508,	// IE_PRM_ERROR_H0080
+		509,	// IE_PRM_ERROR_H0100
+		510,	// IE_PRM_ERROR_H0200
+		511,	// IE_PRM_ERROR_H0400
+		512,	// IE_PRM_ERROR_H0800
+		513,	// IE_PRM_ERROR_H1000
+		514,	// IE_PRM_ERROR_H2000
+		515,	// IE_PRM_ERROR_H4000
+		516,	// IE_PRM_ERROR_H8000
+		517,	// IE_PRM_WARNING_H0001
+		518,	// IE_PRM_WARNING_H0002
+		519,	// IE_PRM_WARNING_H0004
+		520,	// IE_PRM_WARNING_H0008
+		521,	// IE_PRM_WARNING_H0010
+		522,	// IE_PRM_WARNING_H0020
+		523,	// IE_PRM_WARNING_H0040
+		524,	// IE_PRM_WARNING_H0080
+		525,	// IE_PRM_WARNING_H0100
+		526,	// IE_PRM_WARNING_H0200
+		527,	// IE_PRM_WARNING_H0400
+		528,	// IE_PRM_WARNING_H0800
+		529,	// IE_PRM_WARNING_H1000
+		530,	// IE_PRM_WARNING_H2000
+		531,	// IE_PRM_WARNING_H4000
+		532,	// IE_PRM_WARNING_H8000
+		550,	// IE_PRM_COM_01
+		551,	// IE_PRM_COM_02
+		552,	// IE_PRM_COM_03
+		553,	// IE_PRM_COM_04
+		554,	// IE_PRM_COM_05
+		555,	// IE_PRM_COM_06
+		556,	// IE_PRM_COM_07
+		557,	// IE_PRM_COM_08
+		558,	// IE_PRM_COM_09
+		559,	// IE_PRM_COM_10
+		560,	// IE_PRM_COM_11
+		561,	// IE_PRM_COM_12
+		562,	// IE_PRM_COM_13
+		563,	// IE_PRM_COM_14
+		564,	// IE_PRM_COM_15
+		565,	// IE_PRM_COM_16
+		566,	// IE_PRM_COM_17
+		567,	// IE_PRM_COM_18
+		568,	// IE_PRM_COM_19
+		569,	// IE_PRM_COM_20
+		570,	// IE_PRM_COM_21
+		571,	// IE_PRM_COM_22
+		572,	// IE_PRM_COM_23
+		573,	// IE_PRM_COM_24
+		574,	// IE_PRM_COM_25
+		575,	// IE_PRM_COM_26
+		576,	// IE_PRM_COM_27
+		577,	// IE_PRM_COM_28
+		578,	// IE_PRM_COM_29
+		579,	// IE_PRM_COM_30
+		580,	// IE_PRM_COM_31
+		581,	// IE_PRM_COM_32
+		585,	// IE_PRM_DISABLED
+		586,	// IE_PRM_ENABLED
+		587,	// IE_PRM_TEST
+		600,	// IE_DEF_ON
+		601,	// IE_DEF_ERROR_H0001
+		602,	// IE_DEF_ERROR_H0002
+		603,	// IE_DEF_ERROR_H0004
+		604,	// IE_DEF_ERROR_H0008
+		605,	// IE_DEF_ERROR_H0010
+		606,	// IE_DEF_ERROR_H0020
+		607,	// IE_DEF_ERROR_H0040
+		608,	// IE_DEF_ERROR_H0080
+		609,	// IE_DEF_ERROR_H0100
+		610,	// IE_DEF_ERROR_H0200
+		611,	// IE_DEF_ERROR_H0400
+		612,	// IE_DEF_ERROR_H0800
+		613,	// IE_DEF_ERROR_H1000
+		614,	// IE_DEF_ERROR_H2000
+		615,	// IE_DEF_ERROR_H4000
+		616,	// IE_DEF_ERROR_H8000
+		617,	// IE_DEF_WARNING_H0001
+		618,	// IE_DEF_WARNING_H0002
+		619,	// IE_DEF_WARNING_H0004
+		620,	// IE_DEF_WARNING_H0008
+		621,	// IE_DEF_WARNING_H0010
+		622,	// IE_DEF_WARNING_H0020
+		623,	// IE_DEF_WARNING_H0040
+		624,	// IE_DEF_WARNING_H0080
+		625,	// IE_DEF_WARNING_H0100
+		626,	// IE_DEF_WARNING_H0200
+		627,	// IE_DEF_WARNING_H0400
+		628,	// IE_DEF_WARNING_H0800
+		629,	// IE_DEF_WARNING_H1000
+		630,	// IE_DEF_WARNING_H2000
+		631,	// IE_DEF_WARNING_H4000
+		632		// IE_DEF_WARNING_H8000
+};
+
 // Конструктор
 TProtocolPcI::TProtocolPcI(stGBparam *sParam, uint8_t *buf, uint8_t size) :
 sParam_(sParam), CIec101(buf, size) {
 
-	for(uint8_t i = 0; i < SIZE_OF(m_bValue); i++) {
-		m_bValue[i] = getDevice(IE_ERROR + i);
+	for(uint16_t i = 0; i < IE2_MAX; i++) {
+		m_flags[i] = getValue(static_cast<EInfoElement2> (i));
 	}
+
+	ei2.send = false;
+	ei2.val = false;
+	ei2.adr = 0;
 }
 
 // Функция отправки сообщения.
@@ -23,88 +236,60 @@ uint8_t TProtocolPcI::send() {
 
 // Проверка наличия данных класса 1(2) на передачу.
 bool TProtocolPcI::checkEvent() {
-	bool state = false;
 
-	for(uint8_t i = 0; i < SIZE_OF(m_bValue); i++) {
-		if (m_bValue[i] != getDevice(IE_ERROR + i)) {
-			state = true;
-			break;
+	for(uint8_t i = 0; i < IE2_MAX; i++) {
+		bool val = getValue(static_cast<EInfoElement2> (i));
+		if (m_flags[i] != val) {
+			ei2.val = m_flags[i] = val;
+			ei2.adr = c_adrIE2[i];
+			ei2.send = true;
+
+			return true;
 		}
 	}
 
-	return state;
+	return false;
 }
 
 // Отправка события.
 bool TProtocolPcI::procEvent(void) {
-	bool state = false;
+
 	SCp56Time2a time;
 	bool val = false;
 	uint16_t adr = 0;
 
-	for(uint8_t i = 0; i < SIZE_OF(m_bValue); i++) {
-		adr = IE_ERROR + i;
-		val = getDevice(adr);
-		if (m_bValue[i] != val) {
-			time.years 			= sParam_->DateTime.getYear();
-			time.months 		= sParam_->DateTime.getMonth();
-			time.dayOfMonth 	= sParam_->DateTime.getDay();
-			time.hours 			= sParam_->DateTime.getHour();
-			time.minutes 		= sParam_->DateTime.getMinute();
-			time.milliseconds 	= sParam_->DateTime.getSecond() * 1000;
-			time.milliseconds  += sParam_->DateTime.getMsSecond();
+	if (!ei2.send)
+		return false;
 
-			prepareFrameMSpTb1(adr, COT_SPONT, val, time);
+	time.years 			= sParam_->DateTime.getYear();
+	time.months 		= sParam_->DateTime.getMonth();
+	time.dayOfMonth 	= sParam_->DateTime.getDay();
+	time.hours 			= sParam_->DateTime.getHour();
+	time.minutes 		= sParam_->DateTime.getMinute();
+	time.milliseconds 	= sParam_->DateTime.getSecond() * 1000;
+	time.milliseconds  += sParam_->DateTime.getMsSecond();
 
-			m_bValue[i] = val;
-			state = true;
-			break;
-		}
-	}
+	prepareFrameMSpTb1(adr, COT_SPONT, val, time);
 
-	return state;
+	ei2.send = false;
+
+	return true;
 }
 
 // Обработка ответа на команду опроса.
 bool TProtocolPcI::procInterrog(uint16_t &adr, bool &val) {
-	adr++;
+	static EInfoElement2 ei2 = IE2_ERROR;
 
-	if (adr <= IE_PRM_COM) {
-		if (adr < IE_ERROR)
-			adr = IE_ERROR;
-		val = getDevice(adr);
-		return true;
+	if (ei2 >= IE2_MAX) {
+		ei2 = IE2_ERROR;
+		return false;
 	}
 
-	if (adr <= IE_GLB_WARNING_END) {
-		if (adr < IE_GLB_ERROR_START)
-			adr = IE_GLB_ERROR_START;
-		val = getGlb(adr);
-		return true;
-	}
+	adr = c_adrIE2[ei2];
+	val = getValue(ei2);
 
-	if (sParam_->prd.status.isEnable() && (adr <= IE_PRD_TEST)) {
-		if (adr < IE_PRD_ON)
-			adr = IE_PRD_ON;
-		val = getPrd(adr);
-		return true;
-	}
-
-	if (sParam_->prm.status.isEnable() && (adr <= IE_PRM_TEST)) {
-		if (adr < IE_PRM_ON)
-			adr = IE_PRM_ON;
-		val = getPrm(adr);
-		return true;
-	}
-
-	if (sParam_->def.status.isEnable() &&(adr <= IE_DEF_WARNING_END)) {
-		if (adr < IE_DEF_ON)
-			adr = IE_DEF_ON;
-		val = getDef(adr);
-		return true;
-	}
-
-	return false;
+	ei2 = static_cast<EInfoElement2>(ei2 + 1);
+	return true;
 }
 
 // Установка времени
@@ -126,8 +311,6 @@ bool TProtocolPcI::procSetTime() {
 
 	// сброс флага наличия ответа на команду установки времени в БСП
 	sParam_->DateTimeReq.setTimeBsp_ = false;
-
-//	uint16_t d = getDelay();
 
 	return true;
 }
@@ -157,121 +340,124 @@ bool TProtocolPcI::procSetTimeEnd() {
 	return true;
 }
 
-// Возвращает флаги общие для аппарата.
-bool TProtocolPcI::getDevice(uint16_t adr) const {
+// Возвращает состояние элемента информации.
+bool TProtocolPcI::getValue(EInfoElement2 ei) const {
 	bool val = false;
 
-	if (adr == IE_ERROR) {
+	if (ei >= IE2_DEF_ON) {
+		val = getDef(ei);
+	} else if (ei >= IE2_PRM_ON) {
+		val = getPrm(ei);
+	} else if (ei >= IE2_PRD_ON) {
+		val = getPrd(ei);
+	} else if (ei >= IE2_GLB_ERROR_H0001) {
+		val = getGlb(ei);
+	} else if (ei >= IE2_ERROR) {
+		val = getDevice(ei);
+	}
+
+	return val;
+}
+
+// Возвращает состояние флага информации аппарата.
+bool TProtocolPcI::getDevice(EInfoElement2 ei) const {
+	bool val = false;
+
+	if (ei == IE2_ERROR) {
 		val = sParam_->glb.status.isFault();
 		val |= sParam_->def.status.isEnable()&& sParam_->def.status.isFault();
 		val |= sParam_->prm.status.isEnable()&& sParam_->prm.status.isFault();
 		val |= sParam_->prd.status.isEnable()&& sParam_->prd.status.isFault();
-	} else if (adr == IE_WARNING) {
+	} else if (ei == IE2_WARNING) {
 		val = sParam_->glb.status.isWarning();
 		val |= sParam_->def.status.isEnable()&& sParam_->def.status.isWarning();
 		val |= sParam_->prm.status.isEnable()&& sParam_->prm.status.isWarning();
 		val |= sParam_->prd.status.isEnable()&& sParam_->prd.status.isWarning();
-	} else if (adr == IE_PRD_COM) {
+	} else if (ei == IE2_PRD_COM) {
 		val = sParam_->prd.isIndCom();
-	} else if (adr == IE_PRM_COM) {
+	} else if (ei == IE2_PRM_COM) {
 		val = sParam_->prm.isIndCom();
 	}
 
 	return val;
 }
 
-// Возвращает флаги общего состояния.
-bool TProtocolPcI::getGlb(uint16_t adr) const {
+// Возвращает состояние флага общей информации.
+bool TProtocolPcI::getGlb(EInfoElement2 ei) const {
 	bool val = false;
 
-	if (adr >= IE_GLB_WARNING_START) {
-		if (adr <= IE_GLB_WARNING_END) {
-			val = sParam_->glb.status.isWarning(adr - IE_GLB_WARNING_START);
+	if (ei >= IE2_GLB_WARNING_H0001) {
+		if (ei <= IE2_GLB_WARNING_H8000) {
+			val = sParam_->glb.status.isWarning(ei - IE2_GLB_WARNING_H0001);
 		}
-	} else if (adr >= IE_GLB_ERROR_START) {
-		if (adr <= IE_GLB_ERROR_END) {
-			val = sParam_->glb.status.isFault(adr - IE_GLB_ERROR_START);
+	} else if (ei >= IE2_GLB_ERROR_H0001) {
+		if (ei <= IE2_GLB_ERROR_H8000) {
+			val = sParam_->glb.status.isFault(ei - IE2_GLB_ERROR_H0001);
 		}
 	}
 
 	return val;
 }
 
-// Возвращает флаги передатчика.
-bool TProtocolPcI::getPrd(uint16_t adr) const {
+// Возвращает состояние флага передатчика.
+bool TProtocolPcI::getPrd(EInfoElement2 ei) const {
 	bool val = false;
 
-	if (adr == IE_PRD_TEST) {
+	if (ei == IE2_PRD_TEST) {
 		val = (sParam_->prd.status.getRegime() == GB_REGIME_TEST_1) ||
 				(sParam_->prd.status.getRegime() == GB_REGIME_TEST_2);
-	} else if (adr == IE_PRD_ENABLED) {
+	} else if (ei == IE2_PRD_ENABLED) {
 		val = (sParam_->prd.status.getRegime() == GB_REGIME_ENABLED);
-	} else if (adr == IE_PRD_DISABLED) {
+	} else if (ei == IE2_PRD_DISABLED) {
 		val = (sParam_->prd.status.getRegime() == GB_REGIME_DISABLED);
-	} if (adr >= IE_PRD_COM_START) {
-		if (adr <= IE_PRD_COM_END) {
-			val = sParam_->prd.getIndCom(adr - IE_PRD_COM_START);
-		}
-	} else if (adr >= IE_PRD_WARNING_START) {
-		if (adr <= IE_PRD_WARNING_END) {
-			val = sParam_->prd.status.isWarning(adr - IE_PRD_WARNING_START);
-		}
-	} else if (adr >= IE_PRD_ERROR_START) {
-		if (adr <= IE_PRD_ERROR_END) {
-			val = sParam_->prd.status.isFault(adr - IE_PRD_ERROR_START);
-		}
-	} else if (adr == IE_PRD_ON) {
+	} if ((ei >= IE2_PRD_COM_01) && (ei <= IE2_PRD_COM_32)) {
+			val = sParam_->prd.getIndCom(ei - IE2_PRD_COM_01);
+	} else if ((ei >= IE2_PRD_WARNING_H0001) && (ei <= IE2_PRD_WARNING_H8000)) {
+			val = sParam_->prd.status.isWarning(ei - IE2_PRD_WARNING_H0001);
+	} else if ((ei >= IE2_PRD_ERROR_H0001) && (ei <= IE2_PRD_ERROR_H8000)) {
+			val = sParam_->prd.status.isFault(ei - IE2_PRD_ERROR_H0001);
+	} else if (ei == IE2_PRD_ON) {
 		val = sParam_->prd.status.isEnable();
 	}
 
 	return val;
 }
 
-// Возвращает флаги приемника.
-bool TProtocolPcI::getPrm(uint16_t adr) const {
+// Возвращает состояние флага приемника.
+bool TProtocolPcI::getPrm(EInfoElement2 ei) const {
 	bool val = false;
 
-	if (adr == IE_PRM_TEST) {
+	if (ei == IE2_PRM_TEST) {
 		val = (sParam_->prm.status.getRegime() == GB_REGIME_TEST_1) ||
 				(sParam_->prm.status.getRegime() == GB_REGIME_TEST_2);
-	} else if (adr == IE_PRM_ENABLED) {
+	} else if (ei == IE2_PRM_ENABLED) {
 		val = (sParam_->prm.status.getRegime() == GB_REGIME_ENABLED);
-	} else if (adr == IE_PRM_READY) {
+	} else if (ei == IE2_PRM_READY) {
 		val = (sParam_->prm.status.getRegime() == GB_REGIME_READY);
-	} else if (adr == IE_PRM_DISABLED) {
+	} else if (ei == IE2_PRM_DISABLED) {
 		val = (sParam_->prm.status.getRegime() == GB_REGIME_DISABLED);
-	} else if (adr >= IE_PRM_COM_START) {
-		if (adr <= IE_PRM_COM_END) {
-			val = sParam_->prm.getIndCom(adr - IE_PRM_COM_START);
-		}
-	} else if (adr >= IE_PRM_WARNING_START) {
-		if (adr <= IE_PRM_WARNING_END) {
-			val = sParam_->prm.status.isWarning(adr - IE_PRM_WARNING_START);
-		}
-	} else if (adr >= IE_PRM_ERROR_START) {
-		if (adr <= IE_PRM_ERROR_END) {
-			val = sParam_->prm.status.isFault(adr - IE_PRM_ERROR_START);
-		}
-	} else if (adr == IE_PRM_ON) {
+	} else if ((ei >= IE2_PRM_COM_01) && (ei <= IE2_PRM_COM_32)) {
+			val = sParam_->prm.getIndCom(ei - IE2_PRM_COM_01);
+	} else if ((ei >= IE2_PRM_WARNING_H0001) && (ei <= IE2_PRM_WARNING_H8000)) {
+			val = sParam_->prm.status.isWarning(ei - IE2_PRM_WARNING_H0001);
+	} else if ((ei >= IE2_PRM_ERROR_H0001) && (ei <= IE2_PRM_ERROR_H8000)) {
+			val = sParam_->prm.status.isFault(ei - IE2_PRM_ERROR_H0001);
+	} else if (ei == IE2_PRM_ON) {
 		val = sParam_->prm.status.isEnable();
 	}
 
 	return val;
 }
 
-// Возвращает флаги защиты.
-bool TProtocolPcI::getDef(uint16_t adr) const {
+// Возвращает состояние флага защиты.
+bool TProtocolPcI::getDef(EInfoElement2 ei) const {
 	bool val = false;
 
-	if (adr >= IE_DEF_WARNING_START) {
-		if (adr <= IE_DEF_WARNING_END) {
-			val = sParam_->def.status.isWarning(adr - IE_DEF_WARNING_START);
-		}
-	} else if (adr >= IE_DEF_ERROR_START) {
-		if (adr <= IE_DEF_ERROR_END) {
-			val = sParam_->def.status.isFault(adr - IE_DEF_ERROR_START);
-		}
-	} else if (adr == IE_DEF_ON) {
+	if ((ei >= IE2_DEF_WARNING_H0001) && (ei <= IE2_DEF_WARNING_H8000)) {
+			val = sParam_->def.status.isWarning(ei - IE2_DEF_WARNING_H0001);
+	} else if ((ei >= IE2_DEF_ERROR_H0001) && (ei <= IE2_DEF_ERROR_H8000)) {
+			val = sParam_->def.status.isFault(ei - IE2_DEF_ERROR_H0001);
+	} else if (ei == IE2_DEF_ON) {
 		val = sParam_->def.status.isEnable();
 	}
 
