@@ -179,8 +179,9 @@ const uint16_t TProtocolPcI::c_adrIE2[IE2_MAX] PROGMEM = {
 		580,	// IE_PRM_COM_31
 		581,	// IE_PRM_COM_32
 		585,	// IE_PRM_DISABLED
-		586,	// IE_PRM_ENABLED
-		587,	// IE_PRM_TEST
+		586,	// IE_PRM_READY
+		587,	// IE_PRM_ENABLED
+		588,	// IE_PRM_TEST
 		600,	// IE_DEF_ON
 		601,	// IE_DEF_ERROR_H0001
 		602,	// IE_DEF_ERROR_H0002
@@ -237,11 +238,19 @@ uint8_t TProtocolPcI::send() {
 // Проверка наличия данных класса 1(2) на передачу.
 bool TProtocolPcI::checkEvent() {
 
+	if (ei2.send)
+		return true;
+
 	for(uint8_t i = 0; i < IE2_MAX; i++) {
 		bool val = getValue(static_cast<EInfoElement2> (i));
+
+
+
 		if (m_flags[i] != val) {
-			ei2.val = m_flags[i] = val;
-			ei2.adr = c_adrIE2[i];
+			m_flags[i] = val;
+
+			ei2.val = val;
+			ei2.adr = pgm_read_word(&c_adrIE2[i]);
 			ei2.send = true;
 
 			return true;
@@ -253,10 +262,7 @@ bool TProtocolPcI::checkEvent() {
 
 // Отправка события.
 bool TProtocolPcI::procEvent(void) {
-
 	SCp56Time2a time;
-	bool val = false;
-	uint16_t adr = 0;
 
 	if (!ei2.send)
 		return false;
@@ -269,7 +275,7 @@ bool TProtocolPcI::procEvent(void) {
 	time.milliseconds 	= sParam_->DateTime.getSecond() * 1000;
 	time.milliseconds  += sParam_->DateTime.getMsSecond();
 
-	prepareFrameMSpTb1(adr, COT_SPONT, val, time);
+	prepareFrameMSpTb1(ei2.adr, COT_SPONT, ei2.val, time);
 
 	ei2.send = false;
 
@@ -285,10 +291,11 @@ bool TProtocolPcI::procInterrog(uint16_t &adr, bool &val) {
 		return false;
 	}
 
-	adr = c_adrIE2[ei2];
+	adr = pgm_read_word(&c_adrIE2[ei2]);
 	val = getValue(ei2);
 
 	ei2 = static_cast<EInfoElement2>(ei2 + 1);
+
 	return true;
 }
 

@@ -558,8 +558,6 @@ void CIec101::procFrameFixLenghtUserData(SFrameFixLength &rFrame) {
 	}
 
 	// Проверка на отправку данных класса 1 и 2
-
-
 	if (isFunc(FUNCTION_EVENT)) {
 		if (procEvent()) {
 			return;
