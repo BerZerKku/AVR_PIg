@@ -1625,7 +1625,6 @@ class TJournalEntry {
 public:
 	TJournalEntry() {
 		clear();
-		clearNumEntries();
 	}
 
 	void clear() {
@@ -1654,26 +1653,6 @@ public:
 		val = false;
 	}
 
-	/**	Очистка счетчиков количества записей в журнале.
-	 *
-	 * 	Необходимо вызывать в случае потери или восстановлении связи с БСП,
-	 * 	т.к. это может быть перезагрузка.
-	 */
-	void clearNumEntries() {
-		m_stNumEntries.numGlb = 0;
-		m_stNumEntries.numGlbPwr = 0;
-		m_stNumEntries.numGlbTr = 0;
-		m_stNumEntries.numPrd = 0;
-		m_stNumEntries.numPrdPwr = 0;
-		m_stNumEntries.numPrdTr = 0;
-		m_stNumEntries.numPrm = 0;
-		m_stNumEntries.numPrmPwr = 0;
-		m_stNumEntries.numPrmTr = 0;
-		m_stNumEntries.numDef = 0;
-		m_stNumEntries.numDefPwr = 0;
-		m_stNumEntries.numDefTr = 0;
-	}
-
 	// время для записи журнала
 	TDataTime dateTime;
 
@@ -1682,9 +1661,6 @@ public:
 
 	// значение для передачи по протоколу
 	bool val;
-
-	// Структура счетчиков количества записей в журналах.
-	SNumEntries m_stNumEntries;
 
 	bool setCurrentDevice(eGB_DEVICE device) {
 		bool stat = false;
@@ -1980,39 +1956,6 @@ public:
 	}
 	uint16_t getNumJrnEntries() const {
 		return numJrnEntries_;
-	}
-
-	/** Установка кол-ва записей в журналах.
-	 *
-	 *	После сброса кол-во сделанных записей и текущий счетчик записей обнуляются
-	 *	и только после этого текущему счетчику присваивается колв-во сделанных
-	 *	записей.
-	 *
-	 * 	@param device Тип журнала.
-	 * 	@param numPwr Количество записей сделанное с момента включения аппарата.
-	 */
-	void setNumEntries(eGB_DEVICE device, uint16_t numPwr) {
-		if (device == GB_DEVICE_GLB) {
-			if ((m_stNumEntries.numGlbTr == 0) && (m_stNumEntries.numGlbPwr == 0)) {
-				m_stNumEntries.numGlbTr = numPwr;
-			}
-			m_stNumEntries.numGlbPwr = numPwr;
-		} else if (device == GB_DEVICE_DEF) {
-			if ((m_stNumEntries.numDefTr == 0) && (m_stNumEntries.numDefPwr == 0)) {
-				m_stNumEntries.numDefTr = numPwr;
-			}
-			m_stNumEntries.numDefPwr = numPwr;
-		} else if (device == GB_DEVICE_PRM) {
-			if ((m_stNumEntries.numPrmTr == 0) && (m_stNumEntries.numPrmPwr == 0)) {
-				m_stNumEntries.numPrmTr = numPwr;
-			}
-			m_stNumEntries.numPrmPwr = numPwr;
-		} else if (device == GB_DEVICE_PRD) {
-			if ((m_stNumEntries.numPrdTr == 0) && (m_stNumEntries.numPrdPwr == 0)) {
-				m_stNumEntries.numPrdTr = numPwr;
-			}
-			m_stNumEntries.numPrdPwr = numPwr;
-		}
 	}
 
 	// максимальное кол-во записей в журнале

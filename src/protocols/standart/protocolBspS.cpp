@@ -245,10 +245,6 @@ bool clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
 		stat |= sParam_->def.setTimeToAC(*((uint32_t *) &buf[B2]));
 	} else if (com == GB_COM_DEF_GET_JRN_CNT) {
 		uint16_t t = *((uint16_t *) &buf[B1]);
-		sParam_->jrnEntry.m_stNumEntries.numDef = t;
-		if (buf[NUM] >= 4) {
-			sParam_->jrnEntry.setNumEntries(GB_DEVICE_DEF, *((uint16_t *) &buf[B3]));
-		}
 		if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_DEF) {
 			stat = sParam_->jrnEntry.setNumJrnEntry(t);
 		}
@@ -321,10 +317,6 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
 
 		case GB_COM_PRM_GET_JRN_CNT: {
 			uint16_t t = *((uint16_t *) &buf[B1]);
-			sParam_->jrnEntry.m_stNumEntries.numPrm = t;
-			if (buf[NUM] >= 4) {
-				sParam_->jrnEntry.setNumEntries(GB_DEVICE_PRM, *((uint16_t *) &buf[B3]));
-			}
 			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRM) {
 				stat = sParam_->jrnEntry.setNumJrnEntry(t);
 			}
@@ -400,10 +392,6 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 
 		case GB_COM_PRD_GET_JRN_CNT: {
 			uint16_t t = *((uint16_t *) &buf[B1]);
-			sParam_->jrnEntry.m_stNumEntries.numPrd = t;
-			if (buf[NUM] >= 4) {
-				sParam_->jrnEntry.setNumEntries(GB_DEVICE_PRD, *((uint16_t *) &buf[B3]));
-			}
 			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRD) {
 				stat = sParam_->jrnEntry.setNumJrnEntry(t);
 			}
@@ -717,10 +705,6 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 
 		case GB_COM_GET_JRN_CNT: {
 			uint16_t t = *((uint16_t *) &buf[B1]);
-			sParam_->jrnEntry.m_stNumEntries.numGlb = t;
-			if (buf[NUM] >= 4) {
-				sParam_->jrnEntry.setNumEntries(GB_DEVICE_GLB, *((uint16_t *) &buf[B3]));
-			}
 			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_GLB) {
 				stat = sParam_->jrnEntry.setNumJrnEntry(t);
 			}

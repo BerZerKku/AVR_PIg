@@ -203,8 +203,6 @@ void clMenu::main(void) {
 		// если связь с БСП только восстановилась
 		// дважды пошлем команду опроса версии
 		sParam.txComBuf.addFastCom(GB_COM_GET_VERS);
-		// очистим кол-во записей в журнале после восстановления связи
-		sParam.jrnEntry.clearNumEntries();
 		//		sParam.txComBuf.addFastCom(GB_COM_GET_VERS);
 	}
 	lastConnection = connection;
