@@ -37,10 +37,14 @@ bool clProtocolBspS::getData(bool pc) {
 				stat &= sParam_->DateTimeReq.setHour(BCD_TO_BIN(buf[B4]));
 				stat &= sParam_->DateTimeReq.setMinute(BCD_TO_BIN(buf[B5]));
 				stat &= sParam_->DateTimeReq.setSecond(BCD_TO_BIN(buf[B6]));
+
 				// миллисекунды устанавливаются, только если они есть в посылке
-				uint16_t ms =  (buf[NUM] >= 8) ? *((uint16_t *) &buf[B7]) : 0;
+				uint16_t ms = 0;
+				if (buf[NUM] >= 8) {
+					ms = *((uint16_t *) &buf[B7]);
+					sParam_->DateTimeReq.setTimeBsp_ = true;
+				}
 				stat &= sParam_->DateTimeReq.setMsSecond(ms);
-				sParam_->DateTimeReq.setTimeBsp_ = true;
 			} else {
 				stat = true;
 			}
@@ -198,6 +202,8 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 			num = addCom(com, 0);
 		} else if (com == GB_COM_GET_SOST) {
 			num = addCom(com, sParam_->measParam.getTemperature());
+		} else if (com == GB_COM_GET_TIME) {
+			num = addCom(com, sParam_->jrnScada.getState());
 		} else {
 			num = addCom(com);
 		}
@@ -467,9 +473,33 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			stat &= sParam_->DateTime.setMinute(BCD_TO_BIN(buf[B5]));
 			stat &= sParam_->DateTime.setSecond(BCD_TO_BIN(buf[B6]));
 			// миллисекунды устанавливаются, только если они есть в посылке
-			uint16_t ms =  buf[NUM] >= 8 ? *((uint16_t *) &buf[B7]) : 0;
+			uint16_t ms = 0;
+			if (buf[NUM >= 8]) {
+				ms = *((uint16_t *) &buf[B7]);
+			}
 			stat &= sParam_->DateTime.setMsSecond(ms);
 			stat = true;
+
+			// новая запись журнала, для передачи в АСУ ТП
+			if (buf[NUM] >= 21) {
+				TJrnSCADA *jrn = &sParam_->jrnScada;
+				if (jrn->isReadyToWrite()) {
+					jrn->setJrn(buf[B9]);
+					jrn->setEvent(buf[B10]);
+					jrn->setCom(buf[B11]);
+					// B12
+					// B13
+					jrn->dtime.setYear(BCD_TO_BIN(buf[B14]));
+					jrn->dtime.setMonth(BCD_TO_BIN(buf[B15]));
+					jrn->dtime.setDay(BCD_TO_BIN(buf[B16]));
+					jrn->dtime.setHour(BCD_TO_BIN(buf[B17]));
+					jrn->dtime.setMinute(BCD_TO_BIN(buf[B18]));
+					jrn->dtime.setSecond(BCD_TO_BIN(buf[B19]));
+					jrn->dtime.setMsSecond(*((uint16_t *) &buf[B20]));
+
+					jrn->setReadyToSend();
+				}
+			}
 		}
 		break;
 

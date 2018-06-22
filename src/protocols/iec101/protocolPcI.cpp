@@ -7,8 +7,9 @@
 
 #include "protocolPcI.h"
 
+
 // Адреса элементов информации (EInfoElement)
-const uint16_t TProtocolPcI::c_adrIE2[IE2_MAX] PROGMEM = {
+const uint16_t TProtocolPcI::c_adrIE2[] PROGMEM = {
 		201,	// IE_ERROR
 		202, 	// IE_WARNING
 		203, 	// IE_PRD_COM
@@ -221,6 +222,8 @@ const uint16_t TProtocolPcI::c_adrIE2[IE2_MAX] PROGMEM = {
 TProtocolPcI::TProtocolPcI(stGBparam *sParam, uint8_t *buf, uint8_t size) :
 sParam_(sParam), CIec101(buf, size) {
 
+	COMPILE_TIME_ASSERT(SIZE_OF(c_adrIE2) == IE2_MAX);
+
 	for(uint16_t i = 0; i < IE2_MAX; i++) {
 		m_flags[i] = getValue(static_cast<EInfoElement2> (i));
 	}
@@ -238,63 +241,92 @@ uint8_t TProtocolPcI::send() {
 // Проверка наличия данных класса 1(2) на передачу.
 bool TProtocolPcI::checkEvent() {
 
-	if (ei2.send)
-		return true;
+	if ((!ei1.send) && (sParam_->jrnScada.isReadyToSend())) {
+		TJrnSCADA *jrn = &sParam_->jrnScada;
 
-	for(uint8_t i = 0; i < IE2_MAX; i++) {
-		bool val = getValue(static_cast<EInfoElement2> (i));
+		if (jrn->isJrnEvent()) {
+			ei1.val = true;
+			ei1.adr = c_adrIe1Event1 + jrn->getEvent();
+			ei1.send = true;
+		} else if (jrn->isJrnPrm()) {
+			ei1.val = jrn->getEvent();
+			ei1.adr = c_adrIe1PrmCom1 + jrn->getCom() - 1;
+			ei1.send = true;
+		} else if (jrn->isJrnPrd()) {
+			// TODO разделение команд на ДС и ЦПП
+			ei1.val = jrn->getEvent();
+			ei1.adr = c_adrIe1PrdCom1 + jrn->getCom() - 1;
+			ei1.send = true;
+		} else {
+			// в случае ошибочного журнала, перейдем к следующему событию
+			sParam_->jrnScada.setReadyToEvent();
+		}
 
+		ei1.time.years 			= jrn->dtime.getYear();
+		ei1.time.months 		= jrn->dtime.getMonth();
+		ei1.time.dayOfMonth 	= jrn->dtime.getDay();
+		ei1.time.hours 			= jrn->dtime.getHour();
+		ei1.time.minutes 		= jrn->dtime.getMinute();
+		ei1.time.milliseconds 	= jrn->dtime.getSecond() * 1000;
+		ei1.time.milliseconds  += jrn->dtime.getMsSecond();
+	} else if (!ei2.send) {
+		for(uint8_t i = 0; i < IE2_MAX; i++) {
+			bool val = getValue(static_cast<EInfoElement2> (i));
 
+			if (m_flags[i] != val) {
+				m_flags[i] = val;
 
-		if (m_flags[i] != val) {
-			m_flags[i] = val;
+				ei2.val = val;
+				ei2.adr = pgm_read_word(&c_adrIE2[i]);
 
-			ei2.val = val;
-			ei2.adr = pgm_read_word(&c_adrIE2[i]);
-			ei2.send = true;
+				ei2.time.years 			= sParam_->DateTime.getYear();
+				ei2.time.months 		= sParam_->DateTime.getMonth();
+				ei2.time.dayOfMonth 	= sParam_->DateTime.getDay();
+				ei2.time.hours 			= sParam_->DateTime.getHour();
+				ei2.time.minutes 		= sParam_->DateTime.getMinute();
+				ei2.time.milliseconds 	= sParam_->DateTime.getSecond()*1000;
+				ei2.time.milliseconds  += sParam_->DateTime.getMsSecond();
 
-			return true;
+				ei2.send = true;
+				break;
+			}
 		}
 	}
 
-	return false;
+	return (ei1.send | ei2.send);
 }
 
 // Отправка события.
 bool TProtocolPcI::procEvent(void) {
-	SCp56Time2a time;
 
-	if (!ei2.send)
+	if (!(ei1.send || ei2.send))
 		return false;
 
-	time.years 			= sParam_->DateTime.getYear();
-	time.months 		= sParam_->DateTime.getMonth();
-	time.dayOfMonth 	= sParam_->DateTime.getDay();
-	time.hours 			= sParam_->DateTime.getHour();
-	time.minutes 		= sParam_->DateTime.getMinute();
-	time.milliseconds 	= sParam_->DateTime.getSecond() * 1000;
-	time.milliseconds  += sParam_->DateTime.getMsSecond();
-
-	prepareFrameMSpTb1(ei2.adr, COT_SPONT, ei2.val, time);
-
-	ei2.send = false;
+	if (ei1.send) {
+		prepareFrameMSpTb1(ei1.adr, COT_SPONT, ei1.val, ei1.time);
+		sParam_->jrnScada.setReadyToEvent();
+		ei1.send = false;
+	} else if (ei2.send) {
+		prepareFrameMSpTb1(ei2.adr, COT_SPONT, ei2.val, ei2.time);
+		ei2.send = false;
+	}
 
 	return true;
 }
 
 // Обработка ответа на команду опроса.
 bool TProtocolPcI::procInterrog(uint16_t &adr, bool &val) {
-	static EInfoElement2 ei2 = IE2_ERROR;
+	static EInfoElement2 e = IE2_ERROR;
 
-	if (ei2 >= IE2_MAX) {
-		ei2 = IE2_ERROR;
+	if (e >= IE2_MAX) {
+		e = IE2_ERROR;
 		return false;
 	}
 
-	adr = pgm_read_word(&c_adrIE2[ei2]);
-	val = getValue(ei2);
+	adr = pgm_read_word(&c_adrIE2[e]);
+	val = getValue(e);
 
-	ei2 = static_cast<EInfoElement2>(ei2 + 1);
+	e = static_cast<EInfoElement2>(e + 1);
 
 	return true;
 }

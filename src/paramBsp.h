@@ -60,6 +60,9 @@ struct stGBparam {
 	// запись в журнале
 	TJournalEntry jrnEntry;
 
+	// запись для SCADA
+	TJrnSCADA jrnScada;
+
 	// тесты
 	TTest test;
 };

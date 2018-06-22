@@ -316,18 +316,21 @@ static void setProtocol(TProtocol::PROTOCOL protocol, uint16_t baud) {
 	switch(protocol) {
 		case TProtocol::STANDART:
 			protPCs.setEnable(PRTS_STATUS_NO);
+			menu.sParam.jrnScada.setIdle();
 //			protPCi.setDisable();
 //			protPCm.setDisable();
 			break;
 		case TProtocol::MODBUS:
 			protPCm.setTick(baud, 50);
 			protPCm.setEnable();
+			menu.sParam.jrnScada.setIdle();
 //			protPCi.setDisable();
 //			protPCs.setDisable();
 			break;
 		case TProtocol::IEC_101:
 			protPCi.setTick(baud, 50);
 			protPCi.setEnable();
+			menu.sParam.jrnScada.setReadyToEvent();
 //			protPCm.setDisable();
 //			protPCs.setDisable();
 			break;

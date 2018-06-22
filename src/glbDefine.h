@@ -1605,21 +1605,6 @@ private:
 	uint8_t buf_[MAX_NUM_FAST_COM + 1] [BUFFER_SIZE];
 };
 
-typedef struct __attribute__ ((__packed__)) {
-	uint16_t numGlb;
-	uint16_t numGlbPwr;
-	uint16_t numGlbTr;
-	uint16_t numPrd;
-	uint16_t numPrdPwr;
-	uint16_t numPrdTr;
-	uint16_t numPrm;
-	uint16_t numPrmPwr;
-	uint16_t numPrmTr;
-	uint16_t numDef;
-	uint16_t numDefPwr;
-	uint16_t numDefTr;
-} SNumEntries;
-
 
 class TJournalEntry {
 public:
@@ -2473,6 +2458,134 @@ private:
 		}
 		return signal;
 	}
+};
+
+class TJrnSCADA {
+public:
+
+	/// Состояние команды.
+	typedef enum __attribute__ ((__packed__)) {
+		COM_OFF = 0,	///< Окончена.
+		COM_ON,			///< Началась.
+		COM_MAX			///< Максимальное значение.
+	} com_t;
+
+	/// Текущее состояние записи.
+	typedef enum __attribute__ ((__packed__)) {
+		STATE_IDLE = 0,	///< Ожидание.
+		STATE_REC,		///< Считать новую запись журнала.
+		STATE_TR_OK,	///< Текущая запись передана в SCADA, считать новую запись журнала.
+		STATE_REC_OK,	///< Запись журнала считана и ждет отправки в SCADA.
+		STATE_MAX		///< Максимальное значение.
+	} state_t;
+
+	TJrnSCADA() {
+		m_u8Com = 0;
+		m_u8Event = 0;
+		m_eJrn = GB_DEVICE_K400_MAX;
+
+		m_eState = STATE_REC;
+	};
+
+	TDataTime dtime;
+
+
+	/// Установка события.
+	void setEvent(uint8_t val) {
+		m_u8Event= val;
+	}
+
+	/// Возвращает событие.
+	uint8_t getEvent() const {
+		return m_u8Event;
+	}
+
+	/// Установка номера команды.
+	void setCom(uint8_t val) {
+		m_u8Com = val;
+	}
+
+	/// Возвращает номер команды.
+	uint8_t getCom() const {
+		return m_u8Com;
+	}
+
+	/// Установка текущего журнала.
+	void setJrn(uint8_t val) {
+		if ((val >= GB_DEVICE_K400_MIN) && (val <GB_DEVICE_K400_MAX)) {
+			m_eJrn = static_cast<eGB_DEVICE_K400> (val);
+		} else {
+			m_eJrn = GB_DEVICE_K400_MAX;
+		}
+	}
+
+	/// Проверка текущего журнала на журнал событий.
+	bool isJrnEvent() const {
+		return (m_eJrn == GB_DEVICE_K400_GLB);
+	}
+
+	/// Проверка текущего журнала на журнал приемника.
+	bool isJrnPrm() const {
+		// TODO проверка на все остальные журналы приемника
+		return (m_eJrn == GB_DEVICE_K400_PRM1);
+	}
+
+	/// Проверка текущего журнала на журнал передатчика.
+	bool isJrnPrd() const {
+		return (m_eJrn == GB_DEVICE_K400_PRD);
+	}
+
+	/// Установка текущего состояния в наличие новой записи.
+	void setReadyToSend() {
+		m_eState = STATE_REC_OK;
+	}
+
+	/// Установка текущего состояния в готовность к новой записи.
+	void setReadyToEvent() {
+		m_eState = STATE_TR_OK;
+	}
+
+	/// Установка текущего состояния в ожидание.
+	void setIdle() {
+		m_eState = STATE_IDLE;
+	}
+
+	/// Проверка текущего состояния на запись нового сообщения.
+	bool isReadyToWrite() const {
+		return (m_eState != STATE_REC);
+	}
+
+	/** Проверка текущего состояния на наличие нового сообщения.
+	 *
+	 *  В случае ошибки, состояние будет установлено в ожидание нового события.
+	 *
+	 *  @return true - имеется новое сообщение.
+	 */
+	bool isReadyToSend() {
+		if (getState() == STATE_IDLE) {
+			m_eState = STATE_REC;
+		}
+
+		return (m_eState == STATE_REC_OK);
+	}
+
+	/**	Возвращает текущее состояние.
+	 *
+	 * 	@retval STATE_IDLE
+	 * 	@retval STATE_REC
+	 * 	@retval STATE_TR_OK
+	 */
+	uint8_t getState() const {
+		return (m_eState >= STATE_REC_OK) ? STATE_IDLE : m_eState;
+	}
+
+private:
+	eGB_DEVICE_K400	m_eJrn;	/// Журнал.
+	uint8_t m_u8Event;		/// Cобытие.
+	uint8_t m_u8Com;		/// Номер команды.
+
+
+	state_t m_eState;		/// Текущее состояние.
 };
 
 #endif /* GLBDEF_H_ */

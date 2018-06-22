@@ -24,6 +24,7 @@ m_pBuf(pBuf), m_u8Size(u8Size) {
 	m_u16DelayPc = 0;
 	m_eFrameSend = FRAME_START_ERROR;
 
+	m_bInterrog = false;
 	m_u8Fcb = false;
 
 #ifndef NDEBUG
