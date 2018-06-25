@@ -276,14 +276,6 @@ class TProtocolPcI : public CIec101{
 		IE2_MAX
 	} EInfoElement2;
 
-	///	\brief Элемент информации.
-	typedef struct __attribute__ ((__packed__)) {
-		bool send;			///< True - данные готовы для передачи.
-		bool val;			///< Значение.
-		uint16_t adr;		///< Адрес.
-		SCp56Time2a time;	///< Время.
-	} SEI;
-
 public:
 	TProtocolPcI(stGBparam *sParam, uint8_t *buf, uint8_t size);
 
@@ -307,7 +299,7 @@ public:
 	 * 	@retval False Нет данных на передачу.
 	 * 	@retval True Есть данные на передачу.
 	 */
-	virtual bool checkEvent();
+	virtual bool checkEventClass1();
 
 	/**	Отправка события.
 	 *
@@ -321,7 +313,7 @@ public:
 	 *	@retval False Данных нет.
 	 *
 	 */
-	virtual bool procEvent();
+	virtual bool procEventClass2();
 
 
 
@@ -335,12 +327,6 @@ private:
 
 	/// Адреса элементов информации (EInfoElement2).
 	static const uint16_t c_adrIE2[];
-
-	/// Элемент информации класса 2 для отправки.
-	SEI ei2;
-
-	/// Элемент информации класса 1 для отправки.
-	SEI ei1;
 
 	/**	Обработка ответа на команду опроса.
 	 *

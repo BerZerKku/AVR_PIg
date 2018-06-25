@@ -338,7 +338,8 @@ private:
 //		FUNCTION_INTERROG		= 0x0C,	///< \b <0x0C> Наличие опроса (общее).
 		FUNCTION_TIME_SYNCH_CONF= 0x10,	///< \b <0x10> Подтверждение синхронизации времени.
 //		FUNCTION_TIME_SYNCH_END	= 0x20,	///< \b <0x20> Окончание синхронизации времени.
-		FUNCTION_EVENT			= 0x40,	///< \b <0x40> Наличие данных класса 1(2) на передачу.
+		FUNCTION_EVENT_CLASS_1	= 0x40,	///< \b <0x40> Наличие данных класса 1 на передачу.
+//		FUNCTION_EVENT_CLASS_2	= 0x80,	///< \b <0x80> Наличие данных класса 2 на передачу.
 		FUNCTION_IS_ACD			= 0x48	///< \b <0x48> Проверка флагов с наличием данных на передачу.
 	} EFunction;
 
@@ -578,7 +579,7 @@ private:
 	 * 		\a #EFcSecondary
 	 */
 	typedef struct __attribute__((__packed__)) {
-		EFcSecondary function : 4;	///< Функция.
+		EFcSecondary function : 4;			///< Функция.
 		uint8_t dfc : 1;					///< Контроль потока данных (data flow control).
 		uint8_t acd : 1;					///< Бит требования запроса данных (access demand).
 		uint8_t prm : 1;					///< Первичное сообщение (primary message bit).
@@ -1022,6 +1023,14 @@ public:
 		ERROR_COMMON		= 9		///< Ошибка общая.
 	} EError;
 
+	///	\brief Элемент информации.
+	typedef struct __attribute__ ((__packed__)) {
+		bool send;			///< True - данные готовы для передачи.
+		bool val;			///< Значение.
+		uint16_t adr;		///< Адрес.
+		SCp56Time2a time;	///< Время.
+	} SEI;
+
 	/// Время полученное от первичной станции.
 	SCp56Time2a stTime;
 
@@ -1290,6 +1299,11 @@ public:
 		class2 = 4;
 	}
 
+	uint8_t class1 = 0;
+	void sendClass1() {
+		class1 = 2;
+	}
+
 #endif
 
 
@@ -1315,6 +1329,11 @@ private:
 	SFrameVarLength m_stFrameVar;///< Кадр переменной длины.
 	EFrameStartCharacter m_eFrameSend;	///< Кадр подготовленный для передачи.
 
+	/// Элемент информации класса 1 для отправки.
+	SEI ei1;
+
+	/// Элемент информации класса 2 для отправки.
+	SEI ei2;
 
 	/**	Проверка необходимости передать новое сообщении класса 1.
 	 *
@@ -1547,28 +1566,38 @@ private:
 	 */
 	bool procFrameVarLenght(UAsdu asdu);
 
-	/**	Отправка события.
+	/**	Проверка наличия данных класса 1 на передачу.
 	 *
-	 * 	В данной функции возвращаются:
-	 * 	- адрес 254, false, 14 мая 		2012 08:23:16.098, acd = 1;
-	 * 	- адрес 255, true,  15 июня		2013 09:24:17.099, acd = 1;
-	 * 	- адрес 256, true,  16 июля		2014 10:25:18.100, acd = 1;
-	 * 	- адрес 257, true,  17 августа 	2015 11:26:19.101, acd = 0;
+	 *	Данная функция всегда возвращает отсутствие данных на передачу.
 	 *
-	 * 	@retval True Подготовлены данные для передачи.
-	 *	@retval False Данных нет.
-	 *
+	 * 	@retval False Нет данных на передачу.
+	 * 	@retval True Есть данные на передачу.
 	 */
-	virtual bool procEvent();
+	virtual bool checkEventClass1();
 
-	/**	Проверка наличия данных класса 1(2) на передачу.
+	/**	Проверка наличия данных класса 2 на передачу.
 	 *
 	 *	Данная функция всегда возвращает отсутсвие данных на передачу.
 	 *
 	 * 	@retval False Нет данных на передачу.
 	 * 	@retval True Есть данные на передачу.
 	 */
-	virtual bool checkEvent();
+	virtual bool checkEventClass2();
+
+	/**	Отправка события класса 1.
+	 *
+	 *	@retval True Подготовлены данные для передачи.
+	 *	@retval False Данных нет.
+	 */
+	bool procEventClass1();
+
+	/**	Отправка события класса 2.
+	 *
+	 * 	@retval True Подготовлены данные для передачи.
+	 *	@retval False Данных нет.
+	 *
+	 */
+	bool procEventClass2();
 
 	/**	Обработка ответа на команду опроса.
 	 *

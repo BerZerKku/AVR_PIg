@@ -27,6 +27,15 @@ m_pBuf(pBuf), m_u8Size(u8Size) {
 	m_bInterrog = false;
 	m_u8Fcb = false;
 
+
+	ei1.send= false;
+	ei2.send = false;
+
+#ifdef MY_TESTS
+	class1 = 0;
+	class2 = 0;
+#endif
+
 #ifndef NDEBUG
 	// ѕроверка размера пол€ управлени€.
 	enum {err_1 = 1 / (!!(sizeof(UControlField) == 1))};
@@ -185,20 +194,11 @@ CIec101::EError CIec101::readData() {
 	return error;
 }
 
-//	ѕроверка наличи€ данных класса 1(2) на передачу.
-bool CIec101::checkEvent() {
-	bool check = false;
-
-#ifdef MY_TESTS
-	check = (class2 > 0);
-#endif
-
-	return check;
-}
-
 //ѕроверка необходимости передать новое сообщении класса 1.
 uint8_t CIec101::isAcd() {
-	checkEvent() ? setFunc(FUNCTION_EVENT) : clrFunc(FUNCTION_EVENT);
+	if (isReset() && checkEventClass1()) {
+		setFunc(FUNCTION_EVENT_CLASS_1);
+	}
 
 	return isFunc(FUNCTION_IS_ACD) ? 1 : 0;
 }
@@ -302,9 +302,6 @@ void CIec101::readFrameFixLenght(SFrameFixLength &rFrame) {
 		}
 	}
 
-	if (checkEvent())
-		setFunc(FUNCTION_EVENT);
-
 	uint8_t fcb = rFrame.controlField.primary.fcb;
 
 	switch(rFrame.controlField.primary.function) {
@@ -344,9 +341,6 @@ void CIec101::readFrameVarLenght(SFrameVarLength &rFrame) {
 		setReadState();
 		return;
 	}
-
-	if (checkEvent())
-		setFunc(FUNCTION_EVENT);
 
 	uint8_t fcb = rFrame.controlField.primary.fcb;
 
@@ -400,12 +394,18 @@ void CIec101::sendFrame() {
 // ќтправка кадра с фиксированной длиной.
 void CIec101::sendFrameFixLenght() {
 	uint8_t *ptr = (uint8_t *) &m_stFrameFix;
+	uint8_t i = 0;
 
-	for(uint8_t i = 0; i < s_u8SizeOfFrameFixLenght; i++) {
-		m_pBuf[i] = *ptr++;
+//	m_stFrameFix.controlField.secondary.acd = isAcd();
+
+	while(i < (s_u8SizeOfFrameFixLenght - 2)) {
+		m_pBuf[i++] = *ptr++;
 	}
 
-	m_u8Cnt = s_u8SizeOfFrameFixLenght;
+	m_pBuf[i++] = getCrcFixFrame(m_stFrameFix);
+	m_pBuf[i++] = m_stFrameFix.stopCharacter;
+
+	m_u8Cnt = i;
 	setState(STATE_WRITE_READY);
 }
 
@@ -414,7 +414,7 @@ void CIec101::sendFrameVarLenght() {
 	uint8_t *ptr = (uint8_t *) &m_stFrameVar;
 	uint8_t i = 0;
 
-	m_stFrameVar.controlField.secondary.acd = isAcd();
+//	m_stFrameVar.controlField.secondary.acd = isAcd();
 
 	while(i < (m_stFrameVar.length1 + 4)) {
 		m_pBuf[i++] = *ptr++;
@@ -431,12 +431,12 @@ void CIec101::prepareFrameFixLenght(EFcSecondary eFunction) {
 	m_stFrameFix.startCharacter = FRAME_START_CHARACTER_FIX;
 	m_stFrameFix.controlField.common = 0;
 	m_stFrameFix.controlField.secondary.function = eFunction;
-	//	frame.controlField.secondary.dfc = 0;	// прием сообщений всегда возможен
+	m_stFrameFix.controlField.secondary.dfc = 0;	// прием сообщений всегда возможен
 	m_stFrameFix.controlField.secondary.acd = isAcd();
-	//	frame.controlField.secondary.prm = 0;	// направление передачи от вторичной станции = 0
-	//	frame.controlField.secondary.res = 0;	// резерв всегда 0
+	m_stFrameFix.controlField.secondary.prm = 0;	// направление передачи от вторичной станции = 0
+	m_stFrameFix.controlField.secondary.res = 0;	// резерв всегда 0
 	m_stFrameFix.linkAddress = getAddressLan();
-	m_stFrameFix.checkSum = getCrcFixFrame(m_stFrameFix);
+//	m_stFrameFix.checkSum = getCrcFixFrame(m_stFrameFix);
 	m_stFrameFix.stopCharacter = s_u8FrameStopCharacter;
 
 	m_eFrameSend = FRAME_START_CHARACTER_FIX;
@@ -452,11 +452,10 @@ void CIec101::prepareFrameVarLenght(ETypeId eId, ECot eCot, uint8_t u8SizeAsdu) 
 
 	m_stFrameVar.controlField.common = 0;
 	m_stFrameVar.controlField.secondary.function = RESPOND_USER_DATA;
-	// Acd будет заполнен позднее, перед отправкой кадра
-	//	frame.controlField.secondary.dfc = 0;		// прием сообщений всегда возможен
-//	m_stFrameVar.controlField.secondary.acd = isAcd();	// сообщение дл€ отправки
-	//	frame.controlField.secondary.prm = 0;		// направление передачи от вторичной станции = 0
-	//	frame.controlField.secondary.res = 0;		// резерв всегда 0
+	m_stFrameVar.controlField.secondary.dfc = 0;		// прием сообщений всегда возможен
+	m_stFrameVar.controlField.secondary.acd = isAcd();	// сообщение дл€ отправки
+	m_stFrameVar.controlField.secondary.prm = 0;		// направление передачи от вторичной станции = 0
+	m_stFrameVar.controlField.secondary.res = 0;		// резерв всегда 0
 
 	m_stFrameVar.linkAddress = getAddressLan();
 
@@ -558,12 +557,20 @@ void CIec101::procFrameFixLenghtUserData(SFrameFixLength &rFrame) {
 		return;
 	}
 
-	// ѕроверка на отправку данных класса 1 и 2
-	if (isFunc(FUNCTION_EVENT)) {
-		if (procEvent()) {
+	// ѕровекра на отправку данных класса 2
+	if (rFrame.controlField.primary.function == REQUEST_USER_DATA_CLASS_1) {
+		clrFunc(FUNCTION_EVENT_CLASS_1);
+		if (procEventClass1()) {
 			return;
 		}
-		clrFunc(FUNCTION_EVENT);
+	}
+
+	if (rFrame.controlField.primary.function == REQUEST_USER_DATA_CLASS_2) {
+		if (checkEventClass2()) {
+			if (procEventClass2()) {
+				return;
+			}
+		}
 	}
 
 	// ѕроверка на отправку данных опроса
@@ -604,31 +611,86 @@ bool CIec101::procFrameVarLenght(UAsdu asdu) {
 	return false;
 }
 
-// ќтправка событи€.
-bool CIec101::procEvent(void) {
-	bool state = false;
+//	ѕроверка наличи€ данных класса 1 на передачу.
+bool CIec101::checkEventClass1() {
+	bool check = false;
 
+	if (!ei1.send) {
 
 #ifdef MY_TESTS
-	SCp56Time2a time;
-	bool val = false;
-	uint16_t adr = 0;
+		//	 *  - адрес 250, true, 	10 июл€ 	2012 08:23:16.098, acd = 1;
+		//	 * 	- адрес 251, false, 11 августа	2013 09:24:17.099, acd = 0;
 
-	uint8_t cnt = 4 - class2;
+		if (class1 > 0) {
+			uint8_t cnt = 2 - class1;
+			class1--;
 
-	if (class2 > 0) {
-		adr = 254 + cnt;
-		val = (cnt != 0);
-		writeCp56Time2a(time, 12 + cnt, 5 + cnt, 14 + cnt, 8 + cnt, 23 + cnt,
-				16 + cnt, 98 + cnt);
+			ei1.adr = 250 + cnt;
+			ei1.val = (cnt == 0);
+			writeCp56Time2a(ei2.time, 12 + cnt, 7 + cnt, 10 + cnt, 8 + cnt,
+					23 + cnt,16 + cnt, 98 + cnt);
 
-		prepareFrameMSpTb1(adr, COT_SPONT, val, time);
-		class2--;
-		state = true;
-	}
+			ei1.send = true;
+		}
 #endif
 
-	return state;
+	}
+
+	return ei1.send;
+}
+
+//	ѕроверка наличи€ данных класса 2 на передачу.
+bool CIec101::checkEventClass2() {
+
+	if (!ei2.send) {
+
+#ifdef MY_TESTS
+		//	 *  - адрес 254, false, 14 ма€ 		2012 08:23:16.098, acd = 0;
+		//	 * 	- адрес 255, true,  15 июн€		2013 09:24:17.099, acd = 0;
+		//	 * 	- адрес 256, true,  16 июл€		2014 10:25:18.100, acd = 0;
+		//	 * 	- адрес 257, true,  17 августа 	2015 11:26:19.101, acd = 0;
+
+		if (class2 > 0) {
+			uint8_t cnt = 4 - class2;
+			class2--;
+
+			ei2.adr = 254 + cnt;
+			ei2.val = (cnt != 0);
+			writeCp56Time2a(ei2.time, 12 + cnt, 5 + cnt, 14 + cnt, 8 + cnt,
+					23 + cnt, 16 + cnt, 98 + cnt);
+			ei2.send = true;
+		}
+#endif
+
+	}
+
+	return ei2.send;
+}
+
+// ќтправка событи€ класса 1
+bool CIec101::procEventClass1(void) {
+	bool send = ei1.send;
+
+	ei1.send = false;
+
+	if (send) {
+		prepareFrameMSpTb1(ei1.adr, COT_SPONT, ei1.val, ei1.time);
+	}
+
+	return send;
+}
+
+// ќтправка событи€.
+bool CIec101::procEventClass2(void) {
+	bool send = ei2.send;
+
+	ei2.send = false;
+
+	if (send) {
+		prepareFrameMSpTb1(ei2.adr, COT_SPONT, ei2.val, ei2.time);
+	}
+
+	return send;
 }
 
 // ќбработка ответа на команду опроса.

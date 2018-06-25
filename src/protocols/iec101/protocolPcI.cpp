@@ -227,10 +227,6 @@ sParam_(sParam), CIec101(buf, size) {
 	for(uint16_t i = 0; i < IE2_MAX; i++) {
 		m_flags[i] = getValue(static_cast<EInfoElement2> (i));
 	}
-
-	ei2.send = false;
-	ei2.val = false;
-	ei2.adr = 0;
 }
 
 // Функция отправки сообщения.
@@ -239,7 +235,7 @@ uint8_t TProtocolPcI::send() {
 }
 
 // Проверка наличия данных класса 1(2) на передачу.
-bool TProtocolPcI::checkEvent() {
+bool TProtocolPcI::checkEventClass1() {
 
 	if ((!ei1.send) && (sParam_->jrnScada.isReadyToSend())) {
 		TJrnSCADA *jrn = &sParam_->jrnScada;
@@ -269,49 +265,69 @@ bool TProtocolPcI::checkEvent() {
 		ei1.time.minutes 		= jrn->dtime.getMinute();
 		ei1.time.milliseconds 	= jrn->dtime.getSecond() * 1000;
 		ei1.time.milliseconds  += jrn->dtime.getMsSecond();
-	} else if (!ei2.send) {
-		for(uint8_t i = 0; i < IE2_MAX; i++) {
-			bool val = getValue(static_cast<EInfoElement2> (i));
-
-			if (m_flags[i] != val) {
-				m_flags[i] = val;
-
-				ei2.val = val;
-				ei2.adr = pgm_read_word(&c_adrIE2[i]);
-
-				ei2.time.years 			= sParam_->DateTime.getYear();
-				ei2.time.months 		= sParam_->DateTime.getMonth();
-				ei2.time.dayOfMonth 	= sParam_->DateTime.getDay();
-				ei2.time.hours 			= sParam_->DateTime.getHour();
-				ei2.time.minutes 		= sParam_->DateTime.getMinute();
-				ei2.time.milliseconds 	= sParam_->DateTime.getSecond()*1000;
-				ei2.time.milliseconds  += sParam_->DateTime.getMsSecond();
-
-				ei2.send = true;
-				break;
-			}
-		}
 	}
+//	else if (!ei2.send) {
+//		for(uint8_t i = 0; i < IE2_MAX; i++) {
+//			bool val = getValue(static_cast<EInfoElement2> (i));
+//
+//			if (m_flags[i] != val) {
+//				m_flags[i] = val;
+//
+//				ei2.val = val;
+//				ei2.adr = pgm_read_word(&c_adrIE2[i]);
+//
+//				ei2.time.years 			= sParam_->DateTime.getYear();
+//				ei2.time.months 		= sParam_->DateTime.getMonth();
+//				ei2.time.dayOfMonth 	= sParam_->DateTime.getDay();
+//				ei2.time.hours 			= sParam_->DateTime.getHour();
+//				ei2.time.minutes 		= sParam_->DateTime.getMinute();
+//				ei2.time.milliseconds 	= sParam_->DateTime.getSecond()*1000;
+//				ei2.time.milliseconds  += sParam_->DateTime.getMsSecond();
+//
+//				ei2.send = true;
+//				break;
+//			}
+//		}
+//	}
 
-	return (ei1.send | ei2.send);
+	return (ei1.send);
 }
 
 // Отправка события.
-bool TProtocolPcI::procEvent(void) {
+bool TProtocolPcI::procEventClass2(void) {
 
-	if (!(ei1.send || ei2.send))
-		return false;
+	for(uint8_t i = 0; i < IE2_MAX; i++) {
+		bool val = getValue(static_cast<EInfoElement2> (i));
 
-	if (ei1.send) {
-		prepareFrameMSpTb1(ei1.adr, COT_SPONT, ei1.val, ei1.time);
-		sParam_->jrnScada.setReadyToEvent();
-		ei1.send = false;
-	} else if (ei2.send) {
-		prepareFrameMSpTb1(ei2.adr, COT_SPONT, ei2.val, ei2.time);
-		ei2.send = false;
+		if (m_flags[i] != val) {
+			m_flags[i] = val;
+
+			uint16_t adr = pgm_read_word(&c_adrIE2[i]);
+			SCp56Time2a time;
+
+			time.years 			= sParam_->DateTime.getYear();
+			time.months 		= sParam_->DateTime.getMonth();
+			time.dayOfMonth 	= sParam_->DateTime.getDay();
+			time.hours 			= sParam_->DateTime.getHour();
+			time.minutes 		= sParam_->DateTime.getMinute();
+			time.milliseconds 	= sParam_->DateTime.getSecond()*1000;
+			time.milliseconds  += sParam_->DateTime.getMsSecond();
+
+			prepareFrameMSpTb1(adr, COT_SPONT, val, time);
+			return true;
+		}
 	}
 
-	return true;
+	return false;
+
+//	if (ei1.send) {
+//		prepareFrameMSpTb1(ei1.adr, COT_SPONT, ei1.val, ei1.time);
+//		sParam_->jrnScada.setReadyToEvent();
+//		ei1.send = false;
+//	} else if (ei2.send) {
+//		prepareFrameMSpTb1(ei2.adr, COT_SPONT, ei2.val, ei2.time);
+//		ei2.send = false;
+//	}
 }
 
 // Обработка ответа на команду опроса.

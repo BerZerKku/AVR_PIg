@@ -1070,7 +1070,7 @@ TEST_F(TIec101_Full, readData_Iterrog) {
 
 	{
 		printTestName(" Кадр с ответом подтверждения опроса. \n");
-		uint8_t req[] = FIX_FRAME_IN(10, true);
+		uint8_t req[] = FIX_FRAME_IN(11, true);
 		uint8_t resp[] = {
 				FRAME_START_CHARACTER_VAR, 0x09, 0x09, FRAME_START_CHARACTER_VAR,
 				0x28,		// RESPOND_USER_DATA + acd = 1
@@ -1119,7 +1119,7 @@ TEST_F(TIec101_Full, readData_Iterrog) {
 			printTestName(" Данные опроса. \n" );
 			posMsg += sprintf(&msg[posMsg], " Адрес %d. \n", i);
 			if (i <= 204) {
-				uint8_t req[] = FIX_FRAME_IN(10, true);
+				uint8_t req[] = FIX_FRAME_IN(11, true);
 				resp[10] = (uint8_t) i;
 				resp[11] = (uint8_t) (i >> 8);
 				if (i <= 202) {
@@ -1142,7 +1142,7 @@ TEST_F(TIec101_Full, readData_Iterrog) {
 
 	{
 		printTestName(" Кадр завершения опроса. \n");
-		uint8_t req[] = FIX_FRAME_IN(10, true);
+		uint8_t req[] = FIX_FRAME_IN(11, true);
 		uint8_t resp[] = {
 				FRAME_START_CHARACTER_VAR, 0x09, 0x09, FRAME_START_CHARACTER_VAR,
 				0x08,		// RESPOND_USER_DATA + acd = 0
@@ -1164,15 +1164,15 @@ TEST_F(TIec101_Full, readData_Iterrog) {
 	}
 }
 
-TEST_F(TIec101_Full, readData_Events) {
+TEST_F(TIec101_Full, readData_Events_Class2) {
 	iec101->setEnable();
 	iec101->setAddressLan(1);
 	resetRemoteLink();
 	ASSERT_TRUE(iec101->isReset()) << " Протокол не сброшен. ";
 
 	{
-			printTestName(" Отсутсвие данных класса 1(2) на передачу. \n");
-			uint8_t req[] = FIX_FRAME_IN(10, true);
+			printTestName(" Отсутствие данных класса 2 на передачу. \n");
+			uint8_t req[] = FIX_FRAME_IN(11, true);
 			uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x09, 0x01, 0x0A, FRAME_STOP_CHARCTER};
 
 			putData(iec101, req, sizeof(req));
@@ -1181,10 +1181,12 @@ TEST_F(TIec101_Full, readData_Events) {
 			ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 	}
 
-	// Устанавливаем флаг наличия событий
-	iec101->sendClass2();
+
 
 	{
+		// Устанавливаем флаг наличия событий
+		iec101->sendClass2();
+
 		uint16_t adr = 254;
 		uint16_t ms = 98;
 		uint16_t sec = 16;
@@ -1194,9 +1196,9 @@ TEST_F(TIec101_Full, readData_Events) {
 		uint8_t hour = 8;
 		uint8_t min = 23;
 		for(uint8_t i = 0; i < 4; i++) {
-			printTestName(" Проверка передаваемых данных класса 1(2). \n");
+			printTestName(" Проверка передаваемых данных класса 2. \n");
 			posMsg += sprintf(&msg[posMsg], " Шаг %d, Адрес %d. \n", i, adr);
-			uint8_t req[] = FIX_FRAME_IN(10, true);
+			uint8_t req[] = FIX_FRAME_IN(11, true);
 			uint8_t resp[] = {
 					FRAME_START_CHARACTER_VAR, 0x10, 0x10, FRAME_START_CHARACTER_VAR,
 					0x28,		// RESPOND_USER_DATA + acd = 1
@@ -1216,7 +1218,7 @@ TEST_F(TIec101_Full, readData_Events) {
 					0x00, 		// crc
 					FRAME_STOP_CHARCTER
 			};
-			resp[4] = (i == 3) ? 0x08 : 0x28;
+			resp[4] = 0x08; //(i == 3) ? 0x08 : 0x28;
 			resp[12] = (adr == 254) ? 0x00 : 0x01;
 			*((uint16_t *) &resp[10]) = adr++;
 			*((uint16_t *) &resp[13]) = (sec++ * 1000) + ms++;
@@ -1234,8 +1236,8 @@ TEST_F(TIec101_Full, readData_Events) {
 	}
 
 	{
-		printTestName(" Отсутсвие данных класса 1(2) на передачу. \n");
-		uint8_t req[] = FIX_FRAME_IN(10, true);
+		printTestName(" Отсутсвие данных класса 2 на передачу. \n");
+		uint8_t req[] = FIX_FRAME_IN(11, true);
 		uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x09, 0x01, 0x0A, FRAME_STOP_CHARCTER};
 
 		putData(iec101, req, sizeof(req));
@@ -1244,10 +1246,10 @@ TEST_F(TIec101_Full, readData_Events) {
 		ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 	}
 
-	// Устанавливаем флаг наличия событий
-	iec101->sendClass2();
 
 	{
+		// Устанавливаем флаг наличия событий
+		iec101->sendClass2();
 		{
 			uint16_t adr = 254;
 			uint16_t ms = 98;
@@ -1258,9 +1260,9 @@ TEST_F(TIec101_Full, readData_Events) {
 			uint8_t hour = 8;
 			uint8_t min = 23;
 			for(uint8_t j = 0; j < 8; j++) {
-				printTestName(" Проверка повтора передачи данных класса 1(2). \n");
+				printTestName(" Проверка повтора передачи данных класса 2. \n");
 				posMsg += sprintf(&msg[posMsg], " Шаг %d, Адрес %d. \n", j, adr);
-				uint8_t req[] = FIX_FRAME_IN(10, ((j % 2) == 0));
+				uint8_t req[] = FIX_FRAME_IN(11, ((j % 2) == 0));
 				uint8_t resp[] = {
 						FRAME_START_CHARACTER_VAR, 0x10, 0x10, FRAME_START_CHARACTER_VAR,
 						0x28,		// RESPOND_USER_DATA + acd = 1
@@ -1280,7 +1282,7 @@ TEST_F(TIec101_Full, readData_Events) {
 						0x00, 		// crc
 						FRAME_STOP_CHARCTER
 				};
-				resp[4] = ((j / 2) == 3) ? 0x08 : 0x28;
+				resp[4] = 0x08; //((j / 2) == 3) ? 0x08 : 0x28;
 				resp[12] = (adr == 254) ? 0x00 : 0x01;
 				*((uint16_t *) &resp[10]) = adr;
 				*((uint16_t *) &resp[13]) = (sec * 1000) + ms;
@@ -1307,6 +1309,175 @@ TEST_F(TIec101_Full, readData_Events) {
 			}
 		}
 	}
+}
 
+TEST_F(TIec101_Full, readData_Events_Class1) {
+	iec101->setEnable();
+	iec101->setAddressLan(1);
+	resetRemoteLink();
+	ASSERT_TRUE(iec101->isReset()) << " Протокол не сброшен. ";
 
+	{
+			printTestName(" Отсутсвие данных класса 1 на передачу (ack=0 в команде класса 2). \n");
+			uint8_t req[] = FIX_FRAME_IN(10, true);
+			uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x09, 0x01, 0x0A, FRAME_STOP_CHARCTER};
+
+			putData(iec101, req, sizeof(req));
+			ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+			ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
+			ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
+	}
+
+	{
+		printTestName(" Отсутсвие данных класса 1 на передачу. \n");
+		uint8_t req[] = FIX_FRAME_IN(11, true);
+		uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x09, 0x01, 0x0A, FRAME_STOP_CHARCTER};
+
+		putData(iec101, req, sizeof(req));
+		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
+		ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
+	}
+
+	{
+		printTestName(" Наличие данных класса 1 на передачу. \n");
+
+		iec101->sendClass1();
+
+		uint8_t req[] = FIX_FRAME_IN(11, true);
+		uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x29, 0x01, 0x0A, FRAME_STOP_CHARCTER};
+
+		putData(iec101, req, sizeof(req));
+		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
+		ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
+	}
+
+//
+//	{
+//		// Устанавливаем флаг наличия событий
+//		iec101->sendClass2();
+//
+//		uint16_t adr = 254;
+//		uint16_t ms = 98;
+//		uint16_t sec = 16;
+//		uint8_t year = 12;
+//		uint8_t month = 5;
+//		uint8_t day = 14;
+//		uint8_t hour = 8;
+//		uint8_t min = 23;
+//		for(uint8_t i = 0; i < 4; i++) {
+//			printTestName(" Проверка передаваемых данных класса 2. \n");
+//			posMsg += sprintf(&msg[posMsg], " Шаг %d, Адрес %d. \n", i, adr);
+//			uint8_t req[] = FIX_FRAME_IN(11, true);
+//			uint8_t resp[] = {
+//					FRAME_START_CHARACTER_VAR, 0x10, 0x10, FRAME_START_CHARACTER_VAR,
+//					0x28,		// RESPOND_USER_DATA + acd = 1
+//					0x01,		// link address
+//					0x1E,		// TYPE_ID_M_SP_TB_1
+//					0x01,		// variableStructureQualifier
+//					0x03,		// COT = COT_SPONT
+//					0x01,		// common address
+//					0x00, 0x00,	// information object address
+//					0x00,		// siq
+//					0x39, 0x30,	// ms
+//					0x06,		// min
+//					0x07,		// hours
+//					0x08,		// days
+//					0x09,		// months
+//					0x0A,		// years
+//					0x00, 		// crc
+//					FRAME_STOP_CHARCTER
+//			};
+//			resp[4] = 0x08; //(i == 3) ? 0x08 : 0x28;
+//			resp[12] = (adr == 254) ? 0x00 : 0x01;
+//			*((uint16_t *) &resp[10]) = adr++;
+//			*((uint16_t *) &resp[13]) = (sec++ * 1000) + ms++;
+//			resp[15] = min++;
+//			resp[16] = hour++;
+//			resp[17] = day++;
+//			resp[18] = month++;
+//			resp[19] = year++;
+//			resp[sizeof(resp) - 2] = getCrcVarLenght(resp);	// подсчет CRC
+//			putData(iec101, req, sizeof(req));
+//			ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+//			ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
+//			ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
+//		}
+//	}
+//
+//	{
+//		printTestName(" Отсутсвие данных класса 2 на передачу. \n");
+//		uint8_t req[] = FIX_FRAME_IN(11, true);
+//		uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x09, 0x01, 0x0A, FRAME_STOP_CHARCTER};
+//
+//		putData(iec101, req, sizeof(req));
+//		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+//		ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
+//		ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
+//	}
+//
+//
+//	{
+//		// Устанавливаем флаг наличия событий
+//		iec101->sendClass2();
+//		{
+//			uint16_t adr = 254;
+//			uint16_t ms = 98;
+//			uint16_t sec = 16;
+//			uint8_t year = 12;
+//			uint8_t month = 5;
+//			uint8_t day = 14;
+//			uint8_t hour = 8;
+//			uint8_t min = 23;
+//			for(uint8_t j = 0; j < 8; j++) {
+//				printTestName(" Проверка повтора передачи данных класса 2. \n");
+//				posMsg += sprintf(&msg[posMsg], " Шаг %d, Адрес %d. \n", j, adr);
+//				uint8_t req[] = FIX_FRAME_IN(11, ((j % 2) == 0));
+//				uint8_t resp[] = {
+//						FRAME_START_CHARACTER_VAR, 0x10, 0x10, FRAME_START_CHARACTER_VAR,
+//						0x28,		// RESPOND_USER_DATA + acd = 1
+//						0x01,		// link address
+//						0x1E,		// TYPE_ID_M_SP_TB_1
+//						0x01,		// variableStructureQualifier
+//						0x03,		// COT = COT_SPONT
+//						0x01,		// common address
+//						0x00, 0x00,	// information object address
+//						0x00,		// siq
+//						0x39, 0x30,	// ms
+//						0x06,		// min
+//						0x07,		// hours
+//						0x08,		// days
+//						0x09,		// months
+//						0x0A,		// years
+//						0x00, 		// crc
+//						FRAME_STOP_CHARCTER
+//				};
+//				resp[4] = 0x08; //((j / 2) == 3) ? 0x08 : 0x28;
+//				resp[12] = (adr == 254) ? 0x00 : 0x01;
+//				*((uint16_t *) &resp[10]) = adr;
+//				*((uint16_t *) &resp[13]) = (sec * 1000) + ms;
+//				resp[15] = min;
+//				resp[16] = hour;
+//				resp[17] = day;
+//				resp[18] = month;
+//				resp[19] = year;
+//				if ((j % 2) == 1) {
+//					adr++;
+//					ms++;
+//					sec++;
+//					min++;
+//					hour++;
+//					day++;
+//					month++;
+//					year++;
+//				}
+//				resp[sizeof(resp) - 2] = getCrcVarLenght(resp);	// подсчет CRC
+//				putData(iec101, req, sizeof(req));
+//				ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+//				ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
+//				ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
+//			}
+//		}
+//	}
 }
