@@ -196,8 +196,12 @@ CIec101::EError CIec101::readData() {
 
 //Проверка необходимости передать новое сообщении класса 1.
 uint8_t CIec101::isAcd() {
-	if (isReset() && checkEventClass1()) {
-		setFunc(FUNCTION_EVENT_CLASS_1);
+	if (isReset()) {
+		if (!isFunc(FUNCTION_EVENT_CLASS_1)) {
+			if (checkEventClass1(ei1.adr, ei1.val, ei1.time)) {
+				setFunc(FUNCTION_EVENT_CLASS_1);
+			}
+		}
 	}
 
 	return isFunc(FUNCTION_IS_ACD) ? 1 : 0;
@@ -396,7 +400,7 @@ void CIec101::sendFrameFixLenght() {
 	uint8_t *ptr = (uint8_t *) &m_stFrameFix;
 	uint8_t i = 0;
 
-//	m_stFrameFix.controlField.secondary.acd = isAcd();
+	m_stFrameFix.controlField.secondary.acd = isAcd();
 
 	while(i < (s_u8SizeOfFrameFixLenght - 2)) {
 		m_pBuf[i++] = *ptr++;
@@ -414,7 +418,7 @@ void CIec101::sendFrameVarLenght() {
 	uint8_t *ptr = (uint8_t *) &m_stFrameVar;
 	uint8_t i = 0;
 
-//	m_stFrameVar.controlField.secondary.acd = isAcd();
+	m_stFrameVar.controlField.secondary.acd = isAcd();
 
 	while(i < (m_stFrameVar.length1 + 4)) {
 		m_pBuf[i++] = *ptr++;
@@ -432,7 +436,7 @@ void CIec101::prepareFrameFixLenght(EFcSecondary eFunction) {
 	m_stFrameFix.controlField.common = 0;
 	m_stFrameFix.controlField.secondary.function = eFunction;
 	m_stFrameFix.controlField.secondary.dfc = 0;	// прием сообщений всегда возможен
-	m_stFrameFix.controlField.secondary.acd = isAcd();
+//	m_stFrameFix.controlField.secondary.acd = isAcd();
 	m_stFrameFix.controlField.secondary.prm = 0;	// направление передачи от вторичной станции = 0
 	m_stFrameFix.controlField.secondary.res = 0;	// резерв всегда 0
 	m_stFrameFix.linkAddress = getAddressLan();
@@ -453,7 +457,7 @@ void CIec101::prepareFrameVarLenght(ETypeId eId, ECot eCot, uint8_t u8SizeAsdu) 
 	m_stFrameVar.controlField.common = 0;
 	m_stFrameVar.controlField.secondary.function = RESPOND_USER_DATA;
 	m_stFrameVar.controlField.secondary.dfc = 0;		// прием сообщений всегда возможен
-	m_stFrameVar.controlField.secondary.acd = isAcd();	// сообщение для отправки
+//	m_stFrameVar.controlField.secondary.acd = isAcd();	// сообщение для отправки
 	m_stFrameVar.controlField.secondary.prm = 0;		// направление передачи от вторичной станции = 0
 	m_stFrameVar.controlField.secondary.res = 0;		// резерв всегда 0
 
@@ -557,19 +561,25 @@ void CIec101::procFrameFixLenghtUserData(SFrameFixLength &rFrame) {
 		return;
 	}
 
-	// Провекра на отправку данных класса 2
+	// Провекра на отправку данных класса 1
 	if (rFrame.controlField.primary.function == REQUEST_USER_DATA_CLASS_1) {
-		clrFunc(FUNCTION_EVENT_CLASS_1);
-		if (procEventClass1()) {
+		if (isFunc(FUNCTION_EVENT_CLASS_1)) {
+			clrFunc(FUNCTION_EVENT_CLASS_1);
+			procEventClass1();
 			return;
 		}
 	}
 
+	// Провекра на отправку данных класса 2
 	if (rFrame.controlField.primary.function == REQUEST_USER_DATA_CLASS_2) {
-		if (checkEventClass2()) {
-			if (procEventClass2()) {
-				return;
-			}
+		if (isFunc(FUNCTION_EVENT_CLASS_1)) {
+			prepareFrameFixLenght(RESPOND_NACK);
+			return;
+		}
+
+		if (checkEventClass2(ei2.adr, ei2.val, ei2.time)) {
+			procEventClass2();
+			return;
 		}
 	}
 
@@ -612,85 +622,66 @@ bool CIec101::procFrameVarLenght(UAsdu asdu) {
 }
 
 //	Проверка наличия данных класса 1 на передачу.
-bool CIec101::checkEventClass1() {
-	bool check = false;
-
-	if (!ei1.send) {
+bool CIec101::checkEventClass1(uint16_t &adr, bool &val, SCp56Time2a &time) {
 
 #ifdef MY_TESTS
-		//	 *  - адрес 250, true, 	10 июля 	2012 08:23:16.098, acd = 1;
-		//	 * 	- адрес 251, false, 11 августа	2013 09:24:17.099, acd = 0;
+	//	 *  - адрес 250, true, 	10 июля 	2012 08:23:16.098, acd = 1;
+	//	 * 	- адрес 251, false, 11 августа	2013 09:24:17.099, acd = 0;
 
-		if (class1 > 0) {
-			uint8_t cnt = 2 - class1;
-			class1--;
+	if (class1 > 0) {
+		uint8_t cnt = 2 - class1;
+		class1--;
 
-			ei1.adr = 250 + cnt;
-			ei1.val = (cnt == 0);
-			writeCp56Time2a(ei2.time, 12 + cnt, 7 + cnt, 10 + cnt, 8 + cnt,
-					23 + cnt,16 + cnt, 98 + cnt);
+		adr = 250 + cnt;
+		val = (cnt == 0);
+		writeCp56Time2a(time, 12 + cnt, 7 + cnt, 10 + cnt, 8 + cnt,
+				23 + cnt, 16 + cnt, 98 + cnt);
 
-			ei1.send = true;
-		}
+		return true;
+	}
 #endif
 
-	}
-
-	return ei1.send;
+	return false;
 }
 
 //	Проверка наличия данных класса 2 на передачу.
-bool CIec101::checkEventClass2() {
-
-	if (!ei2.send) {
+bool CIec101::checkEventClass2(uint16_t &adr, bool &val, SCp56Time2a &time) {
 
 #ifdef MY_TESTS
-		//	 *  - адрес 254, false, 14 мая 		2012 08:23:16.098, acd = 0;
-		//	 * 	- адрес 255, true,  15 июня		2013 09:24:17.099, acd = 0;
-		//	 * 	- адрес 256, true,  16 июля		2014 10:25:18.100, acd = 0;
-		//	 * 	- адрес 257, true,  17 августа 	2015 11:26:19.101, acd = 0;
+	//	 *  - адрес 254, false, 14 мая 		2012 08:23:16.098, acd = 0;
+	//	 * 	- адрес 255, true,  15 июня		2013 09:24:17.099, acd = 0;
+	//	 * 	- адрес 256, true,  16 июля		2014 10:25:18.100, acd = 0;
+	//	 * 	- адрес 257, true,  17 августа 	2015 11:26:19.101, acd = 0;
 
-		if (class2 > 0) {
-			uint8_t cnt = 4 - class2;
-			class2--;
+	if (class2 > 0) {
+		uint8_t cnt = 4 - class2;
+		class2--;
 
-			ei2.adr = 254 + cnt;
-			ei2.val = (cnt != 0);
-			writeCp56Time2a(ei2.time, 12 + cnt, 5 + cnt, 14 + cnt, 8 + cnt,
-					23 + cnt, 16 + cnt, 98 + cnt);
-			ei2.send = true;
-		}
+		adr = 254 + cnt;
+		val = (cnt != 0);
+		writeCp56Time2a(time, 12 + cnt, 5 + cnt, 14 + cnt, 8 + cnt,
+				23 + cnt, 16 + cnt, 98 + cnt);
+		return true;
+	}
 #endif
 
-	}
-
-	return ei2.send;
+	return false;
 }
 
 // Отправка события класса 1
 bool CIec101::procEventClass1(void) {
-	bool send = ei1.send;
 
-	ei1.send = false;
+	prepareFrameMSpTb1(ei1.adr, COT_SPONT, ei1.val, ei1.time);
 
-	if (send) {
-		prepareFrameMSpTb1(ei1.adr, COT_SPONT, ei1.val, ei1.time);
-	}
-
-	return send;
+	return true;
 }
 
 // Отправка события.
 bool CIec101::procEventClass2(void) {
-	bool send = ei2.send;
 
-	ei2.send = false;
+	prepareFrameMSpTb1(ei2.adr, COT_SPONT, ei2.val, ei2.time);
 
-	if (send) {
-		prepareFrameMSpTb1(ei2.adr, COT_SPONT, ei2.val, ei2.time);
-	}
-
-	return send;
+	return true;
 }
 
 // Обработка ответа на команду опроса.

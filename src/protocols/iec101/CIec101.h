@@ -10,7 +10,11 @@
 
 #include <stdint.h>
 #ifdef AVR
-#include "debug.h"
+	#include "debug.h"
+#endif
+
+#ifdef MY_TESTS
+//	#include <stdio.h>
 #endif
 
 /**	\defgroup Notation Стиль оформления.
@@ -1024,7 +1028,7 @@ public:
 	} EError;
 
 	///	\brief Элемент информации.
-	typedef struct __attribute__ ((__packed__)) {
+	typedef struct {
 		bool send;			///< True - данные готовы для передачи.
 		bool val;			///< Значение.
 		uint16_t adr;		///< Адрес.
@@ -1294,12 +1298,12 @@ public:
 	 *
 	 * 	Используется только для тестирования.
 	 */
-	uint8_t class2 = 0;
+	uint8_t class2;
 	void sendClass2() {
 		class2 = 4;
 	}
 
-	uint8_t class1 = 0;
+	uint8_t class1;
 	void sendClass1() {
 		class1 = 2;
 	}
@@ -1329,17 +1333,14 @@ private:
 	SFrameVarLength m_stFrameVar;///< Кадр переменной длины.
 	EFrameStartCharacter m_eFrameSend;	///< Кадр подготовленный для передачи.
 
-	/// Элемент информации класса 1 для отправки.
-	SEI ei1;
-
-	/// Элемент информации класса 2 для отправки.
-	SEI ei2;
+	SEI ei1;	/// Элемент информации класса 1 для отправки.
+	SEI ei2;	/// Элемент информации класса 2 для отправки.
 
 	/**	Проверка необходимости передать новое сообщении класса 1.
 	 *
 	 *	Флаг наличия данных для передачи устанавливается, если:
 	 *	- Установлена функция текущего состояния - опрос (iterrogation);
-	 *	- Имеются данные класса 1(2) на передачу.
+	 *	- Имеются данные класса 1 на передачу.
 	 *
 	 *	@retval 0 Нет данных на передачу.
 	 *	@retval 1 Есть данные на передачу.
@@ -1568,21 +1569,25 @@ private:
 
 	/**	Проверка наличия данных класса 1 на передачу.
 	 *
-	 *	Данная функция всегда возвращает отсутствие данных на передачу.
-	 *
+	 *	@param adr[out] Адрес.
+	 *	@param val[out] Значение.
+	 *	@param time[out] Дата и время.
 	 * 	@retval False Нет данных на передачу.
 	 * 	@retval True Есть данные на передачу.
 	 */
-	virtual bool checkEventClass1();
+	virtual bool checkEventClass1(uint16_t &adr, bool &val, SCp56Time2a &time);
 
 	/**	Проверка наличия данных класса 2 на передачу.
 	 *
 	 *	Данная функция всегда возвращает отсутсвие данных на передачу.
 	 *
+	 *	@param adr[out] Адрес.
+	 *	@param val[out] Значение.
+	 *	@param time[out] Дата и время.
 	 * 	@retval False Нет данных на передачу.
 	 * 	@retval True Есть данные на передачу.
 	 */
-	virtual bool checkEventClass2();
+	virtual bool checkEventClass2(uint16_t &adr, bool &val, SCp56Time2a &time);
 
 	/**	Отправка события класса 1.
 	 *
