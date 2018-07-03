@@ -936,7 +936,7 @@ private:
 	typedef struct __attribute__((__packed__)) {
 		uint8_t 		startCharacter;	///< Байт начала сообщения.
 		UControlField  	controlField;	///< Поле управления.
-		uint8_t 		linkAddress;	///< Поле адреса (общий адрес ASDU).
+		uint8_t 		linkAddress;	///< Поле адреса (link).
 		uint8_t 		checkSum;		///< Контрольная сумма пользовательских данных.
 		uint8_t 		stopCharacter;	///< Слово окончания сообщения.
 	} SFrameFixLength;
@@ -984,7 +984,7 @@ private:
 		uint8_t length2;			///< лина пользовательских данных (повтор)
 		uint8_t startCharacter2;	///< Слово начала сообщения.
 		UControlField  controlField;	///< Поле управления.
-		uint8_t linkAddress;		///< Поле адреса (общий адрес ASDU).
+		uint8_t linkAddress;		///< Поле адреса (link).
 		UAsdu asdu;					///< Блок данных прикладного уровня (пользовательские данные).
 		uint8_t checkSum;			///< Контрольная сумма пользовательских данных.
 		uint8_t stopCharacter;		///< Слово окнончания сообщения.
@@ -1578,8 +1578,6 @@ private:
 	virtual bool checkEventClass1(uint16_t &adr, bool &val, SCp56Time2a &time);
 
 	/**	Проверка наличия данных класса 2 на передачу.
-	 *
-	 *	Данная функция всегда возвращает отсутсвие данных на передачу.
 	 *
 	 *	@param adr[out] Адрес.
 	 *	@param val[out] Значение.

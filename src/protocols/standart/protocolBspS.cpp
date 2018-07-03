@@ -487,7 +487,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 					jrn->setJrn(buf[B9]);
 					jrn->setEvent(buf[B10]);
 					jrn->setCom(buf[B11]);
-					// B12
+					jrn->setComSource(buf[B12]);
 					// B13
 					jrn->dtime.setYear(BCD_TO_BIN(buf[B14]));
 					jrn->dtime.setMonth(BCD_TO_BIN(buf[B15]));

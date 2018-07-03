@@ -56,14 +56,17 @@
 
 class TProtocolPcI : public CIec101{
 
-	// Адрес первой команды передатчика (данные класс 1).
-	static const uint16_t c_adrIe1PrdCom1 = 700;
+	// Адрес первого значения в журнале событий (данные класс 1).
+	static const uint16_t c_adrIe1Event1 = 700;
+
+	// Адрес первой команды передатчика (ДВ) (данные класс 1).
+	static const uint16_t c_adrIe1PrdDCom1 = 740;
+
+	// Адрес первой команды передатчика (ЦПП) (данные класс 1).
+	static const uint16_t c_adrIe1PrdCCom1 = 772;
 
 	// Адрес первой команды приемника (данные класс 1).
-	static const uint16_t c_adrIe1PrmCom1 = 800;
-
-	// Адрес первого значения в журнале событий (данные класс 1).
-	static const uint16_t c_adrIe1Event1 = 900;
+	static const uint16_t c_adrIe1PrmCom1 = 804;
 
 	/// Список элементов информации класса 2.
 	typedef enum __attribute__ ((__packed__)) {
@@ -285,35 +288,25 @@ public:
 	 */
 	uint8_t send();
 
-	/**	Проверка наличия данных класса 1(2) на передачу.
+	/**	Проверка наличия данных класса 1 на передачу.
 	 *
-	 *	В данной функции проверяются:
-	 *	- состояние IE_ERROR;
-	 *	- состояние IE_WARNING;
-	 *	- состояние IE_PRD_COM;
-	 *	- состояние IE_PRM_COM;
-	 *	- TODO Проверяется наличие данных для передачи.
-	 *	- TODO Проверяются счетчики журналов и при необходимости формируется
-	 *	запрос в БСП.
-	 *
+	 *	@param adr[out] Адрес.
+	 *	@param val[out] Значение.
+	 *	@param time[out] Дата и время.
 	 * 	@retval False Нет данных на передачу.
 	 * 	@retval True Есть данные на передачу.
 	 */
-	virtual bool checkEventClass1();
+	virtual bool checkEventClass1(uint16_t &adr, bool &val, SCp56Time2a &time);
 
-	/**	Отправка события.
+	/**	Проверка наличия данных класса 2 на передачу.
 	 *
-	 * 	В данной функции возвращаются:
-	 * 	- состояние IE_ERROR;
-	 *	- состояние IE_WARNING;
-	 *	- состояние IE_PRD_COM;
-	 *	- состояние IE_PRM_COM;
-	 *
-	 * 	@retval True Подготовлены данные для передачи.
-	 *	@retval False Данных нет.
-	 *
+	 *	@param adr[out] Адрес.
+	 *	@param val[out] Значение.
+	 *	@param time[out] Дата и время.
+	 * 	@retval False Нет данных на передачу.
+	 * 	@retval True Есть данные на передачу.
 	 */
-	virtual bool procEventClass2();
+	virtual bool checkEventClass2(uint16_t &adr, bool &val, SCp56Time2a &time);
 
 
 

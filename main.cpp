@@ -330,7 +330,7 @@ static void setProtocol(TProtocol::PROTOCOL protocol, uint16_t baud) {
 		case TProtocol::IEC_101:
 			protPCi.setTick(baud, 50);
 			protPCi.setEnable();
-			menu.sParam.jrnScada.setReadyToEvent();
+			menu.sParam.jrnScada.setReadyToRead();
 //			protPCm.setDisable();
 //			protPCs.setDisable();
 			break;

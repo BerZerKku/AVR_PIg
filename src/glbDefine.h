@@ -2481,14 +2481,14 @@ public:
 
 	TJrnSCADA() {
 		m_u8Com = 0;
+		m_u8ComSource = 0;
 		m_u8Event = 0;
 		m_eJrn = GB_DEVICE_K400_MAX;
 
-		m_eState = STATE_REC;
+		m_eState = STATE_IDLE;
 	};
 
 	TDataTime dtime;
-
 
 	/// Установка события.
 	void setEvent(uint8_t val) {
@@ -2508,6 +2508,20 @@ public:
 	/// Возвращает номер команды.
 	uint8_t getCom() const {
 		return m_u8Com;
+	}
+
+	/// Установка источника сигнала
+	void setComSource(uint8_t source) {
+		m_u8ComSource = source;
+	}
+
+	/** Возвращает источник сигнала
+	 *
+	 * 	@retval 0 - дискретный вход.
+	 * 	@retval 1 - цифровой переприем.
+	 */
+	uint8_t getComSource() const {
+		return m_u8ComSource;
 	}
 
 	/// Установка текущего журнала.
@@ -2540,7 +2554,12 @@ public:
 		m_eState = STATE_REC_OK;
 	}
 
-	/// Установка текущего состояния в готовность к новой записи.
+	/// Уситановка текущего состояния в готовность к новой записи.
+	void setReadyToRead() {
+		m_eState = STATE_REC;
+	}
+
+	/// Установка текущего состояния в готовность к новой записи + предыдущая была передана.
 	void setReadyToEvent() {
 		m_eState = STATE_TR_OK;
 	}
@@ -2552,7 +2571,7 @@ public:
 
 	/// Проверка текущего состояния на запись нового сообщения.
 	bool isReadyToWrite() const {
-		return (m_eState != STATE_REC);
+		return ((m_eState == STATE_REC) || (m_eState == STATE_TR_OK));
 	}
 
 	/** Проверка текущего состояния на наличие нового сообщения.
@@ -2562,7 +2581,7 @@ public:
 	 *  @return true - имеется новое сообщение.
 	 */
 	bool isReadyToSend() {
-		if (getState() == STATE_IDLE) {
+		if (m_eState >= STATE_MAX) {
 			m_eState = STATE_REC;
 		}
 
@@ -2583,7 +2602,7 @@ private:
 	eGB_DEVICE_K400	m_eJrn;	/// Журнал.
 	uint8_t m_u8Event;		/// Cобытие.
 	uint8_t m_u8Com;		/// Номер команды.
-
+	uint8_t m_u8ComSource;	/// Источник команды (0 - ДВ, 1 - ЦПП).
 
 	state_t m_eState;		/// Текущее состояние.
 };

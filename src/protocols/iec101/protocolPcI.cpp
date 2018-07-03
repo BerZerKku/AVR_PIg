@@ -234,76 +234,50 @@ uint8_t TProtocolPcI::send() {
 	return sendData();
 }
 
-// Проверка наличия данных класса 1(2) на передачу.
-bool TProtocolPcI::checkEventClass1() {
+// Проверка наличия данных класса 1 на передачу.
+bool TProtocolPcI::checkEventClass1(uint16_t &adr, bool &val, SCp56Time2a &time) {
+	if (!sParam_->jrnScada.isReadyToSend())
+		return false;
 
-	if ((!ei1.send) && (sParam_->jrnScada.isReadyToSend())) {
-		TJrnSCADA *jrn = &sParam_->jrnScada;
+	TJrnSCADA *jrn = &sParam_->jrnScada;
 
-		if (jrn->isJrnEvent()) {
-			ei1.val = true;
-			ei1.adr = c_adrIe1Event1 + jrn->getEvent();
-			ei1.send = true;
-		} else if (jrn->isJrnPrm()) {
-			ei1.val = jrn->getEvent();
-			ei1.adr = c_adrIe1PrmCom1 + jrn->getCom() - 1;
-			ei1.send = true;
-		} else if (jrn->isJrnPrd()) {
-			// TODO разделение команд на ДС и ЦПП
-			ei1.val = jrn->getEvent();
-			ei1.adr = c_adrIe1PrdCom1 + jrn->getCom() - 1;
-			ei1.send = true;
-		} else {
-			// в случае ошибочного журнала, перейдем к следующему событию
-			sParam_->jrnScada.setReadyToEvent();
-		}
-
-		ei1.time.years 			= jrn->dtime.getYear();
-		ei1.time.months 		= jrn->dtime.getMonth();
-		ei1.time.dayOfMonth 	= jrn->dtime.getDay();
-		ei1.time.hours 			= jrn->dtime.getHour();
-		ei1.time.minutes 		= jrn->dtime.getMinute();
-		ei1.time.milliseconds 	= jrn->dtime.getSecond() * 1000;
-		ei1.time.milliseconds  += jrn->dtime.getMsSecond();
+	if (jrn->isJrnEvent()) {
+		val = true;
+		adr = c_adrIe1Event1 + jrn->getEvent() - 1;
+	} else if (jrn->isJrnPrm()) {
+		val = jrn->getEvent();
+		adr = c_adrIe1PrmCom1 + jrn->getCom() - 1;
+	} else if (jrn->isJrnPrd()) {
+		val = jrn->getEvent();
+		adr = (jrn->getComSource()) ? c_adrIe1PrdCCom1 : c_adrIe1PrdDCom1;
+		adr += jrn->getCom() - 1;
+	} else {
+		return false;
 	}
-//	else if (!ei2.send) {
-//		for(uint8_t i = 0; i < IE2_MAX; i++) {
-//			bool val = getValue(static_cast<EInfoElement2> (i));
-//
-//			if (m_flags[i] != val) {
-//				m_flags[i] = val;
-//
-//				ei2.val = val;
-//				ei2.adr = pgm_read_word(&c_adrIE2[i]);
-//
-//				ei2.time.years 			= sParam_->DateTime.getYear();
-//				ei2.time.months 		= sParam_->DateTime.getMonth();
-//				ei2.time.dayOfMonth 	= sParam_->DateTime.getDay();
-//				ei2.time.hours 			= sParam_->DateTime.getHour();
-//				ei2.time.minutes 		= sParam_->DateTime.getMinute();
-//				ei2.time.milliseconds 	= sParam_->DateTime.getSecond()*1000;
-//				ei2.time.milliseconds  += sParam_->DateTime.getMsSecond();
-//
-//				ei2.send = true;
-//				break;
-//			}
-//		}
-//	}
 
-	return (ei1.send);
+	time.years 			= jrn->dtime.getYear();
+	time.months 		= jrn->dtime.getMonth();
+	time.dayOfMonth 	= jrn->dtime.getDay();
+	time.hours 			= jrn->dtime.getHour();
+	time.minutes 		= jrn->dtime.getMinute();
+	time.milliseconds 	= jrn->dtime.getSecond() * 1000;
+	time.milliseconds  += jrn->dtime.getMsSecond();
+
+	sParam_->jrnScada.setReadyToEvent();
+
+	return true;
 }
 
-// Отправка события.
-bool TProtocolPcI::procEventClass2(void) {
-
+// Проверка наличия данных класса 2 на передачу.
+bool TProtocolPcI::checkEventClass2(uint16_t &adr, bool &val, SCp56Time2a &time) {
 	for(uint8_t i = 0; i < IE2_MAX; i++) {
-		bool val = getValue(static_cast<EInfoElement2> (i));
+		bool t = getValue(static_cast<EInfoElement2> (i));
 
-		if (m_flags[i] != val) {
-			m_flags[i] = val;
+		if (m_flags[i] != t) {
+			m_flags[i] = t;
 
-			uint16_t adr = pgm_read_word(&c_adrIE2[i]);
-			SCp56Time2a time;
+			val = t;
+			adr = pgm_read_word(&c_adrIE2[i]);
 
 			time.years 			= sParam_->DateTime.getYear();
 			time.months 		= sParam_->DateTime.getMonth();
@@ -313,21 +287,11 @@ bool TProtocolPcI::procEventClass2(void) {
 			time.milliseconds 	= sParam_->DateTime.getSecond()*1000;
 			time.milliseconds  += sParam_->DateTime.getMsSecond();
 
-			prepareFrameMSpTb1(adr, COT_SPONT, val, time);
 			return true;
 		}
 	}
 
 	return false;
-
-//	if (ei1.send) {
-//		prepareFrameMSpTb1(ei1.adr, COT_SPONT, ei1.val, ei1.time);
-//		sParam_->jrnScada.setReadyToEvent();
-//		ei1.send = false;
-//	} else if (ei2.send) {
-//		prepareFrameMSpTb1(ei2.adr, COT_SPONT, ei2.val, ei2.time);
-//		ei2.send = false;
-//	}
 }
 
 // Обработка ответа на команду опроса.
@@ -466,11 +430,12 @@ bool TProtocolPcI::getPrd(EInfoElement2 ei) const {
 	} else if (ei == IE2_PRD_DISABLED) {
 		val = (sParam_->prd.status.getRegime() == GB_REGIME_DISABLED);
 	} if ((ei >= IE2_PRD_COM_01) && (ei <= IE2_PRD_COM_32)) {
-			val = sParam_->prd.getIndCom(ei - IE2_PRD_COM_01);
+		// TODO сделать зависимость от количества команд
+		val = sParam_->prd.getIndCom(ei - IE2_PRD_COM_01);
 	} else if ((ei >= IE2_PRD_WARNING_H0001) && (ei <= IE2_PRD_WARNING_H8000)) {
-			val = sParam_->prd.status.isWarning(ei - IE2_PRD_WARNING_H0001);
+		val = sParam_->prd.status.isWarning(ei - IE2_PRD_WARNING_H0001);
 	} else if ((ei >= IE2_PRD_ERROR_H0001) && (ei <= IE2_PRD_ERROR_H8000)) {
-			val = sParam_->prd.status.isFault(ei - IE2_PRD_ERROR_H0001);
+		val = sParam_->prd.status.isFault(ei - IE2_PRD_ERROR_H0001);
 	} else if (ei == IE2_PRD_ON) {
 		val = sParam_->prd.status.isEnable();
 	}
@@ -492,11 +457,12 @@ bool TProtocolPcI::getPrm(EInfoElement2 ei) const {
 	} else if (ei == IE2_PRM_DISABLED) {
 		val = (sParam_->prm.status.getRegime() == GB_REGIME_DISABLED);
 	} else if ((ei >= IE2_PRM_COM_01) && (ei <= IE2_PRM_COM_32)) {
-			val = sParam_->prm.getIndCom(ei - IE2_PRM_COM_01);
+		// TODO сделать зависимость от количества команд
+		val = sParam_->prm.getIndCom(ei - IE2_PRM_COM_01);
 	} else if ((ei >= IE2_PRM_WARNING_H0001) && (ei <= IE2_PRM_WARNING_H8000)) {
-			val = sParam_->prm.status.isWarning(ei - IE2_PRM_WARNING_H0001);
+		val = sParam_->prm.status.isWarning(ei - IE2_PRM_WARNING_H0001);
 	} else if ((ei >= IE2_PRM_ERROR_H0001) && (ei <= IE2_PRM_ERROR_H8000)) {
-			val = sParam_->prm.status.isFault(ei - IE2_PRM_ERROR_H0001);
+		val = sParam_->prm.status.isFault(ei - IE2_PRM_ERROR_H0001);
 	} else if (ei == IE2_PRM_ON) {
 		val = sParam_->prm.status.isEnable();
 	}
@@ -509,9 +475,9 @@ bool TProtocolPcI::getDef(EInfoElement2 ei) const {
 	bool val = false;
 
 	if ((ei >= IE2_DEF_WARNING_H0001) && (ei <= IE2_DEF_WARNING_H8000)) {
-			val = sParam_->def.status.isWarning(ei - IE2_DEF_WARNING_H0001);
+		val = sParam_->def.status.isWarning(ei - IE2_DEF_WARNING_H0001);
 	} else if ((ei >= IE2_DEF_ERROR_H0001) && (ei <= IE2_DEF_ERROR_H8000)) {
-			val = sParam_->def.status.isFault(ei - IE2_DEF_ERROR_H0001);
+		val = sParam_->def.status.isFault(ei - IE2_DEF_ERROR_H0001);
 	} else if (ei == IE2_DEF_ON) {
 		val = sParam_->def.status.isEnable();
 	}
