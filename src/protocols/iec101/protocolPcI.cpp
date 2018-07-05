@@ -236,22 +236,38 @@ uint8_t TProtocolPcI::send() {
 
 // Проверка наличия данных класса 1 на передачу.
 bool TProtocolPcI::checkEventClass1(uint16_t &adr, bool &val, SCp56Time2a &time) {
+	static uint16_t ladr;
+
 	if (!sParam_->jrnScada.isReadyToSend())
 		return false;
 
 	TJrnSCADA *jrn = &sParam_->jrnScada;
 
+	uint16_t ms = jrn->dtime.getMsSecond();
+
 	if (jrn->isJrnEvent()) {
-		val = true;
 		adr = c_adrIe1Event1 + jrn->getEvent() - 1;
+		if (ladr != adr) {
+			ladr = adr;
+			val = true;
+			ms = (ms < 999) ? ms : ms - 1;
+		} else {
+			ladr = 0;
+			val = false;
+			ms = (ms < 999) ? ms + 1 : ms;
+			sParam_->jrnScada.setReadyToEvent();
+		}
 	} else if (jrn->isJrnPrm()) {
 		val = jrn->getEvent();
 		adr = c_adrIe1PrmCom1 + jrn->getCom() - 1;
+		sParam_->jrnScada.setReadyToEvent();
 	} else if (jrn->isJrnPrd()) {
 		val = jrn->getEvent();
 		adr = (jrn->getComSource()) ? c_adrIe1PrdCCom1 : c_adrIe1PrdDCom1;
 		adr += jrn->getCom() - 1;
+		sParam_->jrnScada.setReadyToEvent();
 	} else {
+		sParam_->jrnScada.setReadyToEvent();
 		return false;
 	}
 
@@ -261,9 +277,8 @@ bool TProtocolPcI::checkEventClass1(uint16_t &adr, bool &val, SCp56Time2a &time)
 	time.hours 			= jrn->dtime.getHour();
 	time.minutes 		= jrn->dtime.getMinute();
 	time.milliseconds 	= jrn->dtime.getSecond() * 1000;
-	time.milliseconds  += jrn->dtime.getMsSecond();
+	time.milliseconds  += ms;
 
-	sParam_->jrnScada.setReadyToEvent();
 
 	return true;
 }
@@ -314,7 +329,6 @@ bool TProtocolPcI::procInterrog(uint16_t &adr, bool &val) {
 // Установка времени
 bool TProtocolPcI::procSetTime() {
 	// Заполнение команды для передачи нового времени в БСП
-
 	uint8_t i = 0;
 	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.years), i++);
 	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.months), i++);
@@ -323,6 +337,7 @@ bool TProtocolPcI::procSetTime() {
 	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.minutes), i++);
 	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.milliseconds / 1000), i++);
 	uint16_t ms = stTime.milliseconds % 1000 + getDelay();
+
 	sParam_->txComBuf.setInt8(BIN_TO_BCD((uint8_t) ms), i++);
 	sParam_->txComBuf.setInt8(BIN_TO_BCD((uint8_t) (ms >> 8)), i++);
 	sParam_->txComBuf.setInt8(1, i++);
