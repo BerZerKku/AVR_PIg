@@ -235,8 +235,8 @@ static void setInterface(TUartData *uart) {
 		case TInterface::USB:
 			// во время отладки интерфейс USB можно настраивать
 			// TODO
-			setProtocol(TProtocol::STANDART, 19200);
-			uartPC.open(19200, TDataBits::_8, TParity::NONE,
+			setProtocol(TProtocol::STANDART, 57600);
+			uartPC.open(57600, TDataBits::_8, TParity::NONE,
 					TStopBits::TWO);
 
 //			setProtocol(TProtocol::IEC_101, 19200);
@@ -365,7 +365,7 @@ main(void) {
 
 	// запуск последовательного порта для связи с БСП
 	// все настройки фиксированы
-	uartBSP.open(4800,TDataBits::_8,TParity::NONE,TStopBits::TWO);
+	uartBSP.open(57600,TDataBits::_8,TParity::NONE,TStopBits::TWO);
 	protBSPs.setEnable(PRTS_STATUS_NO);
 
 	// запуск последовательного порта для связи с ПК/Локальной сети

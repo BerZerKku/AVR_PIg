@@ -44,9 +44,8 @@ bool TUart::open(uint16_t baud, TDataBits::DATA_BITS databits,
 
 	// установка скорости работы
 
-
-	if (baud > 19200) {
-		baud = 19200;
+	if (baud > 57600) {
+		baud = 57600;
 		sost = false;
 	}
 
