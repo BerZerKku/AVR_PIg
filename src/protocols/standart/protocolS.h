@@ -23,6 +23,7 @@ enum ePRTS_STATUS {
 	PRTS_STATUS_NO,			///< состо€ние ожидани€ сообщени€
 	PRTS_STATUS_READ,		///< идет считывание сообщени€
 	PRTS_STATUS_READ_OK,	///< соообщение считано полностью, но  — не проверена
+	PRTS_STATUS_WAIT_ANSWER,///< ожидание ответа
 	PRTS_STATUS_WRITE_PC,	///< надо передать сообщене на(с) ѕ 
 	PRTS_STATUS_WRITE		///< передаетс€ сообщение
 };

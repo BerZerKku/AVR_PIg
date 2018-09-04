@@ -157,8 +157,10 @@ static bool uartRead() {
 					lastPcCom = protPCs.getCurrentCom();
 
 					// пересылка сообщения в БСП
-					if (protBSPs.getCurrentStatus() == PRTS_STATUS_NO)
+					if (protBSPs.getCurrentStatus() == PRTS_STATUS_NO) {
 						protBSPs.copyCommandFrom(protPCs.buf);
+						protPCs.setCurrentStatus(PRTS_STATUS_WAIT_ANSWER);
+					}
 				}
 			}
 		}

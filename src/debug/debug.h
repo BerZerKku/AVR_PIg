@@ -15,7 +15,7 @@
 #warning "Включен режим отладки!!!"
 
 // вывод отладочной информации на экран
-//#define VIEW_DEBUG_PARAM
+//define VIEW_DEBUG_PARAM
 //#define IEC101
 
 #define COMPILE_TIME_ASSERT(expression) switch(0) { case 0 : case (expression) : ; }
