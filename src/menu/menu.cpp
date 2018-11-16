@@ -112,6 +112,8 @@ clMenu::clMenu() {
 #endif
 
 	sParam.local.setFlashParams(fParams);
+
+	sParam.checkGoose = false;
 }
 
 void clMenu::main(void) {
@@ -2153,6 +2155,8 @@ void clMenu::lvlControl() {
 	static char punkt34[] PROGMEM = "%d. Сброс удален. 3";
 	static char punkt35[] PROGMEM = "%d. Сброс индикации";
 	static char punkt36[] PROGMEM = "%d. Сброс всех";
+	static char punkt37[] PROGMEM = "%d. Тест GOOSE вкл.";
+	static char punkt38[] PROGMEM = "%d. Тест GOOSE выкл.";
 
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
@@ -2309,6 +2313,9 @@ void clMenu::lvlControl() {
 			}
 		}
 
+		// Добавление пункта тестирования GOOSE
+		Punkts_.add(punkt37);
+
 		// доплнительные команды
 		sParam.txComBuf.clear();
 		if (sParam.typeDevice == AVANT_R400M) {
@@ -2327,6 +2334,12 @@ void clMenu::lvlControl() {
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
+
+	if (sParam.checkGoose) {
+		Punkts_.change(punkt38, GB_COM_NO, Punkts_.getMaxNumPunkts() - 1);
+	} else {
+		Punkts_.change(punkt37, GB_COM_NO, Punkts_.getMaxNumPunkts() - 1);
+	}
 
 	if (sParam.def.status.isEnable()) {
 		// выбор вкл./выкл. наладочного пуска
@@ -2531,6 +2544,10 @@ void clMenu::lvlControl() {
 			} else if (name == punkt36) {
 				sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			} else if (name == punkt37) {
+				sParam.checkGoose = true;
+			} else if (name == punkt38) {
+				sParam.checkGoose = false;
 			}
 		}
 		break;

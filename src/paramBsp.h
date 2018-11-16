@@ -65,6 +65,9 @@ struct stGBparam {
 
 	// тесты
 	TTest test;
+
+	// сигнал тестирования GOOSE
+	bool checkGoose;
 };
 
 #endif /* PARAMBSP_H_ */

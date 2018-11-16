@@ -215,7 +215,8 @@ const uint16_t TProtocolPcI::c_adrIE2[] PROGMEM = {
 		629,	// IE_DEF_WARNING_H1000
 		630,	// IE_DEF_WARNING_H2000
 		631,	// IE_DEF_WARNING_H4000
-		632		// IE_DEF_WARNING_H8000
+		632,	// IE_DEF_WARNING_H8000
+		650		// IE2_CHECK_GOOSE
 };
 
 // Конструктор
@@ -388,6 +389,8 @@ bool TProtocolPcI::getValue(EInfoElement2 ei) const {
 		val = getGlb(ei);
 	} else if (ei >= IE2_ERROR) {
 		val = getDevice(ei);
+	} else if (ei == IE2_CHECK_GOOSE) {
+		val = sParam_->checkGoose;
 	}
 
 	return val;
