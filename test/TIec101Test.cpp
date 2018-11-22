@@ -461,26 +461,30 @@ TEST_F(TIec101_Full, tick) {
 
 	};
 
+	uint8_t mas[] = FIX_FRAME_IN(3, false);	// USER_DATA_CONFIRM
+
 	sData data[] = {
 			// проверка по кол-ву принятых данных, меньше N состояние не меняется
-			{CIec101::STATE_READ, 		CIec101::STATE_READ, 		4, 57600, 50, 35},
-			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK, 	5, 57600, 50, 35},
-			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK, 	6, 57600, 50, 35},
+			{CIec101::STATE_READ, 		CIec101::STATE_READ, 		2, 57600, 50, 35},
+			{CIec101::STATE_READ, 		CIec101::STATE_READ, 		3, 57600, 50, 35},
+			{CIec101::STATE_READ, 		CIec101::STATE_READ,	 	4, 57600, 50, 35},
 			// проверка на обнаружение интервала спокойного состояния
-			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK, 	6, 19200, 50, 40},
-			{CIec101::STATE_READ, 		CIec101::STATE_READ, 		8, 19200, 50, 16},
-			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK,		8, 19200, 50, 17},
-			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK, 	8, 19200, 50, 41},
+			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK, 	5, 19200, 50, 40},
+			{CIec101::STATE_READ, 		CIec101::STATE_READ, 		5, 19200, 50, 16},
+			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK,		5, 19200, 50, 17},
+			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK, 	5, 19200, 50, 41},
 			// проверка работы в состоянии обнаружения ошибки
-			{CIec101::STATE_READ_ERROR, CIec101::STATE_READ, 		8, 19200, 50, 34},
-			{CIec101::STATE_READ_ERROR, CIec101::STATE_READ_ERROR,	8, 19200, 50, 33},
+			{CIec101::STATE_READ_ERROR, CIec101::STATE_READ, 		5, 19200, 50, 34},
+			{CIec101::STATE_READ_ERROR, CIec101::STATE_READ_ERROR,	5, 19200, 50, 33},
 			// проверка на работу в состояниях не STATE_READ
-			{CIec101::STATE_OFF, 		CIec101::STATE_OFF, 		8, 19200, 50, 50},
-			{CIec101::STATE_READ_OK, 	CIec101::STATE_READ_OK, 	8, 19200, 50, 50},
-			{CIec101::STATE_WRITE_WAIT, CIec101::STATE_WRITE_WAIT, 	8, 19200, 50, 50},
-			{CIec101::STATE_WRITE, 		CIec101::STATE_WRITE, 		8, 19200, 50, 50},
+			{CIec101::STATE_OFF, 		CIec101::STATE_OFF, 		5, 19200, 50, 50},
+			{CIec101::STATE_READ_OK, 	CIec101::STATE_READ_OK, 	5, 19200, 50, 50},
+			{CIec101::STATE_WRITE_WAIT, CIec101::STATE_WRITE_WAIT, 	5, 19200, 50, 50},
+			{CIec101::STATE_WRITE, 		CIec101::STATE_WRITE, 		5, 19200, 50, 50},
 	};
 
+
+	iec101->setAddressLan(1);
 	for (uint16_t i = 0; i < (sizeof (data) / sizeof (data[0])); i++) {
 
 		uint16_t step = iec101->setTick(data[i].baudrate, data[i].period);
@@ -489,7 +493,7 @@ TEST_F(TIec101_Full, tick) {
 
 		// закинем в буфер заданное кол-во байт данных
 		for(uint8_t j = 0; j < data[i].numBytes; j++) {
-			iec101->push(0x00);
+			iec101->push(mas[j]);
 		}
 
 		for (uint8_t j = 0; j < data[i].numTicks; j++) {

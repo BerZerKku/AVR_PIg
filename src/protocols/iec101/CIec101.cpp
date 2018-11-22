@@ -101,9 +101,7 @@ void CIec101::tick() {
 
 	if (checkState(STATE_READ)) {
 		if (tick >= m_u16TickTime) {
-			if (m_u8Cnt >= s_u8SizeOfFrameFixLenght) {
-//				if ((m_pBuf[0] == 0x68) && (m_pBuf[6] == 0x67)) {
-//				}
+			if (checkFrame() == ERROR_NO) {
 				setState(STATE_READ_OK);
 			} else {
 				setState(STATE_READ);
@@ -156,33 +154,22 @@ uint8_t CIec101::sendData() {
 }
 
 // ќбработка прин€тых данных.
-CIec101::EError CIec101::readData() {
-	EError error = ERROR_COMMON;
-
-	switch (static_cast<EFrameStartCharacter>(m_pBuf[0])) {
-		case FRAME_START_CHARACTER_FIX: {
-			SFrameFixLength &frame = *((SFrameFixLength *) m_pBuf);
-			error = checkFrameFixLenght(frame);
-			if (error == ERROR_NO) {
+void CIec101::readData() {
+	if (isReadData()) {
+		switch (static_cast<EFrameStartCharacter>(m_pBuf[0])) {
+			case FRAME_START_CHARACTER_FIX: {
+				SFrameFixLength &frame = *((SFrameFixLength *) m_pBuf);
 				readFrameFixLenght(frame);
 			}
-		}
-		break;
-		case FRAME_START_CHARACTER_VAR: {
-			SFrameVarLength &frame = *((SFrameVarLength*) m_pBuf);
-			error = checkFrameVarLenght(frame);
-			if (error == ERROR_NO) {
+			break;
+			case FRAME_START_CHARACTER_VAR: {
+				SFrameVarLength &frame = *((SFrameVarLength*) m_pBuf);
 				readFrameVarLenght(frame);
 			}
-		}
-		break;
-		default:
 			break;
-	}
-
-	if (error != ERROR_NO) {
-		// в случае обнаружени€ ошибки, ожидаем следующий пакет через 33 бита
-		setState(STATE_READ_ERROR);
+			default:
+				break;
+		}
 	}
 
 	// ≈сли в процессе обработки кадра, режим не был изменен на "чтение"
@@ -190,8 +177,6 @@ CIec101::EError CIec101::readData() {
 	if (isReadData()) {
 		sendFrame();
 	}
-
-	return error;
 }
 
 //ѕроверка необходимости передать новое сообщении класса 1.
@@ -223,6 +208,36 @@ uint8_t CIec101::getCrcVarFrame(SFrameVarLength &rFrame) const {
 	}
 
 	return crc;
+}
+
+
+// ѕроверка прин€того кадра.
+CIec101::EError CIec101::checkFrame() {
+	EError error = ERROR_COMMON;
+
+	if (m_u8Cnt >= s_u8SizeOfFrameFixLenght) {
+		switch (static_cast<EFrameStartCharacter>(m_pBuf[0])) {
+			case FRAME_START_CHARACTER_FIX: {
+				SFrameFixLength &frame = *((SFrameFixLength *) m_pBuf);
+				error = checkFrameFixLenght(frame);
+			}
+			break;
+			case FRAME_START_CHARACTER_VAR: {
+				SFrameVarLength &frame = *((SFrameVarLength*) m_pBuf);
+				error = checkFrameVarLenght(frame);
+			}
+			break;
+			default:
+				break;
+		}
+	}
+
+	if (error != ERROR_NO) {
+		// в случае обнаружени€ ошибки, ожидаем следующий пакет через 33 бита
+		setState(STATE_READ_ERROR);
+	}
+
+	return error;
 }
 
 

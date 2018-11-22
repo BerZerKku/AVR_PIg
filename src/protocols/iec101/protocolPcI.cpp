@@ -379,7 +379,9 @@ bool TProtocolPcI::procSetTimeEnd() {
 bool TProtocolPcI::getValue(EInfoElement2 ei) const {
 	bool val = false;
 
-	if (ei >= IE2_DEF_ON) {
+	if (ei == IE2_CHECK_GOOSE) {
+		val = sParam_->checkGoose;
+	} else if (ei >= IE2_DEF_ON) {
 		val = getDef(ei);
 	} else if (ei >= IE2_PRM_ON) {
 		val = getPrm(ei);
@@ -389,8 +391,6 @@ bool TProtocolPcI::getValue(EInfoElement2 ei) const {
 		val = getGlb(ei);
 	} else if (ei >= IE2_ERROR) {
 		val = getDevice(ei);
-	} else if (ei == IE2_CHECK_GOOSE) {
-		val = sParam_->checkGoose;
 	}
 
 	return val;
