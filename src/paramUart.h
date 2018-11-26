@@ -115,6 +115,7 @@ public:
 		_4800,		//
 		_9600,		//
 		_19200,		//
+		_38400,		//
 		MAX			//
 	};
 
@@ -151,29 +152,13 @@ public:
 	 * 	@retval 0 В случае ошибки
 	 */
 	uint16_t getValue() const {
+		static const uint16_t baud[MAX] = {600, 1200, 2400, 4800, 9600, 19200, 38400};
+
 		uint16_t ibaud = 0;
-		switch(baudRate_) {
-			case TBaudRate::_600:
-				ibaud = 600;
-				break;
-			case TBaudRate::_1200:
-				ibaud = 1200;
-				break;
-			case TBaudRate::_2400:
-				ibaud = 2400;
-				break;
-			case TBaudRate::_4800:
-				ibaud = 4800;
-				break;
-			case TBaudRate::_9600:
-				ibaud = 9600;
-				break;
-			case TBaudRate::_19200:
-				ibaud = 19200;
-				break;
-			case TBaudRate::MAX:	// заглушка
-			break;
+		if (baudRate_ < MAX) {
+			ibaud = baud[baudRate_];
 		}
+
 		return ibaud;
 	}
 

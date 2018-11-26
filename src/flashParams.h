@@ -152,7 +152,8 @@ static char fcBaudRate[TBaudRate::MAX][STRING_LENGHT] PROGMEM = {
 		"2400",			///< TBaudRate::_2400
 		"4800",			///< TBaudRate::_4800
 		"9600",			///< TBaudRate::_9600
-		"19200"			///< TBaudRate::_19200
+		"19200",		///< TBaudRate::_19200
+		"38400"			///< TBaudRate::_38400
 };
 
 /// Количество бит данных (параметр Интерфейс).

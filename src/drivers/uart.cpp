@@ -42,14 +42,6 @@ bool TUart::open(uint16_t baud, TDataBits::DATA_BITS databits,
 	uint8_t ucsrb = 0;
 	uint8_t ucsrc = 0;
 
-	// установка скорости работы
-
-
-	if (baud > 19200) {
-		baud = 19200;
-		sost = false;
-	}
-
 	// при условии установленного бита U2X
 	// UBBRH = F_CPU / (8 * baudrate) - 1
 	// для округления в большую сторону добавим 4*baudrate
