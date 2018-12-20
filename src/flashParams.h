@@ -1701,7 +1701,7 @@ static const Param fPrdComSignal PROGMEM = {
 		GB_SEND_DOP_BITES,		// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_ON_COM_PRM,	// зависимость повторений
+		Param::DEPEND_SAME_ON_COM_PRD,	// зависимость повторений
 		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
 };
 
