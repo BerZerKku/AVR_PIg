@@ -1,9 +1,21 @@
 #include "gtest\gtest.h"
-#include "CIec101.h"
 #include <stdint.h>
 #include <cstdio>
 #include <iostream>
+
 using namespace std;
+
+#define TEST_FRIENDS \
+		friend class TIec101_Full_readData_Fix_check_Test; \
+		friend class TIec101_Full_readData_Var_check_Test; \
+		friend class TIec101_Full_readData_Other_Test; \
+		friend class TIec101_Full_readData_reset_Test; \
+		friend class TIec101_Full_readData_TimeSynch_Test; \
+		friend class TIec101_Full_readData_Iterrog_Test; \
+		friend class TIec101_Full_readData_Events_Class2_Test; \
+		friend class TIec101_Full_readData_Events_Class1_Test
+
+#include "CIec101.h"
 
 // размер массивов
 static const uint8_t SIZE = 64;
@@ -70,7 +82,7 @@ bool checkMass(const uint8_t mas[], uint8_t masSize, const uint8_t exp[], uint8_
 		for(uint8_t i = 0; i < masSize; i++) {
 			if (mas[i] != exp[i]) {
 				posMsg += sprintf(&msg[posMsg], " Ошибка байта mas[%d] = %02X, вместо %02X",
-								i, mas[i], exp[i]);
+						i, mas[i], exp[i]);
 				state = false;
 				break;
 			}
@@ -106,13 +118,13 @@ class TIec101_Full: public ::testing::Test {
 #define CONTROL(code, fcb) (uint8_t) (0x40 + code + getFcb(fcb))
 
 #define FIX_FRAME_IN(code, fcb) \
-{ 								\
+		{ 								\
 	FRAME_START_CHARACTER_FIX, 	\
 	CONTROL(code, fcb),			\
 	0x01, 						\
 	(uint8_t) (CONTROL(code, false) + 0x01),	\
 	FRAME_STOP_CHARCTER 		\
-};
+		};
 
 
 public:
@@ -131,7 +143,7 @@ public:
 			uint8_t mas[] = FIX_FRAME_IN(9, false); // REQUEST_STATUS_OF_LINK
 			uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 11, 0x01, 0x0C, FRAME_STOP_CHARCTER}; // RESPOND_STATUS_OF_LINK
 			putData(iec101, mas, sizeof(mas));
-			ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg;
+			iec101->readData();
 			ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 			ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 			ASSERT_TRUE(!iec101->isReset());
@@ -142,7 +154,7 @@ public:
 			uint8_t mas[] = FIX_FRAME_IN(0, false); // RESET_REMOTE_LINK
 			uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x00, 0x01, 0x01, FRAME_STOP_CHARCTER}; // CONFIRM_ACK
 			putData(iec101, mas, sizeof(mas));
-			ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg;
+			iec101->readData();
 			ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 			ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 			ASSERT_TRUE(iec101->isReset()) << msg;
@@ -153,7 +165,7 @@ public:
 			uint8_t mas[] = FIX_FRAME_IN(10, false); // REQUEST_USER_DATA_CLASS_1
 			uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x09, 0x01, 0x0A, FRAME_STOP_CHARCTER}; // RESPOND_NACK
 			putData(iec101, mas, sizeof(mas));
-			ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg;
+			iec101->readData();
 			ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 			ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 			ASSERT_TRUE(iec101->isReset()) << msg;
@@ -176,7 +188,7 @@ public:
 					0x56, 		// crc
 					FRAME_STOP_CHARCTER};
 			putData(iec101, mas, sizeof(mas));
-			ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg;
+			iec101->readData();
 			ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 			ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 			ASSERT_TRUE(iec101->isReset()) << msg;
@@ -370,7 +382,7 @@ TEST_F(TIec101_Full, getDelay) {
 	iec101->setTick(19200, 100);
 	ASSERT_EQ(46, iec101->getDelay());	// 12 до ПИ, 2 внутри ПИ, 32 до БСП
 	for(uint8_t i = 0; i < 80; i++)
-			iec101->tick();
+		iec101->tick();
 	ASSERT_EQ(54, iec101->getDelay());	// 12 до ПИ, 2+8 внутри ПИ, 32 до БСП
 
 	iec101->setReadState();
@@ -461,26 +473,29 @@ TEST_F(TIec101_Full, tick) {
 
 	};
 
+	uint8_t mas[] = FIX_FRAME_IN(3, false);	// USER_DATA_CONFIRM
+
 	sData data[] = {
 			// проверка по кол-ву принятых данных, меньше N состояние не меняется
-			{CIec101::STATE_READ, 		CIec101::STATE_READ, 		4, 57600, 50, 35},
-			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK, 	5, 57600, 50, 35},
-			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK, 	6, 57600, 50, 35},
+			{CIec101::STATE_READ, 		CIec101::STATE_READ, 		2, 57600, 50, 35},
+			{CIec101::STATE_READ, 		CIec101::STATE_READ,	 	3, 57600, 50, 35},
+			{CIec101::STATE_READ, 		CIec101::STATE_READ,	 	4, 57600, 50, 35},
 			// проверка на обнаружение интервала спокойного состояния
-			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK, 	6, 19200, 50, 40},
-			{CIec101::STATE_READ, 		CIec101::STATE_READ, 		8, 19200, 50, 16},
-			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK,		8, 19200, 50, 17},
-			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK, 	8, 19200, 50, 41},
+			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK, 	5, 19200, 50, 40},
+			{CIec101::STATE_READ, 		CIec101::STATE_READ, 		5, 19200, 50, 16},
+			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK,		5, 19200, 50, 17},
+			{CIec101::STATE_READ, 		CIec101::STATE_READ_OK, 	5, 19200, 50, 41},
 			// проверка работы в состоянии обнаружения ошибки
-			{CIec101::STATE_READ_ERROR, CIec101::STATE_READ, 		8, 19200, 50, 34},
-			{CIec101::STATE_READ_ERROR, CIec101::STATE_READ_ERROR,	8, 19200, 50, 33},
+			{CIec101::STATE_READ_ERROR, CIec101::STATE_READ, 		5, 19200, 50, 34},
+			{CIec101::STATE_READ_ERROR, CIec101::STATE_READ_ERROR,	5, 19200, 50, 33},
 			// проверка на работу в состояниях не STATE_READ
-			{CIec101::STATE_OFF, 		CIec101::STATE_OFF, 		8, 19200, 50, 50},
-			{CIec101::STATE_READ_OK, 	CIec101::STATE_READ_OK, 	8, 19200, 50, 50},
-			{CIec101::STATE_WRITE_WAIT, CIec101::STATE_WRITE_WAIT, 	8, 19200, 50, 50},
-			{CIec101::STATE_WRITE, 		CIec101::STATE_WRITE, 		8, 19200, 50, 50},
+			{CIec101::STATE_OFF, 		CIec101::STATE_OFF, 		5, 19200, 50, 50},
+			{CIec101::STATE_READ_OK, 	CIec101::STATE_READ_OK, 	5, 19200, 50, 50},
+			{CIec101::STATE_WRITE_WAIT, CIec101::STATE_WRITE_WAIT, 	5, 19200, 50, 50},
+			{CIec101::STATE_WRITE, 		CIec101::STATE_WRITE, 		5, 19200, 50, 50},
 	};
 
+	iec101->setAddressLan(1);
 	for (uint16_t i = 0; i < (sizeof (data) / sizeof (data[0])); i++) {
 
 		uint16_t step = iec101->setTick(data[i].baudrate, data[i].period);
@@ -489,7 +504,7 @@ TEST_F(TIec101_Full, tick) {
 
 		// закинем в буфер заданное кол-во байт данных
 		for(uint8_t j = 0; j < data[i].numBytes; j++) {
-			iec101->push(0x00);
+			iec101->push(mas[j]);
 		}
 
 		for (uint8_t j = 0; j < data[i].numTicks; j++) {
@@ -518,7 +533,7 @@ TEST_F(TIec101_Full, getNumOfBytes) {
 		if ((i + 1) != iec101->getNumOfBytes()) {
 			posMsg += sprintf(&msg[posMsg], "  >>> Ошибка на шаге %d", i);
 			posMsg += sprintf(&msg[posMsg], "\n num = %d, need = %d",
-								iec101->getNumOfBytes(), i + 1);
+					iec101->getNumOfBytes(), i + 1);
 			ASSERT_TRUE(false) << msg;
 		}
 	}
@@ -543,7 +558,7 @@ TEST_F(TIec101_Full, readData_Fix_check) {
 		uint8_t mas[] = {FRAME_START_CHARACTER_FIX, 0x80, 0x01, 0x81, FRAME_STOP_CHARCTER};
 		putData(iec101, mas, sizeof(mas));
 		iec101->setAddressLan(1);
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_PRM_BITE) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_PRM_BITE) << msg;
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ_ERROR)) << msg;
 	}
 
@@ -552,7 +567,7 @@ TEST_F(TIec101_Full, readData_Fix_check) {
 		uint8_t mas[] = {FRAME_START_CHARACTER_FIX, 0x40, 0x00, 0x40, FRAME_STOP_CHARCTER};
 		putData(iec101, mas, sizeof(mas));
 		iec101->setAddressLan(1);
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_LINK_ADDRESS) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_LINK_ADDRESS) << msg;
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ_ERROR)) << msg;
 	}
 
@@ -561,7 +576,7 @@ TEST_F(TIec101_Full, readData_Fix_check) {
 		uint8_t mas[] = {FRAME_START_CHARACTER_FIX, 0x40, 0xF8, 0x38, FRAME_STOP_CHARCTER};
 		putData(iec101, mas, sizeof(mas));
 		iec101->setAddressLan(1);
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_LINK_ADDRESS) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_LINK_ADDRESS) << msg;
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ_ERROR)) << msg;
 	}
 
@@ -570,7 +585,7 @@ TEST_F(TIec101_Full, readData_Fix_check) {
 		uint8_t mas[] = {FRAME_START_CHARACTER_FIX, 0x40, 0x01, 0x42, FRAME_STOP_CHARCTER};
 		putData(iec101, mas, sizeof(mas));
 		iec101->setAddressLan(1);
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_CRC) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_CRC) << msg;
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ_ERROR)) << msg;
 	}
 
@@ -579,7 +594,7 @@ TEST_F(TIec101_Full, readData_Fix_check) {
 		uint8_t mas[] = {FRAME_START_CHARACTER_FIX, 0x40, 0x01, 0x41, FRAME_STOP_CHARCTER - 1};
 		putData(iec101, mas, sizeof(mas));
 		iec101->setAddressLan(1);
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_STOP_CHAR) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_STOP_CHAR) << msg;
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ_ERROR)) << msg;
 	}
 
@@ -589,7 +604,7 @@ TEST_F(TIec101_Full, readData_Fix_check) {
 		uint8_t mas[] = {FRAME_START_CHARACTER_FIX, 0x40, 0x01,  FRAME_STOP_CHARCTER};
 		putData(iec101, mas, sizeof(mas));
 		iec101->setAddressLan(1);
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_SIZE_FRAME) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_COMMON) << msg;
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ_ERROR)) << msg;
 	}
 
@@ -598,7 +613,7 @@ TEST_F(TIec101_Full, readData_Fix_check) {
 		uint8_t mas[] = {FRAME_START_CHARACTER_FIX, 0x40, 0x01, 0x41, FRAME_STOP_CHARCTER, 0x00};
 		putData(iec101, mas, sizeof(mas));
 		iec101->setAddressLan(1);
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_SIZE_FRAME) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_SIZE_FRAME) << msg;
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ_ERROR)) << msg;
 	}
 }
@@ -617,7 +632,7 @@ TEST_F(TIec101_Full, readData_Var_check) {
 		};
 		putData(iec101, mas, sizeof(mas));
 		iec101->setAddressLan(1);
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_PRM_BITE) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_PRM_BITE) << msg;
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ_ERROR)) << msg;
 	}
 
@@ -633,7 +648,7 @@ TEST_F(TIec101_Full, readData_Var_check) {
 		};
 		putData(iec101, mas, sizeof(mas));
 		iec101->setAddressLan(1);
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_LINK_ADDRESS) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_LINK_ADDRESS) << msg;
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ_ERROR)) << msg;
 	}
 
@@ -649,7 +664,7 @@ TEST_F(TIec101_Full, readData_Var_check) {
 		};
 		putData(iec101, mas, sizeof(mas));
 		iec101->setAddressLan(1);
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_CRC) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_CRC) << msg;
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ_ERROR)) << msg;
 	}
 
@@ -665,7 +680,7 @@ TEST_F(TIec101_Full, readData_Var_check) {
 		};
 		putData(iec101, mas, sizeof(mas));
 		iec101->setAddressLan(1);
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_STOP_CHAR) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_STOP_CHAR) << msg;
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ_ERROR)) << msg;
 	}
 
@@ -681,7 +696,7 @@ TEST_F(TIec101_Full, readData_Var_check) {
 		};
 		putData(iec101, mas, sizeof(mas));
 		iec101->setAddressLan(1);
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_START2_CHAR) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_START2_CHAR) << msg;
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ_ERROR)) << msg;
 	}
 
@@ -697,7 +712,7 @@ TEST_F(TIec101_Full, readData_Var_check) {
 		};
 		putData(iec101, mas, sizeof(mas));
 		iec101->setAddressLan(1);
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_LENGHT2) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_LENGHT2) << msg;
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ_ERROR)) << msg;
 	}
 
@@ -713,7 +728,7 @@ TEST_F(TIec101_Full, readData_Var_check) {
 		};
 		putData(iec101, mas, sizeof(mas));
 		iec101->setAddressLan(1);
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_LENGHT2) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_LENGHT2) << msg;
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ_ERROR)) << msg;
 	}
 
@@ -729,7 +744,7 @@ TEST_F(TIec101_Full, readData_Var_check) {
 		};
 		putData(iec101, mas, sizeof(mas));
 		iec101->setAddressLan(1);
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_LENGHT1) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_LENGHT1) << msg;
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ_ERROR)) << msg;
 	}
 
@@ -745,7 +760,7 @@ TEST_F(TIec101_Full, readData_Var_check) {
 		};
 		putData(iec101, mas, sizeof(mas));
 		iec101->setAddressLan(1);
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_SIZE_FRAME) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_SIZE_FRAME) << msg;
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ_ERROR)) << msg;
 	}
 }
@@ -757,7 +772,7 @@ TEST_F(TIec101_Full, readData_Other) {
 		iec101->setReadState();
 		iec101->push(i);
 		iec101->setState(CIec101::STATE_READ_OK);
-		if (!iec101->readData()) {
+		if (iec101->checkFrame() == CIec101::ERROR_NO) {
 			posMsg += sprintf(&msg[posMsg], "  >>> Ошибка на шаге %d", i);
 			ASSERT_TRUE(false) << msg;
 		}
@@ -779,7 +794,8 @@ TEST_F(TIec101_Full, readData_reset) {
 		printTestName(" Пользовательские данные с ответом. \n");
 		uint8_t mas[] = FIX_FRAME_IN(3, false);	// USER_DATA_CONFIRM
 		putData(iec101, mas, sizeof(mas));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg;
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(!iec101->isReset()) << msg;
 	}
@@ -788,7 +804,8 @@ TEST_F(TIec101_Full, readData_reset) {
 		printTestName(" Пользовательские данные без ответа. \n");
 		uint8_t mas[] = FIX_FRAME_IN(4, false);	// USER_DATA_NO_REPLY
 		putData(iec101, mas, sizeof(mas));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg;
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(!iec101->isReset()) << msg;
 	}
@@ -797,7 +814,8 @@ TEST_F(TIec101_Full, readData_reset) {
 		printTestName(" Запрос данных класса 1. \n");
 		uint8_t mas[] = FIX_FRAME_IN(10, false);	// REQUEST_USER_DATA_CLASS_1
 		putData(iec101, mas, sizeof(mas));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg;
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(!iec101->isReset()) << msg;
 	}
@@ -806,7 +824,8 @@ TEST_F(TIec101_Full, readData_reset) {
 		printTestName(" Запрос данных класса 2. \n");
 		uint8_t mas[] = FIX_FRAME_IN(10, false);	// REQUEST_USER_DATA_CLASS_2
 		putData(iec101, mas, sizeof(mas));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg;
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(!iec101->isReset()) << msg;
 	}
@@ -825,7 +844,8 @@ TEST_F(TIec101_Full, readData_reset) {
 				FRAME_STOP_CHARCTER
 		};
 		putData(iec101, mas, sizeof(mas));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg;
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(!iec101->isReset()) << msg;
 	}
@@ -842,7 +862,8 @@ TEST_F(TIec101_Full, readData_reset) {
 				FRAME_STOP_CHARCTER
 		};
 		putData(iec101, mas, sizeof(mas));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg;
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ)) << msg << " " << iec101->getState();
 	}
 
@@ -858,7 +879,8 @@ TEST_F(TIec101_Full, readData_reset) {
 				FRAME_STOP_CHARCTER
 		};
 		putData(iec101, mas, sizeof(mas));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg;
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ)) << msg << " " << iec101->getState();
 	}
 
@@ -874,7 +896,8 @@ TEST_F(TIec101_Full, readData_reset) {
 				FRAME_STOP_CHARCTER
 		};
 		putData(iec101, mas, sizeof(mas));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg;
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(!iec101->isReset()) << msg;
 	}
@@ -891,7 +914,8 @@ TEST_F(TIec101_Full, readData_reset) {
 				FRAME_STOP_CHARCTER
 		};
 		putData(iec101, mas, sizeof(mas));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg;
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(!iec101->isReset()) << msg;
 	}
@@ -908,7 +932,8 @@ TEST_F(TIec101_Full, readData_reset) {
 				FRAME_STOP_CHARCTER
 		};
 		putData(iec101, mas, sizeof(mas));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg;
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg;
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_READ)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(!iec101->isReset()) << msg;
 	}
@@ -930,42 +955,43 @@ TEST_F(TIec101_Full, readData_TimeSynch) {
 	ASSERT_TRUE(iec101->isReset()) << " Протокол не сброшен. ";
 
 	{
-			printTestName(" Проверка повтора предыдущей команды. \n");
-			uint8_t req[] =  {
-					FRAME_START_CHARACTER_VAR, 0x0F, 0x0F, FRAME_START_CHARACTER_VAR,
-					(uint8_t) (0x43 + getFcb(false)), 	// control = USER_DATA_CONFIRM, fcb = 1, fcv = 1, prm = 1
-					0x01,		// link address
-					0x67,		// TYPE_ID_C_CS_NA_1
-					0x01,		// variableStructureQualifier
-					0x06,		// COT = COT_ACT
-					0x01,		// common address
-					0x00, 0x00,	// information object address
-					0x39, 0x30,	// ms
-					0x06,		// min
-					0x07,		// hours
-					0x08,		// days
-					0x09,		// months
-					0x0A,		// years
-					(uint8_t) (0x44 + + getFcb(false)), 		// crc
-					FRAME_STOP_CHARCTER};
-			uint8_t resp[] =  {
-					FRAME_START_CHARACTER_VAR, 0x09, 0x09, FRAME_START_CHARACTER_VAR,
-					0x08, 		// control = RESPOND_USER_DATA, prm = 0, acd = 0
-					0x01,		// link address
-					0x46,		// TYPE_ID_M_EI_NA_1
-					0x01,		// variableStructureQualifier
-					0x04,		// COT = COT_INIT
-					0x01,		// common address
-					0x00, 0x00,	// information object address
-					0x01,		// COI = COI_LOCAL_MANUAL_RESET
-					0x56, 		// crc
-					FRAME_STOP_CHARCTER
-			};
-			putData(iec101, req, sizeof(req));
-			ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
-			ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
-			ASSERT_TRUE(iec101->isReset()) << msg;
-			ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
+		printTestName(" Проверка повтора предыдущей команды. \n");
+		uint8_t req[] =  {
+				FRAME_START_CHARACTER_VAR, 0x0F, 0x0F, FRAME_START_CHARACTER_VAR,
+				(uint8_t) (0x43 + getFcb(false)), 	// control = USER_DATA_CONFIRM, fcb = 1, fcv = 1, prm = 1
+				0x01,		// link address
+				0x67,		// TYPE_ID_C_CS_NA_1
+				0x01,		// variableStructureQualifier
+				0x06,		// COT = COT_ACT
+				0x01,		// common address
+				0x00, 0x00,	// information object address
+				0x39, 0x30,	// ms
+				0x06,		// min
+				0x07,		// hours
+				0x08,		// days
+				0x09,		// months
+				0x0A,		// years
+				(uint8_t) (0x44 + + getFcb(false)), 		// crc
+				FRAME_STOP_CHARCTER};
+		uint8_t resp[] =  {
+				FRAME_START_CHARACTER_VAR, 0x09, 0x09, FRAME_START_CHARACTER_VAR,
+				0x08, 		// control = RESPOND_USER_DATA, prm = 0, acd = 0
+				0x01,		// link address
+				0x46,		// TYPE_ID_M_EI_NA_1
+				0x01,		// variableStructureQualifier
+				0x04,		// COT = COT_INIT
+				0x01,		// common address
+				0x00, 0x00,	// information object address
+				0x01,		// COI = COI_LOCAL_MANUAL_RESET
+				0x56, 		// crc
+				FRAME_STOP_CHARCTER
+		};
+		putData(iec101, req, sizeof(req));
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		iec101->readData();
+		ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
+		ASSERT_TRUE(iec101->isReset()) << msg;
+		ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 	}
 
 	{
@@ -990,7 +1016,8 @@ TEST_F(TIec101_Full, readData_TimeSynch) {
 		};
 		uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x00, 0x01, 0x01, FRAME_STOP_CHARCTER}; // CONFIRM_ACK
 		putData(iec101, req, sizeof(req));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(iec101->isReset()) << msg;
 		ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
@@ -1000,14 +1027,14 @@ TEST_F(TIec101_Full, readData_TimeSynch) {
 		ASSERT_TRUE(checkMass((uint8_t *) &iec101->stTime, sizeof(iec101->stTime), time_exp , sizeof(time_exp))) << msg;
 	}
 
-//	{
-//		printTestName(" Проверка функции обработки принятого времени. \n");
-//		uint8_t time_now[9] = {0x00, 0x00, 0x01, 0x02, 0x03, 0x00, 0x04, 0x05, 0x06};
-//		uint8_t time_exp[6] = {0x0A, 0x09, 0x08, 0x07, 0x06, 0x0C};
-//		uint8_t tmp_exp[6] = {0};
-//		ASSERT_TRUE(iec101->getTime(tmp_exp, time_now)) << msg;
-//		ASSERT_TRUE(checkMass(tmp_exp, sizeof(tmp_exp), time_exp , sizeof(time_exp))) << msg;
-//	}
+	//	{
+	//		printTestName(" Проверка функции обработки принятого времени. \n");
+	//		uint8_t time_now[9] = {0x00, 0x00, 0x01, 0x02, 0x03, 0x00, 0x04, 0x05, 0x06};
+	//		uint8_t time_exp[6] = {0x0A, 0x09, 0x08, 0x07, 0x06, 0x0C};
+	//		uint8_t tmp_exp[6] = {0};
+	//		ASSERT_TRUE(iec101->getTime(tmp_exp, time_now)) << msg;
+	//		ASSERT_TRUE(checkMass(tmp_exp, sizeof(tmp_exp), time_exp , sizeof(time_exp))) << msg;
+	//	}
 
 	{
 		printTestName(" Команда окончания синхронизации часов. \n");
@@ -1032,7 +1059,8 @@ TEST_F(TIec101_Full, readData_TimeSynch) {
 				FRAME_STOP_CHARCTER
 		};
 		putData(iec101, req, sizeof(req));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(iec101->isReset()) << msg;
 		ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
@@ -1063,7 +1091,8 @@ TEST_F(TIec101_Full, readData_Iterrog) {
 		};
 		uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x00, 0x01, 0x01, FRAME_STOP_CHARCTER}; // CONFIRM_ACK
 		putData(iec101, req, sizeof(req));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 	}
@@ -1086,17 +1115,18 @@ TEST_F(TIec101_Full, readData_Iterrog) {
 		};
 		resp[sizeof(resp) - 2] = getCrcVarLenght(resp);	// подсчет CRC
 		putData(iec101, req, sizeof(req));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 	}
 
 	{
-//		Опрос.
-//		- адреса 201, 202 = false;
-//		- адреса 203, 204 = true;
-//		- адреса 301- 316 = false;
-//		- адреса 317- 332 = true;
+		//		Опрос.
+		//		- адреса 201, 202 = false;
+		//		- адреса 203, 204 = true;
+		//		- адреса 301- 316 = false;
+		//		- адреса 317- 332 = true;
 
 		printTestName(" Данные опроса. \n");
 		uint8_t resp[] = {
@@ -1131,7 +1161,8 @@ TEST_F(TIec101_Full, readData_Iterrog) {
 				}
 				resp[sizeof(resp) - 2] = getCrcVarLenght(resp);	// подсчет CRC
 				putData(iec101, req, sizeof(req));
-				ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+				ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+				iec101->readData();
 				ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 				ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 			} else {
@@ -1158,7 +1189,8 @@ TEST_F(TIec101_Full, readData_Iterrog) {
 		};
 		resp[sizeof(resp) - 2] = getCrcVarLenght(resp);	// подсчет CRC
 		putData(iec101, req, sizeof(req));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 	}
@@ -1171,14 +1203,15 @@ TEST_F(TIec101_Full, readData_Events_Class2) {
 	ASSERT_TRUE(iec101->isReset()) << " Протокол не сброшен. ";
 
 	{
-			printTestName(" Отсутствие данных класса 2 на передачу. \n");
-			uint8_t req[] = FIX_FRAME_IN(11, true);
-			uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x09, 0x01, 0x0A, FRAME_STOP_CHARCTER};
+		printTestName(" Отсутствие данных класса 2 на передачу. \n");
+		uint8_t req[] = FIX_FRAME_IN(11, true);
+		uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x09, 0x01, 0x0A, FRAME_STOP_CHARCTER};
 
-			putData(iec101, req, sizeof(req));
-			ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
-			ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
-			ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
+		putData(iec101, req, sizeof(req));
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		iec101->readData();
+		ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
+		ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 	}
 
 
@@ -1229,7 +1262,8 @@ TEST_F(TIec101_Full, readData_Events_Class2) {
 			resp[19] = year++;
 			resp[sizeof(resp) - 2] = getCrcVarLenght(resp);	// подсчет CRC
 			putData(iec101, req, sizeof(req));
-			ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+			ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+			iec101->readData();
 			ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 			ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 		}
@@ -1241,7 +1275,8 @@ TEST_F(TIec101_Full, readData_Events_Class2) {
 		uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x09, 0x01, 0x0A, FRAME_STOP_CHARCTER};
 
 		putData(iec101, req, sizeof(req));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 	}
@@ -1303,7 +1338,8 @@ TEST_F(TIec101_Full, readData_Events_Class2) {
 				}
 				resp[sizeof(resp) - 2] = getCrcVarLenght(resp);	// подсчет CRC
 				putData(iec101, req, sizeof(req));
-				ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+				ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+				iec101->readData();
 				ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 				ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 			}
@@ -1323,7 +1359,8 @@ TEST_F(TIec101_Full, readData_Events_Class1) {
 		uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x09, 0x01, 0x0A, FRAME_STOP_CHARCTER};
 
 		putData(iec101, req, sizeof(req));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 	}
@@ -1334,7 +1371,8 @@ TEST_F(TIec101_Full, readData_Events_Class1) {
 		uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x09, 0x01, 0x0A, FRAME_STOP_CHARCTER};
 
 		putData(iec101, req, sizeof(req));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 	}
@@ -1348,7 +1386,8 @@ TEST_F(TIec101_Full, readData_Events_Class1) {
 		uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x29, 0x01, 0x2A, FRAME_STOP_CHARCTER};
 
 		putData(iec101, req, sizeof(req));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 	}
@@ -1406,7 +1445,8 @@ TEST_F(TIec101_Full, readData_Events_Class1) {
 			}
 			resp[sizeof(resp) - 2] = getCrcVarLenght(resp);	// подсчет CRC
 			putData(iec101, req, sizeof(req));
-			ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+			ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+			iec101->readData();
 			ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 			ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 		}
@@ -1418,7 +1458,8 @@ TEST_F(TIec101_Full, readData_Events_Class1) {
 		uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x09, 0x01, 0x0A, FRAME_STOP_CHARCTER};
 
 		putData(iec101, req, sizeof(req));
-		ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+		iec101->readData();
 		ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 		ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 	}
@@ -1484,7 +1525,8 @@ TEST_F(TIec101_Full, readData_Events_Class1) {
 
 				resp[sizeof(resp) - 2] = getCrcVarLenght(resp);	// подсчет CRC
 				putData(iec101, req, sizeof(req));
-				ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+				ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+				iec101->readData();
 				ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 				ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 
@@ -1504,7 +1546,8 @@ TEST_F(TIec101_Full, readData_Events_Class1) {
 			uint8_t resp[] = {FRAME_START_CHARACTER_FIX, 0x29, 0x01, 0x2A, FRAME_STOP_CHARCTER};
 
 			putData(iec101, req, sizeof(req));
-			ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+			ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+			iec101->readData();
 			ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 			ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 		}
@@ -1564,7 +1607,8 @@ TEST_F(TIec101_Full, readData_Events_Class1) {
 
 				resp[sizeof(resp) - 2] = getCrcVarLenght(resp);	// подсчет CRC
 				putData(iec101, req, sizeof(req));
-				ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+				ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+				iec101->readData();
 				ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 				ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 			}
@@ -1616,7 +1660,8 @@ TEST_F(TIec101_Full, readData_Events_Class1) {
 
 				resp[sizeof(resp) - 2] = getCrcVarLenght(resp);	// подсчет CRC
 				putData(iec101, req, sizeof(req));
-				ASSERT_EQ(iec101->readData(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+				ASSERT_EQ(iec101->checkFrame(), CIec101::ERROR_NO) << msg << " Кол-во байт: " << (uint16_t) iec101->getNumOfBytes();
+				iec101->readData();
 				ASSERT_TRUE(iec101->checkState(CIec101::STATE_WRITE_READY)) << msg << " " << iec101->getState();
 				ASSERT_TRUE(checkMass(buf, iec101->getNumOfBytes(), resp, sizeof(resp))) << msg;
 			}

@@ -101,9 +101,7 @@ void CIec101::tick() {
 
 	if (checkState(STATE_READ)) {
 		if (tick >= m_u16TickTime) {
-			if (m_u8Cnt >= s_u8SizeOfFrameFixLenght) {
-//				if ((m_pBuf[0] == 0x68) && (m_pBuf[6] == 0x67)) {
-//				}
+			if (checkFrame() == ERROR_NO) {
 				setState(STATE_READ_OK);
 			} else {
 				setState(STATE_READ);
@@ -156,33 +154,22 @@ uint8_t CIec101::sendData() {
 }
 
 // Обработка принятых данных.
-CIec101::EError CIec101::readData() {
-	EError error = ERROR_COMMON;
-
-	switch (static_cast<EFrameStartCharacter>(m_pBuf[0])) {
-		case FRAME_START_CHARACTER_FIX: {
-			SFrameFixLength &frame = *((SFrameFixLength *) m_pBuf);
-			error = checkFrameFixLenght(frame);
-			if (error == ERROR_NO) {
+void CIec101::readData() {
+	if (isReadData()) {
+		switch (static_cast<EFrameStartCharacter>(m_pBuf[0])) {
+			case FRAME_START_CHARACTER_FIX: {
+				SFrameFixLength &frame = *((SFrameFixLength *) m_pBuf);
 				readFrameFixLenght(frame);
 			}
-		}
-		break;
-		case FRAME_START_CHARACTER_VAR: {
-			SFrameVarLength &frame = *((SFrameVarLength*) m_pBuf);
-			error = checkFrameVarLenght(frame);
-			if (error == ERROR_NO) {
+			break;
+			case FRAME_START_CHARACTER_VAR: {
+				SFrameVarLength &frame = *((SFrameVarLength*) m_pBuf);
 				readFrameVarLenght(frame);
 			}
-		}
-		break;
-		default:
 			break;
-	}
-
-	if (error != ERROR_NO) {
-		// в случае обнаружения ошибки, ожидаем следующий пакет через 33 бита
-		setState(STATE_READ_ERROR);
+			default:
+				break;
+		}
 	}
 
 	// Если в процессе обработки кадра, режим не был изменен на "чтение"
@@ -190,8 +177,6 @@ CIec101::EError CIec101::readData() {
 	if (isReadData()) {
 		sendFrame();
 	}
-
-	return error;
 }
 
 //Проверка необходимости передать новое сообщении класса 1.
@@ -225,6 +210,34 @@ uint8_t CIec101::getCrcVarFrame(SFrameVarLength &rFrame) const {
 	return crc;
 }
 
+// Проверка принятого кадра.
+CIec101::EError CIec101::checkFrame() {
+	EError error = ERROR_COMMON;
+
+	if (m_u8Cnt >= s_u8SizeOfFrameFixLenght) {
+		switch (static_cast<EFrameStartCharacter>(m_pBuf[0])) {
+			case FRAME_START_CHARACTER_FIX: {
+				SFrameFixLength &frame = *((SFrameFixLength *) m_pBuf);
+				error = checkFrameFixLenght(frame);
+			}
+			break;
+			case FRAME_START_CHARACTER_VAR: {
+				SFrameVarLength &frame = *((SFrameVarLength*) m_pBuf);
+				error = checkFrameVarLenght(frame);
+			}
+			break;
+			default:
+				break;
+		}
+	}
+
+	if (error != ERROR_NO) {
+		// в случае обнаружения ошибки, ожидаем следующий пакет через 33 бита
+		setState(STATE_READ_ERROR);
+	}
+
+	return error;
+}
 
 // Проверка кадра с фиксированной длиной.
 CIec101::EError CIec101::checkFrameFixLenght(SFrameFixLength &rFrame) const {
@@ -436,11 +449,11 @@ void CIec101::prepareFrameFixLenght(EFcSecondary eFunction) {
 	m_stFrameFix.controlField.common = 0;
 	m_stFrameFix.controlField.secondary.function = eFunction;
 	m_stFrameFix.controlField.secondary.dfc = 0;	// прием сообщений всегда возможен
-//	m_stFrameFix.controlField.secondary.acd = isAcd();
+	//	m_stFrameFix.controlField.secondary.acd = isAcd();
 	m_stFrameFix.controlField.secondary.prm = 0;	// направление передачи от вторичной станции = 0
 	m_stFrameFix.controlField.secondary.res = 0;	// резерв всегда 0
 	m_stFrameFix.linkAddress = getAddressLan();
-//	m_stFrameFix.checkSum = getCrcFixFrame(m_stFrameFix);
+	//	m_stFrameFix.checkSum = getCrcFixFrame(m_stFrameFix);
 	m_stFrameFix.stopCharacter = s_u8FrameStopCharacter;
 
 	m_eFrameSend = FRAME_START_CHARACTER_FIX;
@@ -457,7 +470,7 @@ void CIec101::prepareFrameVarLenght(ETypeId eId, ECot eCot, uint8_t u8SizeAsdu) 
 	m_stFrameVar.controlField.common = 0;
 	m_stFrameVar.controlField.secondary.function = RESPOND_USER_DATA;
 	m_stFrameVar.controlField.secondary.dfc = 0;		// прием сообщений всегда возможен
-//	m_stFrameVar.controlField.secondary.acd = isAcd();	// сообщение для отправки
+	//	m_stFrameVar.controlField.secondary.acd = isAcd();	// сообщение для отправки
 	m_stFrameVar.controlField.secondary.prm = 0;		// направление передачи от вторичной станции = 0
 	m_stFrameVar.controlField.secondary.res = 0;		// резерв всегда 0
 
@@ -472,7 +485,7 @@ void CIec101::prepareFrameVarLenght(ETypeId eId, ECot eCot, uint8_t u8SizeAsdu) 
 
 	// Остальные данные ASDU уже должны быть на месете.
 
-//	m_stFrameVar.checkSum =  getCrcVarFrame(m_stFrameVar);
+	//	m_stFrameVar.checkSum =  getCrcVarFrame(m_stFrameVar);
 	m_stFrameVar.stopCharacter = s_u8FrameStopCharacter;
 	m_eFrameSend = FRAME_START_CHARACTER_VAR;
 }
@@ -730,8 +743,8 @@ bool CIec101::procFrameCCsNa1(SCCsNa1 stCCsNa1) {
 	if (stCCsNa1.dataUnitId.causeOfTramsmission.cot != COT_ACT)
 		return false;
 
-//	if (isFunc(FUNCTION_TIME_SYNCH_CONF))
-//		return false;
+	//	if (isFunc(FUNCTION_TIME_SYNCH_CONF))
+	//		return false;
 
 	setFunc(FUNCTION_TIME_SYNCH_CONF);
 	copyCp56time2a(stTime, stCCsNa1.cp56Time2a);
@@ -769,7 +782,7 @@ void CIec101::copyCp56time2a(SCp56Time2a &rDist, const SCp56Time2a &rSource) {
 
 // Заполнение метки времени Cp56Time2a.
 void CIec101::writeCp56Time2a(SCp56Time2a &rTime, uint8_t years, uint8_t months,
-			uint8_t day, uint8_t hours, uint8_t min, uint8_t sec, uint16_t msec) {
+		uint8_t day, uint8_t hours, uint8_t min, uint8_t sec, uint16_t msec) {
 	// очистим время
 	uint8_t *ptr = (uint8_t *) &rTime;
 	for(uint8_t i = 0; i < sizeof(SCp56Time2a); i++) {
