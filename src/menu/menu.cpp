@@ -2997,6 +2997,7 @@ void clMenu::lvlSetupParamPrm() {
 			if (numcom != 0) {
 				sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK);
 				sParam.local.addParam(GB_PARAM_PRM_TIME_OFF);
+				sParam.local.addParam(GB_PARAM_PRM_INC_SAFETY);
 			}
 		} else if (device == AVANT_OPTO) {
 				sParam.local.addParam(GB_PARAM_PRM_TIME_ON_K400);

@@ -32,7 +32,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0144
+#define VERS 0x0145
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -253,6 +253,7 @@ enum eGB_COM {
 	GB_COM_PRM_GET_TIME_OFF 	= 0x13,	// +
 	GB_COM_PRM_GET_BLOCK_COM 	= 0x14,	// +
 	GB_COM_PRM_GET_FREQ_CORR	= 0x15,	// +
+	GB_COM_PRM_GET_INC_SAFETY	= 0x16,	// +
 	GB_COM_PRM_GET_DR_STATE 	= 0x17, // +
 	GB_COM_PRM_GET_DR_BLOCK		= 0x18,	// +
 	GB_COM_PRM_GET_DR_COM		= 0x19,	// +
@@ -312,6 +313,7 @@ enum eGB_COM {
 	GB_COM_PRM_SET_TIME_OFF 	= 0x93,	// +
 	GB_COM_PRM_SET_BLOCK_COM 	= 0x94,	// +
 	GB_COM_PRM_SET_FREQ_CORR	= 0x95,	// +
+	GB_COM_PRM_SET_INC_SAFETY	= 0x16,	// +
 	GB_COM_PRM_SET_DR_STATE 	= 0x97, // +
 	GB_COM_PRM_SET_DR_BLOCK		= 0x98,	// +
 	GB_COM_PRM_SET_DR_COM		= 0x99,	// +
@@ -467,6 +469,7 @@ typedef enum {
 	GB_PARAM_PRM_TEST_COM,		///< прием тестовой команды
 	GB_PARAM_PRM_FREQ_CORR,		///< коррекция частоты ПРМ
 	GB_PARAM_PRM_COM_SIGNAL,	///< сигнализация команд ПРМ
+	GB_PARAM_PRM_INC_SAFETY,	///< Повышение безопасности
 	// параметры интерфейса
 	GB_PARAM_INTF_INTERFACE,	///< интерфейс связи
 	GB_PARAM_INTF_PROTOCOL,		///< протокол
