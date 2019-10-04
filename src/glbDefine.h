@@ -1111,6 +1111,9 @@ public:
 		return enable_;
 	}
 
+
+
+
 	// массивы расшифровок аварий и предупреждений
 	PGM_P faultText[MAX_NUM_FAULTS];
 	PGM_P warningText[MAX_NUM_WARNINGS];
@@ -1138,6 +1141,7 @@ private:
 
 	// True - означает наличие данного устройства в текущем исполнении АВАНТа
 	bool enable_;
+
 
 	// возвращает кол-во установленных в 1 бит
 	uint8_t getNumSetBits(uint16_t val)

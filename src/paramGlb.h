@@ -75,6 +75,13 @@ enum eGB_COMP_K400 {
 
 /// класс для общих параметров и настроек
 class TDeviceGlb {
+	/// Дискретные входы
+	enum __attribute__((__packed__)) dInput_t {
+		DINPUT_PUSK_PRM 	= 0x01,	///< Пуск ПРМ
+		DINPUT_RESET_IND 	= 0x02,	///< Сброс инд
+		DINPUT_TM_CONTROL 	= 0x04	///< Упр ТМ
+	};
+
 public:
 	TDeviceGlb() {
 		typeDevice_ = AVANT_NO;
@@ -91,6 +98,8 @@ public:
 		for(uint_fast8_t i = 0; i < GB_IC_MAX; i++) {
 			versProgIC_[i] = 0;
 		}
+
+		dInputState = 0x00;
 	}
 
 	TDeviceStatus status;
@@ -392,6 +401,25 @@ public:
 		this->ledOn = ledOn;
 	}
 
+	// установка флагов текущих состояний дискретных входов
+	void setDInputState(uint8_t val) {
+		dInputState = val;
+	}
+
+	// Возвращает текущее состояние ДВ "Пуск ПРМ"
+	bool getDInputPuskPrm() const {
+		return ((dInputState & DINPUT_PUSK_PRM) > 0) ? true : false;
+	}
+	// Возвращает текущее состояние ДВ "Сброс инд"
+	bool getDInputResetInd() const {
+		return ((dInputState & DINPUT_RESET_IND) > 0) ? true : false;
+	}
+
+	// Возвращает текущее состояние ДВ "Упр ТМ"
+	bool getDInputTmControl() const {
+		return ((dInputState & DINPUT_TM_CONTROL) > 0) ? true : false;
+	}
+
 private:
 	// версии прошивок микросхем
 	uint16_t versProgIC_[GB_IC_MAX];
@@ -422,6 +450,10 @@ private:
 
 	// флаг включения подсветки
 	bool ledOn;
+
+	// состояние дискретных входов (побитно, выкл(0)/вкл(1)).
+	uint8_t dInputState;
+
 };
 
 

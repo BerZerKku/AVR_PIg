@@ -539,6 +539,11 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 				sParam_->glb.setLedOn((buf[B21] > 0));
 			}
 
+			// текущее состояние дискретных входов (Пуск ПРМ, Сброс индикации и т.д.)
+			if (num >= 22) {
+				sParam_->glb.setDInputState(buf[B22]);
+			}
+
 			eGB_REGIME reg = GB_REGIME_MAX;
 			eGB_REGIME regTmp = GB_REGIME_MAX;
 			// определение общего режима аппарата
