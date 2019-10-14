@@ -1,5 +1,5 @@
 [Files]
-Flash=D:\Project\Programm\MCU\AtmelAvrGcc\PIg\Debug\PIg.hex
+Flash=D:\Workspace\mcu\avr-gcc\PIg\Debug\PIg.hex
 Eeprom=[Unspecified]
 FlashInvert=0
 [Settings]

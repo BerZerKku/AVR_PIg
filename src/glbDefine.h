@@ -1111,9 +1111,6 @@ public:
 		return enable_;
 	}
 
-
-
-
 	// массивы расшифровок аварий и предупреждений
 	PGM_P faultText[MAX_NUM_FAULTS];
 	PGM_P warningText[MAX_NUM_WARNINGS];
@@ -2486,6 +2483,18 @@ public:
 		STATE_MAX		///< Максимальное значение.
 	} state_t;
 
+	/// Шаги проверки сигналов защиты.
+	enum __attribute__ ((__packed__)) defSignal_t {
+		DEF_SIGNAL_PUSK = 0,
+		DEF_SIGNAL_STOP,
+		DEF_SIGNAL_MAN,
+		DEF_SIGNAL_PRM,
+		DEF_SIGNAL_PRD,
+		DEF_SIGNAL_OUT,
+		//
+		DEF_SIGNAL_MAX	///< Количество сигналов в списке.
+	};
+
 	TJrnSCADA() {
 		m_u8Com = 0;
 		m_u8ComSource = 0;
@@ -2493,6 +2502,7 @@ public:
 		m_eJrn = GB_DEVICE_K400_MAX;
 
 		m_eState = STATE_IDLE;
+		m_step = 0;
 	};
 
 	TDataTime dtime;
@@ -2505,6 +2515,46 @@ public:
 	/// Возвращает событие.
 	uint8_t getEvent() const {
 		return m_u8Event;
+	}
+
+	/** Возвращает событие для журнала защиты.
+	 *
+	 *	@param[out] val Значение события.
+	 * 	@return Событие для журнала защиты.
+	 * 	@retval 0 если событий больше нет.
+	 */
+	uint8_t getDefEvent(bool &val) {
+		uint8_t ev = 0;
+
+		switch(m_step) {
+			case DEF_SIGNAL_PUSK:
+				ev = ++m_step;
+				val = m_u8Com & 0x01 ? true : false;
+				break;
+			case DEF_SIGNAL_STOP:
+				ev = ++m_step;
+				val = m_u8Com & 0x02 ? true : false;
+				break;
+			case DEF_SIGNAL_MAN:
+				ev = ++m_step;
+				val = m_u8Com & 0x04 ? true : false;
+				break;
+			case DEF_SIGNAL_PRM:
+				ev = ++m_step;
+				val = m_u8ComSource & 0x01 ? true : false;
+				break;
+			case DEF_SIGNAL_PRD:
+				ev = ++m_step;
+				val = m_u8ComSource & 0x02 ? true : false;
+				break;
+			case DEF_SIGNAL_OUT:
+				ev = ++m_step;
+				val = m_u8ComSource & 0x03 ? true : false;
+				break;
+		}
+
+
+		return ev;
 	}
 
 	/// Установка номера команды.
@@ -2538,6 +2588,12 @@ public:
 		} else {
 			m_eJrn = GB_DEVICE_K400_MAX;
 		}
+		m_step = 0;
+	}
+
+	/// Проверка текущего журнала на журнал защиты.
+	bool isJrnDef() const {
+		return (m_eJrn == GB_DEVICE_K400_DEF);
 	}
 
 	/// Проверка текущего журнала на журнал событий.
@@ -2612,6 +2668,7 @@ private:
 	uint8_t m_u8ComSource;	/// Источник команды (0 - ДВ, 1 - ЦПП).
 
 	state_t m_eState;		/// Текущее состояние.
+	uint8_t m_step;			/// Счетчик опроса.
 };
 
 #endif /* GLBDEF_H_ */

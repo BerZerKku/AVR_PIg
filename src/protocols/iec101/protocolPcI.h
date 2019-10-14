@@ -68,6 +68,9 @@ class TProtocolPcI : public CIec101{
 	// Адрес первой команды приемника (данные класс 1).
 	static const uint16_t c_adrIe1PrmCom1 = 804;
 
+	// Адрес первого сигнала для защиты
+	static const uint16_t c_adrIe1DefSignal1 = 836;
+
 	/// Список элементов информации класса 2.
 	typedef enum __attribute__ ((__packed__)) {
 		IE2_ERROR = 0,
@@ -310,8 +313,6 @@ public:
 	 * 	@retval True Есть данные на передачу.
 	 */
 	virtual bool checkEventClass2(uint16_t &adr, bool &val, SCp56Time2a &time);
-
-
 
 private:
 

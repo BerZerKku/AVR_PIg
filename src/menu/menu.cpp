@@ -158,7 +158,6 @@ void clMenu::main(void) {
 		vLCDsetLed(LED_SWITCH);
 	}
 
-
 	if (checkLedOn()) {
 		vLCDsetLed(LED_SWITCH);
 	}
@@ -882,6 +881,7 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 	return status;
 }
 
+// Возвращает имеющуюся команду на исполнение.
 eGB_COM clMenu::getTxCommand() {
 	static uint8_t cnt = 0;
 
@@ -889,35 +889,23 @@ eGB_COM clMenu::getTxCommand() {
 	eGB_COM com = sParam.txComBuf.getFastCom();
 
 	if (com == GB_COM_NO) {
-
-		if (cnt >= MIN_NUM_COM_SEND_IN_1_SEK)
-			cnt = 0;
-
-		if (cnt > 0) {
-			// команды которые должны передаваться минимум раз в секунду
-			if (cnt <= MAX_NUM_COM_BUF2) {
-				com = sParam.txComBuf.getCom2();
-
-				if (com == GB_COM_NO) {
-					cnt = MAX_NUM_COM_BUF2 + 1;
-				}
-			}
-
-			// команды которые должны передаваться постоянно
-			if (com == GB_COM_NO) {
-				com = sParam.txComBuf.getCom1();
-
-				if (com == GB_COM_NO) {
-					cnt = 0;
-				}
-			}
-		}
-
 		if (cnt == 0) {
 			com = GB_COM_GET_SOST;
+		} else if (cnt == 1) {
+			com = GB_COM_GET_TIME;
+		} else if (cnt <= (1 + MAX_NUM_COM_BUF2)) {
+			// команды которые должны передаваться минимум раз в секунду
+			com = sParam.txComBuf.getCom2();
 		}
 
-		cnt++;
+		if (com == GB_COM_NO) {
+			// команды которые должны периодически передаваться
+			com = sParam.txComBuf.getCom1();
+		}
+	}
+
+	if ((++cnt >= MIN_NUM_COM_SEND_IN_1_SEK) || (com == GB_COM_NO)) {
+		cnt = 0;
 	}
 
 	return com;
@@ -1007,17 +995,16 @@ void clMenu::lvlStart() {
 		vLCDdrawBoard(lineParam_);
 
 		sParam.txComBuf.clear();
-		// буфер 1
+		// буфер 2
 		// дополнительные команды
 		// время измеряемые параметры (в ВЧ)
-		sParam.txComBuf.addCom2(GB_COM_GET_TIME);
 		sParam.txComBuf.addCom2(GB_COM_GET_FAULT);
 		if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 		if (sParam.typeDevice == AVANT_R400M) {
 			sParam.txComBuf.addCom2(GB_COM_DEF_GET_TYPE_AC);
 		}
- 		// буфер 2
+ 		// буфер 1
 		// неисправности + кол-во аппаратов в линии + сетевой адрес
 		// в Р400м + АК + совместимость
 		// в К400  + совместимость
@@ -1745,8 +1732,10 @@ void clMenu::lvlJournalDef() {
 		//		snprintf(&vLCDbuf[poz], 21, "%x",signals);
 		snprintf_P(&vLCDbuf[poz], 21, fcSignalDefJrn,
 				sParam.jrnEntry.getSignalPusk(),
-				sParam.jrnEntry.getSignalStop(), sParam.jrnEntry.getSignalMan(),
-				sParam.jrnEntry.getSignalPrd(), sParam.jrnEntry.getSignalPrm(),
+				sParam.jrnEntry.getSignalStop(),
+				sParam.jrnEntry.getSignalMan(),
+				sParam.jrnEntry.getSignalPrd(),
+				sParam.jrnEntry.getSignalPrm(),
 				sParam.jrnEntry.getSignalOut());
 	}
 
@@ -3431,7 +3420,6 @@ void clMenu::lvlSetupDT() {
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
-		sParam.txComBuf.addCom2(GB_COM_GET_TIME);
 	}
 
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
@@ -3581,7 +3569,6 @@ void clMenu::lvlMeasure() {
 		sParam.txComBuf.clear();
 		sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 		// 2 команды добавлены для уменьшения частоты опроса измеряемых параметров
-		sParam.txComBuf.addCom2(GB_COM_GET_TIME);
 		sParam.txComBuf.addCom2(GB_COM_GET_FAULT);
 	}
 

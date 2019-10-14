@@ -239,7 +239,7 @@ uint8_t TProtocolPcI::send() {
 
 // ѕроверка наличи€ данных класса 1 на передачу.
 bool TProtocolPcI::checkEventClass1(uint16_t &adr, bool &val, SCp56Time2a &time) {
-	static uint16_t ladr;
+	static uint16_t ladr;	// ѕоследний переданный адрес.
 
 	if (!sParam_->jrnScada.isReadyToSend())
 		return false;
@@ -250,6 +250,7 @@ bool TProtocolPcI::checkEventClass1(uint16_t &adr, bool &val, SCp56Time2a &time)
 
 	if (jrn->isJrnEvent()) {
 		adr = c_adrIe1Event1 + jrn->getEvent() - 1;
+		// ƒл€ событий формируютс€ сигналы начала и окончани€ с разницей 1 мс.
 		if (ladr != adr) {
 			ladr = adr;
 			val = true;
@@ -269,7 +270,16 @@ bool TProtocolPcI::checkEventClass1(uint16_t &adr, bool &val, SCp56Time2a &time)
 		adr = (jrn->getComSource()) ? c_adrIe1PrdCCom1 : c_adrIe1PrdDCom1;
 		adr += jrn->getCom() - 1;
 		sParam_->jrnScada.setReadyToEvent();
-	} else {
+	}
+	else if (jrn->isJrnDef()) {
+		adr = jrn->getDefEvent(val);
+		if (adr == 0) {
+			sParam_->jrnScada.setReadyToEvent();
+			return false;
+		}
+		adr += c_adrIe1DefSignal1 - 1;
+	}
+	else {
 		sParam_->jrnScada.setReadyToEvent();
 		return false;
 	}
@@ -281,7 +291,6 @@ bool TProtocolPcI::checkEventClass1(uint16_t &adr, bool &val, SCp56Time2a &time)
 	time.minutes 		= jrn->dtime.getMinute();
 	time.milliseconds 	= jrn->dtime.getSecond() * 1000;
 	time.milliseconds  += ms;
-
 
 	return true;
 }

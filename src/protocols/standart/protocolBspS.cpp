@@ -461,6 +461,7 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
  * 	@return True - в случае успешной обработки, False - в случае ошибки.
  */
 bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
+	static uint8_t cntTimeFrame = 0;
 	bool stat = false;
 	eGB_TYPE_DEVICE device = sParam_->typeDevice;
 
@@ -498,6 +499,15 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 					jrn->dtime.setMsSecond(*((uint16_t *) &buf[B20]));
 
 					jrn->setReadyToSend();
+					cntTimeFrame = 0;
+				}
+			} else {
+				if (sParam_->jrnScada.isReadyToWrite()) {
+					if (cntTimeFrame > 5) {
+						sParam_->jrnScada.setReadyToEvent();
+					} else {
+						cntTimeFrame++;
+					}
 				}
 			}
 		}
@@ -519,29 +529,25 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			// далее проверяется кол-во принятых байт
 			uint8_t num = buf[NUM];
 
-			if ((device == AVANT_K400) || (device == AVANT_OPTO)) {
-				if (sParam_->prm.status.isEnable()) {
-					if (num >= 13) 	sParam_->prm.setIndCom8(0, buf[B13]);
-					if (num >= 14)  sParam_->prm.setIndCom8(1, buf[B14]);
-					if (num >= 15)  sParam_->prm.setIndCom8(2, buf[B15]);
-					if (num >= 16)  sParam_->prm.setIndCom8(3, buf[B16]);
-				}
-				if (sParam_->prd.status.isEnable()) {
-					if (num >= 17) 	sParam_->prd.setIndCom8(0, buf[B17]);
-					if (num >= 18)  sParam_->prd.setIndCom8(1, buf[B18]);
-					if (num >= 19)  sParam_->prd.setIndCom8(2, buf[B19]);
-					if (num >= 20)  sParam_->prd.setIndCom8(3, buf[B20]);
-				}
+			if (sParam_->prm.status.isEnable()) {
+				if (num >= 13) 	sParam_->prm.setIndCom8(0, buf[B13]);
+				if (num >= 14)  sParam_->prm.setIndCom8(1, buf[B14]);
+				if (num >= 15)  sParam_->prm.setIndCom8(2, buf[B15]);
+				if (num >= 16)  sParam_->prm.setIndCom8(3, buf[B16]);
 			}
 
-			// проверка необходимости включить подсветку
-			if (num >= 21) {
-				sParam_->glb.setLedOn((buf[B21] > 0));
+			if (sParam_->prd.status.isEnable()) {
+				if (num >= 17) 	sParam_->prd.setIndCom8(0, buf[B17]);
+				if (num >= 18)  sParam_->prd.setIndCom8(1, buf[B18]);
+				if (num >= 19)  sParam_->prd.setIndCom8(2, buf[B19]);
+				if (num >= 20)  sParam_->prd.setIndCom8(3, buf[B20]);
 			}
 
 			// текущее состояние дискретных входов (Пуск ПРМ, Сброс индикации и т.д.)
-			if (num >= 22) {
-				sParam_->glb.setDInputState(buf[B22]);
+			// проверка необходимости включить подсветку
+			if (num >= 21) {
+				sParam_->glb.setLedOn((buf[B21] > 0));
+				sParam_->glb.setDInputState(buf[B21]);
 			}
 
 			eGB_REGIME reg = GB_REGIME_MAX;
