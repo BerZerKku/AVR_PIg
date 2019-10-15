@@ -1847,7 +1847,7 @@ public:
 		signalMan_ = (val & 0x40) ? 1 : 0;
 		signalPrm_ = (val & 0x01) ? 1 : 0;
 		signalPrd_ = (val & 0x02) ? 1 : 0;
-		signalOut_ = (val & 0x03) ? 1 : 0;
+		signalOut_ = (val & 0x04) ? 1 : 0;
 		signals_ = val;
 
 		return state;
@@ -2037,7 +2037,7 @@ private:
 	bool signalMan_;
 	bool signalPrm_;
 	bool signalPrd_;
-	bool signalOut_;
+	bool signalOut_;	// Выход приемника (ПРМ2 или РЗвых)
 	uint8_t signals_;
 
 	// буфер записи для журналов ОПТИКИ
@@ -2485,14 +2485,14 @@ public:
 
 	/// Шаги проверки сигналов защиты.
 	enum __attribute__ ((__packed__)) defSignal_t {
-		DEF_SIGNAL_PUSK = 0,
-		DEF_SIGNAL_STOP,
-		DEF_SIGNAL_MAN,
-		DEF_SIGNAL_PRM,
-		DEF_SIGNAL_PRD,
-		DEF_SIGNAL_OUT,
+		DEF_SIGNAL_PUSK = 0,	///< ПУСК.
+		DEF_SIGNAL_STOP,		///< СТОП.
+		DEF_SIGNAL_MAN,			///< МАН.
+		DEF_SIGNAL_PRM,			///< Осц. ПРМ.
+		DEF_SIGNAL_PRD,			///< Осц. ПРД.
+		DEF_SIGNAL_OUT,			///< Выход приемника.
 		//
-		DEF_SIGNAL_MAX	///< Количество сигналов в списке.
+		DEF_SIGNAL_MAX			///< Количество сигналов в списке.
 	};
 
 	TJrnSCADA() {
@@ -2549,7 +2549,7 @@ public:
 				break;
 			case DEF_SIGNAL_OUT:
 				ev = ++m_step;
-				val = m_u8ComSource & 0x03 ? true : false;
+				val = m_u8ComSource & 0x04 ? true : false;
 				break;
 		}
 
