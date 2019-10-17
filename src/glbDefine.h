@@ -1623,6 +1623,7 @@ public:
 		regime_ = GB_REGIME_MAX;
 		numCom_ = 0;
 		sourceCom_ = GB_SOURCE_COM_MAX;
+		srcCom_ = 0;
 		signalPusk_ = false;
 		signalStop_ = false;
 		signalMan_ = false;
@@ -1710,6 +1711,15 @@ public:
 	}
 	uint8_t getEventType() const {
 		return eventType_;
+	}
+
+	// источник команды
+	bool setSrcCom(uint8_t val) {
+		srcCom_ = val & 0x07;
+		return true;
+	}
+	uint8_t getSrcCom() const {
+		return srcCom_;
 	}
 
 
@@ -2027,6 +2037,9 @@ private:
 
 	// тип события
 	uint8_t eventType_;
+
+	// источник команды (номер аппарата с которого пришла команда)
+	uint8_t srcCom_;
 
 	// режим
 	eGB_REGIME regime_;

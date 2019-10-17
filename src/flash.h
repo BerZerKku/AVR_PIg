@@ -87,6 +87,42 @@ static const char fcDevicesK400[GB_DEVICE_K400_MAX + 1][5] PROGMEM = {
 	"ОШБ"///< ошибочное значение
 };
 
+/// Массив источников команды приемника с номером 1(для журнала приемника).
+static const char fcSrcPrm1[8][7] PROGMEM = {
+		"      ",
+		"(ПРМ2)",
+		"(ПРМ3)",
+		"      ",
+		"      ",
+		"(П2,3)",
+		"      ",
+		"      "
+};
+
+/// Массив источников команды приемника с номером 2(для журнала приемника).
+static const char fcSrcPrm2[8][7] PROGMEM = {
+		"      ",
+		"(ПРМ1)",
+		"(ПРМ3)",
+		"      ",
+		"      ",
+		"(П1,3)",
+		"      ",
+		"      "
+};
+
+/// Массив источников команды приемника с номером 3(для журнала приемника).
+static const char fcSrcPrm3[8][7] PROGMEM = {
+		"      ",
+		"(ПРМ1)",
+		"(ПРМ2)",
+		"      ",
+		"      ",
+		"(П1,2)",
+		"      ",
+		"      "
+};
+
 /// Номера удаленного(ых) аппарата
 static char fcRemoteNum[TDeviceStatus::GB_MAX_REM_NUM + 1][STRING_LENGHT] PROGMEM = {
 //		 1234567890
@@ -268,6 +304,8 @@ static const char fcRegimeJrn[] PROGMEM = "Режим:";
 static const char fcStateJrn[] PROGMEM = "Состояние:";
 /// Номер команды, для которой была сделана запись.
 static const char fcNumComJrn[] PROGMEM = "Команда: %u";
+/// Номер команды приемника, для которой была сделана запись.
+static const char fcNumComJrnPrm[] PROGMEM = "Команда: %u %S";
 /// Дата, когда была сделана запись.
 static const char fcDateJrn[] PROGMEM = "Дата: %02u.%02u.%02u";
 /// Время, когда была сделана запись.

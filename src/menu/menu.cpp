@@ -1800,6 +1800,7 @@ void clMenu::lvlJournalPrm() {
 		sParam.txComBuf.clear();
 		sParam.txComBuf.addCom1(GB_COM_PRM_GET_JRN_CNT);
 		sParam.txComBuf.addCom2(GB_COM_PRM_GET_JRN_ENTRY);
+		sParam.txComBuf.addCom2(GB_COM_GET_DEVICE_NUM);
 		sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 	}
 
@@ -1843,7 +1844,23 @@ void clMenu::lvlJournalPrm() {
 		} else {
 			com = sParam.jrnEntry.getNumCom();
 		}
-		snprintf_P(&vLCDbuf[poz], 21, fcNumComJrn, com);
+
+		if (sParam.glb.getMaxNumDevices() == 3) {
+			uint8_t src = sParam.jrnEntry.getSrcCom();
+			uint8_t devnum = sParam.glb.getDeviceNum();
+			if (devnum == 1) {
+				snprintf_P(&vLCDbuf[poz], 21, fcNumComJrnPrm, com, fcSrcPrm1[src]);
+			} else if (devnum == 2) {
+				snprintf_P(&vLCDbuf[poz], 21, fcNumComJrnPrm, com, fcSrcPrm2[src]);
+			} else if (devnum == 3) {
+				snprintf_P(&vLCDbuf[poz], 21, fcNumComJrnPrm, com, fcSrcPrm3[src]);
+			} else {
+				snprintf_P(&vLCDbuf[poz], 21, fcNumComJrn, com);
+			}
+		} else {
+			snprintf_P(&vLCDbuf[poz], 21, fcNumComJrn, com);
+		}
+
 		poz += 20;
 		// вывод даты
 		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,

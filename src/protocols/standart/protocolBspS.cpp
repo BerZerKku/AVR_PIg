@@ -359,6 +359,7 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
 					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
 					sParam_->jrnEntry.setNumCom(buf[B2]);
 					sParam_->jrnEntry.setEventType(buf[B3]);
+					sParam_->jrnEntry.setSrcCom(buf[B4]);
 					sParam_->jrnEntry.setReady();
 				}
 				stat = true;
