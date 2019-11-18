@@ -502,8 +502,8 @@ enum eGB_CONTROL {
 	GB_CONTROL_MAN_2 		= 17,	// пуск МАН удаленного 2
 	GB_CONTROL_MAN_3 		= 18,	// пуск МАН удаленного 3
 	GB_CONTROL_MAN_ALL 		= 19,	// пуск МАН удаленных
-	GB_CONTROL_TGOOSE_ON	= 20,	// пуск теста GOOSE
-	GB_CONTROL_TGOOSE_OFF	= 21,	// останов теста GOOSE
+	GB_CONTROL_TGOOSE_ON	= 20,	// Тест GOOSE вкл.
+	GB_CONTROL_TGOOSE_OFF	= 21,	// Тест GOOSE выкл.
 	GB_CONTROL_MAX					//
 };
 

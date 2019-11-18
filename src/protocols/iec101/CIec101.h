@@ -199,6 +199,11 @@
  * 	@see STATE
  */
 class CIec101 {
+
+#ifdef TEST_FRIENDS
+	TEST_FRIENDS;
+#endif
+
 	/// ћаксимальное значение паузы между прин€тыми байтами в тиках
 	static const uint16_t s_u16TickMax = 60000;		// при тике 50мкс, будет 3с
 
