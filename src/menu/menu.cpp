@@ -2546,8 +2546,12 @@ void clMenu::lvlControl() {
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			} else if (name == punkt37) {
 				sParam.checkGoose = true;
+				sParam.txComBuf.setInt8(GB_CONTROL_TGOOSE_ON);
+				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			} else if (name == punkt38) {
 				sParam.checkGoose = false;
+				sParam.txComBuf.setInt8(GB_CONTROL_TGOOSE_OFF);
+				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			}
 		}
 		break;
