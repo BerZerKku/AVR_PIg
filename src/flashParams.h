@@ -203,6 +203,14 @@ static char fcRingRenumber[][STRING_LENGHT] PROGMEM = {
 		"21C","22C","23C","24C","25C","26C","27C","28C","29C","30C","31C","32C"
 };
 
+// —инхронизаци€ времени
+static char fcTymeSynch[][STRING_LENGHT] PROGMEM = {
+	//   1234567890
+		"выкл.",
+		"канал св.",
+		"ј—” “ѕ"
+};
+
 // параметр заглушка
 static const Param fNullParam PROGMEM = {
 		"",						// название параметра
@@ -230,10 +238,10 @@ static const Param fTimeSynch PROGMEM = {
 		Param::PARAM_LIST,		// тип параметра
 		Param::RANGE_ON_OFF,	// диапазон измнени€
 		Param::DIM_NO,			// размерность
-		fcOnOff[0],				// массив значений
+		fcTymeSynch[0],			// массив значений
 		1,						// кол-во повторений параметра
 		0,						// минимальное значение
-		SIZE_OF(fcOnOff),		// максимальное значение
+		SIZE_OF(fcTymeSynch),	// максимальное значение
 		1,						// дискретность
 		1,						// множитель дл€ стандартного протокола
 		GB_SEND_INT8_DOP,		// тип параметра дл€ сохранени€ новго значени€
