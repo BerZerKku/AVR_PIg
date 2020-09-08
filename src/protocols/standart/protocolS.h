@@ -11,7 +11,10 @@
 #include <stdint.h>
 #include "glbDefine.h"
 #include "paramBsp.h"
+
+#ifdef AVR
 #include "debug.h"
+#endif
 
 
 //#define MAX_CYCLE_TO_REST_SOST 10

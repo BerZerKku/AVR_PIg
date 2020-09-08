@@ -11,9 +11,10 @@
 #include "CIec101.h"
 #include "glbDefine.h"
 #include "paramBsp.h"
-#include "debug.h"
+
 
 #ifdef AVR
+	#include "debug.h"
 	#include <avr/pgmspace.h>
 #else
 	#define PROGMEM

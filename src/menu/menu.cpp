@@ -6,8 +6,11 @@
  */
 #include <stdio.h>
 
-#include "menu.h"
+#ifdef AVR
 #include "debug.h"
+#endif
+
+#include "menu.h"
 #include "ks0108.h"
 #include "flash.h"
 
@@ -984,7 +987,11 @@ void clMenu::lvlError() {
  */
 void clMenu::lvlStart() {
 	static const char fcTimeToAc[] PROGMEM = "%02d:%02d:%02d";
+#ifdef AVR
 	static const char fcCompType[] PROGMEM = "Совместим. %S";
+#else
+    static const char fcCompType[] PROGMEM = "Совместим. %s";
+#endif
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -1296,7 +1303,11 @@ void clMenu::lvlFirst() {
  */
 void clMenu::lvlInfo() {
 	static char title[] PROGMEM = "Меню\\Информация";
+#ifdef AVR
 	static char versProg[] PROGMEM = "%S: %02X.%02X";
+#else
+    static char versProg[] PROGMEM = "%s: %02X.%02X";
+#endif
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -4018,7 +4029,11 @@ void clMenu::lvlTest2() {
  * 	@return True - по окончанию
  */
 eMENU_ENTER_PARAM clMenu::enterValue() {
+#ifdef AVR
 	static char enterList[] PROGMEM = "Ввод: %S";
+#else
+    static char enterList[] PROGMEM = "Ввод: %s";
+#endif
 	static char enterInt[] PROGMEM = "Ввод: %01d";
 	static char enterUcor[] PROGMEM = "Ввод: %01u.%01u";
 
@@ -4457,8 +4472,12 @@ void clMenu::printSameNumber(uint8_t pos) {
 			Param* param = (Param*) pgm_read_word(&fParams[GB_PARAM_RING_COM_REC]);
 			PGM_P pval =  (PGM_P) pgm_read_word(&param->listValues) + (val * STRING_LENGHT);
 			PGM_P pmax =  (PGM_P) pgm_read_word(&param->listValues) + (max * STRING_LENGHT);
+#ifdef AVR
 			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Номер: %S/%S"), pval, pmax);
-		} else {
+#else
+            snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Номер: %s/%s"), pval, pmax);
+#endif
+        } else {
 			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Номер: %u/%u"), val, max);
 		}
 	}
@@ -4485,7 +4504,11 @@ void clMenu::printRange(uint8_t pos) {
 			break;
 
 		case Param::RANGE_INT:
+#ifdef AVR
 			str = PSTR("%d..%d%S");
+#else
+            str = PSTR("%d..%d%s");
+#endif
 			break;
 
 		case Param::RANGE_INT_NO_DIM:
@@ -4495,12 +4518,20 @@ void clMenu::printRange(uint8_t pos) {
 		case Param::RANGE_U_COR:
 			min = 0;
 			max /= 10;
+#ifdef AVR
 			str = PSTR("%d..±%d%S");
+#else
+            str = PSTR("%d..±%d%s");
+#endif
 			break;
 
 		case Param::RANGE_I_COR:
 			min = 0;
+#ifdef AVR
 			str= PSTR("%d..±%d%S");
+#else
+            str= PSTR("%d..±%d%s");
+#endif
 			break;
 	}
 
@@ -4544,15 +4575,27 @@ void clMenu::printValue(uint8_t pos) {
 				break;
 			case Param::PARAM_I_COR: // DOWN
 			case Param::PARAM_INT:
+#ifdef AVR
 				str = PSTR("%d%S");
+#else
+                str = PSTR("%d%s");
+#endif
 				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val, dim);
 				break;
 			case Param::PARAM_U_COR:
 				if (val >= 0) {
+#ifdef AVR
 					str = PSTR("%d.%d%S");
+#else
+                    str = PSTR("%d.%d%s");
+#endif
 				} else {
 					val = -val;
+#ifdef AVR
 					str = PSTR("-%d.%d%S");
+#else
+                    str = PSTR("-%d.%d%s");
+#endif
 				}
 				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val / 10, val % 10,
 						dim);

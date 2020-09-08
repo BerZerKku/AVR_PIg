@@ -174,7 +174,11 @@ public:
 	 *
 	 */
 	PGM_P getListOfValues() const {
+#ifdef AVR
 		return (PGM_P) pgm_read_word(&getPtrParam()->listValues);
+#else
+        return getPtrParam()->listValues;
+#endif
 	}
 
 	/**	¬озвращает текущий номер однотипного параметра начина€ с 1.
@@ -314,7 +318,6 @@ public:
 	}
 
 private:
-
 	const Param** fps;		///< ћассив значений параметров.
 
 	eGB_PARAM param[MAX_NUM_OF_PARAMS]; ///< ћассив параметров.
@@ -358,7 +361,11 @@ private:
 	 * 	@return ”казатель на массив значений текущего параметра.
 	 */
 	Param* getPtrParam() const {
+#ifdef AVR
 		return (Param*) pgm_read_word(&fps[param[currParam]]);
+#else
+        return (Param*) fps[param[currParam]];
+#endif
 	}
 };
 

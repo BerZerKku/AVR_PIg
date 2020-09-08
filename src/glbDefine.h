@@ -20,6 +20,8 @@
 #ifndef MY_TESTS
 	#include <avr/pgmspace.h>
 	#include "debug.h"
+#else
+    #include "wrapper.hpp"
 #endif
 
 /// размер массива
