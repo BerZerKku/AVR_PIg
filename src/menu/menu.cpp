@@ -117,7 +117,7 @@ clMenu::clMenu() {
 	sParam.local.setFlashParams(fParams);
 }
 
-void clMenu::main(void) {
+void clMenu::proc(void) {
 
 	static const char fcNoConnectBsp[] PROGMEM = " Нет связи с БСП!!! ";
 
