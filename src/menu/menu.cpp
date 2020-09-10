@@ -2567,7 +2567,7 @@ void clMenu::lvlSetup() {
 	static char punkt1[] PROGMEM = "%d. Режим";
 	static char punkt2[] PROGMEM = "%d. Время и дата";
 	static char punkt3[] PROGMEM = "%d. Параметры";
-	static char punkt4[] PROGMEM = "%d. Пароль";
+    static char punkt4[] PROGMEM = "%d. Пользователь";
 	static char punkt5[] PROGMEM = "%d. Интерфейс";
 
 	if (lvlCreate_) {
@@ -2594,26 +2594,26 @@ void clMenu::lvlSetup() {
 
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
 	printPunkts();
-	if (EnterParam.isEnable()) {
-		// ввод нового значения параметра
-		eMENU_ENTER_PARAM stat = EnterParam.getStatus();
+//	if (EnterParam.isEnable()) {
+//		// ввод нового значения параметра
+//		eMENU_ENTER_PARAM stat = EnterParam.getStatus();
 
-		// выбор функции ввода : пароль или параметр
-		(this->*enterFunc)();
+//		// выбор функции ввода : пароль или параметр
+//		(this->*enterFunc)();
 
-		if (stat == MENU_ENTER_PASSWORD_READY) {
-			uint16_t val = EnterParam.getValue();
+//		if (stat == MENU_ENTER_PASSWORD_READY) {
+//			uint16_t val = EnterParam.getValue();
 
-			if (sParam.password.check(val)) {
-				EnterParam.setEnable(MENU_ENTER_PASSWORD_NEW);
-			} else
-				EnterParam.setDisable();
-		} else if (stat == MENU_ENTER_PASSWORD_N_READY) {
-			uint16_t val = EnterParam.getValue();
+//			if (sParam.password.check(val)) {
+//				EnterParam.setEnable(MENU_ENTER_PASSWORD_NEW);
+//			} else
+//				EnterParam.setDisable();
+//		} else if (stat == MENU_ENTER_PASSWORD_N_READY) {
+//			uint16_t val = EnterParam.getValue();
 
-			sParam.password.set(val);
-		}
-	}
+//			sParam.password.set(val);
+//		}
+//	}
 
 	switch(key_) {
 		case KEY_UP:
@@ -2643,9 +2643,11 @@ void clMenu::lvlSetup() {
 				lvlMenu = &clMenu::lvlSetupParam;
 				lvlCreate_ = true;
 			} else if (name == punkt4) {
-				enterFunc = &clMenu::enterPassword;
-				EnterParam.setEnable(MENU_ENTER_PASSWORD);
-				EnterParam.com = GB_COM_NO;
+                lvlMenu = &clMenu::lvlUser;
+                lvlCreate_ = true;
+//				enterFunc = &clMenu::enterPassword;
+//				EnterParam.setEnable(MENU_ENTER_PASSWORD);
+//				EnterParam.com = GB_COM_NO;
 			} else if (name == punkt5) {
 				lvlMenu = &clMenu::lvlSetupInterface;
 				lvlCreate_ = true;
@@ -3350,6 +3352,7 @@ void clMenu::lvlSetupParamRing() {
  */
 void clMenu::lvlSetupInterface() {
 	static char title[] PROGMEM = "Настройка\\Интерфейс";
+    static TInterface::INTERFACE interface = TInterface::MAX;
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3366,7 +3369,9 @@ void clMenu::lvlSetupInterface() {
 		// появляются настройки портов
 		// в USB всегда: 19200 бит/с, 8 бит, 2 стоп-бита, четность-нет
 		sParam.local.addParam(GB_PARAM_INTF_INTERFACE);
-		if (sParam.Uart.Interface.get() == TInterface::RS485) {
+
+        interface = sParam.Uart.Interface.get();
+        if (interface == TInterface::RS485) {
 			sParam.local.addParam(GB_PARAM_INTF_PROTOCOL);
 			// в оптике Сетевой адрес меняется в любом режиме,
 			// иначе только в Ввыведен
@@ -3375,31 +3380,20 @@ void clMenu::lvlSetupInterface() {
 			sParam.local.addParam(GB_PARAM_INTF_DATA_BITS);
 			sParam.local.addParam(GB_PARAM_INTF_PARITY);
 			sParam.local.addParam(GB_PARAM_INTF_STOP_BITS);
-		}
+        }
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	LocalParams *lp = &sParam.local;
-	if (lp->getCom() == GB_COM_NO) {
-		// Для считывания текущего значения параметра хранящегося в ЕЕПРОМ
-		eGB_PARAM param = lp->getParam();
-		if (param == GB_PARAM_INTF_INTERFACE) {
-			lp->setValue(sParam.Uart.Interface.get());
-		} else if (param == GB_PARAM_INTF_PROTOCOL) {
-			lp->setValue(sParam.Uart.Protocol.get());
-		} else if (param == GB_PARAM_INTF_BAUDRATE) {
-			lp->setValue(sParam.Uart.BaudRate.get());
-		} else if (param == GB_PARAM_INTF_DATA_BITS) {
-			lp->setValue(sParam.Uart.DataBits.get());
-		} else if (param == GB_PARAM_INTF_PARITY) {
-			lp->setValue(sParam.Uart.Parity.get());
-		} else if (param == GB_PARAM_INTF_STOP_BITS) {
-			lp->setValue(sParam.Uart.StopBits.get());
-		}
-	}
-
 	setupParam();
+
+    // FIXME При смене интерфейса на экране появляется "чтение..."
+    // Надо или исправить это, либо сделать подобное для всех параметров.
+    // Т.е. после ввода локального параметра считывать его значение!.
+
+    if (interface != sParam.Uart.Interface.get()) {
+        lvlCreate_ = true;
+    }
 
 	switch(key_) {
 		case KEY_CANCEL:
@@ -4022,6 +4016,90 @@ void clMenu::lvlTest2() {
 		default:
 			break;
 	}
+}
+
+/** Уровень меню. Пользователь.
+ * 	@param Нет
+ * 	@return Нет
+ */
+void clMenu::lvlUser() {
+    static char title[] PROGMEM = "Меню\\Пользователь";
+
+    if (lvlCreate_) {
+        lvlCreate_ = false;
+        cursorLine_ = 1;
+        cursorEnable_ = true;
+        lineParam_ = 1;
+
+        vLCDclear();
+        vLCDdrawBoard(lineParam_);
+
+        // Добавить команду!
+
+        Punkts_.clear();
+        sParam.local.addParam(GB_PARAM_IS_USER);
+
+        // доплнительные команды
+        sParam.txComBuf.clear();
+    }
+
+    snprintf_P(&vLCDbuf[0], 21, title);
+
+    LocalParams *lp = &sParam.local;
+    if (lp->getCom() == GB_COM_NO) {
+        // Для считывания текущего значения параметра хранящегося в ЕЕПРОМ
+        eGB_PARAM param = lp->getParam();
+        if (param == GB_PARAM_IS_USER) {
+            lp->setValue(sParam.security.User.get());
+        }
+    }
+
+    setupParam();
+//	if (EnterParam.isEnable()) {
+//		// ввод нового значения параметра
+//		eMENU_ENTER_PARAM stat = EnterParam.getStatus();
+
+//		// выбор функции ввода : пароль или параметр
+//		(this->*enterFunc)();
+
+//		if (stat == MENU_ENTER_PASSWORD_READY) {
+//			uint16_t val = EnterParam.getValue();
+
+//			if (sParam.password.check(val)) {
+//				EnterParam.setEnable(MENU_ENTER_PASSWORD_NEW);
+//			} else
+//				EnterParam.setDisable();
+//		} else if (stat == MENU_ENTER_PASSWORD_N_READY) {
+//			uint16_t val = EnterParam.getValue();
+
+//			sParam.password.set(val);
+//		}
+//	}
+
+    switch(key_) {
+        case KEY_UP:
+            cursorLineUp();
+            break;
+        case KEY_DOWN:
+            cursorLineDown();
+            break;
+
+        case KEY_CANCEL:
+            lvlMenu = &clMenu::lvlSetup;
+            lvlCreate_ = true;
+            break;
+        case KEY_MENU:
+            lvlMenu = &clMenu::lvlStart;
+            lvlCreate_ = true;
+            break;
+
+        case KEY_ENTER: {
+
+        } break;
+
+        default:
+            break;
+    }
 }
 
 /** Ввод параметра.
@@ -4722,10 +4800,14 @@ void clMenu::setupParam() {
 						sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 						break;
 
-					case GB_SEND_INT8_DOP:	// DOWN
+                    case GB_SEND_INT8_DOP:
+                        sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
+                        sParam.txComBuf.setInt8(pos + dop, 1);
+                        break;
+
 					case GB_SEND_DOP_INT8:
-						sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
-						sParam.txComBuf.setInt8(pos + dop, 1);
+                        sParam.txComBuf.setInt8(pos + dop, 0);
+                        sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
 						break;
 
 					case GB_SEND_INT16_BE:
@@ -4796,27 +4878,7 @@ void clMenu::setupParam() {
 			} else {
 				eGB_PARAM param= sParam.local.getParam();
 				if (param != GB_PARAM_NULL_PARAM) {
-					// Запись параметров в ЕЕПРОМ.
-					uint8_t tmp = EnterParam.getValueEnter();
-					if (param == GB_PARAM_INTF_INTERFACE) {
-						TInterface::INTERFACE val;
-						val = (TInterface::INTERFACE) (tmp);
-						// если интерфейс сменился, обновим меню
-						if (val != sParam.Uart.Interface.get()) {
-							sParam.Uart.Interface.set(val);
-							lvlCreate_ = true;
-						}
-					} else if (param == GB_PARAM_INTF_PROTOCOL) {
-						sParam.Uart.Protocol.set((TProtocol::PROTOCOL) (tmp));
-					} else if (param == GB_PARAM_INTF_BAUDRATE) {
-						sParam.Uart.BaudRate.set((TBaudRate::BAUD_RATE) (tmp));
-					} else if (param == GB_PARAM_INTF_DATA_BITS) {
-						sParam.Uart.DataBits.set((TDataBits::DATA_BITS) (tmp));
-					} else if (param == GB_PARAM_INTF_PARITY) {
-						sParam.Uart.Parity.set((TParity::PARITY) (tmp));
-					} else if (param == GB_PARAM_INTF_STOP_BITS) {
-						sParam.Uart.StopBits.set((TStopBits::STOP_BITS) (tmp));
-					}
+                    // TODO Добавить обработку ввода параметров без команды!
 				}
 			}
 			EnterParam.setDisable();
@@ -4848,7 +4910,6 @@ void clMenu::setupParam() {
 
 	// подмена команды, на команду текущего уровня меню + быстрая команда
 	if (sParam.local.getState() == LocalParams::STATE_READ_PARAM) {
-
 		eGB_COM com = sParam.local.getCom();
 		sParam.txComBuf.addFastCom(com);
 		sParam.txComBuf.addCom1(com, 1);

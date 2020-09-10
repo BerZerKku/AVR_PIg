@@ -222,6 +222,7 @@ private:
 	void lvlTest1();
 	void lvlTest2();
 	void lvlSetupInterface();
+    void lvlUser();
 
 	// ввод параметра
 	eMENU_ENTER_PARAM enterValue();

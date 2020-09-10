@@ -141,23 +141,23 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 		} else if (com == GB_COM_DEF_SET_TYPE_AC) {
 			num = addCom(com, sParam_->txComBuf.getInt8());
 		} else 	if (sendType != GB_SEND_NO) {
-			uint8_t val = sParam_->txComBuf.getInt8(0);
-			uint8_t dop = sParam_->txComBuf.getInt8(1);
+            uint8_t byte0 = sParam_->txComBuf.getInt8(0);
+            uint8_t byte1 = sParam_->txComBuf.getInt8(1);
 
 			switch(sendType) {
 				case GB_SEND_INT8:
-					num = addCom(com, val);
+                    num = addCom(com, byte0);
 					break;
 				case GB_SEND_BITES_DOP:
 				case GB_SEND_INT8_DOP:
-					num = addCom(com, val, dop);
+                    num = addCom(com, byte0, byte1);
 					break;
 				case GB_SEND_DOP_INT8:	// DOWN
 				case GB_SEND_DOP_BITES:
-					num = addCom(com, dop, val);
+                    num = addCom(com, byte0, byte1);
 					break;
 				case GB_SEND_INT16_BE:
-					num = addCom(com, val, dop);
+                    num = addCom(com, byte0, byte1);
 					break;
 				case GB_SEND_COR_U:
 				case GB_SEND_COR_I:	// DOWN

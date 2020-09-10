@@ -14,6 +14,7 @@
 #include "paramDef.h"
 #include "paramGlb.h"
 #include "paramUart.h"
+#include "paramIS.h"
 #include "LocalParams.h"
 
 
@@ -48,11 +49,15 @@ struct stGBparam {
 	TDevicePrd prd;
 	TDeviceGlb glb;
 
+
 	// локальные параметры
 	LocalParams local;
 
 	// параметры для работы с последовательным портом
 	TUartData Uart;
+
+    // параметры для инфорационной безопасности
+    TInfoSecurity security;
 
 	// буфер команд
 	TTxCom txComBuf;

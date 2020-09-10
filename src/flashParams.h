@@ -10,6 +10,8 @@
 
 #include <avr/pgmspace.h>
 #include "glbDefine.h"
+#include "paramIS.h"
+#include "paramUart.h"
 #include "param.h"
 
 static const char fcNullBuf[] PROGMEM= "";
@@ -201,6 +203,13 @@ static char fcRingRenumber[][STRING_LENGHT] PROGMEM = {
 		"1C","2C","3C","4C","5C","6C","7C","8C","9C","10C",
 		"11C","12C","13C","14C","15C","16C","17C","18C","19C","20C",
 		"21C","22C","23C","24C","25C","26C","27C","28C","29C","30C","31C","32C"
+};
+
+/// Пользователь.
+static char fcUser[][STRING_LENGHT] PROGMEM = {
+    "Оператор",
+    "Инженер",
+    "Админ."
 };
 
 // параметр заглушка
@@ -436,7 +445,7 @@ static const Param fNetAddress PROGMEM = {
 		247,					// максимальное значение
 		1,						// дискретность
 		1,						// множитель для стандартного протокола
-		GB_SEND_INT8,			// тип параметра для сохранения новго значения
+        GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
@@ -1948,7 +1957,7 @@ static const Param fPrmIncSafety PROGMEM = {
 // интерфейс связи
 static const Param fIntfInterface PROGMEM = {
 		"Интерфейс связи",		// название параметра
-		GB_COM_NO,				// команда стандартного протокола
+        GB_COM_GET_NET_ADR,		// команда стандартного протокола
 		Param::PARAM_LIST,		// тип параметра
 		Param::RANGE_LIST,		// диапазон измнения
 		Param::DIM_NO,			// размерность
@@ -1958,8 +1967,8 @@ static const Param fIntfInterface PROGMEM = {
 		SIZE_OF(fcInterface),	// максимальное значение
 		1,						// дискретность
 		1,						// множитель для стандартного протокола
-		GB_SEND_NO,				// тип параметра для сохранения новго значения
-		1,						// байт дополнительной информации для сохранения
+        GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
+        2,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
 		Param::CHANGE_COND_NO 	// условие для изменения параметра
@@ -1968,7 +1977,7 @@ static const Param fIntfInterface PROGMEM = {
 // четность - интерфейс связи
 static const Param fIntfProtocol PROGMEM = {
 		"Протокол",				// название параметра
-		GB_COM_NO,				// команда стандартного протокола
+        GB_COM_GET_NET_ADR,		// команда стандартного протокола
 		Param::PARAM_LIST,		// тип параметра
 		Param::RANGE_LIST,		// диапазон измнения
 		Param::DIM_NO,			// размерность
@@ -1978,8 +1987,8 @@ static const Param fIntfProtocol PROGMEM = {
 		SIZE_OF(fcProtocol),	// максимальное значение
 		1,						// дискретность
 		1,						// множитель для стандартного протокола
-		GB_SEND_NO,				// тип параметра для сохранения новго значения
-		1,						// байт дополнительной информации для сохранения
+        GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
+        3,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
 		Param::CHANGE_COND_NO 	// условие для изменения параметра
@@ -1988,7 +1997,7 @@ static const Param fIntfProtocol PROGMEM = {
 // скорость связи - интерфейс связи
 static const Param fIntfBaudrate PROGMEM = {
 		"Скорость передачи",	// название параметра
-		GB_COM_NO,				// команда стандартного протокола
+        GB_COM_GET_NET_ADR,		// команда стандартного протокола
 		Param::PARAM_LIST,		// тип параметра
 		Param::RANGE_LIST,		// диапазон измнения
 		Param::DIM_NO,			// размерность
@@ -1998,8 +2007,8 @@ static const Param fIntfBaudrate PROGMEM = {
 		SIZE_OF(fcBaudRate),	// максимальное значение
 		1,						// дискретность
 		1,						// множитель для стандартного протокола
-		GB_SEND_NO,				// тип параметра для сохранения новго значения
-		1,						// байт дополнительной информации для сохранения
+        GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
+        4,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
 		Param::CHANGE_COND_NO 	// условие для изменения параметра
@@ -2008,7 +2017,7 @@ static const Param fIntfBaudrate PROGMEM = {
 // количество битов данных - интерфейс связи
 static const Param fIntfDataBits PROGMEM = {
 		"Биты данных",			// название параметра
-		GB_COM_NO,				// команда стандартного протокола
+        GB_COM_GET_NET_ADR,		// команда стандартного протокола
 		Param::PARAM_LIST,		// тип параметра
 		Param::RANGE_LIST,		// диапазон измнения
 		Param::DIM_NO,			// размерность
@@ -2018,8 +2027,8 @@ static const Param fIntfDataBits PROGMEM = {
 		SIZE_OF(fcDataBits),	// максимальное значение
 		1,						// дискретность
 		1,						// множитель для стандартного протокола
-		GB_SEND_NO,				// тип параметра для сохранения новго значения
-		1,						// байт дополнительной информации для сохранения
+        GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
+        5,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
 		Param::CHANGE_COND_NO 	// условие для изменения параметра
@@ -2028,7 +2037,7 @@ static const Param fIntfDataBits PROGMEM = {
 // четность - интерфейс связи
 static const Param fIntfParity PROGMEM = {
 		"Четность",				// название параметра
-		GB_COM_NO,				// команда стандартного протокола
+        GB_COM_GET_NET_ADR,		// команда стандартного протокола
 		Param::PARAM_LIST,		// тип параметра
 		Param::RANGE_LIST,		// диапазон измнения
 		Param::DIM_NO,			// размерность
@@ -2038,8 +2047,8 @@ static const Param fIntfParity PROGMEM = {
 		SIZE_OF(fcParity),		// максимальное значение
 		1,						// дискретность
 		1,						// множитель для стандартного протокола
-		GB_SEND_NO,				// тип параметра для сохранения новго значения
-		1,						// байт дополнительной информации для сохранения
+        GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
+        6,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
 		Param::CHANGE_COND_NO 	// условие для изменения параметра
@@ -2048,7 +2057,7 @@ static const Param fIntfParity PROGMEM = {
 // число стоповых битов - интерфейс связи
 static const Param fIntfStopBits PROGMEM = {
 		"Стоповые биты",		// название параметра
-		GB_COM_NO,				// команда стандартного протокола
+        GB_COM_GET_NET_ADR,		// команда стандартного протокола
 		Param::PARAM_LIST,		// тип параметра
 		Param::RANGE_LIST,		// диапазон измнения
 		Param::DIM_NO,			// размерность
@@ -2058,8 +2067,8 @@ static const Param fIntfStopBits PROGMEM = {
 		SIZE_OF(fcStopBits),	// максимальное значение
 		1,						// дискретность
 		1,						// множитель для стандартного протокола
-		GB_SEND_NO,				// тип параметра для сохранения новго значения
-		1,						// байт дополнительной информации для сохранения
+        GB_SEND_DOP_INT8,		// тип параметра для сохранения новго значения
+        7,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
 		Param::CHANGE_COND_NO 	// условие для изменения параметра
@@ -2151,6 +2160,25 @@ static const Param fRingComTr PROGMEM = {
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_ON_COM_PRM,	// зависимость повторений
 		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+};
+
+static const Param fUser PROGMEM = {
+        "Пользователь",         // название параметра
+        GB_COM_NO,				// команда стандартного протокола
+        Param::PARAM_LIST,		// тип параметра
+        Param::RANGE_LIST,		// диапазон измнения
+        Param::DIM_NO,			// размерность
+        fcUser[0],              // массив значений
+        1,						// кол-во повторений параметра
+        TUser::MIN,             // минимальное значение
+        SIZE_OF(fcUser),        // максимальное значение
+        1,						// дискретность
+        1,						// множитель для стандартного протокола
+        GB_SEND_NO,				// тип параметра для сохранения новго значения
+        1,						// байт дополнительной информации для сохранения
+        Param::DEPEND_MAX_NO,	// заивимость максимума
+        Param::DEPEND_SAME_NO,	// зависимость повторений
+        Param::CHANGE_COND_NO 	// условие для изменения параметра
 };
 
 
@@ -2258,7 +2286,8 @@ static const Param* fParams[] PROGMEM  = {
 		&fRingTimeWait,
 		&fRingComTransit,
 		&fRingComRec,
-		&fRingComTr
-
+        &fRingComTr,
+        // Параметры информационной безопасности
+        &fUser
 };
 #endif /* FLASHPARAMS_H_ */

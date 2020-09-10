@@ -483,7 +483,15 @@ typedef enum {
 	GB_PARAM_RING_TIME_WAIT,	///< время ожидания команд
 	GB_PARAM_RING_COM_TRANSIT,	///< транзитные команды
 	GB_PARAM_RING_COM_REC,		///< переназначение команд приемника
-	GB_PARAM_RING_COM_TR		///< переназначение команд дискретных входов
+    GB_PARAM_RING_COM_TR,		///< переназначение команд дискретных входов
+    // параметры Информационной безопасности
+    GB_PARAM_IS_USER,           ///< пользователь
+    GB_PARAM_IS_PWD_ENGINEER,   ///< пароль инженера
+    GB_PARAM_IS_PWD_ADMIN,      ///< пароль администратора
+    GB_PARAM_IS_PWD_ERR_CNT,    ///< счетчик ввода неверного пароля
+    GB_PARAM_IS_PWD_TIMEOUT,    ///< время блокировки ввода пароля
+    //
+    GB_PARAM_MAX
 } eGB_PARAM;
 
 /// Значения команд управления
