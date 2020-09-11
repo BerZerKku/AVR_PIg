@@ -8,6 +8,10 @@
 #ifndef PARAMIS_H_
 #define PARAMIS_H_
 
+#include "src/glbDefine.h"
+#include <cstdint>
+#include <climits>
+
 class TUser {
 public:
 
@@ -25,6 +29,7 @@ public:
     }
 
     /**	Запись.
+     *
      * 	@param val Пользователь.
      * 	@return False в случае ошибочного значения.
      */
@@ -36,6 +41,7 @@ public:
     }
 
     /**	Чтение.
+     *
      * 	@return Пользователь.
      */
     USER get() const {
@@ -46,6 +52,55 @@ private:
     USER user_;
 };
 
+class TIsEvent {
+public:
+    // события для журнала ИБ
+    enum IS_EVENT_BIT {
+        PWD_CHANGE = 0, // пароль изменен
+        PWD_IN_ERROR,   // пароль введен неверно
+        PWD_BLOCK,      // блокировка ввода пароля
+        USR_IN,         // вход пользователя
+        USR_OUT,        // выход пользователя
+        USR_OUT_AUTO,   // выход пользователя автоматический
+        //
+        IS_EVENT_BIT_MAX
+    };
+
+    TIsEvent() {
+        COMPILE_TIME_ASSERT((sizeof(event_) * CHAR_BIT) <= EVENT_BIT_MAX);
+        event_ = 0;
+    }
+
+    /** Установка флага события.
+     *
+     *  Флаг добавляется к текущему значению событий.
+     *
+     * @param event Событие.
+     * @return Флаги событий.
+     */
+    uint8_t set(IS_EVENT_BIT event) {
+        if (event < IS_EVENT_BIT_MAX) {
+            event_ |= (1 << event);
+        }
+        return event_;
+    }
+
+    /** Возвращает текущее состояние флагов событий.
+     *
+     *  После считывания флаги очищаются.
+     *
+     *  @return Флаги событий.
+     */
+    uint8_t get() {
+        uint8_t tevent = event_;
+        event_ = 0;
+        return tevent;
+    }
+
+private:
+    uint8_t event_;
+};
+
 /// структура параметров работы с информационной безопасностью
 class TInfoSecurity {
 public:
@@ -54,6 +109,8 @@ public:
     }
 
     TUser User;
+    TIsEvent EventEngineer;
+    TIsEvent EventAdmin;
 };
 
 #endif /* PARAMIS_H_ */
