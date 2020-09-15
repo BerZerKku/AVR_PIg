@@ -229,7 +229,8 @@ static const Param fNullParam PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE, // режим для изменения
+        Param::CHANGE_USER_NO   // пользователь для изменения
 };
 
 // синхронизация часов
@@ -249,7 +250,8 @@ static const Param fTimeSynch PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // номер аппарата
@@ -269,7 +271,8 @@ static const Param fNumOfDevice PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_ON_NUM_DEVS,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 static const Param fNumOfDeviceRing PROGMEM = {
@@ -288,7 +291,8 @@ static const Param fNumOfDeviceRing PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE, // режим для изменения
+        Param::CHANGE_USER_ENGINEER// пользователь для изменения
 };
 
 // контроль выходного сигнала
@@ -307,8 +311,9 @@ static const Param fOutCheck PROGMEM = {
 		GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
-		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::DEPEND_SAME_NO,	// зависимость повторений
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // порог предупреждения
@@ -328,7 +333,8 @@ static const Param fWarnThd PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // порог предупреждения по КC (для РЗСК)
@@ -348,7 +354,8 @@ static const Param fWarnThdCf PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // время перезапуска
@@ -368,7 +375,8 @@ static const Param fTimeRerun PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE, // режим для изменения
+        Param::CHANGE_USER_ENGINEER// пользователь для изменения
 };
 
 // удержание реле команд ПРД
@@ -388,7 +396,8 @@ static const Param fComPrdKeep PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // удержание реле команд ПРМ
@@ -408,7 +417,8 @@ static const Param fComPrmKeep PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // загрубление чувствительности ПРМ
@@ -429,7 +439,8 @@ static const Param fInDec PROGMEM = {
 		2,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_ON_NUM_DEVS,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // адрес в локальной сети
@@ -449,7 +460,8 @@ static const Param fNetAddress PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_NO 	// условие для изменения параметра
+        Param::CHANGE_REG_NO,   // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // номинальноые выходное напряжение
@@ -469,7 +481,8 @@ static const Param fUOutNom PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // частота
@@ -489,7 +502,8 @@ static const Param fFreq PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // совместимость (Р400, Р400м)
@@ -509,7 +523,8 @@ static const Param fCompP400 PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // снижение ответа АК (ПВЗЛ)
@@ -529,7 +544,8 @@ static const Param fInDecAcAnswer PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // тип детектора
@@ -549,7 +565,8 @@ static const Param fDetector PROGMEM = {
 		2,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // коррекция напряжения
@@ -569,7 +586,8 @@ static const Param fCorU PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_NO 	// условие для изменения параметра
+        Param::CHANGE_REG_NO,   // режим для изменения
+        Param::CHANGE_USER_NO   // пользователь для изменения
 };
 
 // коррекция тока
@@ -589,7 +607,8 @@ static const Param fCorI PROGMEM = {
 		2,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_NO  	// условие для изменения параметра
+        Param::CHANGE_REG_NO,   // режим для изменения
+        Param::CHANGE_USER_NO   // пользователь для изменения
 };
 
 // протокол обмена (ПВЗУ-Е)
@@ -609,7 +628,8 @@ static const Param fPvzueProtocol PROGMEM =	{
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // признак четности (ПВЗУ-Е)
@@ -629,7 +649,8 @@ static const Param fPvzueParity PROGMEM = {
 		2,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // допустимые провалы (ПВЗУ-Е)
@@ -649,7 +670,8 @@ static const Param fPvzueFail PROGMEM = {
 		3,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // порог по помехе (ПВЗУ-Е)
@@ -669,7 +691,8 @@ static const Param fPvzueNoiseThd PROGMEM = {
 		4,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // допустимая помеха (ПВЗУ-Е)
@@ -689,7 +712,8 @@ static const Param fPvzueNoiseLvl PROGMEM = {
 		5,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // тип автоконтроля (ПВЗУ-Е)
@@ -709,7 +733,8 @@ static const Param fPvzueAcType PROGMEM = {
 		6,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // период беглого режима АК (ПВЗУ-Е)
@@ -729,7 +754,8 @@ static const Param fPvzueAcPeriod PROGMEM = {
 		7,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 
@@ -750,7 +776,8 @@ static const Param fPvzueAcPerRe PROGMEM = {
 		8,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // резервирование
@@ -770,7 +797,8 @@ static const Param fBackup PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для измененияа
 };
 
 // совместимость К400
@@ -790,7 +818,8 @@ static const Param fCompK400 PROGMEM = {
 		2,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // тип линии (кол-во аппаратов в линии)
@@ -810,7 +839,8 @@ static const Param fNumOfDevices PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 
@@ -831,7 +861,8 @@ static const Param fTmK400 PROGMEM = {
 		3,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // уровень срабатывания предупредительной сигнализации по D
@@ -851,7 +882,8 @@ static const Param fWarnD PROGMEM = {
 		4,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // уровень срабатывания аварийной сигнализации по D
@@ -871,7 +903,8 @@ static const Param fAlarmD PROGMEM = {
 		5,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // контроль температуры
@@ -891,7 +924,8 @@ static const Param fTempMonitor PROGMEM = {
 		6,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // верхнее значение температуры
@@ -911,7 +945,8 @@ static const Param fTempThrHi PROGMEM = {
 		7,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // верхнее значение температуры
@@ -931,7 +966,8 @@ static const Param fTempThrLow PROGMEM = {
 		8,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // скорость ТМ
@@ -951,7 +987,8 @@ static const Param fTmSpeed PROGMEM = {
 		9,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // тип защиты
@@ -971,7 +1008,8 @@ static const Param fDefType	PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // дополнительное время без манипуляции
@@ -991,7 +1029,8 @@ static const Param fTimeNoMan PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // перекрытие импульсов
@@ -1011,7 +1050,8 @@ static const Param fOverlap PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // перекрытие импульсов Р400
@@ -1031,7 +1071,8 @@ static const Param fOverlapP400 PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // перекрытие импульсов Р400 Оптика
@@ -1051,7 +1092,8 @@ static const Param fOverlapOpto PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // компенсация задержки в линии
@@ -1071,7 +1113,8 @@ static const Param fDelay PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_ON_NUM_DEVS,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // компенсация задержки в линии Р400 Оптика
@@ -1091,7 +1134,8 @@ static const Param fDelayOpto PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_ON_NUM_DEVS,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // порог предупреждения по РЗ
@@ -1111,7 +1155,8 @@ static const Param fWarnThdRz PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // загрубление чувствительности
@@ -1131,7 +1176,8 @@ static const Param fSensDec PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // загрубление чувствительности РЗ
@@ -1151,7 +1197,8 @@ static const Param fSensDecRz PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_ON_NUM_DEVS,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметрай
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // тип приемника
@@ -1171,7 +1218,8 @@ static const Param fPrmType PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // снижение уровня АК
@@ -1191,7 +1239,8 @@ static const Param fAcInDec PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // частота ПРД
@@ -1211,7 +1260,8 @@ static const Param fFreqPrd PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // частота ПРМ
@@ -1231,7 +1281,8 @@ static const Param fFreqPrm PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // сдвиг переднего фронта ПРД
@@ -1251,7 +1302,8 @@ static const Param fShiftFront PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // сдвиг заднего фронта ПРД относительно сигнала МАН (пуск)
@@ -1271,7 +1323,8 @@ static const Param fShiftBack PROGMEM = {
 		2,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // сдвиг ПРМ
@@ -1291,7 +1344,8 @@ static const Param fShiftPrm PROGMEM = {
 		3,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // сдвиг ВЧ ПРД от ПУСК
@@ -1311,7 +1365,8 @@ static const Param fShiftPrd PROGMEM = {
 		4,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // ограничение полосы передатчика
@@ -1331,7 +1386,8 @@ static const Param fLimitPrd PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // задержка выключения ПРМ
@@ -1351,7 +1407,8 @@ static const Param fDelayOffPrm PROGMEM = {
 		2,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // задержка включения ПРМ
@@ -1371,7 +1428,8 @@ static const Param fDelayOnPrm PROGMEM = {
 		3,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // задержка включения ПРД
@@ -1391,7 +1449,8 @@ static const Param fDelayOffPrd PROGMEM = {
 		4,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // минимальная длительность ПРД
@@ -1411,7 +1470,8 @@ static const Param fMinTimePrd PROGMEM = {
 		5,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // время включения (задержка срабатывания дискретного входа)
@@ -1431,7 +1491,8 @@ static const Param fPrdInDelay PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // длительность команды ВЧ
@@ -1447,11 +1508,12 @@ static const Param fPrdDurationL PROGMEM = {
 		100,					// максимальное значение
 		1,						// дискретность
 		1,						// множитель для стандартного протокола
-		GB_SEND_INT8,			// тип параметра для сохранения новго значения						// байт дополнительной информации для сохранения
+        GB_SEND_INT8,			// тип параметра для сохранения новго значения
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра					// байт дополнительной информации для сохранения
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // длительность команды ОПТИКА
@@ -1471,7 +1533,8 @@ static const Param fPrdDurationO PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // тестовая команда
@@ -1491,7 +1554,8 @@ static const Param fPrdTestCom PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // следящие команды
@@ -1511,7 +1575,8 @@ static const Param fPrdComLong PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_ON_COM_PRD,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // блокированные команды
@@ -1531,7 +1596,8 @@ static const Param fPrdComBlock PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_ON_COM_PRD,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // трансляция ЦП
@@ -1551,7 +1617,8 @@ static const Param fPrdDrEnable PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // блокированные команды ЦП
@@ -1571,7 +1638,8 @@ static const Param fPrdDrComBlock PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_ON_COM_PRD,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // количество команд
@@ -1591,7 +1659,8 @@ static const Param fPrdComNums PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // количество команд группы А
@@ -1611,7 +1680,8 @@ static const Param fPrdComNumsA PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_ON_COM_PRD,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // коррекция частоты ПРД
@@ -1631,7 +1701,8 @@ static const Param fPrdFreqCorr PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // снижение уровня КС
@@ -1651,7 +1722,8 @@ static const Param fPrdDecCf PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // снижение уровня ТМ
@@ -1671,7 +1743,8 @@ static const Param fPrdDecTm PROGMEM = {
 		2,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// зависимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // КС по умолчанию
@@ -1691,7 +1764,8 @@ static const Param fPrdDefaultCf PROGMEM = {
 		3,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// зависимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // Сигнализация команд ПРМ
@@ -1711,7 +1785,8 @@ static const Param fPrdComSignal PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_ON_COM_PRD,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // задержка на фиксацию команды (время включения)
@@ -1731,7 +1806,8 @@ static const Param fPrmTimeOn PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// зависимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // задержка на фиксацию команды (время включения) в К400
@@ -1751,7 +1827,8 @@ static const Param fPrmTimeOnK400 PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// зависимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // блокированные команды
@@ -1771,7 +1848,8 @@ static const Param fPrmComBlock PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// зависимость максимума
 		Param::DEPEND_SAME_ON_COM_PRM,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // задержка на выключение
@@ -1791,7 +1869,8 @@ static const Param fPrmTimeOff PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_ON_COM_PRM,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // трансляция ЦП
@@ -1811,7 +1890,8 @@ static const Param fPrmDrEnable PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // блокированные команды ЦП
@@ -1831,7 +1911,8 @@ static const Param fPrmDrComBlock PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_ON_COM_PRM,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // команда ВЧ в ЦП
@@ -1851,7 +1932,8 @@ static const Param fPrmDrComToHf PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_ON_COM_PRM,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // количество команд
@@ -1871,7 +1953,8 @@ static const Param fPrmComNums PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // Прием тестовой команды
@@ -1891,7 +1974,8 @@ static const Param fPrmTestCom PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // коррекция частоты ПРМ
@@ -1911,7 +1995,8 @@ static const Param fPrmFreqCorr PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // Сигнализация команд ПРМ
@@ -1931,7 +2016,8 @@ static const Param fPrmComSignal PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// зависимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // Повышение безопасности
@@ -1951,7 +2037,8 @@ static const Param fPrmIncSafety PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// зависимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // интерфейс связи
@@ -1971,7 +2058,8 @@ static const Param fIntfInterface PROGMEM = {
         2,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_NO 	// условие для изменения параметра
+        Param::CHANGE_REG_NO,   // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // четность - интерфейс связи
@@ -1991,7 +2079,8 @@ static const Param fIntfProtocol PROGMEM = {
         3,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_NO 	// условие для изменения параметра
+        Param::CHANGE_REG_NO ,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // скорость связи - интерфейс связи
@@ -2011,7 +2100,8 @@ static const Param fIntfBaudrate PROGMEM = {
         4,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_NO 	// условие для изменения параметра
+        Param::CHANGE_REG_NO,   // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // количество битов данных - интерфейс связи
@@ -2031,7 +2121,8 @@ static const Param fIntfDataBits PROGMEM = {
         5,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_NO 	// условие для изменения параметра
+        Param::CHANGE_REG_NO,   // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // четность - интерфейс связи
@@ -2051,7 +2142,8 @@ static const Param fIntfParity PROGMEM = {
         6,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_NO 	// условие для изменения параметра
+        Param::CHANGE_REG_NO,   // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // число стоповых битов - интерфейс связи
@@ -2071,7 +2163,8 @@ static const Param fIntfStopBits PROGMEM = {
         7,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_NO 	// условие для изменения параметра
+        Param::CHANGE_REG_NO,   // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // время ожидания команд
@@ -2091,7 +2184,8 @@ static const Param fRingTimeWait PROGMEM = {
 		10,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 // транзитные команды
@@ -2111,7 +2205,8 @@ static const Param fRingComTransit PROGMEM = {
 		11,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_NO,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 //#if SIZE_OF(fcRingRenumber) < 100
@@ -2135,7 +2230,8 @@ static const Param fRingComRec PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_ON_COM_PRM,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 //
 //#if (MAX_NUM_COM_RING) >= sizeof(fcRingRenumber)
@@ -2159,7 +2255,8 @@ static const Param fRingComTr PROGMEM = {
 		1,						// байт дополнительной информации для сохранения
 		Param::DEPEND_MAX_NO,	// заивимость максимума
 		Param::DEPEND_SAME_ON_COM_PRM,	// зависимость повторений
-		Param::CHANGE_COND_REG_DISABLE 	// условие для изменения параметра
+        Param::CHANGE_REG_DISABLE,  // режим для изменения
+        Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
 static const Param fUser PROGMEM = {
@@ -2178,7 +2275,8 @@ static const Param fUser PROGMEM = {
         1,						// байт дополнительной информации для сохранения
         Param::DEPEND_MAX_NO,	// заивимость максимума
         Param::DEPEND_SAME_NO,	// зависимость повторений
-        Param::CHANGE_COND_NO 	// условие для изменения параметра
+        Param::CHANGE_REG_NO,   // режим для изменения
+        Param::CHANGE_USER_NO   // пользователь для изменения
 };
 
 

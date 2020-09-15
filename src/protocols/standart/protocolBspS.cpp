@@ -462,253 +462,29 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
  * 	@return True - в случае успешной обработки, False - в случае ошибки.
  */
 bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
-	static uint8_t cntTimeFrame = 0;
 	bool stat = false;
-	eGB_TYPE_DEVICE device = sParam_->typeDevice;
 
 	switch (com) {
 		case GB_COM_GET_TIME: {
-			stat =  sParam_->DateTime.setYear(BCD_TO_BIN(buf[B1]));
-			stat &= sParam_->DateTime.setMonth(BCD_TO_BIN(buf[B2]));
-			stat &= sParam_->DateTime.setDay(BCD_TO_BIN(buf[B3]));
-			stat &= sParam_->DateTime.setHour(BCD_TO_BIN(buf[B4]));
-			stat &= sParam_->DateTime.setMinute(BCD_TO_BIN(buf[B5]));
-			stat &= sParam_->DateTime.setSecond(BCD_TO_BIN(buf[B6]));
-			// миллисекунды устанавливаются, только если они есть в посылке
-			uint16_t ms = 0;
-			if (buf[NUM >= 8]) {
-				ms = *((uint16_t *) &buf[B7]);
-			}
-			stat &= sParam_->DateTime.setMsSecond(ms);
-			stat = true;
+            stat = hdlrComGetTime(pc);
+        } break;
 
-			// новая запись журнала, для передачи в АСУ ТП
-			if (buf[NUM] >= 21) {
-				TJrnSCADA *jrn = &sParam_->jrnScada;
-				if (jrn->isReadyToWrite()) {
-					jrn->setJrn(buf[B9]);
-					jrn->setEvent(buf[B10]);
-					jrn->setCom(buf[B11]);
-					jrn->setComSource(buf[B12]);
-					// B13
-					jrn->dtime.setYear(BCD_TO_BIN(buf[B14]));
-					jrn->dtime.setMonth(BCD_TO_BIN(buf[B15]));
-					jrn->dtime.setDay(BCD_TO_BIN(buf[B16]));
-					jrn->dtime.setHour(BCD_TO_BIN(buf[B17]));
-					jrn->dtime.setMinute(BCD_TO_BIN(buf[B18]));
-					jrn->dtime.setSecond(BCD_TO_BIN(buf[B19]));
-					jrn->dtime.setMsSecond(*((uint16_t *) &buf[B20]));
+        case GB_COM_GET_SOST: {
+            stat = hdlrComGetSost(pc);
+        } break;
 
-					jrn->setReadyToSend();
-					cntTimeFrame = 0;
-				}
-			} else {
-				if (sParam_->jrnScada.isReadyToWrite()) {
-					if (cntTimeFrame > 5) {
-						sParam_->jrnScada.setReadyToEvent();
-					} else {
-						cntTimeFrame++;
-					}
-				}
-			}
-		}
-		break;
-
-		case GB_COM_GET_SOST: {
-			sParam_->def.status.setRegime((eGB_REGIME) buf[B1]);
-			sParam_->def.status.setState(buf[B2]);
-			sParam_->def.status.setDopByte(buf[B3]);
-
-			sParam_->prm.status.setRegime((eGB_REGIME) buf[B4]);
-			sParam_->prm.status.setState(buf[B5]);
-			sParam_->prm.status.setDopByte(buf[B6]);
-
-			sParam_->prd.status.setRegime((eGB_REGIME) buf[B7]);
-			sParam_->prd.status.setState(buf[B8]);
-			sParam_->prd.status.setDopByte(buf[B9]);
-
-			// далее проверяется кол-во принятых байт
-			uint8_t num = buf[NUM];
-
-			if (sParam_->prm.status.isEnable()) {
-				if (num >= 13) 	sParam_->prm.setIndCom8(0, buf[B13]);
-				if (num >= 14)  sParam_->prm.setIndCom8(1, buf[B14]);
-				if (num >= 15)  sParam_->prm.setIndCom8(2, buf[B15]);
-				if (num >= 16)  sParam_->prm.setIndCom8(3, buf[B16]);
-			}
-
-			if (sParam_->prd.status.isEnable()) {
-				if (num >= 17) 	sParam_->prd.setIndCom8(0, buf[B17]);
-				if (num >= 18)  sParam_->prd.setIndCom8(1, buf[B18]);
-				if (num >= 19)  sParam_->prd.setIndCom8(2, buf[B19]);
-				if (num >= 20)  sParam_->prd.setIndCom8(3, buf[B20]);
-			}
-
-			// текущее состояние дискретных входов (Пуск ПРМ, Сброс индикации и т.д.)
-			// проверка необходимости включить подсветку
-			if (num >= 21) {
-				sParam_->glb.setLedOn((buf[B21] > 0));
-				sParam_->glb.setDInputState(buf[B21]);
-			}
-
-			eGB_REGIME reg = GB_REGIME_MAX;
-			eGB_REGIME regTmp = GB_REGIME_MAX;
-			// определение общего режима аппарата
-			// по умолчанию оно будет GB_REGIME_ENABLED
-			// другое состояние возможно, если все устройства аппарата
-			// имеют один и тот же режим
-			if (sParam_->prd.status.isEnable()) {
-				regTmp = sParam_->prd.status.getRegime();
-				if (reg == GB_REGIME_MAX)
-					reg = regTmp;
-				else if (reg != regTmp)
-					reg = GB_REGIME_ENABLED;
-			}
-
-			if (sParam_->prm.status.isEnable()) {
-				regTmp = sParam_->prm.status.getRegime();
-				if (reg == GB_REGIME_MAX)
-					reg = regTmp;
-				else if (reg != regTmp)
-					reg = GB_REGIME_ENABLED;
-			}
-
-			if (sParam_->def.status.isEnable()) {
-				regTmp = sParam_->def.status.getRegime();
-				if (reg == GB_REGIME_MAX)
-					reg = regTmp;
-				else if (reg != regTmp)
-					reg = GB_REGIME_ENABLED;
-			}
-			sParam_->glb.status.setRegime(reg);
-
-			stat = true;
-		}
-		break;
-
-		case GB_COM_GET_FAULT: {
-			sParam_->def.status.setFault(TO_INT16(buf[B1], buf[B2]));
-			sParam_->def.status.setWarning(TO_INT16(buf[B3], buf[B4]));
-			// установка номера(ов) уд.аппаратов ддля Р400(М) в режиме ПВЗУ-Е
-			uint8_t n = 0;
-			if ((device == AVANT_R400) || (device == AVANT_R400M)) {
-				if (sParam_->glb.getCompatibility() == GB_COMPATIBILITY_PVZUE) {
-					n = buf[B5];
-				}
-			}
-			sParam_->def.status.setRemoteNumber(n);
-
-			sParam_->prm.status.setFault(TO_INT16(buf[B5], buf[B6]));
-			sParam_->prm.status.setWarning(TO_INT16(buf[B7], buf[B8]));
-
-			sParam_->prd.status.setFault(TO_INT16(buf[B9], buf[B10]));
-			sParam_->prd.status.setWarning(TO_INT16(buf[B11],buf[B12]));
-
-			sParam_->glb.status.setFault(TO_INT16(buf[B13], buf[B14]));
-			sParam_->glb.status.setWarning(TO_INT16(buf[B15],buf[B16]));
-			stat = true;
+        case GB_COM_GET_FAULT: {
+            stat = hdlrComGetFault(pc);
 		}
 		break;
 
 		case GB_COM_GET_MEAS: {
-			// обработаем посылку, если стоит флаг опроса всех параметров
-			if (buf[B1] == 0) {
-				sParam_->measParam.setResistOut(TO_INT16(buf[B2], buf[B3]));
-				sParam_->measParam.setCurrentOut(TO_INT16(buf[B4],buf[B5]));
-				// в buf[B7] передатся дробная часть напряжения * 100
-				// т.е. если там 90, то это 0.9В.
-				sParam_->measParam.setVoltageOut(buf[B6], (buf[B7] / 10));
-				sParam_->measParam.setVoltageDef(buf[B8]);
-				sParam_->measParam.setD(buf[B8]);	// для К400
-				sParam_->measParam.setVoltageDef2(buf[B9]);
-				sParam_->measParam.setVoltageCf(buf[B10]);
-				sParam_->measParam.setVoltageCf2(buf[B11]);
-				sParam_->measParam.setVoltageNoise(buf[B12]);
-				sParam_->measParam.setVoltageNoise2(buf[B13]);
-				sParam_->measParam.setPulseWidth(TO_INT16(buf[B14], buf[B15]));
-				sParam_->measParam.setFreqDev(buf[B17]);
-				stat = true;
-			}
+            stat = hdlrComGetMeas(pc);
 		}
 		break;
 
 		case GB_COM_GET_VERS: {
-			uint8_t act = GB_ACT_NO;
-			// данные о типе аппарата
-			act |= sParam_->def.status.setEnable(buf[B1] == 1);
-			act |= sParam_->prm.setNumCom(buf[B2] * 4);
-			sParam_->local.setNumComPrm(sParam_->prm.getNumCom());
-			// buf[B3] - прм2
-			act |= sParam_->prd.setNumCom(buf[B4] * 4);
-			sParam_->local.setNumComPrd(sParam_->prd.getNumCom());
-			// кол-во аппаратов в линии
-			// в def хранится значение параметра
-			// все действия с меню производятся относительно значения в glb.
-			// !!! и значение == кол-ву аппаратов, а раньше было на 1 меньше
-			act |= sParam_->glb.setNumDevices((eGB_NUM_DEVICES) (buf[B5]-1));
-			sParam_->def.setNumDevices((eGB_NUM_DEVICES) (buf[B5]-1));
-			sParam_->local.setNumDevices(sParam_->glb.getNumDevices() + 1);
-			// тип линии (вч, оптика, ...)
-			act |= sParam_->glb.setTypeLine((eGB_TYPE_LINE) buf[B6]);
-			// версия прошивки АТмега БСП
-			TDeviceGlb *glb = &sParam_->glb;
-			glb->setVersProgIC16(TO_INT16(buf[B7], buf[B8]) , GB_IC_BSP_MCU);
-			glb->setVersProgIC16(TO_INT16(buf[B9], buf[B10]), GB_IC_BSP_DSP);
-
-			// совместимость, только в Р400м
-			act |= sParam_->glb.setCompatibility((eGB_COMPATIBILITY) buf[B11]);
-
-			glb->setVersProgIC16(VERS, GB_IC_PI_MCU);
-			glb->setVersProgIC8(buf[B12], GB_IC_BSK_PLIS_PRD1);
-			glb->setVersProgIC8(buf[B13], GB_IC_BSK_PLIS_PRD2);
-			glb->setVersProgIC8(buf[B14], GB_IC_BSK_PLIS_PRM1);
-			glb->setVersProgIC8(buf[B15], GB_IC_BSK_PLIS_PRM2);
-			glb->setVersProgIC8(buf[B16], GB_IC_BSZ_PLIS);
-			glb->setVersProgIC16(TO_INT16(buf[B21], buf[B22]), GB_IC_BSP_DSP_PLIS);
-
-			// совместимость, для Р400/Р400м и К400 отличаются
-			if (sParam_->def.status.isEnable()) {
-				eGB_COMPATIBILITY comp;
-				comp = static_cast<eGB_COMPATIBILITY>(buf[B11]);
-				act |= sParam_->glb.setCompatibility(comp);
-			} else {
-				eGB_COMP_K400 comp;
-				comp = static_cast<eGB_COMP_K400> (buf[B11]);
-				act |= sParam_->glb.setCompK400(comp);
-			}
-
-			if (buf[3] >= 17) {
-				// Тип аппарата, в сентябре 2014 появился у РЗСК и Р400
-				// в ноябре 2014 появился  у К400
-				act |= glb->setTypeDevice((eGB_TYPE_DEVICE) buf[B17]);
-			} else {
-				glb->setTypeDevice(AVANT_NO);
-			}
-
-
-
-			// B18 - старший байт прошивки БСП-ПИ
-			// B19 - младший байт прошивки БСП-ПИ
-
-			// в апреле 2017  появилось однонаправленное кольцо
-			if (buf[3] >= 20) {
-				if (buf[B20] == 0xAB) {
-					glb->setTypeOpto(TYPE_OPTO_RING_UNI);
-				} else {
-					glb->setTypeOpto(TYPE_OPTO_STANDART);
-				}
-			} else {
-				glb->setTypeOpto(TYPE_OPTO_STANDART);
-			}
-
-			// B21, B22 - версия прошивки DSP, смотри выше.
-
-			// проверим необходимость обновления типа аппарата
-			if (act & GB_ACT_NEW) {
-				sParam_->device = false;
-			}
-
-			stat = ((act & GB_ACT_ERROR) != GB_ACT_ERROR);
+            stat = hdlrComGetVers(pc);
 		}
 		break;
 
@@ -733,7 +509,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 		break;
 
 		case GB_COM_GET_NET_ADR: {
-			stat = sParam_->glb.setNetAddress(buf[B1]);
+            stat = hdlrComGetNetAdr(pc);
 		}
 		break;
 
@@ -753,45 +529,8 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 		}
 		break;
 
-		case GB_COM_GET_JRN_ENTRY: {
-			if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_GLB)&& (!pc)) {
-				sParam_->jrnEntry.val = true;
-				if (sParam_->typeDevice == AVANT_OPTO) {
-					// дата
-					sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B6]));
-					sParam_->jrnEntry.dateTime.setMonth(BCD_TO_BIN(buf[B7]));
-					sParam_->jrnEntry.dateTime.setDay(BCD_TO_BIN(buf[B8]));
-					// время
-					sParam_->jrnEntry.dateTime.setHour(BCD_TO_BIN(buf[B9]));
-					sParam_->jrnEntry.dateTime.setMinute(BCD_TO_BIN(buf[B10]));
-					sParam_->jrnEntry.dateTime.setSecond(BCD_TO_BIN(buf[B11]));
-					uint16_t t = TO_INT16(buf[B12], buf[B13]);
-					sParam_->jrnEntry.dateTime.setMsSecond(t);
-					//
-					sParam_->jrnEntry.setRegime((eGB_REGIME) buf[B1]);
-					sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B2]);
-					sParam_->jrnEntry.setReady();
-					stat = true;
-				} else {
-					// дата
-					sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B16]));
-					sParam_->jrnEntry.dateTime.setMonth(BCD_TO_BIN(buf[B15]));
-					sParam_->jrnEntry.dateTime.setDay(BCD_TO_BIN(buf[B14]));
-					sParam_->jrnEntry.dateTime.setDayWeek(BCD_TO_BIN(buf[B13]));
-					// время
-					sParam_->jrnEntry.dateTime.setHour(BCD_TO_BIN(buf[B12]));
-					sParam_->jrnEntry.dateTime.setMinute(BCD_TO_BIN(buf[B11]));
-					sParam_->jrnEntry.dateTime.setSecond(BCD_TO_BIN(buf[B10]));
-					uint16_t t = TO_INT16(buf[B9], buf[B8]);
-					sParam_->jrnEntry.dateTime.setMsSecond(t);
-					// ! B1 - тип устройства, на данный момент игнорируется
-					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
-					sParam_->jrnEntry.setEventType(buf[B2]);
-					sParam_->jrnEntry.setRegime((eGB_REGIME) buf[B3]);
-					sParam_->jrnEntry.setReady();
-					stat = true;
-				}
-			}
+        case GB_COM_GET_JRN_ENTRY: {
+            stat = hdlrComGetJrnEntry(pc);
 		}
 		break;
 
@@ -800,7 +539,323 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 
 	}
 
-	return stat;
+    return stat;
+}
+
+bool clProtocolBspS::hdlrComGetFault(bool pc)
+{
+    eGB_TYPE_DEVICE device = sParam_->typeDevice;
+
+    sParam_->def.status.setFault(TO_INT16(buf[B1], buf[B2]));
+    sParam_->def.status.setWarning(TO_INT16(buf[B3], buf[B4]));
+
+    // установка номера(ов) уд.аппаратов ддля Р400(М) в режиме ПВЗУ-Е
+    uint8_t n = 0;
+    if ((device == AVANT_R400) || (device == AVANT_R400M)) {
+        if (sParam_->glb.getCompatibility() == GB_COMPATIBILITY_PVZUE) {
+            n = buf[B5];
+        }
+    }
+    sParam_->def.status.setRemoteNumber(n);
+
+    sParam_->prm.status.setFault(TO_INT16(buf[B5], buf[B6]));
+    sParam_->prm.status.setWarning(TO_INT16(buf[B7], buf[B8]));
+
+    sParam_->prd.status.setFault(TO_INT16(buf[B9], buf[B10]));
+    sParam_->prd.status.setWarning(TO_INT16(buf[B11],buf[B12]));
+
+    sParam_->glb.status.setFault(TO_INT16(buf[B13], buf[B14]));
+    sParam_->glb.status.setWarning(TO_INT16(buf[B15],buf[B16]));
+
+    return true;
+}
+
+bool clProtocolBspS::hdlrComGetJrnEntry(bool pc)
+{
+    bool check = false;
+
+    if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_GLB) && (!pc)) {
+        sParam_->jrnEntry.val = true;
+        if (sParam_->typeDevice == AVANT_OPTO) {
+            // дата
+            sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B6]));
+            sParam_->jrnEntry.dateTime.setMonth(BCD_TO_BIN(buf[B7]));
+            sParam_->jrnEntry.dateTime.setDay(BCD_TO_BIN(buf[B8]));
+            // время
+            sParam_->jrnEntry.dateTime.setHour(BCD_TO_BIN(buf[B9]));
+            sParam_->jrnEntry.dateTime.setMinute(BCD_TO_BIN(buf[B10]));
+            sParam_->jrnEntry.dateTime.setSecond(BCD_TO_BIN(buf[B11]));
+            uint16_t t = TO_INT16(buf[B12], buf[B13]);
+            sParam_->jrnEntry.dateTime.setMsSecond(t);
+            //
+            sParam_->jrnEntry.setRegime((eGB_REGIME) buf[B1]);
+            sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B2]);
+            sParam_->jrnEntry.setReady();
+            check = true;
+        } else {
+            // дата
+            sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B16]));
+            sParam_->jrnEntry.dateTime.setMonth(BCD_TO_BIN(buf[B15]));
+            sParam_->jrnEntry.dateTime.setDay(BCD_TO_BIN(buf[B14]));
+            sParam_->jrnEntry.dateTime.setDayWeek(BCD_TO_BIN(buf[B13]));
+            // время
+            sParam_->jrnEntry.dateTime.setHour(BCD_TO_BIN(buf[B12]));
+            sParam_->jrnEntry.dateTime.setMinute(BCD_TO_BIN(buf[B11]));
+            sParam_->jrnEntry.dateTime.setSecond(BCD_TO_BIN(buf[B10]));
+            uint16_t t = TO_INT16(buf[B9], buf[B8]);
+            sParam_->jrnEntry.dateTime.setMsSecond(t);
+            // ! B1 - тип устройства, на данный момент игнорируется
+            sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
+            sParam_->jrnEntry.setEventType(buf[B2]);
+            sParam_->jrnEntry.setRegime((eGB_REGIME) buf[B3]);
+            sParam_->jrnEntry.setReady();
+            check = true;
+        }
+    }
+
+    return check;
+}
+
+bool clProtocolBspS::hdlrComGetMeas(bool pc)
+{
+    bool check = (buf[B1] == 0);
+    // обработаем посылку, если стоит флаг опроса всех параметров
+
+    if (check) {
+        sParam_->measParam.setResistOut(TO_INT16(buf[B2], buf[B3]));
+        sParam_->measParam.setCurrentOut(TO_INT16(buf[B4],buf[B5]));
+        // в buf[B7] передатся дробная часть напряжения * 100
+        // т.е. если там 90, то это 0.9В.
+        sParam_->measParam.setVoltageOut(buf[B6], (buf[B7] / 10));
+        sParam_->measParam.setVoltageDef(buf[B8]);
+        sParam_->measParam.setD(buf[B8]);	// для К400
+        sParam_->measParam.setVoltageDef2(buf[B9]);
+        sParam_->measParam.setVoltageCf(buf[B10]);
+        sParam_->measParam.setVoltageCf2(buf[B11]);
+        sParam_->measParam.setVoltageNoise(buf[B12]);
+        sParam_->measParam.setVoltageNoise2(buf[B13]);
+        sParam_->measParam.setPulseWidth(TO_INT16(buf[B14], buf[B15]));
+        sParam_->measParam.setFreqDev(buf[B17]);
+    }
+
+    return check;
+}
+
+bool clProtocolBspS::hdlrComGetNetAdr(bool pc)
+{
+    bool check = true;
+
+    check &= sParam_->glb.setNetAddress(buf[B1]);
+    check &= sParam_->Uart.Interface.set((TInterface::INTERFACE) buf[B2]);
+    check &= sParam_->Uart.Protocol.set((TProtocol::PROTOCOL) buf[B3]);
+    check &= sParam_->Uart.BaudRate.set((TBaudRate::BAUD_RATE) buf[B4]);
+    check &= sParam_->Uart.DataBits.set((TDataBits::DATA_BITS) buf[B5]);
+    check &= sParam_->Uart.Parity.set((TParity::PARITY) buf[B6]);
+    check &= sParam_->Uart.StopBits.set((TStopBits::STOP_BITS) buf[B7]);
+
+    return check;
+}
+
+bool clProtocolBspS::hdlrComGetSost(bool pc)
+{
+    sParam_->def.status.setRegime((eGB_REGIME) buf[B1]);
+    sParam_->def.status.setState(buf[B2]);
+    sParam_->def.status.setDopByte(buf[B3]);
+
+    sParam_->prm.status.setRegime((eGB_REGIME) buf[B4]);
+    sParam_->prm.status.setState(buf[B5]);
+    sParam_->prm.status.setDopByte(buf[B6]);
+
+    sParam_->prd.status.setRegime((eGB_REGIME) buf[B7]);
+    sParam_->prd.status.setState(buf[B8]);
+    sParam_->prd.status.setDopByte(buf[B9]);
+
+    // далее проверяется кол-во принятых байт
+    uint8_t num = buf[NUM];
+
+    if (sParam_->prm.status.isEnable()) {
+        if (num >= 13) 	sParam_->prm.setIndCom8(0, buf[B13]);
+        if (num >= 14)  sParam_->prm.setIndCom8(1, buf[B14]);
+        if (num >= 15)  sParam_->prm.setIndCom8(2, buf[B15]);
+        if (num >= 16)  sParam_->prm.setIndCom8(3, buf[B16]);
+    }
+
+    if (sParam_->prd.status.isEnable()) {
+        if (num >= 17) 	sParam_->prd.setIndCom8(0, buf[B17]);
+        if (num >= 18)  sParam_->prd.setIndCom8(1, buf[B18]);
+        if (num >= 19)  sParam_->prd.setIndCom8(2, buf[B19]);
+        if (num >= 20)  sParam_->prd.setIndCom8(3, buf[B20]);
+    }
+
+    // текущее состояние дискретных входов (Пуск ПРМ, Сброс индикации и т.д.)
+    // проверка необходимости включить подсветку
+    if (num >= 21) {
+        sParam_->glb.setLedOn((buf[B21] > 0));
+        sParam_->glb.setDInputState(buf[B21]);
+    }
+
+    eGB_REGIME reg = GB_REGIME_MAX;
+    eGB_REGIME regTmp = GB_REGIME_MAX;
+    // определение общего режима аппарата
+    // по умолчанию оно будет GB_REGIME_ENABLED
+    // другое состояние возможно, если все устройства аппарата
+    // имеют один и тот же режим
+    if (sParam_->prd.status.isEnable()) {
+        regTmp = sParam_->prd.status.getRegime();
+        if (reg == GB_REGIME_MAX)
+            reg = regTmp;
+        else if (reg != regTmp)
+            reg = GB_REGIME_ENABLED;
+    }
+
+    if (sParam_->prm.status.isEnable()) {
+        regTmp = sParam_->prm.status.getRegime();
+        if (reg == GB_REGIME_MAX)
+            reg = regTmp;
+        else if (reg != regTmp)
+            reg = GB_REGIME_ENABLED;
+    }
+
+    if (sParam_->def.status.isEnable()) {
+        regTmp = sParam_->def.status.getRegime();
+        if (reg == GB_REGIME_MAX)
+            reg = regTmp;
+        else if (reg != regTmp)
+            reg = GB_REGIME_ENABLED;
+    }
+    sParam_->glb.status.setRegime(reg);
+
+   return true;
+}
+
+bool clProtocolBspS::hdlrComGetTime(bool pc)
+{
+    // FIXME Разобраться что делает переменная. Задержка в работе журнала?!
+    static uint8_t cntTimeFrame = 0;
+    bool check = true;
+
+    check &= sParam_->DateTime.setYear(BCD_TO_BIN(buf[B1]));
+    check &= sParam_->DateTime.setMonth(BCD_TO_BIN(buf[B2]));
+    check &= sParam_->DateTime.setDay(BCD_TO_BIN(buf[B3]));
+    check &= sParam_->DateTime.setHour(BCD_TO_BIN(buf[B4]));
+    check &= sParam_->DateTime.setMinute(BCD_TO_BIN(buf[B5]));
+    check &= sParam_->DateTime.setSecond(BCD_TO_BIN(buf[B6]));
+    // миллисекунды устанавливаются, только если они есть в посылке
+    uint16_t ms = 0;
+    if (buf[NUM >= 8]) {
+        ms = *((uint16_t *) &buf[B7]);
+    }
+    check &= sParam_->DateTime.setMsSecond(ms);
+
+    // новая запись журнала, для передачи в АСУ ТП
+    if (buf[NUM] >= 21) {
+        TJrnSCADA *jrn = &sParam_->jrnScada;
+        if (jrn->isReadyToWrite()) {
+            jrn->setJrn(buf[B9]);
+            jrn->setEvent(buf[B10]);
+            jrn->setCom(buf[B11]);
+            jrn->setComSource(buf[B12]);
+            // B13
+            jrn->dtime.setYear(BCD_TO_BIN(buf[B14]));
+            jrn->dtime.setMonth(BCD_TO_BIN(buf[B15]));
+            jrn->dtime.setDay(BCD_TO_BIN(buf[B16]));
+            jrn->dtime.setHour(BCD_TO_BIN(buf[B17]));
+            jrn->dtime.setMinute(BCD_TO_BIN(buf[B18]));
+            jrn->dtime.setSecond(BCD_TO_BIN(buf[B19]));
+            jrn->dtime.setMsSecond(*((uint16_t *) &buf[B20]));
+
+            jrn->setReadyToSend();
+            cntTimeFrame = 0;
+        }
+    } else {
+        if (sParam_->jrnScada.isReadyToWrite()) {
+            if (cntTimeFrame > 5) {
+                sParam_->jrnScada.setReadyToEvent();
+            } else {
+                cntTimeFrame++;
+            }
+        }
+    }
+
+    return check;
+}
+
+bool clProtocolBspS::hdlrComGetVers(bool pc)
+{
+    uint8_t act = GB_ACT_NO;
+    // данные о типе аппарата
+    act |= sParam_->def.status.setEnable(buf[B1] == 1);
+    act |= sParam_->prm.setNumCom(buf[B2] * 4);
+    sParam_->local.setNumComPrm(sParam_->prm.getNumCom());
+    // buf[B3] - прм2
+    act |= sParam_->prd.setNumCom(buf[B4] * 4);
+    sParam_->local.setNumComPrd(sParam_->prd.getNumCom());
+    // кол-во аппаратов в линии
+    // в def хранится значение параметра
+    // все действия с меню производятся относительно значения в glb.
+    // !!! и значение == кол-ву аппаратов, а раньше было на 1 меньше
+    act |= sParam_->glb.setNumDevices((eGB_NUM_DEVICES) (buf[B5]-1));
+    sParam_->def.setNumDevices((eGB_NUM_DEVICES) (buf[B5]-1));
+    sParam_->local.setNumDevices(sParam_->glb.getNumDevices() + 1);
+    // тип линии (вч, оптика, ...)
+    act |= sParam_->glb.setTypeLine((eGB_TYPE_LINE) buf[B6]);
+    // версия прошивки АТмега БСП
+    TDeviceGlb *glb = &sParam_->glb;
+    glb->setVersProgIC16(TO_INT16(buf[B7], buf[B8]) , GB_IC_BSP_MCU);
+    glb->setVersProgIC16(TO_INT16(buf[B9], buf[B10]), GB_IC_BSP_DSP);
+
+    // совместимость, только в Р400м
+    act |= sParam_->glb.setCompatibility((eGB_COMPATIBILITY) buf[B11]);
+
+    glb->setVersProgIC16(VERS, GB_IC_PI_MCU);
+    glb->setVersProgIC8(buf[B12], GB_IC_BSK_PLIS_PRD1);
+    glb->setVersProgIC8(buf[B13], GB_IC_BSK_PLIS_PRD2);
+    glb->setVersProgIC8(buf[B14], GB_IC_BSK_PLIS_PRM1);
+    glb->setVersProgIC8(buf[B15], GB_IC_BSK_PLIS_PRM2);
+    glb->setVersProgIC8(buf[B16], GB_IC_BSZ_PLIS);
+    glb->setVersProgIC16(TO_INT16(buf[B21], buf[B22]), GB_IC_BSP_DSP_PLIS);
+
+    // совместимость, для Р400/Р400м и К400 отличаются
+    if (sParam_->def.status.isEnable()) {
+        eGB_COMPATIBILITY comp;
+        comp = static_cast<eGB_COMPATIBILITY>(buf[B11]);
+        act |= sParam_->glb.setCompatibility(comp);
+    } else {
+        eGB_COMP_K400 comp;
+        comp = static_cast<eGB_COMP_K400> (buf[B11]);
+        act |= sParam_->glb.setCompK400(comp);
+    }
+
+    if (buf[3] >= 17) {
+        // Тип аппарата, в сентябре 2014 появился у РЗСК и Р400
+        // в ноябре 2014 появился  у К400
+        act |= glb->setTypeDevice((eGB_TYPE_DEVICE) buf[B17]);
+    } else {
+        glb->setTypeDevice(AVANT_NO);
+    }
+
+    // B18 - старший байт прошивки БСП-ПИ
+    // B19 - младший байт прошивки БСП-ПИ
+
+    // в апреле 2017  появилось однонаправленное кольцо
+    if (buf[3] >= 20) {
+        if (buf[B20] == 0xAB) {
+            glb->setTypeOpto(TYPE_OPTO_RING_UNI);
+        } else {
+            glb->setTypeOpto(TYPE_OPTO_STANDART);
+        }
+    } else {
+        glb->setTypeOpto(TYPE_OPTO_STANDART);
+    }
+
+    // B21, B22 - версия прошивки DSP, смотри выше.
+
+    // проверим необходимость обновления типа аппарата
+    if (act & GB_ACT_NEW) {
+        sParam_->device = false;
+    }
+
+    return ((act & GB_ACT_ERROR) != GB_ACT_ERROR);
 }
 
 /**	Формирование сообщения команды считавания кол-ва и самих записей журнала.

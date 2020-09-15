@@ -48,24 +48,31 @@ struct Param {
 
 	/// Зависимость максимума параметра.
 	typedef enum {
-		DEPEND_MAX_NO,				///< Нет зависимости.
+        DEPEND_MAX_NO = 0,			///< Нет зависимости.
 		DEPEND_MAX_ON_COM_PRD,		///< Зависит от количества команд на ПРД.
 		DEPEND_MAX_ON_NUM_DEVS		///< Зависит от количества команд на ПРМ.
 	} DEPEND_MAX;
 
 	/// Зависимость повторов параметра.
 	typedef enum {
-		DEPEND_SAME_NO,				///< Нет зависимости.
+        DEPEND_SAME_NO = 0,			///< Нет зависимости.
 		DEPEND_SAME_ON_NUM_DEVS,	///< Зависит от количества аппаратов в линии.
 		DEPEND_SAME_ON_COM_PRD,		///< Зависит от количества команд на ПРД.
 		DEPEND_SAME_ON_COM_PRM		///< Зависит от количества команд на ПРМ.
 	} DEPEND_SAME;
 
-	/// Условие для изменения параметра.
+    /// Необходимые режим для изменения параметра.
 	typedef enum {
-		CHANGE_COND_NO,			///< Нет условий.
-		CHANGE_COND_REG_DISABLE	///< Изменить можно только в режиме "Выведен".
-	} CHANGE_COND;
+        CHANGE_REG_NO = 0,  ///< Нет условий.
+        CHANGE_REG_DISABLE	///< Изменить можно только в режиме "Выведен".
+    } CHANGE_REG;
+
+    /// Минимальный пользователь для изменения параметра.
+    typedef enum {
+        CHANGE_USER_NO = 0,     ///< Нет условий.
+        CHANGE_USER_ENGINEER,   ///< Необходим пользователь не ниже инженера.
+        CHANGE_USER_ADMIN       ///< Необходим пользователь не ниже админа.
+    } CHANGE_USER;
 
 	char name[NAME_PARAM_LENGHT];	///< Имя параметра.
 	eGB_COM com;		///< Команда считывания для стандартного протокола.
@@ -85,7 +92,8 @@ struct Param {
 	uint8_t sendDop;		///< Байт дополнительной информации для сохранения.
 	DEPEND_MAX dependMax;	///< Зависимость максимума текущего параметра.
 	DEPEND_SAME dependSame;	///< Зависимость повторений текущего параметра.
-	CHANGE_COND changeCond;	///< Условие для изменения параметра.
+    CHANGE_REG changeReg;	///< Необходимый режим для изменения параметра.
+    CHANGE_USER changeUser; ///< Минимальный пользователь для изменения параметра.
 };
 
 #endif /* PARAM_H_ */

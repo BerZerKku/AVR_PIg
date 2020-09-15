@@ -3391,6 +3391,9 @@ void clMenu::lvlSetupInterface() {
     // Надо или исправить это, либо сделать подобное для всех параметров.
     // Т.е. после ввода локального параметра считывать его значение!.
 
+    qDebug() << "interface = " << interface <<
+                "sParam.Uart.Interface.get() = " << sParam.Uart.Interface.get();
+
     if (interface != sParam.Uart.Interface.get()) {
         lvlCreate_ = true;
     }
@@ -4689,11 +4692,10 @@ void clMenu::printValue(uint8_t pos) {
 void clMenu::enterParameter() {
 	LocalParams *lp = &sParam.local;
 
-	if ((lp->getChangeCond() == Param::CHANGE_COND_REG_DISABLE) &&
+    if ((lp->getChangeCond() == Param::CHANGE_REG_DISABLE) &&
 			(sParam.glb.status.getRegime() != GB_REGIME_DISABLED)) {
 		printMessage();
 	} else {
-
 		switch(lp->getParamType()) {
 			case Param::PARAM_BITES: // DOWN
 			case Param::PARAM_LIST:
@@ -4878,7 +4880,14 @@ void clMenu::setupParam() {
 			} else {
 				eGB_PARAM param= sParam.local.getParam();
 				if (param != GB_PARAM_NULL_PARAM) {
+                    uint8_t tmp = EnterParam.getValueEnter();
+
                     // TODO Добавить обработку ввода параметров без команды!
+
+                    if (param == GB_PARAM_IS_USER) {
+                        // FIXME Смена должна быть с паролем!
+                        sParam.security.User.set((TUser::USER) (tmp));
+                    }
 				}
 			}
 			EnterParam.setDisable();
