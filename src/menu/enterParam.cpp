@@ -10,7 +10,7 @@
 // ѕроверка текущего статуса работы с параметром.
 bool TEnterParam::isEnable() {
 	// проверка текущего статуса на достоверное значение
-	if ((status_ < MENU_ENTER_PARAM_NO) || (status_ > MENU_ENTER_PARAM_MESSAGE)) {
+    if ((status_ < MENU_ENTER_PARAM_NO) || (status_ > MENU_ENTER_PARAM_MAX)) {
 		status_ = MENU_ENTER_PARAM_NO;
 	}
 
@@ -37,7 +37,6 @@ void TEnterParam::setEnable(eMENU_ENTER_PARAM s) {
 // ќкончание ввода нового значени€ параметра.
 void TEnterParam::setDisable() {
 	status_ = MENU_ENTER_PARAM_NO;
-	cnt_ = TIME_MESSAGE;
 	com = GB_COM_NO;
 	disc_ = 1;
 	param_ = GB_PARAM_NULL_PARAM;

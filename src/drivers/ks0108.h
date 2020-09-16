@@ -52,6 +52,7 @@ enum eLCD_LED
 #define NUM_POINT_HOR 128
 #define NUM_POINT_VERT 64
 #define NUM_LINE (NUM_PINT_VERT / 8)
+#define ROW_LEN 20
 
 void vLCDclear		(void);
 void vLCDinit		(void);

@@ -127,7 +127,7 @@
 
 /// Режим работы функции ввода параметров
 enum eMENU_ENTER_PARAM {
-	MENU_ENTER_PARAM_NO,		///< отмена изменения параметра
+    MENU_ENTER_PARAM_NO = 0,	///< отмена изменения параметра
 	MENU_ENTER_PARAM_INT,		///< изменение параметра, целое значение
 	MENU_ENTER_PARAM_LIST,		///< изменение параметра, выбор из списка
 	MENU_ENTER_PARAM_LIST_2,	///< изменение параметра, выбор из списка значений
@@ -137,7 +137,8 @@ enum eMENU_ENTER_PARAM {
 	MENU_ENTER_PASSWORD_READY,	///< введен верный пароль
 	MENU_ENTER_PASSWORD_N_READY,///< новый пароль введен корректно
 	MENU_ENTER_PARAM_READY,		///< необходимо изменить параметр
-	MENU_ENTER_PARAM_MESSAGE,	///< вывод сообщения на экран при вводе параметра
+    //
+    MENU_ENTER_PARAM_MAX
 };
 
 /// Тип аппарата

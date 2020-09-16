@@ -63,6 +63,19 @@ enum eMENU_MEAS_PARAM {
 
 // класс меню
 class clMenu {
+    /// Сообщение.
+    enum msg_t {
+        MSG_NO = 0,             ///< Сообщений нет.
+        MSG_WRONG_REGIME,       ///< Параметр изменяется в режиме "Выведен".
+        MSG_WRONG_USER,         ///< Недостаточно прав для изменения.
+        MSG_WRONG_PWD,          ///< Введен не верный пароль.
+        MSG_WRONG_DEVICE,       ///< Тип аппарата не определен.
+        MSG_DISABLE,            ///< Нужно изменить режим на "Выведен".
+        MSG_INIT,               ///< Инициализация.
+        //
+        MSG_MAX
+    };
+
 public:
 
 	/**	Конструктор.
@@ -152,6 +165,7 @@ private:
 	bool lvlCreate_;
 
 	// время вывода доп.сообщения на экран (например сообщения об ошибке)
+    msg_t msg_;
 	uint8_t delay_;
 
 	// измеряемые параметры
@@ -178,15 +192,26 @@ private:
 	// очистка строки
 	void clearLine(uint8_t line);
 
-	// вывод сообщения на экран
-	void printMessage() {
-		delay_ = 0;
-	}
+    /// Сброс сообщений.
+    void clrMessages();
 
-	// возвращает true - в случае необходимости вывода сообщения
-	bool isMessage() const {
-		return (delay_ < TIME_MESSAGE);
-	}
+    /** Добавление сообщения.
+     *
+     *  @param[in] msg Сообщение.
+     */
+    void setMessage(msg_t msg);
+
+    /** Выводит сообщения на экран
+     *
+     *  @return True если сообщение выведено на экран.
+     */
+    bool printMessage();
+
+    /** Проверяет наличие сообщений.
+     *
+     *  @return true если есть сообщение.
+     */
+    bool isMessage() const;
 
 	// вывод на экран измеряемого параметра
 	void printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par);
@@ -264,6 +289,18 @@ private:
 	 * 	осуществляется выбор из массива строк значений параметра.
 	 */
 	void printValue(uint8_t pos);
+
+    /** Проверка режима работы на возможность изменения параметра.
+     *
+     *  @return True если можно менять.
+     */
+    bool checkChangeReg() const;
+
+    /** Проверка пользователя на возможность изменения параметра.
+     *
+     *  @return True если можно менять.
+     */
+    bool checkChangeUser() const;
 
 	/**	Настройка параметров для ввода значения с клавиатуры.
 	 *

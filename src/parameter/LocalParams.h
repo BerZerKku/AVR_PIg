@@ -309,13 +309,21 @@ public:
 		this->numDevices = numDevices;
 	}
 
-	/**	Возвращает текущее условие для изменения параметра.
+    /**	Возвращает необходимый режим для изменения параметра.
 	 *
 	 *	@return Условие для изменения параметра.
 	 */
-    Param::CHANGE_REG getChangeCond() const {
+    Param::CHANGE_REG getChangeReg() const {
         return (Param::CHANGE_REG) pgm_read_byte(&getPtrParam()->changeReg);
 	}
+
+    /**	Возвращает необходимого пользователя для изменения параметра.
+     *
+     *	@return Условие для изменения параметра.
+     */
+    Param::CHANGE_USER getChangeUser() const {
+        return (Param::CHANGE_USER) pgm_read_byte(&getPtrParam()->changeUser);
+    }
 
 private:
 

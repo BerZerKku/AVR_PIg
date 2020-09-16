@@ -35,7 +35,7 @@ clMenu::clMenu() {
 	blink_ = false;
 	blinkMeasParam_ = false;
 	curCom_ = 0;
-	delay_ = TIME_MESSAGE;
+    clrMessages();
 
 	// курсор неактивен
 	cursorEnable_ = false;
@@ -103,8 +103,8 @@ clMenu::clMenu() {
 
 	// назначим имена устройствам
 	sParam.def.status.name = PSTR("ЗАЩ"); 	// fcDeviceName00;
-	sParam.prm.status.name = PSTR("ПРМ");	//fcDeviceName01;
-	sParam.prd.status.name = PSTR("ПРД");	//fcDeviceName02;
+    sParam.prm.status.name = PSTR("ПРМ");	// fcDeviceName01;
+    sParam.prd.status.name = PSTR("ПРД");	// fcDeviceName02;
 
 #ifdef DEBUG
 	// в режиме отладки включена постоянная подсветка
@@ -165,11 +165,21 @@ void clMenu::proc(void) {
 		vLCDsetLed(LED_SWITCH);
 	}
 
-	// счетчик вывода сообщения
-	if (delay_ < TIME_MESSAGE) {
-		delay_++;
-	}
+    // счетчик вывода сообщения
+    if (delay_ > 0) {
+        delay_--;
+        if (delay_ == 0) {
+            clrMessages();
+        }
+    }
 
+    if (lvlCreate_) {
+        clrMessages();
+    }
+
+    if (isMessage()) {
+        key_ = KEY_NO;
+    }
 	// вывод в буфер содержимого текущего меню
 	// либо сообщения что тип аппарата не определен
 	clearTextBuf();
@@ -932,7 +942,119 @@ void clMenu::clearLine(uint8_t line) {
 		line = (line - 1) * 20;
 		for (uint_fast8_t i = 0; i < 20; i++)
 			vLCDbuf[line++] = ' ';
-	}
+    }
+}
+
+void clMenu::clrMessages()
+{
+    msg_ = MSG_NO;
+    delay_ = 0;
+}
+
+void clMenu::setMessage(clMenu::msg_t msg)
+{
+    if (msg < MSG_MAX) {
+        msg_ = msg;
+        delay_ = TIME_MESSAGE;
+    }
+}
+
+bool clMenu::printMessage() {
+    bool isprint = false;
+    PGM_P pmsg = nullptr;
+    uint8_t nrows = 0;
+
+    switch(msg_) {
+        case MSG_NO:
+        case MSG_MAX: {
+            clrMessages();
+        } break;
+
+        case MSG_WRONG_USER: {
+            static const char message[][ROW_LEN+1] PROGMEM = {
+                //2345678901234567890
+                " Недостаточно прав  ",
+                "   для изменения    ",
+                "     параметра      "
+            };
+            pmsg = (PGM_P) message;
+            nrows = SIZE_OF(message);
+        } break;
+
+        case MSG_WRONG_REGIME: {
+            static const char message[][ROW_LEN+1] PROGMEM = {
+                //2345678901234567890
+                " Изменить параметр  ",
+                "  можно только в    ",
+                "  режиме ВЫВЕДЕН    "
+            };
+            pmsg = (PGM_P) message;
+            nrows = SIZE_OF(message);
+        } break;
+
+        case MSG_WRONG_PWD: {
+            static const char message[][ROW_LEN+1] PROGMEM = {
+                //02345678901234567890
+                "       Введен       ",
+                "    неправильный    ",
+                "       пароль       "
+            };
+            pmsg = (PGM_P) message;
+            nrows = SIZE_OF(message);
+        } break;
+
+        case MSG_WRONG_DEVICE: {
+            static const char message[][ROW_LEN+1] PROGMEM = {
+                //02345678901234567890
+                "    Тип аппарата    ",
+                "   не определен!!!  "
+            };
+            pmsg = (PGM_P) message;
+            nrows = SIZE_OF(message);
+        } break;
+
+        case MSG_DISABLE: {
+            static const char message[][ROW_LEN+1] PROGMEM = {
+                //2345678901234567890
+                "    Перейдите в     ",
+                "   режим ВЫВЕДЕН    "
+            };
+            pmsg = (PGM_P) message;
+            nrows = SIZE_OF(message);
+        } break;
+
+        case MSG_INIT: {
+            static const char message[][ROW_LEN+1] PROGMEM = {
+                //2345678901234567890
+                "    Инициализация   "
+            };
+            pmsg = (PGM_P) message;
+            nrows = SIZE_OF(message);
+        } break;
+    }
+
+    if (nrows > 0) {
+        uint8_t i = 3;
+        // вывод сообщения
+        while(nrows > 0) {
+            snprintf_P(&vLCDbuf[(i - 1)*ROW_LEN], ROW_LEN + 1, pmsg);
+            pmsg += ROW_LEN + 1;
+            i++;
+            nrows--;
+        }
+        // очистка оставшихся строк
+        while(i <= NUM_TEXT_LINES) {
+            clearLine(i);
+            i++;
+        }
+        isprint = true;
+    }
+
+    return isprint;
+}
+
+bool clMenu::isMessage() const {
+    return (delay_ > 0) && (msg_ != MSG_NO) && (msg_ < MSG_MAX);
 }
 
 /** Уровень "Ошибочный тип аппарата"
@@ -944,10 +1066,6 @@ void clMenu::clearLine(uint8_t line) {
  */
 void clMenu::lvlError() {
 	static uint8_t time = 0;
-
-	static const char fcNoTypeDevice0[] PROGMEM = "    Тип аппарата    ";
-	static const char fcNoTypeDevice1[] PROGMEM = "   не определен!!!  ";
-	static const char fcNoTypeDevice3[] PROGMEM = "    Инициализация   ";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -967,12 +1085,17 @@ void clMenu::lvlError() {
 
 	// Проверка времени нахождения в неизвестном состоянии типа аппарата
 	if (time >= 25) {
-		snprintf_P(&vLCDbuf[40], 21, fcNoTypeDevice0);
-		snprintf_P(&vLCDbuf[60], 21, fcNoTypeDevice1);
+        setMessage(MSG_WRONG_DEVICE);
 	} else {
-		snprintf_P(&vLCDbuf[40], 21, fcNoTypeDevice3);
+        setMessage(MSG_INIT);
 	}
 	time++;
+
+    qDebug() << "lelvel, msg_ = " << msg_ << ", delay_ = " << delay_;
+    if (isMessage()) {
+        qDebug() << "isMessage()";
+        printMessage();
+    }
 
 	if (sParam.typeDevice != AVANT_NO) {
 		lvlMenu = &clMenu::lvlStart;
@@ -2679,68 +2802,73 @@ void clMenu::lvlRegime() {
 		sParam.txComBuf.addCom2(GB_COM_GET_DEVICE_NUM);
 	}
 
-	snprintf_P(&vLCDbuf[0], 21, title);
+    snprintf_P(&vLCDbuf[0], ROW_LEN + 1, title);
 
-	uint8_t poz = lineParam_ * 20;
-	if (sParam.def.status.isEnable()) {
-		printDevicesRegime(poz, &sParam.def.status);
-		poz += 20;
-	}
-	if (sParam.prm.status.isEnable()) {
-		printDevicesRegime(poz, &sParam.prm.status);
-		poz += 20;
-	}
-	if (sParam.prd.status.isEnable()) {
-		printDevicesRegime(poz, &sParam.prd.status);
-	}
+    if (isMessage()) {
+        printMessage();
+    } else {
+        uint8_t poz = lineParam_ * ROW_LEN;
+        if (sParam.def.status.isEnable()) {
+            printDevicesRegime(poz, &sParam.def.status);
+            poz += ROW_LEN;
+        }
+        if (sParam.prm.status.isEnable()) {
+            printDevicesRegime(poz, &sParam.prm.status);
+            poz += ROW_LEN;
+        }
+        if (sParam.prd.status.isEnable()) {
+            printDevicesRegime(poz, &sParam.prd.status);
+        }
 
-	// Ввод нового значения параметра.
-	// Сначала выбирается требуемый режим работы.
-	// При попытке перейти в режим "Выведен" из "Введен" или "Готов",
-	// происходит запрос пароля. При ошибочном пароле выводится сообщение.
-	if (EnterParam.isEnable()) {
-		eMENU_ENTER_PARAM stat = EnterParam.getStatus();
-		eGB_REGIME_ENTER val = GB_REGIME_ENTER_MAX;
+        // Ввод нового значения параметра.
+        // Сначала выбирается требуемый режим работы.
+        // При попытке перейти в режим "Выведен" из "Введен" или "Готов",
+        // происходит запрос пароля. При ошибочном пароле выводится сообщение.
+        if (EnterParam.isEnable()) {
+            eMENU_ENTER_PARAM stat = EnterParam.getStatus();
+            eGB_REGIME_ENTER val = GB_REGIME_ENTER_MAX;
 
-		// выбор функции ввода : пароль или параметр
-		(this->*enterFunc)();
+            // выбор функции ввода : пароль или параметр
+            (this->*enterFunc)();
 
-		if (stat == MENU_ENTER_PARAM_READY) {
-			// проверим пароль, если пытаемся перейти в режим "Выведен"
-			// из режимов "Введен" и "Готов"
-			val = (eGB_REGIME_ENTER) EnterParam.getValueEnter();
+            if (stat == MENU_ENTER_PARAM_READY) {
+                // проверим пароль, если пытаемся перейти в режим "Выведен"
+                // из режимов "Введен" и "Готов"
+                val = (eGB_REGIME_ENTER) EnterParam.getValueEnter();
 
-			if ((reg == GB_REGIME_ENABLED) || (reg == GB_REGIME_READY)) {
-				if (val == GB_REGIME_ENTER_DISABLED) {
-					enterFunc = &clMenu::enterPassword;
-					EnterParam.setEnable(MENU_ENTER_PASSWORD);
-					EnterParam.setDopValue(static_cast<uint16_t>(val));
-					val = GB_REGIME_ENTER_MAX;
-				}
-			}
-		}
+                if ((reg == GB_REGIME_ENABLED) || (reg == GB_REGIME_READY)) {
+                    if (val == GB_REGIME_ENTER_DISABLED) {
+                        enterFunc = &clMenu::enterPassword;
+                        EnterParam.setEnable(MENU_ENTER_PASSWORD);
+                        EnterParam.setDopValue(static_cast<uint16_t>(val));
+                        val = GB_REGIME_ENTER_MAX;
+                    }
+                }
+            }
 
-		if (stat == MENU_ENTER_PASSWORD_READY) {
-			// проверка введеного пароля
-			if (sParam.password.check(EnterParam.getValue())) {
-				val = static_cast<eGB_REGIME_ENTER>(EnterParam.getDopValue());
-			} else {
-				EnterParam.printMessage();
-			}
-		}
+            if (stat == MENU_ENTER_PASSWORD_READY) {
+                // проверка введеного пароля
+                if (sParam.password.check(EnterParam.getValue())) {
+                    val = static_cast<eGB_REGIME_ENTER>(EnterParam.getDopValue());
+                } else {
+                    setMessage(MSG_WRONG_PWD);
+                    EnterParam.setDisable();
+                }
+            }
 
-		if (val != GB_REGIME_ENTER_MAX) {
-			eGB_COM com = GB_COM_NO;
+            if (val != GB_REGIME_ENTER_MAX) {
+                eGB_COM com = GB_COM_NO;
 
-			if (val == GB_REGIME_ENTER_DISABLED)
-				com = GB_COM_SET_REG_DISABLED;
-			else if (val == GB_REGIME_ENTER_ENABLED)
-				com = GB_COM_SET_REG_ENABLED;
-			sParam.txComBuf.addFastCom(com);
-			EnterParam.setDisable();
-		}
-	}
-
+                if (val == GB_REGIME_ENTER_DISABLED) {
+                    com = GB_COM_SET_REG_DISABLED;
+                } else if (val == GB_REGIME_ENTER_ENABLED) {
+                    com = GB_COM_SET_REG_ENABLED;
+                }
+                sParam.txComBuf.addFastCom(com);
+                EnterParam.setDisable();
+            }
+        }
+    }
 	switch(key_) {
 		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlSetup;
@@ -2768,7 +2896,7 @@ void clMenu::lvlRegime() {
 					max = GB_REGIME_ENTER_DISABLED;
 					val = GB_REGIME_ENTER_DISABLED;
 					break;
-				case GB_REGIME_ENTER_DISABLED:
+                case GB_REGIME_DISABLED:
 					min = GB_REGIME_ENTER_ENABLED;
 					max = GB_REGIME_ENTER_ENABLED;
 					val = GB_REGIME_ENTER_ENABLED;
@@ -3391,8 +3519,6 @@ void clMenu::lvlSetupInterface() {
     // Надо или исправить это, либо сделать подобное для всех параметров.
     // Т.е. после ввода локального параметра считывать его значение!.
 
-    qDebug() << "interface = " << interface <<
-                "sParam.Uart.Interface.get() = " << sParam.Uart.Interface.get();
 
     if (interface != sParam.Uart.Interface.get()) {
         lvlCreate_ = true;
@@ -3627,11 +3753,11 @@ void clMenu::lvlTest() {
 	static char title[] PROGMEM = "Настройка\\Тесты";
 	static char punkt1[] PROGMEM = "%d. Тест передатчика";
 	static char punkt2[] PROGMEM = "%d. Тест приемника";
-	static char message[][21] PROGMEM = {
-	//12345678901234567890
-			"    Перейдите в     ",//
-			"   режим ВЫВЕДЕН    " 		//
-			};
+//	static char message[][21] PROGMEM = {
+//	//12345678901234567890
+//			"    Перейдите в     ",//
+//			"   режим ВЫВЕДЕН    " 		//
+//			};
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3663,15 +3789,12 @@ void clMenu::lvlTest() {
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
 
 	snprintf_P(&vLCDbuf[0], 20, title);
-	if (isMessage()) {
-		for (uint_fast8_t i = lineParam_ + 1; i <= NUM_TEXT_LINES; i++)
-			clearLine(i);
 
-		uint8_t poz = 40;
-		for (uint_fast8_t i = 0; i < 2; i++, poz += 20)
-			snprintf_P(&vLCDbuf[poz], 21, message[i]);
-	} else
-		printPunkts();
+    if (isMessage()) {
+        printMessage();
+    } else {
+        printPunkts();
+    }
 
 	eGB_REGIME reg = sParam.glb.status.getRegime();
 	switch(key_) {
@@ -3703,7 +3826,9 @@ void clMenu::lvlTest() {
 				} else if (reg == GB_REGIME_TEST_1) {
 					lvlMenu = &clMenu::lvlTest1;
 					lvlCreate_ = true;
-				}
+                } else {
+                    setMessage(MSG_DISABLE);
+                }
 			} else if (name == punkt2) {
 				if ((reg == GB_REGIME_DISABLED) || (reg == GB_REGIME_TEST_1)) {
 					sParam.txComBuf.addFastCom(GB_COM_SET_REG_TEST_2);
@@ -3712,12 +3837,10 @@ void clMenu::lvlTest() {
 				} else if (reg == GB_REGIME_TEST_2) {
 					lvlMenu = &clMenu::lvlTest2;
 					lvlCreate_ = true;
-				}
+                } else {
+                    setMessage(MSG_DISABLE);
+                }
 			}
-			// если уровень меню (т.е. стоит неверный режим) не изменился,
-			// выведем сообщение
-			if (lvlMenu == &clMenu::lvlTest)
-				printMessage();
 			break;
 
 		default:
@@ -4175,45 +4298,19 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
  */
 eMENU_ENTER_PARAM clMenu::enterPassword() {
 	eMENU_ENTER_PARAM status = EnterParam.getStatus();
-	if (status == MENU_ENTER_PARAM_MESSAGE) {
-		for (uint_fast8_t i = lineParam_ + 1; i <= NUM_TEXT_LINES; i++)
-			clearLine(i);
+    uint8_t poz = 100;
+    uint16_t val = EnterParam.getValue();
+    clearLine(NUM_TEXT_LINES);
 
-		// вывод сообщения до тех пор, пока счетчик времени не обнулится
-		// затем возврат в исходный пункт меню
-		if (EnterParam.cnt_ < TIME_MESSAGE) {
-			static char message[3][21] PROGMEM = {
-			//		 12345678901234567890
-					"       Введен       ",//
-					"    неправильный    ",		//
-					"       пароль       " };
-
-			EnterParam.cnt_++;
-			key_ = KEY_NO;
-
-			uint8_t poz = 40;
-			for (uint_fast8_t i = 0; i < 3; i++, poz += 20)
-				snprintf_P(&vLCDbuf[poz], 21, message[i]);
-		} else {
-			key_ = KEY_CANCEL;
-		}
-	} else {
-
-		uint8_t poz = 100;
-		clearLine(NUM_TEXT_LINES);
-
-		uint16_t val = EnterParam.getValue();
-
-		if (status == MENU_ENTER_PASSWORD) {
-			static char enter[] PROGMEM = "Пароль: %04u";
-			snprintf_P(&vLCDbuf[poz], 21, enter, val);
-		} else if (status == MENU_ENTER_PASSWORD_NEW) {
-			static char enterNew[] PROGMEM = "Новый пароль: %04u";
-			snprintf_P(&vLCDbuf[poz], 21, enterNew, val);
-		} else {
-			key_ = KEY_CANCEL;
-		}
-	}
+    if (status == MENU_ENTER_PASSWORD) {
+        static char enter[] PROGMEM = "Пароль: %04u";
+        snprintf_P(&vLCDbuf[poz], ROW_LEN + 1, enter, val);
+    } else if (status == MENU_ENTER_PASSWORD_NEW) {
+        static char enterNew[] PROGMEM = "Новый пароль: %04u";
+        snprintf_P(&vLCDbuf[poz], ROW_LEN + 1, enterNew, val);
+    } else {
+        key_ = KEY_CANCEL;
+    }
 
 	switch(key_) {
 		case KEY_CANCEL:
@@ -4271,8 +4368,8 @@ void clMenu::printPunkts() {
 	uint8_t cntPunkts = (cursorLine_ > numLines) ? cursorLine_ - numLines : 0;
 
 	for (uint_fast8_t line = lineParam_; line < NUM_TEXT_LINES; line++) {
-		snprintf_P(&vLCDbuf[20 * line], 21, Punkts_.getName(cntPunkts),
-				cntPunkts + 1);
+        snprintf_P(&vLCDbuf[ROW_LEN * line], ROW_LEN + 1,
+                Punkts_.getName(cntPunkts),	cntPunkts + 1);
 
 		if (++cntPunkts >= Punkts_.getMaxNumPunkts())
 			break;
@@ -4281,9 +4378,9 @@ void clMenu::printPunkts() {
 	// при необходиомости, вывод курсора на экран
 	if (cursorEnable_) {
 		if (cursorLine_ > numLines)
-			vLCDbuf[20 * (NUM_TEXT_LINES - 1) + 2] = '*';
+            vLCDbuf[ROW_LEN * (NUM_TEXT_LINES - 1) + 2] = '*';
 		else {
-			vLCDbuf[20 * (cursorLine_ + lineParam_ - 1) + 2] = '*';
+            vLCDbuf[ROW_LEN * (cursorLine_ + lineParam_ - 1) + 2] = '*';
 		}
 	}
 }
@@ -4526,12 +4623,10 @@ void clMenu::printDevicesRegime(uint8_t poz, TDeviceStatus *device) {
 
 // Вывод на экран текущего номера и их колчиество для однотипных пар-ов.
 void clMenu::printParam() {
-	static prog_uint8_t MAX_CHARS = 21;
-
-	snprintf_P(&vLCDbuf[20], MAX_CHARS, PSTR("Параметр:%u Всего:%u"),
+    snprintf_P(&vLCDbuf[20], ROW_LEN + 1, PSTR("Параметр:%u Всего:%u"),
 			sParam.local.getNumOfCurrParam(), sParam.local.getNumOfParams());
 
-	snprintf_P(&vLCDbuf[40], MAX_CHARS, sParam.local.getNameOfParam());
+    snprintf_P(&vLCDbuf[40], ROW_LEN + 1, sParam.local.getNameOfParam());
 
 	printSameNumber(60);
 	printRange(80);
@@ -4540,8 +4635,6 @@ void clMenu::printParam() {
 
 // Вывод на экран текущего номера и их колчиество для однотипных пар-ов.
 void clMenu::printSameNumber(uint8_t pos) {
-	static prog_uint8_t MAX_CHARS = 21;
-
 	if (sParam.local.getNumOfSameParams() > 1) {
 		eGB_PARAM p = sParam.local.getParam();
 		uint8_t val = sParam.local.getNumOfCurrSameParam();
@@ -4554,19 +4647,19 @@ void clMenu::printSameNumber(uint8_t pos) {
 			PGM_P pval =  (PGM_P) pgm_read_word(&param->listValues) + (val * STRING_LENGHT);
 			PGM_P pmax =  (PGM_P) pgm_read_word(&param->listValues) + (max * STRING_LENGHT);
 #ifdef AVR
-			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Номер: %S/%S"), pval, pmax);
+            snprintf_P(&vLCDbuf[pos], ROW_LEN + 1, PSTR("Номер: %S/%S"), pval, pmax);
 #else
-            snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Номер: %s/%s"), pval, pmax);
+            snprintf_P(&vLCDbuf[pos], ROW_LEN + 1, PSTR("Номер: %s/%s"), pval, pmax);
 #endif
         } else {
-			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Номер: %u/%u"), val, max);
+            snprintf_P(&vLCDbuf[pos], ROW_LEN + 1, PSTR("Номер: %u/%u"), val, max);
 		}
 	}
 }
 
 //	Вывод на экран диапазона значений параметра.
 void clMenu::printRange(uint8_t pos) {
-	static prog_uint8_t MAX_CHARS = 11;
+    static prog_uint8_t MAX_CHARS = 11 ;
 
 	LocalParams *lp = &sParam.local;
 	int16_t min = lp->getMin();
@@ -4684,7 +4777,47 @@ void clMenu::printValue(uint8_t pos) {
 			case Param::PARAM_NO:
 				break;
 		}
-	}
+    }
+}
+
+//
+bool clMenu::checkChangeReg() const
+{
+    bool check = false;
+    eGB_REGIME regime = sParam.glb.status.getRegime();
+    Param::CHANGE_REG changereg = sParam.local.getChangeReg();
+
+    switch(changereg) {
+        case Param::CHANGE_REG_NO: {
+            check = true;
+        } break;
+        case Param::CHANGE_REG_DISABLE: {
+            check = (regime == GB_REGIME_DISABLED);
+        } break;
+    }
+
+    return check;
+}
+
+bool clMenu::checkChangeUser() const
+{
+    bool check = false;
+    TUser::USER user = sParam.security.User.get();
+    Param::CHANGE_USER changeuser = sParam.local.getChangeUser();
+
+    switch(changeuser) {
+        case Param::CHANGE_USER_NO: {
+            check = true;
+        } break;
+        case Param::CHANGE_USER_ENGINEER: {
+            check = (user >= TUser::ENGINEER);
+        } break;
+        case Param::CHANGE_USER_ADMIN: {
+            check = (user == TUser::ADMIN);
+        } break;
+    }
+
+    return check;
 }
 
 
@@ -4692,10 +4825,11 @@ void clMenu::printValue(uint8_t pos) {
 void clMenu::enterParameter() {
 	LocalParams *lp = &sParam.local;
 
-    if ((lp->getChangeCond() == Param::CHANGE_REG_DISABLE) &&
-			(sParam.glb.status.getRegime() != GB_REGIME_DISABLED)) {
-		printMessage();
-	} else {
+    if (!checkChangeReg()) {
+        setMessage(MSG_WRONG_REGIME);
+    } else if (!checkChangeUser()){
+        setMessage(MSG_WRONG_USER);
+    } else {
 		switch(lp->getParamType()) {
 			case Param::PARAM_BITES: // DOWN
 			case Param::PARAM_LIST:
@@ -4764,24 +4898,11 @@ void clMenu::enterParameter() {
 // Работа в меню настройки параметров.
 void clMenu::setupParam() {
 
-	if (isMessage()) {
-		// Вывод на экран сообщения о невозможности изменения параметра,
-		// при этом нажатые кнопки будут проигнорированы.
-		static char message[3][21] PROGMEM = {
-				//2345678901234567890
-				" Изменить параметр  ",
-				"  можно только в    ",
-				"  режиме ВЫВЕДЕН    " };
-
-		for(uint8_t i = 0, pos = 40; i < SIZE_OF(message); i++, pos += 20) {
-			snprintf_P(&vLCDbuf[pos], 21, message[i]);
-		}
-
-		key_ = KEY_NO;
-	} else {
-		// вывод на экран информации о текущем параметре
-		printParam();
-	}
+    if (isMessage()) {
+        printMessage();
+    } else {
+        printParam();
+    }
 
 	if (EnterParam.isEnable()) {
 		eMENU_ENTER_PARAM stat = enterValue();

@@ -117,13 +117,6 @@ public:
 	// возвращает делитель
 	uint8_t getFract() const { return fract_; }
 
-	// вывод сообщения на экран
-	// по умолчанию работает для функции ввода параметра
-	void printMessage() {
-		status_ = MENU_ENTER_PARAM_MESSAGE;
-		cnt_ = 0;
-	}
-
 	// возвращает текущий статус
 	eMENU_ENTER_PARAM getStatus() const { return status_; }
 
@@ -140,9 +133,6 @@ public:
 
 	// команда на передачу
 	eGB_COM com;
-
-	// счетчик времени
-	uint8_t cnt_;
 
 private:
 	// текущее значение

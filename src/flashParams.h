@@ -2260,7 +2260,7 @@ static const Param fRingComTr PROGMEM = {
 };
 
 static const Param fUser PROGMEM = {
-        "Пользователь",         // название параметра
+        "Роль",                 // название параметра
         GB_COM_NO,				// команда стандартного протокола
         Param::PARAM_LIST,		// тип параметра
         Param::RANGE_LIST,		// диапазон измнения
