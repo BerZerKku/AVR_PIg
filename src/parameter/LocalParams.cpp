@@ -79,8 +79,17 @@ void LocalParams::setValue(int16_t val) {
 	val = (val / disc) * disc;
 	this->val = val;
 
-	checkValue();
+    checkValue();
 }
+
+void LocalParams::setValuePwd(uint32_t val)
+{
+    this->valPwd = val;
+
+    checkValue();
+}
+
+// ”стано
 
 // ¬озвращает текущее значение параметра.
 int16_t LocalParams::getValue() const {
@@ -98,7 +107,13 @@ int16_t LocalParams::getValue() const {
 
 // ¬озвращает текущий байт дл€ битовых параметров.
 uint8_t LocalParams::getValueB() const {
-	return val;
+    return val;
+}
+
+//
+uint32_t LocalParams::getValuePwd() const
+{
+    return valPwd;
 }
 
 // ќчистка списка параметров.
@@ -194,16 +209,22 @@ void LocalParams::checkValue() {
 	// ƒл€ совместимости с битовыми переменными \a Param::PARAM_BITES
 	// провер€ем значение возвращаемое getValue(), а не работаем со значением
 	// переменной this->val на пр€мую.
-	int16_t val = getValue();
-	if ((val >= getMin()) && (val <= getMax())) {
-		state = STATE_NO_ERROR;
-	} else {
-		state = STATE_ERROR;
-	}
+    if (getParamType() == Param::PARAM_PWD) {
+        qDebug() << "Password = " << valPwd;
+        state = (valPwd <= PASSWORD_MAX) ? STATE_NO_ERROR : STATE_ERROR;
+    } else {
+        int16_t val = getValue();
+        if ((val >= getMin()) && (val <= getMax())) {
+            state = STATE_NO_ERROR;
+        } else {
+            state = STATE_ERROR;
+        }
+    }
 }
 
 //	ќбновление параметра.
 void LocalParams::refreshParam() {
 	val = 0;
+    valPwd = PASSWORD_MAX + 1;
 	state = STATE_READ_PARAM;
 }

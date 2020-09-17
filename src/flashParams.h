@@ -2279,6 +2279,46 @@ static const Param fUser PROGMEM = {
         Param::CHANGE_USER_NO   // пользователь для изменения
 };
 
+static const Param fPwdEngineer PROGMEM = {
+        "Пароль инженера",      // название параметра
+        GB_COM_GET_NET_ADR,     // команда стандартного протокола
+        Param::PARAM_PWD,       // тип параметра
+        Param::RANGE_INT,       // диапазон измнения
+        Param::DIM_NO,			// размерность
+        fcNullBuf,              // массив значений
+        0,						// кол-во повторений параметра
+        1,                      // минимальное значение
+        8,                      // максимальное значение
+        1,						// дискретность
+        1,						// множитель для стандартного протокола
+        GB_SEND_NO,				// тип параметра для сохранения новго значения
+        9,						// байт дополнительной информации для сохранения
+        Param::DEPEND_MAX_NO,	// заивимость максимума
+        Param::DEPEND_SAME_NO,	// зависимость повторений
+        Param::CHANGE_REG_NO,   // режим для изменения
+        Param::CHANGE_USER_ENGINEER   // пользователь для изменения
+};
+
+static const Param fPwdAdmin PROGMEM = {
+        "Пароль администр.",    // название параметра
+        GB_COM_GET_NET_ADR,     // команда стандартного протокола
+        Param::PARAM_PWD,       // тип параметра
+        Param::RANGE_INT,       // диапазон измнения
+        Param::DIM_NO,			// размерность
+        fcNullBuf,              // массив значений
+        0,						// кол-во повторений параметра
+        1,                      // минимальное значение
+        8,                      // максимальное значение
+        1,						// дискретность
+        1,						// множитель для стандартного протокола
+        GB_SEND_NO,				// тип параметра для сохранения новго значения
+        8,						// байт дополнительной информации для сохранения
+        Param::DEPEND_MAX_NO,	// заивимость максимума
+        Param::DEPEND_SAME_NO,	// зависимость повторений
+        Param::CHANGE_REG_NO,   // режим для изменения
+        Param::CHANGE_USER_ADMIN   // пользователь для изменения
+};
+
 
 // Массив параметров (связан с eGB_PARAM)
 static const Param* fParams[] PROGMEM  = {
@@ -2386,6 +2426,8 @@ static const Param* fParams[] PROGMEM  = {
 		&fRingComRec,
         &fRingComTr,
         // Параметры информационной безопасности
-        &fUser
+        &fUser,
+        &fPwdEngineer,
+        &fPwdAdmin
 };
 #endif /* FLASHPARAMS_H_ */

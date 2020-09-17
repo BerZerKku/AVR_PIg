@@ -12,6 +12,41 @@
 #include <cstdint>
 #include <climits>
 
+class TPwd {
+public:
+    static const uint32_t max = 100000000;
+
+    TPwd() {
+        pwd_ = max;
+    }
+
+    /** Устанавливает новое значение пароля.
+     *
+     *  @return false в случае ошибочного значения.
+     */
+    bool set(uint32_t val) {
+        bool check = false;
+
+        if (val < max) {
+            pwd_ = val;
+            check = true;
+        }
+
+        return check;
+    }
+
+    /** Возвращает значение пароля.
+     *
+     *  @return Пароль.
+     */
+    uint32_t get() const {
+        return pwd_;
+    }
+
+private:
+    uint32_t pwd_;
+};
+
 class TUser {
 public:
 
@@ -108,9 +143,13 @@ public:
         User.set(TUser::OPERATOR);
     }
 
-    TUser User;
-    TIsEvent EventEngineer;
     TIsEvent EventAdmin;
+    TIsEvent EventEngineer;
+
+    TPwd pwdAdmin;
+    TPwd pwdEngineer;
+
+    TUser User;    
 };
 
 #endif /* PARAMIS_H_ */

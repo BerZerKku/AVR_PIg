@@ -41,7 +41,7 @@ enum eMENU_MEAS_PARAM {
 	MENU_MEAS_PARAM_NO,			///< нет измеряемого параметра
 	MENU_MEAS_PARAM_DATE,		///< дата
 	MENU_MEAS_PARAM_TIME,		///< время
-	MENU_MEAS_PARAM_UZ,			///< запас по зщаите
+    MENU_MEAS_PARAM_UZ,			///< запас по защите
 	MENU_MEAS_PARAM_UZ1,		///< запас по защите 1 (для 3-х концевой)
 	MENU_MEAS_PARAM_UZ2,		///< запас по защите 2 (для 3-х концевой)
 	MENU_MEAS_PARAM_UC,			///< запас по КЧ
@@ -54,9 +54,9 @@ enum eMENU_MEAS_PARAM {
 	MENU_MEAS_PARAM_IOUT,		///< ток выхода
 	MENU_MEAS_PARAM_ROUT,		///< сопротивление линии
 	MENU_MEAS_PARAM_SD,			///< просечки в сигнале
-	MENU_MEAS_PARAM_D,			///< Запас по тест.команде (двухчаст) или Отношение сигнал/помеха (одночаст)
-	MENU_MEAS_PARAM_TEMPERATURE,///< Температура на плате БСП-ПИ
-	MENU_MEAS_PARAM_DF			///< Отклонение частоты КС на ПРМ (К400)
+    MENU_MEAS_PARAM_D,			///< запас по тест.команде (двухчаст) или отношение сигнал/помеха (одночаст)
+    MENU_MEAS_PARAM_TEMPERATURE,///< температура на плате БСП-ПИ
+    MENU_MEAS_PARAM_DF			///< отклонение частоты КС на ПРМ (К400)
 };
 
 

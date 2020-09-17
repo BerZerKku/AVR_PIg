@@ -1091,9 +1091,7 @@ void clMenu::lvlError() {
 	}
 	time++;
 
-    qDebug() << "lelvel, msg_ = " << msg_ << ", delay_ = " << delay_;
     if (isMessage()) {
-        qDebug() << "isMessage()";
         printMessage();
     }
 
@@ -1206,7 +1204,7 @@ void clMenu::lvlStart() {
 			}
 			uint8_t t = poz + 20;
 			t += snprintf_P(&vLCDbuf[t], 11,
-					fcAcType[static_cast<uint8_t>(ac)]);
+                            fcAcType[static_cast<uint8_t>(ac)]);
 
 			// время до АК
 			// выводится если соблюдаются условия:
@@ -3489,13 +3487,13 @@ void clMenu::lvlSetupInterface() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-//		eGB_TYPE_DEVICE device = sParam.typeDevice;
 		sParam.txComBuf.clear();
+        sParam.txComBuf.addCom2(GB_COM_GET_NET_ADR);
 
-		sParam.local.clearParams();
 		// если установлена связь по Локальной сети
 		// появляются настройки портов
 		// в USB всегда: 19200 бит/с, 8 бит, 2 стоп-бита, четность-нет
+        sParam.local.clearParams();
 		sParam.local.addParam(GB_PARAM_INTF_INTERFACE);
 
         interface = sParam.Uart.Interface.get();
@@ -4161,12 +4159,13 @@ void clMenu::lvlUser() {
         vLCDdrawBoard(lineParam_);
 
         // Добавить команду!
-
-        Punkts_.clear();
-        sParam.local.addParam(GB_PARAM_IS_USER);
-
-        // доплнительные команды
         sParam.txComBuf.clear();
+        sParam.txComBuf.addCom2(GB_COM_GET_NET_ADR);
+
+        sParam.local.clearParams();
+        sParam.local.addParam(GB_PARAM_IS_USER);
+        sParam.local.addParam(GB_PARAM_IS_PWD_ENGINEER);
+        sParam.local.addParam(GB_PARAM_IS_PWD_ADMIN);
     }
 
     snprintf_P(&vLCDbuf[0], 21, title);
@@ -4298,15 +4297,15 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
  */
 eMENU_ENTER_PARAM clMenu::enterPassword() {
 	eMENU_ENTER_PARAM status = EnterParam.getStatus();
-    uint8_t poz = 100;
+    uint8_t poz = 5 * ROW_LEN;
     uint16_t val = EnterParam.getValue();
-    clearLine(NUM_TEXT_LINES);
 
+    clearLine(NUM_TEXT_LINES);
     if (status == MENU_ENTER_PASSWORD) {
-        static char enter[] PROGMEM = "Пароль: %04u";
+        static char enter[] PROGMEM = "Пароль: %08u";
         snprintf_P(&vLCDbuf[poz], ROW_LEN + 1, enter, val);
     } else if (status == MENU_ENTER_PASSWORD_NEW) {
-        static char enterNew[] PROGMEM = "Новый пароль: %04u";
+        static char enterNew[] PROGMEM = "Нов.пароль: %08u";
         snprintf_P(&vLCDbuf[poz], ROW_LEN + 1, enterNew, val);
     } else {
         key_ = KEY_CANCEL;
@@ -4742,21 +4741,21 @@ void clMenu::printValue(uint8_t pos) {
 		// вывод корректного значения
 		switch(sParam.local.getParamType()) {
 			case Param::PARAM_BITES: // DOWN
-			case Param::PARAM_LIST:
+            case Param::PARAM_LIST: {
 				val -= sParam.local.getMin();
 				str = sParam.local.getListOfValues() + (val * STRING_LENGHT);
 				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str);
-				break;
+            } break;
 			case Param::PARAM_I_COR: // DOWN
-			case Param::PARAM_INT:
+            case Param::PARAM_INT: {
 #ifdef AVR
 				str = PSTR("%d%S");
 #else
                 str = PSTR("%d%s");
 #endif
 				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val, dim);
-				break;
-			case Param::PARAM_U_COR:
+            } break;
+            case Param::PARAM_U_COR: {
 				if (val >= 0) {
 #ifdef AVR
 					str = PSTR("%d.%d%S");
@@ -4773,9 +4772,14 @@ void clMenu::printValue(uint8_t pos) {
 				}
 				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val / 10, val % 10,
 						dim);
-				break;
-			case Param::PARAM_NO:
-				break;
+            } break;
+            case Param::PARAM_PWD: {
+                for(uint8_t i = 0; i < sParam.local.getMax(); i++) {
+                    vLCDbuf[pos++] = '*';
+                }
+            } break;
+            case Param::PARAM_NO: {
+            } break;
 		}
     }
 }

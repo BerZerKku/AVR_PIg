@@ -64,7 +64,6 @@ bool clProtocolBspS::getData(bool pc) {
 			stat = getGlbCommand(com, pc);				// команды общие
 
 		LocalParams *lp = &sParam_->local;
-
 		if (com == lp->getCom()) {
 			// по умолчанию загружается значение первого байта,
 			// на отличные от этого параметры далее ведется проверка
@@ -83,6 +82,12 @@ bool clProtocolBspS::getData(bool pc) {
 				case GB_PARAM_COR_I:
 					val = TO_INT16(buf[B3], buf[B4]);
 					break;
+                case GB_PARAM_IS_PWD_ADMIN: {
+                    lp->setValuePwd(sParam_->security.pwdAdmin.get());
+                } break;
+                case GB_PARAM_IS_PWD_ENGINEER: {
+                    lp->setValuePwd(sParam_->security.pwdEngineer.get());
+                } break;
 				default:
 					uint8_t pos = B1;
 
@@ -100,8 +105,6 @@ bool clProtocolBspS::getData(bool pc) {
 					// приведение к знаковому типу, в случае если возможно
 					// отрицательное значение параметра
 					val = (lp->getMin() < 0) ? (int8_t) buf[pos] : buf[pos];
-
-
 					break;
 			}
 
@@ -646,12 +649,18 @@ bool clProtocolBspS::hdlrComGetNetAdr(bool pc)
     bool check = true;
 
     check &= sParam_->glb.setNetAddress(buf[B1]);
-    check &= sParam_->Uart.Interface.set((TInterface::INTERFACE) buf[B2]);
-    check &= sParam_->Uart.Protocol.set((TProtocol::PROTOCOL) buf[B3]);
-    check &= sParam_->Uart.BaudRate.set((TBaudRate::BAUD_RATE) buf[B4]);
-    check &= sParam_->Uart.DataBits.set((TDataBits::DATA_BITS) buf[B5]);
-    check &= sParam_->Uart.Parity.set((TParity::PARITY) buf[B6]);
-    check &= sParam_->Uart.StopBits.set((TStopBits::STOP_BITS) buf[B7]);
+    if (buf[NUM] >= 7) {
+        check &= sParam_->Uart.Interface.set((TInterface::INTERFACE) buf[B2]);
+        check &= sParam_->Uart.Protocol.set((TProtocol::PROTOCOL) buf[B3]);
+        check &= sParam_->Uart.BaudRate.set((TBaudRate::BAUD_RATE) buf[B4]);
+        check &= sParam_->Uart.DataBits.set((TDataBits::DATA_BITS) buf[B5]);
+        check &= sParam_->Uart.Parity.set((TParity::PARITY) buf[B6]);
+        check &= sParam_->Uart.StopBits.set((TStopBits::STOP_BITS) buf[B7]);
+    }
+    if (buf[NUM] >= 15) {
+        check &= sParam_->security.pwdEngineer.set(*((uint32_t *) &buf[B8]));
+        check &= sParam_->security.pwdAdmin.set(*((uint32_t *) &buf[B12]));
+    }
 
     return check;
 }
@@ -740,11 +749,8 @@ bool clProtocolBspS::hdlrComGetTime(bool pc)
     check &= sParam_->DateTime.setHour(BCD_TO_BIN(buf[B4]));
     check &= sParam_->DateTime.setMinute(BCD_TO_BIN(buf[B5]));
     check &= sParam_->DateTime.setSecond(BCD_TO_BIN(buf[B6]));
-    // миллисекунды устанавливаются, только если они есть в посылке
-    uint16_t ms = 0;
-    if (buf[NUM >= 8]) {
-        ms = *((uint16_t *) &buf[B7]);
-    }
+    // миллисекунд может не быть в посылке
+    uint16_t ms = (buf[NUM] >= 8) ? *((uint16_t *) &buf[B7]) : 0;
     check &= sParam_->DateTime.setMsSecond(ms);
 
     // новая запись журнала, для передачи в АСУ ТП

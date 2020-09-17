@@ -26,7 +26,7 @@ void TEnterParam::setEnable(eMENU_ENTER_PARAM s) {
 			fract_ = 1;
 		} else if ((s == MENU_ENTER_PASSWORD)
 				|| (s == MENU_ENTER_PASSWORD_NEW)) {
-			val_ = 0;
+            val_ = 0;
 			min_ = 0;
 			max_ = 9999;
 		}
