@@ -468,53 +468,39 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 	bool stat = false;
 
 	switch (com) {
-		case GB_COM_GET_TIME: {
-            stat = hdlrComGetTime(pc);
-        } break;
-
         case GB_COM_GET_SOST: {
             stat = hdlrComGetSost(pc);
         } break;
 
         case GB_COM_GET_FAULT: {
             stat = hdlrComGetFault(pc);
-		}
-		break;
+        } break;
+
+		case GB_COM_GET_TIME: {
+            stat = hdlrComGetTime(pc);
+        } break;      
 
 		case GB_COM_GET_MEAS: {
             stat = hdlrComGetMeas(pc);
-		}
-		break;
+        } break;
+
+        case GB_COM_GET_COM_PRD_KEEP: {
+            stat = hdlrComGetComPrdKeep(pc);
+        }  break;
+
+        case GB_COM_GET_DEVICE_NUM: {
+            stat = hdlrComGetDeviceNum(pc);
+        } break;
 
 		case GB_COM_GET_VERS: {
             stat = hdlrComGetVers(pc);
-		}
-		break;
+        } break;
 
-		case GB_COM_GET_DEVICE_NUM: {
-			stat = sParam_->glb.setDeviceNum(buf[B1]);
-		}
-		break;
 
-		case GB_COM_GET_COM_PRD_KEEP: {
-			uint8_t act = GB_ACT_NO;
-			if (sParam_->typeDevice == AVANT_R400M) {
-				// в Р400м/Р400 это Своместимость (тип удаленного аппарата)
-				act = sParam_->glb.setCompatibility((eGB_COMPATIBILITY)buf[B1]);
-			} else if (sParam_->typeDevice == AVANT_K400) {
-				// совместимость К400
-				act = sParam_->glb.setCompK400((eGB_COMP_K400) buf[B2]);
-			}
-			// в случае записи нового значения, сбросим флаг конфигурации
-			if (act & GB_ACT_NEW)
-				sParam_->device = false;
-		}
-		break;
 
 		case GB_COM_GET_NET_ADR: {
             stat = hdlrComGetNetAdr(pc);
-		}
-		break;
+        } break;
 
 		case GB_COM_GET_TEST: {
 			eGB_TYPE_DEVICE type = sParam_->typeDevice;
@@ -543,6 +529,29 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 	}
 
     return stat;
+}
+
+bool clProtocolBspS::hdlrComGetComPrdKeep(bool pc)
+{
+    uint8_t act = GB_ACT_NO;
+
+    if (sParam_->typeDevice == AVANT_R400M) {
+        // в Р400м/Р400 это Своместимость (тип удаленного аппарата)
+        act = sParam_->glb.setCompatibility((eGB_COMPATIBILITY)buf[B1]);
+    } else if (sParam_->typeDevice == AVANT_K400) {
+        // совместимость К400
+        act = sParam_->glb.setCompK400((eGB_COMP_K400) buf[B2]);
+    }
+    // в случае записи нового значения, сбросим флаг конфигурации
+    if (act & GB_ACT_NEW)
+        sParam_->device = false;
+
+    return (act & GB_ACT_ERROR) == 0;
+}
+
+bool clProtocolBspS::hdlrComGetDeviceNum(bool pc)
+{
+    return sParam_->glb.setDeviceNum(buf[B1]);
 }
 
 bool clProtocolBspS::hdlrComGetFault(bool pc)

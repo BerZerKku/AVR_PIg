@@ -4288,6 +4288,7 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 	}
 
 	key_ = KEY_NO;
+
 	return EnterParam.getStatus();
 }
 
@@ -4729,6 +4730,7 @@ void clMenu::printValue(uint8_t pos) {
 		if (blink_) {
 			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("ошибка!!!"));
 		} else {
+            // FIXME Для пароля будет выведено левое значение! Его не должно быть!
 			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("%d"), val);
 		}
 	} else if (state == LocalParams::STATE_READ_PARAM) {
@@ -4896,7 +4898,123 @@ void clMenu::enterParameter() {
 			EnterParam.setDisc(lp->getDisc());
 //			EnterParam.setDopValue(lp->getSendDop());
 		}
-	}
+    }
+}
+
+void clMenu::saveParam()
+{
+    eGB_COM com = sParam.local.getCom();
+
+    // Если у параметра есть команда обмена с блоком БСП, идет
+    // работа по записи в БСП.
+    // Иначе идет запись в ЕЕПРОМ.
+    if (com != GB_COM_NO) {
+        saveParamToBsp(com);
+    } else {
+        saveParamToRam();
+    }
+}
+
+void clMenu::saveParamToBsp(eGB_COM com)
+{
+    // Подготовка данных для записи в БСП.
+    uint8_t dop = sParam.local.getSendDop();
+    uint8_t pos = sParam.local.getNumOfCurrSameParam() - 1;
+
+    switch(sParam.local.getSendType()) {
+        case GB_SEND_INT8:
+            sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+            break;
+
+        case GB_SEND_INT8_DOP:
+            sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
+            sParam.txComBuf.setInt8(pos + dop, 1);
+            break;
+
+        case GB_SEND_DOP_INT8:
+            sParam.txComBuf.setInt8(pos + dop, 0);
+            sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
+            break;
+
+        case GB_SEND_INT16_BE:
+            sParam.txComBuf.setInt8(EnterParam.getValue() >> 8, 0);
+            sParam.txComBuf.setInt8(EnterParam.getValue(), 1);
+            break;
+
+        case GB_SEND_BITES_DOP:	// DOWN
+        case GB_SEND_DOP_BITES: {
+            uint8_t val = sParam.local.getValueB();
+            if (EnterParam.getValue()) {
+                val |= (1 << (pos % 8));
+            } else {
+                val &= ~(1 << (pos % 8));
+            }
+            sParam.txComBuf.setInt8(val, 0);
+            sParam.txComBuf.setInt8(pos/8 + dop, 1);
+        }
+        break;
+
+        case GB_SEND_COR_U: {
+            // если текущее значение коррекции тока равно 0
+            // то передается сообщение с под.байтом равным 4
+            // означающим сброс коррекции
+            int16_t t =(int16_t) (EnterParam.getValue());
+            if (t == 0)
+                dop = 4;
+            else {
+                // новая коррекция =
+                // напряжение прибора - (напряжение с БСП - коррекция)
+                t -= (int16_t) (sParam.measParam.getVoltageOut());
+                t += sParam.local.getValue();
+            }
+            sParam.txComBuf.setInt8(dop, 0);
+            sParam.txComBuf.setInt8(t / 10, 1);
+            sParam.txComBuf.setInt8((t % 10) * 10, 2);
+        }
+        break;
+
+        case GB_SEND_COR_I: {
+            // если текущее значение коррекции тока равно 0
+            // то передается сообщение с под.байтом равным 5
+            // означающим сброс коррекции
+            int16_t t = static_cast<int16_t>(EnterParam.getValue());
+            if (t == 0)
+                dop = 5;
+            else {
+                // новая коррекция = ток прибора - (ток с БСП - коррекция)
+                t -= static_cast<int16_t>(sParam.measParam.getCurrentOut());
+                t += sParam.local.getValue();
+            }
+            sParam.txComBuf.setInt8(dop, 0);
+            sParam.txComBuf.setInt8((t >> 8), 1);
+            sParam.txComBuf.setInt8((t), 2);
+        }
+        break;
+
+        case GB_SEND_NO:
+            com = GB_COM_NO;
+            break;
+    }
+
+    if (com != GB_COM_NO) {
+        com = (eGB_COM) (com + GB_COM_MASK_GROUP_WRITE_PARAM);
+        sParam.txComBuf.addFastCom(com);
+        sParam.txComBuf.setSendType(sParam.local.getSendType());
+    }
+}
+
+//
+void clMenu::saveParamToRam()
+{
+    eGB_PARAM param= sParam.local.getParam();
+    if (param != GB_PARAM_NULL_PARAM) {
+        int16_t value = EnterParam.getValueEnter();
+
+        if (param == GB_PARAM_IS_USER) {
+            // FIXME Смена должна быть с паролем!
+            sParam.security.User.set((TUser::USER) (value));
+        }
+    }
 }
 
 // Работа в меню настройки параметров.
@@ -4906,118 +5024,14 @@ void clMenu::setupParam() {
         printMessage();
     } else {
         printParam();
+
+        if (EnterParam.isEnable()) {
+            if (enterValue() == MENU_ENTER_PARAM_READY) {
+                saveParam();
+                EnterParam.setDisable();
+            }
+        }
     }
-
-	if (EnterParam.isEnable()) {
-		eMENU_ENTER_PARAM stat = enterValue();
-
-		if (stat == MENU_ENTER_PARAM_READY) {
-			eGB_COM com = sParam.local.getCom();
-
-			// Если у параметра есть команда обмена с блоком БСП, идет
-			// работа по записи в БСП.
-			// Иначе идет запись в ЕЕПРОМ.
-			if (com != GB_COM_NO) {
-				// Подготовка данных для записи в БСП.
-				uint8_t dop = sParam.local.getSendDop();
-				uint8_t pos = sParam.local.getNumOfCurrSameParam() - 1;
-
-				switch(sParam.local.getSendType()) {
-					case GB_SEND_INT8:
-						sParam.txComBuf.setInt8(EnterParam.getValueEnter());
-						break;
-
-                    case GB_SEND_INT8_DOP:
-                        sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
-                        sParam.txComBuf.setInt8(pos + dop, 1);
-                        break;
-
-					case GB_SEND_DOP_INT8:
-                        sParam.txComBuf.setInt8(pos + dop, 0);
-                        sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
-						break;
-
-					case GB_SEND_INT16_BE:
-						sParam.txComBuf.setInt8(EnterParam.getValue() >> 8, 0);
-						sParam.txComBuf.setInt8(EnterParam.getValue(), 1);
-						break;
-
-					case GB_SEND_BITES_DOP:	// DOWN
-					case GB_SEND_DOP_BITES: {
-						uint8_t val = sParam.local.getValueB();
-						if (EnterParam.getValue()) {
-							val |= (1 << (pos % 8));
-						} else {
-							val &= ~(1 << (pos % 8));
-						}
-						sParam.txComBuf.setInt8(val, 0);
-						sParam.txComBuf.setInt8(pos/8 + dop, 1);
-					}
-					break;
-
-					case GB_SEND_COR_U: {
-						// если текущее значение коррекции тока равно 0
-						// то передается сообщение с под.байтом равным 4
-						// означающим сброс коррекции
-						int16_t t =(int16_t) (EnterParam.getValue());
-						if (t == 0)
-							dop = 4;
-						else {
-							// новая коррекция =
-							// напряжение прибора - (напряжение с БСП - коррекция)
-							t -= (int16_t) (sParam.measParam.getVoltageOut());
-							t += sParam.local.getValue();
-						}
-						sParam.txComBuf.setInt8(dop, 0);
-						sParam.txComBuf.setInt8(t / 10, 1);
-						sParam.txComBuf.setInt8((t % 10) * 10, 2);
-					}
-					break;
-
-					case GB_SEND_COR_I: {
-						// если текущее значение коррекции тока равно 0
-						// то передается сообщение с под.байтом равным 5
-						// означающим сброс коррекции
-						int16_t t = static_cast<int16_t>(EnterParam.getValue());
-						if (t == 0)
-							dop = 5;
-						else {
-							// новая коррекция = ток прибора - (ток с БСП - коррекция)
-							t -= static_cast<int16_t>(sParam.measParam.getCurrentOut());
-							t += sParam.local.getValue();
-						}
-						sParam.txComBuf.setInt8(dop, 0);
-						sParam.txComBuf.setInt8((t >> 8), 1);
-						sParam.txComBuf.setInt8((t), 2);
-					}
-					break;
-
-					case GB_SEND_NO:
-						com = GB_COM_NO;
-						break;
-				}
-
-				if (com != GB_COM_NO) {
-					com = (eGB_COM) (com + GB_COM_MASK_GROUP_WRITE_PARAM);
-					sParam.txComBuf.addFastCom(com);
-					sParam.txComBuf.setSendType(sParam.local.getSendType());
-				}
-			} else {
-				eGB_PARAM param= sParam.local.getParam();
-				if (param != GB_PARAM_NULL_PARAM) {
-                    uint8_t tmp = EnterParam.getValueEnter();
-
-                    // TODO Добавить обработку ввода параметров без команды!
-
-                    if (param == GB_PARAM_IS_USER) {
-                        // FIXME Смена должна быть с паролем!
-                        sParam.security.User.set((TUser::USER) (tmp));
-                    }
-				}
-			}
-			EnterParam.setDisable();
-		}
-	}
 
 	switch(key_) {
 		case KEY_UP:

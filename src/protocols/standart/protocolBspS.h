@@ -27,6 +27,8 @@ private:
 	bool getPrdCommand(eGB_COM com, bool pc);
 	bool getGlbCommand(eGB_COM com, bool pc);
 
+    bool hdlrComGetComPrdKeep(bool pc);
+    bool hdlrComGetDeviceNum(bool pc);
     bool hdlrComGetFault(bool pc);
     bool hdlrComGetJrnEntry(bool pc);
     bool hdlrComGetMeas(bool pc);
