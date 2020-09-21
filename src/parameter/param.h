@@ -33,7 +33,8 @@ struct Param {
 		RANGE_INT,		///< <min>..<max><dim>
 		RANGE_INT_NO_DIM,///< <min>..<max>
 		RANGE_U_COR,	///< 0..±<max/10><dim>
-		RANGE_I_COR		///< 0..±<max><dim>
+        RANGE_I_COR,	///< 0..±<max><dim>
+        RANGE_PWD       ///< <max password value>
 	} RANGE_TYPE;
 
 	/// Тип параметра, в плане ввода / отображения.

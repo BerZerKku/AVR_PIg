@@ -249,10 +249,11 @@ private:
 	void lvlSetupInterface();
     void lvlUser();
 
-	// ввод параметра
-	eMENU_ENTER_PARAM enterValue();
-
-	eMENU_ENTER_PARAM enterPassword();
+    /** Ввод параметра.
+     *
+     * 	@return True - по окончанию
+     */
+    eMENU_ENTER_PARAM inputValue();
 
 	// перемещение курсора вверх
 	void cursorLineUp() {
@@ -298,9 +299,10 @@ private:
 
     /** Проверка пользователя на возможность изменения параметра.
      *
+     *  @param[in] chuser Необходимый пользователь.
      *  @return True если можно менять.
      */
-    bool checkChangeUser() const;
+    bool checkChangeUser(Param::CHANGE_USER chuser) const;
 
 	/**	Настройка параметров для ввода значения с клавиатуры.
 	 *

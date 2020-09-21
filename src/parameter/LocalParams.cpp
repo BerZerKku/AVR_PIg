@@ -210,7 +210,6 @@ void LocalParams::checkValue() {
 	// проверяем значение возвращаемое getValue(), а не работаем со значением
 	// переменной this->val на прямую.
     if (getParamType() == Param::PARAM_PWD) {
-        qDebug() << "Password = " << valPwd;
         state = (valPwd <= PASSWORD_MAX) ? STATE_NO_ERROR : STATE_ERROR;
     } else {
         int16_t val = getValue();

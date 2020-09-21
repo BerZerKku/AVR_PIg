@@ -46,6 +46,10 @@ public:
 	void setValueRange(int16_t min, int16_t max) {
 		max_ = max;
 		min_ = min;
+
+        // FIXME Числа могут быть отрицателные
+        digitMin_ = getMinDigitNumber(status_);
+        digitMax_ = getMaxDigitNumber(status_);
 	}
 
 	// Возвращает минимальное значение параметра.
@@ -67,6 +71,10 @@ public:
 	int16_t getValue() const {
 		return val_;
 	}
+
+    uint32_t getValuePwd() const {
+        return pwd_;
+    }
 
 	// возвращает введеное значение с учетом дискретности и делителя
 	int16_t getValueEnter() const {
@@ -92,6 +100,26 @@ public:
 	 * 	@argval 2 Увеличение на шаг в 50 раз больше заданной дискретности.
 	 */
 	uint16_t decValue(uint8_t velocity = 0);
+
+    /// Переход к старшему разряду.
+    void incDigit();
+
+    /// Переход к младшему разряду.
+    void decDigit();
+
+    /** Возвращает максимальное количество разрядов в числе.
+     *
+     *  @param[in] s Режим работы функции ввода параметров
+     *  @return Максимальное количество разрядов в числе.
+     */
+    uint8_t getMaxDigitNumber(eMENU_ENTER_PARAM s) const;
+
+    /** Возвращает минимальный значащий разряд.
+     *
+     *  @param[in] s Режим работы функции ввода параметров
+     *  @return Минимальный значащий разряд.
+     */
+    uint8_t getMinDigitNumber(eMENU_ENTER_PARAM s) const;
 
 	// установка номера параметра
 	void setParam(eGB_PARAM param) {param_ = param; }
@@ -151,6 +179,13 @@ private:
 
 	// дискретность
 	uint16_t disc_;
+
+    // текущий выбранный разряд, начиная с 1
+    uint8_t digit_;
+    // максимальный разряд для изменения
+    uint8_t digitMax_;
+    // минимальный разряд для изменения
+    uint8_t digitMin_;
 
 	// делитель
 	uint8_t fract_;

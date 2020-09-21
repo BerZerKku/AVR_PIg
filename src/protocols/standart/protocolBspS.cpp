@@ -148,26 +148,35 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
             uint8_t byte1 = sParam_->txComBuf.getInt8(1);
 
 			switch(sendType) {
-				case GB_SEND_INT8:
+                case GB_SEND_INT8: {
                     num = addCom(com, byte0);
-					break;
+                } break;
 				case GB_SEND_BITES_DOP:
-				case GB_SEND_INT8_DOP:
+                case GB_SEND_INT8_DOP: {
                     num = addCom(com, byte0, byte1);
-					break;
+                } break;
 				case GB_SEND_DOP_INT8:	// DOWN
-				case GB_SEND_DOP_BITES:
+                case GB_SEND_DOP_BITES: {
                     num = addCom(com, byte0, byte1);
-					break;
-				case GB_SEND_INT16_BE:
+                } break;
+                case GB_SEND_INT16_BE: {
                     num = addCom(com, byte0, byte1);
-					break;
-				case GB_SEND_COR_U:
-				case GB_SEND_COR_I:	// DOWN
+                } break;
+                case GB_SEND_COR_U: // DOWN
+                case GB_SEND_COR_I: {
 					num = addCom(com, 3, sParam_->txComBuf.getBuferAddress());
-					break;
-				case GB_SEND_NO:
-					break;
+                } break;
+                case GB_SEND_DOP_PWD: {
+                    QString buf("Send pkg = ");
+                    uint8_t *b = sParam_->txComBuf.getBuferAddress();
+                    for(uint8_t i = 0; i < 5; i++) {
+                        buf += QString("%1 ").arg(*b++, 2, 16, QLatin1Char('0'));
+                    }
+                    qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << buf;
+                    num = addCom(com, 5, sParam_->txComBuf.getBuferAddress());
+                } break;
+                case GB_SEND_NO: {
+                } break;
 			}
 		}
 	} else if (mask == GB_COM_MASK_GROUP_WRITE_REGIME) {

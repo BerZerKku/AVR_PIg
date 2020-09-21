@@ -7,6 +7,9 @@
 
 #include "enterParam.h"
 
+uint16_t step[] = {1, 10, 100, 1000, 10000};
+uint32_t stepPwd[] = {1, 10, 100,  1000, 10000, 100000, 1000000, 10000000};
+
 // Проверка текущего статуса работы с параметром.
 bool TEnterParam::isEnable() {
 	// проверка текущего статуса на достоверное значение
@@ -24,12 +27,12 @@ void TEnterParam::setEnable(eMENU_ENTER_PARAM s) {
 		if ((s == MENU_ENTER_PARAM_LIST) || (s == MENU_ENTER_PARAM_LIST_2)) {
 			disc_ = 1;
 			fract_ = 1;
-		} else if ((s == MENU_ENTER_PASSWORD)
-				|| (s == MENU_ENTER_PASSWORD_NEW)) {
-            val_ = 0;
-			min_ = 0;
-			max_ = 9999;
-		}
+        }
+
+        pwd_ = 0;
+        digit_ = 1;
+        digitMin_ = 1;
+        digitMax_ = 1;
 		status_ = s;
 	}
 }
@@ -44,53 +47,18 @@ void TEnterParam::setDisable() {
 
 // Увеличение текущего значения.
 uint16_t TEnterParam::incValue(uint8_t velocity) {
-	eMENU_ENTER_PARAM s = status_;
+    eMENU_ENTER_PARAM s = status_;
 
-	if ((s == MENU_ENTER_PARAM_INT) || (s == MENU_ENTER_PARAM_U_COR)) {
-		// увеличение значения
-		//			val_ = (val_ <= (max_ - disc_)) ? val_ + disc_ : min_;
-		int16_t disc = disc_;
-		if (velocity >= 1) {
-			if ((max_ / disc) >= 10) {
-				disc *= 10;
-			}
-		}
-		if (velocity >= 2) {
-			if ((max_ / disc) >= 10) {
-				disc *= 5;
-			}
-		}
-		if (max_ != 0) {
-			val_ = (val_ <= (max_ - disc)) ? val_ + disc : min_;
-		}
-	} else if ((s == MENU_ENTER_PARAM_LIST) ||
-			(s == MENU_ENTER_PARAM_LIST_2)) {
-		// в списке порядок обратный (уменьшение индекса массива)
-		val_ = (val_ > min_) ? val_ - 1 : max_;
+    if (s == MENU_ENTER_PASSWORD) {
+        if ((PASSWORD_MAX - stepPwd[digit_ - 1]) >= pwd_) {
+            pwd_ += stepPwd[digit_ - 1];
+        }
+    } else {
+        if ((getValueMax() - step[digit_ - 1]) >= val_) {
+            val_ += step[digit_ - 1];
+        }
+    }
 
-		// FIXME По приказу Чиркова убрана возможность установки "лишних" совместимостей.
-		if (param_ == GB_PARAM_COMP_P400) {
-			if (val_ == GB_COMPATIBILITY_PVZUE) {
-				val_ = (val_ > min_) ? val_ - 1 : max_;
-			} else if (val_ == GB_COMPATIBILITY_LINER) {
-				val_ = (val_ > min_) ? val_ - 1 : max_;
-			}
-		}
-
-	} else if ((s == MENU_ENTER_PASSWORD) ||
-			(s == MENU_ENTER_PASSWORD_NEW)) {
-		uint16_t t = 0;
-
-		// находится разряд заданный дискретностью
-		// например для числа 1234 и дискрету 100, получается 2
-		t = val_ % (disc_ * 10);
-		t = t / disc_;
-
-		if (t == 9)
-			val_ -= 9 * disc_;
-		else
-			val_ += disc_;
-	}
 	return val_;
 }
 
@@ -98,37 +66,58 @@ uint16_t TEnterParam::incValue(uint8_t velocity) {
 uint16_t TEnterParam::decValue(uint8_t velocity) {
 	eMENU_ENTER_PARAM s = status_;
 
-	if ((s == MENU_ENTER_PARAM_INT)
-			|| (s == MENU_ENTER_PARAM_U_COR)) {
-		// уменьшение значние
-		int16_t disc = disc_;
-		if (velocity >= 1) {
-			if ((max_ / disc) >= 10) {
-				disc *= 10;
-			}
-		}
-		if (velocity >= 2) {
-			if ((max_ / disc) >= 10) {
-				disc *= 5;
-			}
-		}
-		val_ = (val_ >= (min_ + disc)) ? val_ - disc : max_;
-	} else if ((s == MENU_ENTER_PARAM_LIST)
-			|| (s == MENU_ENTER_PARAM_LIST_2)) {
-		// в списке порядок обратный (увеличие индекса массива)
-		val_ = (val_ < max_) ? val_ + 1 : min_;
+    if (s == MENU_ENTER_PASSWORD) {
+        if (pwd_ >= stepPwd[digit_ - 1]) {
+            pwd_ -= stepPwd[digit_ - 1];
+        }
+    } else if (getValueMin() >= 0){
+        if ((getValueMin() + step[digit_ - 1]) <= val_) {
+            val_ -= stepPwd[digit_ - 1];
+        }
+    }
 
-		// FIXME По приказу Чиркова убрана возможность установки "лишних" совместимостей.
-		if (param_ == GB_PARAM_COMP_P400) {
-			if (val_ == GB_COMPATIBILITY_PVZUE) {
-				val_ = (val_ < max_) ? val_ + 1 : min_;
-			} else if (val_ == GB_COMPATIBILITY_LINER) {
-				val_ = (val_ < max_) ? val_ + 1 : min_;
-			}
-		}
-	} else if ((s == MENU_ENTER_PASSWORD)
-			|| (s == MENU_ENTER_PASSWORD_NEW)) {
+    return val_;
+}
 
-	}
-	return val_;
+//
+void TEnterParam::incDigit()
+{
+    if (digit_ < digitMax_) {
+        digit_++;
+    }
+}
+
+//
+void TEnterParam::decDigit()
+{
+    if (digit_ > 1) {
+        digit_--;
+    }
+}
+
+uint8_t TEnterParam::getMaxDigitNumber(eMENU_ENTER_PARAM s) const
+{
+    uint8_t num = 1;
+
+    // FIXME Числа могут быть отрицателные
+
+    if ((s == MENU_ENTER_PARAM_LIST) || (s == MENU_ENTER_PARAM_LIST_2)) {
+        num = 1;
+    } else if ((s == MENU_ENTER_PASSWORD) || (s == MENU_ENTER_PASSWORD_NEW)) {
+        num = max_;
+    } else {
+        int16_t max = max_ / 10;
+        while(max > 0) {
+            num++;
+            max /= 10;
+        }
+    }
+
+    return num;
+}
+
+uint8_t TEnterParam::getMinDigitNumber(eMENU_ENTER_PARAM s) const
+{
+    // FIXME Добавить зависимость от шага
+    return 1;
 }

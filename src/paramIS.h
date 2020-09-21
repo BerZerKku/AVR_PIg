@@ -14,10 +14,8 @@
 
 class TPwd {
 public:
-    static const uint32_t max = 100000000;
-
     TPwd() {
-        pwd_ = max;
+        pwd_ = PASSWORD_MAX + 1;
     }
 
     /** Устанавливает новое значение пароля.
@@ -27,7 +25,7 @@ public:
     bool set(uint32_t val) {
         bool check = false;
 
-        if (val < max) {
+        if (val <= PASSWORD_MAX) {
             pwd_ = val;
             check = true;
         }
@@ -102,7 +100,7 @@ public:
     };
 
     TIsEvent() {
-        COMPILE_TIME_ASSERT((sizeof(event_) * CHAR_BIT) <= EVENT_BIT_MAX);
+        COMPILE_TIME_ASSERT((sizeof(event_) * CHAR_BIT) >= IS_EVENT_BIT_MAX);
         event_ = 0;
     }
 
