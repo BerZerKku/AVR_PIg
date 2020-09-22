@@ -172,7 +172,6 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
                     for(uint8_t i = 0; i < 5; i++) {
                         buf += QString("%1 ").arg(*b++, 2, 16, QLatin1Char('0'));
                     }
-                    qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << buf;
                     num = addCom(com, 5, sParam_->txComBuf.getBuferAddress());
                 } break;
                 case GB_SEND_NO: {

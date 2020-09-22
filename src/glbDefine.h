@@ -1567,7 +1567,7 @@ public:
 	 * 	@param val Данные.
 	 */
 	void setInt16(uint16_t val) {
-        *((uint16_t *) &buf_[1]) = val;
+        *((uint16_t *) &buf_[0][1]) = val;
 	}
 
 	/** Считывание 2-х абйтного числа (uint16_t) из буфера.
@@ -1575,7 +1575,7 @@ public:
 	 * 	@return Данные.
 	 */
 	uint16_t getInt16() const {
-        return *((uint16_t *) &buf_[1]);
+        return *((uint16_t *) &buf_[0][1]);
 	}
 
     /** Записывает 4-х байтное число в буфер.
@@ -1583,7 +1583,7 @@ public:
      *  @param[in] val Число.
      */
     void setUint32(uint32_t val) {
-        *((uint32_t *) &buf_[1]) = val;
+        *((uint32_t *) &buf_[0][1]) = val;
     }
 
     /** Возвращает 4-х байтное число из буфера.
@@ -1591,14 +1591,14 @@ public:
      *  @return Число.
      */
     uint32_t getUint32() const {
-        return *((uint32_t *) &buf_[1]);
+        return *((uint32_t *) &buf_[0][1]);
     }
 
 	/**	Возвращает указатель на буфер данных.
 	 * 	@return Указатель на буфер данных.
 	 */
 	uint8_t* getBuferAddress() {
-		return &buf_[0] [0];
+        return &buf_[0][0];
 	}
 
 	/**	Возвращает тип команды на передачу.

@@ -189,18 +189,6 @@ uint8_t LocalParams::getSendDop() const {
 
 	dop = pgm_read_byte(&getPtrParam()->sendDop);
 
-//	switch(getDependSame()) {
-//		case Param::DEPEND_SAME_NO:
-//			break;
-//		case Param::DEPEND_SAME_ON_NUM_DEVS: // DOWN
-//		case Param::DEPEND_SAME_ON_COM_PRD:	 // DOWN
-//		case Param::DEPEND_SAME_ON_COM_PRM:
-//			if (getParamType() != Param::PARAM_BITES) {
-//				dop += getNumOfCurrSameParam();
-//			}
-//			break;
-//	}
-
 	return dop;
 }
 

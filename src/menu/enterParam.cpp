@@ -80,6 +80,20 @@ uint16_t TEnterParam::decValue(uint8_t velocity) {
 }
 
 //
+void TEnterParam::decDigit()
+{
+    if (digit_ > 1) {
+        digit_--;
+    }
+}
+
+//
+uint8_t TEnterParam::getDigit() const
+{
+    return digit_;
+}
+
+//
 void TEnterParam::incDigit()
 {
     if (digit_ < digitMax_) {
@@ -87,13 +101,8 @@ void TEnterParam::incDigit()
     }
 }
 
-//
-void TEnterParam::decDigit()
-{
-    if (digit_ > 1) {
-        digit_--;
-    }
-}
+
+
 
 uint8_t TEnterParam::getMaxDigitNumber(eMENU_ENTER_PARAM s) const
 {

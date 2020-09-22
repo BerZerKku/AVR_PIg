@@ -269,7 +269,7 @@ public:
 	 */
 	void setFlashParams(const Param** ptr) {
 		fps = ptr;
-	};
+    }
 
 	/**	Возвращает текущий параметр.
 	 *

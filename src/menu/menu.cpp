@@ -4248,25 +4248,25 @@ eMENU_ENTER_PARAM clMenu::inputValue() {
 	if (status == MENU_ENTER_PARAM_INT) {
 		int16_t val = EnterParam.getValue();
 		clearLine(NUM_TEXT_LINES);
-        snprintf_P(&vLCDbuf[pos], ROW_LEN+1, enterInt, val);
+        pos += snprintf_P(&vLCDbuf[pos], ROW_LEN+1, enterInt, val);
 	} else if (status == MENU_ENTER_PARAM_U_COR) {
 		uint16_t val = EnterParam.getValue();
 		clearLine(NUM_TEXT_LINES);
-        snprintf_P(&vLCDbuf[pos], ROW_LEN+1, enterUcor, val / 10, val % 10);
+        pos += snprintf_P(&vLCDbuf[pos], ROW_LEN+1, enterUcor, val / 10, val % 10);
 	} else if (status == MENU_ENTER_PARAM_LIST) {
 		uint16_t val = EnterParam.getValue();
 		clearLine(NUM_TEXT_LINES);
 		val = (val - EnterParam.getValueMin()) * STRING_LENGHT;
-        snprintf_P(&vLCDbuf[pos], ROW_LEN+1, enterList, EnterParam.list + val);
+        pos += snprintf_P(&vLCDbuf[pos], ROW_LEN+1, enterList, EnterParam.list + val);
 	} else if (status == MENU_ENTER_PARAM_LIST_2) {
 		uint16_t val = EnterParam.listValue[EnterParam.getValue()];
 		clearLine(NUM_TEXT_LINES);
-        snprintf_P(&vLCDbuf[pos], ROW_LEN+1, enterList,
+        pos += snprintf_P(&vLCDbuf[pos], ROW_LEN+1, enterList,
 				EnterParam.list + STRING_LENGHT * val);
     } else if (status == MENU_ENTER_PASSWORD) {
         uint32_t val = EnterParam.getValuePwd();
         clearLine(NUM_TEXT_LINES);
-        snprintf_P(&vLCDbuf[pos], ROW_LEN+1, enterPwd, val);
+        pos += snprintf_P(&vLCDbuf[pos], ROW_LEN+1, enterPwd, val);
     } else {
 		key_ = KEY_CANCEL;
     }
@@ -4294,6 +4294,7 @@ eMENU_ENTER_PARAM clMenu::inputValue() {
 			break;
 	}
 
+    printCursor(pos - 1);
 	key_ = KEY_NO;
 
 	return EnterParam.getStatus();
@@ -4663,7 +4664,19 @@ void clMenu::printRange(uint8_t pos) {
 	}
 
 	PGM_P dim = fcDimension[lp->getDim()];
-	snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, min, max, dim);
+    snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, min, max, dim);
+}
+
+void clMenu::printCursor(uint8_t pos)
+{
+    uint8_t shift = EnterParam.getDigit() - 1;
+    if (blink_) {
+        switch(EnterParam.getStatus()) {
+            case MENU_ENTER_PASSWORD: {
+                vLCDbuf[pos - shift] = '_';
+            } break;
+        }
+    }
 }
 
 // Вывод на экран текущего значения параметра.
@@ -4729,6 +4742,7 @@ void clMenu::printValue(uint8_t pos) {
 						dim);
             } break;
             case Param::PARAM_PWD: {
+                qDebug("Password = %u", sParam.local.getValuePwd());
                 for(uint8_t i = 0; i < sParam.local.getMax(); i++) {
                     vLCDbuf[pos++] = '*';
                 }
