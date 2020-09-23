@@ -29,9 +29,6 @@ struct stGBparam {
 	// тип оптического аппарата
 	eGB_TYPE_OPTO typeOpto;
 
-	// пароль
-	TPassword password;
-
 	// дата/время
 	TDataTime DateTime;
 

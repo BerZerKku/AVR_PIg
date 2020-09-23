@@ -4233,40 +4233,43 @@ void clMenu::lvlUser() {
 
 //
 eMENU_ENTER_PARAM clMenu::inputValue() {
+    static char strInput[] PROGMEM = "¬вод: ";
 #ifdef AVR
-	static char enterList[] PROGMEM = "¬вод: %S";
+    static char strListValue_P[] PROGMEM = "%S";
 #else
-    static char enterList[] PROGMEM = "¬вод: %s";
+    static char strListValue_P[] PROGMEM = "%s";
 #endif
-    static char enterInt[] PROGMEM = "¬вод: %01d";
-    static char enterPwd[] PROGMEM = "¬вод: %08u";
-	static char enterUcor[] PROGMEM = "¬вод: %01u.%01u";
+    static char strIntValue[] PROGMEM = "%01d";
+    static char strStrValue[] PROGMEM = "%s";
+    static char strFloatValue[] PROGMEM = "%01u.%01u";
 
-    uint8_t pos = 5*ROW_LEN;
+    clearLine(NUM_TEXT_LINES);
 
-	eMENU_ENTER_PARAM status = EnterParam.getStatus();
+    uint8_t posstart = 5*ROW_LEN;
+    posstart += snprintf_P(&vLCDbuf[posstart], ROW_LEN+1, strInput);
+    uint8_t posstop = posstart;
+
+    // FIXME »справить проверку выхода за пределы строки!
+	eMENU_ENTER_PARAM status = EnterParam.getStatus();    
 	if (status == MENU_ENTER_PARAM_INT) {
 		int16_t val = EnterParam.getValue();
-		clearLine(NUM_TEXT_LINES);
-        pos += snprintf_P(&vLCDbuf[pos], ROW_LEN+1, enterInt, val);
+        posstop += snprintf_P(&vLCDbuf[posstart], ROW_LEN+1, strIntValue, val);
 	} else if (status == MENU_ENTER_PARAM_U_COR) {
 		uint16_t val = EnterParam.getValue();
-		clearLine(NUM_TEXT_LINES);
-        pos += snprintf_P(&vLCDbuf[pos], ROW_LEN+1, enterUcor, val / 10, val % 10);
+        posstop += snprintf_P(&vLCDbuf[posstart], ROW_LEN+1, strFloatValue,
+                              val/10, val%10);
 	} else if (status == MENU_ENTER_PARAM_LIST) {
 		uint16_t val = EnterParam.getValue();
-		clearLine(NUM_TEXT_LINES);
 		val = (val - EnterParam.getValueMin()) * STRING_LENGHT;
-        pos += snprintf_P(&vLCDbuf[pos], ROW_LEN+1, enterList, EnterParam.list + val);
+        posstop += snprintf_P(&vLCDbuf[posstart], ROW_LEN+1, strListValue_P,
+                              EnterParam.list + val);
 	} else if (status == MENU_ENTER_PARAM_LIST_2) {
 		uint16_t val = EnterParam.listValue[EnterParam.getValue()];
-		clearLine(NUM_TEXT_LINES);
-        pos += snprintf_P(&vLCDbuf[pos], ROW_LEN+1, enterList,
+        posstop += snprintf_P(&vLCDbuf[posstart], ROW_LEN+1, strListValue_P,
 				EnterParam.list + STRING_LENGHT * val);
     } else if (status == MENU_ENTER_PASSWORD) {
-        uint32_t val = EnterParam.getValuePwd();
-        clearLine(NUM_TEXT_LINES);
-        pos += snprintf_P(&vLCDbuf[pos], ROW_LEN+1, enterPwd, val);
+        uint8_t *val = EnterParam.getValuePwd();
+        posstop += snprintf_P(&vLCDbuf[posstart], ROW_LEN+1, strStrValue, val);
     } else {
 		key_ = KEY_CANCEL;
     }
@@ -4294,7 +4297,7 @@ eMENU_ENTER_PARAM clMenu::inputValue() {
 			break;
 	}
 
-    printCursor(pos - 1);
+    printCursor(posstart, posstop - 1);
 	key_ = KEY_NO;
 
 	return EnterParam.getStatus();
@@ -4658,7 +4661,7 @@ void clMenu::printRange(uint8_t pos) {
         } break;
 
         case Param::RANGE_PWD: {
-            COMPILE_TIME_ASSERT(PASSWORD_MAX == 99999999UL);
+            COMPILE_TIME_ASSERT(PWD_LEN == 8);
             str = PSTR("99999999");
         } break;
 	}
@@ -4667,13 +4670,12 @@ void clMenu::printRange(uint8_t pos) {
     snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, min, max, dim);
 }
 
-void clMenu::printCursor(uint8_t pos)
-{
+void clMenu::printCursor(uint8_t start, uint8_t stop) {
     uint8_t shift = EnterParam.getDigit() - 1;
     if (blink_) {
         switch(EnterParam.getStatus()) {
             case MENU_ENTER_PASSWORD: {
-                vLCDbuf[pos - shift] = '_';
+                vLCDbuf[stop - shift] = '_';
             } break;
         }
     }
@@ -4742,7 +4744,7 @@ void clMenu::printValue(uint8_t pos) {
 						dim);
             } break;
             case Param::PARAM_PWD: {
-                qDebug("Password = %u", sParam.local.getValuePwd());
+                qDebug("Password = %s", sParam.local.getValuePwd());
                 for(uint8_t i = 0; i < sParam.local.getMax(); i++) {
                     vLCDbuf[pos++] = '*';
                 }
@@ -4959,7 +4961,7 @@ void clMenu::saveParamToBsp(eGB_COM com)
 
         case GB_SEND_DOP_PWD: {
             sParam.txComBuf.setInt8(dop, 0);
-            sParam.txComBuf.setUint32(EnterParam.getValuePwd());
+            sParam.txComBuf.setArray(EnterParam.getValuePwd(), PWD_LEN);
         } break;
 
         case GB_SEND_NO: {

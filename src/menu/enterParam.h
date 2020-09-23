@@ -16,9 +16,7 @@ class TEnterParam {
 public:
 	/**	 онструктор.
 	 */
-	TEnterParam() {
-		setDisable();
-	}
+    TEnterParam();
 
 	/**	ѕроверка текущего статуса работы с параметром.
 	 *
@@ -42,44 +40,51 @@ public:
 	 */
 	void setDisable();
 
-	// ”становка диапазона возможных значений.
-	void setValueRange(int16_t min, int16_t max) {
-		max_ = max;
-		min_ = min;
+    /** ”станавливает диапазон значений.
+     *
+     *  ƒополнительно вычисл€етс€ максимальное количество символов.
+     *
+     *  @param[in] min ћинимум.
+     *  @param[in] max ћаксимум.
+     */
+    void setValueRange(int16_t min, int16_t max);
 
-        // FIXME „исла могут быть отрицателные
-        digitMin_ = getMinDigitNumber(status_);
-        digitMax_ = getMaxDigitNumber(status_);
-	}
+    /** ¬озвращает минимальное значение параметра.
+     *
+     *  @return ћинимальное значение.
+     */
+    int16_t getValueMin() const;
 
-	// ¬озвращает минимальное значение параметра.
-	int16_t getValueMin() const {
-		return min_;
-	}
+    /** ¬озвращает максимальное значение параметра.
+     *
+     *  @return ћаксимальное значение.
+     */
+    int16_t getValueMax() const;
 
-	// ¬озвращает максимальное значение параметра.
-	int16_t getValueMax() const {
-		return max_;
-	}
+    /** ”станавливает значение параметра.
+     *
+     *  ƒиапазон значений должен быть уже установлен!
+     *
+     *  @param[in] val «начение параметра.
+     */
+    void setValue(int16_t val);
 
-	// установка текущего значени€, диапазон значений должен быть задан до !
-	void setValue(int16_t val) {
-		val_ = (val < min_) || (val > max_) ? min_ : val;
-	}
-
-	// возвращает текущее значение
+    /** ¬озвращает текущее значение параметра.
+     *
+     *  @return «начение параметра.
+     */
 	int16_t getValue() const {
 		return val_;
 	}
 
-    uint32_t getValuePwd() const {
-        return pwd_;
-    }
+    /** ¬озвращает текущее значение парол€.
+     *
+     *  @return ѕароль.
+     */
+    uint8_t *getValuePwd();
 
-	// возвращает введеное значение с учетом дискретности и делител€
-	int16_t getValueEnter() const {
-		return ((val_ / disc_) * disc_) / fract_;
-	}
+    /// возвращает введеное значение с учетом дискретности и делител€
+    int16_t getValueEnter() const;
 
 	/** ”величение текущего значени€.
 	 *
@@ -172,7 +177,7 @@ private:
 	// текущее значение
 	int16_t val_;
     // значение парол€
-    uint32_t pwd_;
+    uint8_t pwd_[PWD_LEN+1];
 
 	// максимальное значение
 	int16_t max_;
@@ -201,6 +206,9 @@ private:
 
 	// текущий параметр
 	eGB_PARAM param_;
+
+    /// —брасывает значение парол€ в "ноль".
+    void clearPwd();
 };
 
 

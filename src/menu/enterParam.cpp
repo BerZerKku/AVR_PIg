@@ -7,12 +7,18 @@
 
 #include "enterParam.h"
 
-uint16_t step[] = {1, 10, 100, 1000, 10000};
-uint32_t stepPwd[] = {1, 10, 100,  1000, 10000, 100000, 1000000, 10000000};
+static const uint16_t step[] = {1, 10, 100, 1000, 10000};
+
+//
+TEnterParam::TEnterParam() {
+    COMPILE_TIME_ASSERT(SIZE_OF(pwd_) == (PWD_LEN+1));
+
+    setDisable();
+}
 
 // Проверка текущего статуса работы с параметром.
 bool TEnterParam::isEnable() {
-	// проверка текущего статуса на достоверное значение
+    // проверка текущего статуса на достоверное значение
     if ((status_ < MENU_ENTER_PARAM_NO) || (status_ > MENU_ENTER_PARAM_MAX)) {
 		status_ = MENU_ENTER_PARAM_NO;
 	}
@@ -29,7 +35,7 @@ void TEnterParam::setEnable(eMENU_ENTER_PARAM s) {
 			fract_ = 1;
         }
 
-        pwd_ = 0;
+        clearPwd();
         digit_ = 1;
         digitMin_ = 1;
         digitMax_ = 1;
@@ -43,6 +49,42 @@ void TEnterParam::setDisable() {
 	com = GB_COM_NO;
 	disc_ = 1;
 	param_ = GB_PARAM_NULL_PARAM;
+    clearPwd();
+}
+
+//
+void TEnterParam::setValueRange(int16_t min, int16_t max) {
+    max_ = max;
+    min_ = min;
+
+    // FIXME Числа могут быть отрицателные
+    digitMin_ = getMinDigitNumber(status_);
+    digitMax_ = getMaxDigitNumber(status_);
+}
+
+//
+int16_t TEnterParam::getValueMin() const {
+    return min_;
+}
+
+//
+int16_t TEnterParam::getValueMax() const {
+    return max_;
+}
+
+//
+void TEnterParam::setValue(int16_t val) {
+    val_ = (val < min_) || (val > max_) ? min_ : val;
+}
+
+//
+uint8_t *TEnterParam::getValuePwd() {
+    return pwd_;
+}
+
+//
+int16_t TEnterParam::getValueEnter() const {
+    return ((val_ / disc_) * disc_) / fract_;
 }
 
 // Увеличение текущего значения.
@@ -50,9 +92,8 @@ uint16_t TEnterParam::incValue(uint8_t velocity) {
     eMENU_ENTER_PARAM s = status_;
 
     if (s == MENU_ENTER_PASSWORD) {
-        if ((PASSWORD_MAX - stepPwd[digit_ - 1]) >= pwd_) {
-            pwd_ += stepPwd[digit_ - 1];
-        }
+        uint8_t val = pwd_[PWD_LEN - digit_];
+        pwd_[PWD_LEN - digit_] = (val < '9') ? val + 1 : '0';
     } else {
         if ((getValueMax() - step[digit_ - 1]) >= val_) {
             val_ += step[digit_ - 1];
@@ -67,12 +108,11 @@ uint16_t TEnterParam::decValue(uint8_t velocity) {
 	eMENU_ENTER_PARAM s = status_;
 
     if (s == MENU_ENTER_PASSWORD) {
-        if (pwd_ >= stepPwd[digit_ - 1]) {
-            pwd_ -= stepPwd[digit_ - 1];
-        }
+        uint8_t val = pwd_[PWD_LEN - digit_];
+        pwd_[PWD_LEN - digit_] = (val > '0') ? val - 1 : '9';
     } else if (getValueMin() >= 0){
         if ((getValueMin() + step[digit_ - 1]) <= val_) {
-            val_ -= stepPwd[digit_ - 1];
+            val_ -= step[digit_ - 1];
         }
     }
 
@@ -101,9 +141,7 @@ void TEnterParam::incDigit()
     }
 }
 
-
-
-
+//
 uint8_t TEnterParam::getMaxDigitNumber(eMENU_ENTER_PARAM s) const
 {
     uint8_t num = 1;
@@ -129,4 +167,12 @@ uint8_t TEnterParam::getMinDigitNumber(eMENU_ENTER_PARAM s) const
 {
     // FIXME Добавить зависимость от шага
     return 1;
+}
+
+void TEnterParam::clearPwd()
+{
+    for(uint8_t i = 0; i < SIZE_OF(pwd_); i++) {
+        pwd_[i] = '0';
+    }
+    pwd_[PWD_LEN] = '\0';
 }

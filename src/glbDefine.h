@@ -27,17 +27,11 @@
 /// размер массива
 #define SIZE_OF(mas) (sizeof(mas) / sizeof(mas[0]))
 
-/// пароль администратора
-#define PASSWORD_ADMIN 6352
-
-/// пароль пользовател€ по умолчанию
-#define PASSWORD_USER 0
-
-/// максимальное значение парол€
-#define PASSWORD_MAX 99999999UL
+/// количество символов в пароле
+#define PWD_LEN 8
 
 /// верси€ текущей прошивки
-#define VERS 0x0145
+#define VERS 0x0146
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -897,48 +891,6 @@ private:
 	uint8_t year_;
 };
 
-///  ласс дл€ парол€
-class TPassword {
-public:
-	TPassword() {
-		password_ = 10000;
-		admin_ = PASSWORD_ADMIN;
-	}
-
-	// возвращает текущий пароль пользовател€
-	uint16_t get() const {
-		return password_;
-	}
-
-	// устанавливает пароль пользовател€
-	bool set(uint16_t pas) {
-		bool stat = false;
-		if (pas < 10000) {
-			password_ = pas;
-			stat = true;
-		}
-		return stat;
-	}
-
-	// начальна€ инициализаци€ парол€ пользовател€
-	// если введено неверное значение, пароль будет PASSWORD_USER
-	void init(uint16_t pas) {
-		if (!set(pas))
-			set(PASSWORD_USER);
-	}
-
-	// проверка значени€ на совпадение с паролем пользовател€ и администратора
-	bool check(uint16_t pas) const {
-		return ((pas == password_) || (pas == admin_));
-	}
-
-private:
-	// пароль пользовател€
-	uint16_t password_;
-
-	// пароль администратора
-	uint16_t admin_;
-};
 
 ///  ласс дл€ текущего состо€ни€ аппарата
 class TDeviceStatus {
@@ -1578,23 +1530,21 @@ public:
         return *((uint16_t *) &buf_[0][1]);
 	}
 
-    /** «аписывает 4-х байтное число в буфер.
+    /** «аписывает массив данных в буфер.
      *
-     *  @param[in] val „исло.
+     *  @param[in] array ƒанные.
+     *  @param[in] size  оличество данных.
      */
-    void setUint32(uint32_t val) {
-        *((uint32_t *) &buf_[0][1]) = val;
-    }
-
-    /** ¬озвращает 4-х байтное число из буфера.
-     *
-     *  @return „исло.
-     */
-    uint32_t getUint32() const {
-        return *((uint32_t *) &buf_[0][1]);
+    void setArray(const uint8_t *array, uint8_t size) {
+        if (size < BUFFER_SIZE) {
+            for(uint8_t i = 0; i < size; i++) {
+                buf_[0][i+1] = array[i];
+            }
+        }
     }
 
 	/**	¬озвращает указатель на буфер данных.
+     *
 	 * 	@return ”казатель на буфер данных.
 	 */
 	uint8_t* getBuferAddress() {

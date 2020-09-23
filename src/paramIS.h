@@ -12,22 +12,28 @@
 #include <cstdint>
 #include <climits>
 
+/// Пароль.
 class TPwd {
 public:
+
+    // Конструктор.
     TPwd() {
-        pwd_ = PASSWORD_MAX + 1;
+        COMPILE_TIME_ASSERT(SIZE_OF(pwd_) == PWD_LEN);
+
+        for(uint8_t i = 0; i < SIZE_OF(pwd_); i++) {
+            pwd_[i] = 0;
+        }
     }
 
     /** Устанавливает новое значение пароля.
      *
      *  @return false в случае ошибочного значения.
      */
-    bool set(uint32_t val) {
-        bool check = false;
+    bool set(uint8_t *pwd) {
+        bool check = checkValue(pwd);
 
-        if (val <= PASSWORD_MAX) {
-            pwd_ = val;
-            check = true;
+        if (check) {
+            setValue(pwd);
         }
 
         return check;
@@ -37,12 +43,38 @@ public:
      *
      *  @return Пароль.
      */
-    uint32_t get() const {
+    uint8_t* get() {
         return pwd_;
     }
 
 private:
-    uint32_t pwd_;
+
+    /** Проверяет корректность пароля.
+     *
+     *  @param[in] pwd Пароль.
+     *  @return Результат проверки, true если все в порядке.
+     */
+    bool checkValue(uint8_t *pwd) const {
+        bool check = true;
+
+        for(uint8_t i = 0; i < SIZE_OF(pwd_); i++) {
+            check &= ((pwd[i] >= '0') && (pwd[i] <= '9'));
+        }
+
+        return check;
+    }
+
+    /** Устанавливает значение пароля.
+     *
+     *  @param[in] pwd Пароль.
+     */
+    void setValue(uint8_t *pwd) {
+        for(uint8_t i = 0; i < SIZE_OF(pwd_); i++) {
+            pwd_[i] = pwd[i];
+        }
+    }
+
+    uint8_t pwd_[PWD_LEN];
 };
 
 class TUser {

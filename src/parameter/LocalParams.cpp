@@ -6,8 +6,11 @@
  */
 
 #include "LocalParams.h"
+#include "LocalParams.h"
 
 LocalParams::LocalParams() {
+    COMPILE_TIME_ASSERT(SIZE_OF(pwd) == (PWD_LEN + 1));
+
 	clearParams();
 }
 
@@ -82,9 +85,11 @@ void LocalParams::setValue(int16_t val) {
     checkValue();
 }
 
-void LocalParams::setValuePwd(uint32_t val)
-{
-    this->valPwd = val;
+void LocalParams::setValuePwd(const uint8_t *pwd) {
+    for(uint8_t i = 0; i < PWD_LEN; i++) {
+        this->pwd[i] = pwd[i];
+    }
+    this->pwd[PWD_LEN] = '\0';
 
     checkValue();
 }
@@ -111,9 +116,9 @@ uint8_t LocalParams::getValueB() const {
 }
 
 //
-uint32_t LocalParams::getValuePwd() const
+uint8_t* LocalParams::getValuePwd()
 {
-    return valPwd;
+    return pwd;
 }
 
 // ќчистка списка параметров.
@@ -124,6 +129,16 @@ void LocalParams::clearParams() {
 	numOfParams = 0;
 	currSameParam = 0;
 	state = STATE_READ_PARAM;
+
+    clearPwd();
+}
+
+void LocalParams::clearPwd()
+{
+    for(uint8_t i = 0; i < PWD_LEN; i++) {
+        pwd[i] = '0';
+    }
+    pwd[PWD_LEN] = '\0';
 }
 
 //	¬озвращает максимальное значение параметра.
@@ -197,8 +212,9 @@ void LocalParams::checkValue() {
 	// ƒл€ совместимости с битовыми переменными \a Param::PARAM_BITES
 	// провер€ем значение возвращаемое getValue(), а не работаем со значением
 	// переменной this->val на пр€мую.
+
     if (getParamType() == Param::PARAM_PWD) {
-        state = (valPwd <= PASSWORD_MAX) ? STATE_NO_ERROR : STATE_ERROR;
+        state = checkPassword() ? STATE_NO_ERROR : STATE_ERROR;
     } else {
         int16_t val = getValue();
         if ((val >= getMin()) && (val <= getMax())) {
@@ -209,9 +225,21 @@ void LocalParams::checkValue() {
     }
 }
 
+bool LocalParams::checkPassword()
+{
+    bool check = true;
+
+    for(uint8_t i = 0; i < PWD_LEN; i++) {
+        check &= ((pwd[i] >= '0') && (pwd[i] <= '9'));
+    }
+
+    return check;
+}
+
 //	ќбновление параметра.
 void LocalParams::refreshParam() {
 	val = 0;
-    valPwd = PASSWORD_MAX + 1;
-	state = STATE_READ_PARAM;
+    clearPwd();
+
+	state = STATE_READ_PARAM;    
 }

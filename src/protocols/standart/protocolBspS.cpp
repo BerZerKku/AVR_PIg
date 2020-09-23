@@ -129,6 +129,7 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 	uint8_t num = 0;
 	uint8_t mask = 0;
 
+    // TODO ƒобавить првоерку подтверждени€ передачи команды! » повтор в противном случае.
 
 	mask = com & GB_COM_MASK_GROUP;
 
@@ -164,15 +165,17 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
                 } break;
                 case GB_SEND_COR_U: // DOWN
                 case GB_SEND_COR_I: {
-					num = addCom(com, 3, sParam_->txComBuf.getBuferAddress());
+                    num = 3;
+                    num = addCom(com, num, sParam_->txComBuf.getBuferAddress());
                 } break;
                 case GB_SEND_DOP_PWD: {
                     QString buf("Send pkg = ");
                     uint8_t *b = sParam_->txComBuf.getBuferAddress();
-                    for(uint8_t i = 0; i < 5; i++) {
+                    for(uint8_t i = 0; i < PWD_LEN; i++) {
                         buf += QString("%1 ").arg(*b++, 2, 16, QLatin1Char('0'));
                     }
-                    num = addCom(com, 5, sParam_->txComBuf.getBuferAddress());
+                    num = PWD_LEN + 1;
+                    num = addCom(com, num, sParam_->txComBuf.getBuferAddress());
                 } break;
                 case GB_SEND_NO: {
                 } break;
@@ -675,8 +678,8 @@ bool clProtocolBspS::hdlrComGetNetAdr(bool pc)
         check &= sParam_->Uart.StopBits.set((TStopBits::STOP_BITS) buf[B7]);
     }
     if (buf[NUM] >= 15) {
-        check &= sParam_->security.pwdEngineer.set(*((uint32_t *) &buf[B8]));
-        check &= sParam_->security.pwdAdmin.set(*((uint32_t *) &buf[B12]));
+        check &= sParam_->security.pwdEngineer.set(&buf[B8]); // bytes = PWD_LEN
+        check &= sParam_->security.pwdAdmin.set(&buf[B16]); // bytes = PWD_LEN
     }
 
     return check;

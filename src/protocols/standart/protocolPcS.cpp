@@ -18,17 +18,19 @@ bool clProtocolPcS::getData() {
 	eGB_COM com = (eGB_COM) buf[2];
 
 	if (com == GB_COM_GET_PASSWORD)	{
-		uint16_t tmp = sParam_->password.get();
-		buf[3] = 2;
-		buf[4] = tmp >> 8;
-		buf[5] = tmp;
+        // FIXME Команда считывания пароля с ПК.
+//		uint16_t tmp = sParam_->password.get();
+//		buf[3] = 2;
+//		buf[4] = tmp >> 8;
+//		buf[5] = tmp;
 		addCom();
 		stat = true;
 	} else if (com == GB_COM_SET_PASSWORD) {
-		if (buf[3] == 2) {
-			uint16_t tmp = ((uint16_t) buf[4] << 8) + buf[5];
-			sParam_->password.set(tmp);
-		}
+        // FIXME Команда установки нового значения пароля.
+//		if (buf[3] == 2) {
+//			uint16_t tmp = ((uint16_t) buf[4] << 8) + buf[5];
+//			sParam_->password.set(tmp);
+//		}
 		addCom(); // эхо
 		stat = true;
 	}
