@@ -8,6 +8,8 @@
 #ifndef PARAMPRD_H_
 #define PARAMPRD_H_
 
+#include "glbDefine.h"
+
 /// класс для параметров и настроек передатчика
 class TDevicePrd {
 public:
