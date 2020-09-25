@@ -30,6 +30,9 @@
 /// количество символов в пароле
 #define PWD_LEN 8
 
+/// количество неверных вводов пароля для блокировки
+#define PWD_CNT_BLOCK 3
+
 /// версия текущей прошивки
 #define VERS 0x0146
 
@@ -488,8 +491,8 @@ typedef enum {
     GB_PARAM_IS_PWD,            ///< текущий пароль
     GB_PARAM_IS_PWD_ENGINEER,   ///< пароль инженера
     GB_PARAM_IS_PWD_ADMIN,      ///< пароль администратора
-    GB_PARAM_IS_PWD_ERR_CNT,    ///< счетчик ввода неверного пароля
-    GB_PARAM_IS_PWD_TIMEOUT,    ///< время блокировки ввода пароля
+    GB_PARAM_IS_PWD_ENG_CNT,    ///< счетчик ввода неверного пароля инженера
+    GB_PARAM_IS_PWD_ADM_CNT,    ///< счетчик ввода неверного пароля администра
     //
     GB_PARAM_MAX
 } eGB_PARAM;

@@ -677,9 +677,11 @@ bool clProtocolBspS::hdlrComGetNetAdr(bool pc)
         check &= sParam_->Uart.Parity.set((TParity::PARITY) buf[B6]);
         check &= sParam_->Uart.StopBits.set((TStopBits::STOP_BITS) buf[B7]);
     }
-    if (buf[NUM] >= 15) {
+    if (buf[NUM] >= 25) {
         check &= sParam_->security.pwdEngineer.set(&buf[B8]); // bytes = PWD_LEN
         check &= sParam_->security.pwdAdmin.set(&buf[B16]); // bytes = PWD_LEN
+        check &= sParam_->security.pwdEngineer.set(&buf[B24]);
+        check &= sParam_->security.pwdEngineer.set(&buf[B25]);
     }
 
     return check;

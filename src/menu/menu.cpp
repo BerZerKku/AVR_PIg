@@ -4807,10 +4807,10 @@ bool clMenu::checkPwd(TUser::USER user, const uint8_t *pwd)
     uint8_t *opwd = nullptr;
 
     QString msg;
-    msg += QString("User = %1").arg(user);
+    msg += QString("User = %1: input password = ").arg(user);
 
     for(uint8_t i = 0; i < PWD_LEN; i++) {
-        msg += QString("%1").arg(pwd[i]);
+        msg += QString("%1").arg(QChar(pwd[i]));
     }
 
     qDebug() << msg;

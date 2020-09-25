@@ -46,7 +46,6 @@ struct stGBparam {
 	TDevicePrd prd;
 	TDeviceGlb glb;
 
-
 	// локальные параметры
 	LocalParams local;
 

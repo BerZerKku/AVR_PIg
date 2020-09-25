@@ -23,10 +23,12 @@ public:
         for(uint8_t i = 0; i < SIZE_OF(pwd_); i++) {
             pwd_[i] = 0;
         }
+        counter_ = PWD_CNT_BLOCK;
     }
 
     /** Устанавливает новое значение пароля.
      *
+     *  @param[in] pwd Пароль.
      *  @return false в случае ошибочного значения.
      */
     bool set(uint8_t *pwd) {
@@ -39,12 +41,30 @@ public:
         return check;
     }
 
+    /** Устанавливает счетчик ошибочных вводов.
+     *
+     *  @param[in] value Значение.
+     */
+    bool setCounter(uint8_t value) {
+        counter_ = (value <= PWD_CNT_BLOCK) ? value : PWD_CNT_BLOCK;
+
+        return (value == counter_);
+    }
+
     /** Возвращает значение пароля.
      *
      *  @return Пароль.
      */
     uint8_t* get() {
         return pwd_;
+    }
+
+    /** Возвращает количество ошибочных вводов пароля.
+     *
+     *  @return Количество ошибочных вводов пароля.
+     */
+    uint8_t getCounter() const {
+        return counter_;
     }
 
 private:
@@ -75,6 +95,7 @@ private:
     }
 
     uint8_t pwd_[PWD_LEN];
+    uint8_t counter_;
 };
 
 class TUser {
