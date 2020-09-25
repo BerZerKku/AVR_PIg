@@ -59,8 +59,6 @@ enum eMENU_MEAS_PARAM {
     MENU_MEAS_PARAM_DF			///< отклонение частоты КС на ПРМ (К400)
 };
 
-
-
 // класс меню
 class clMenu {
     /// Сообщение.
@@ -74,6 +72,13 @@ class clMenu {
         MSG_INIT,               ///< Инициализация.
         //
         MSG_MAX
+    };
+
+    struct save_t {
+        eGB_COM com;
+        uint8_t dop;
+        uint8_t num;
+        uint8_t pwd[PWD_LEN];
     };
 
 public:
@@ -317,7 +322,7 @@ private:
      *  @param[in] pwd Пароль для проверки.
      *  @return Результат проверки пароля, true если совпал.
      */
-    bool checkPwd(TUser::USER user, const uint8_t *pwd);
+    bool checkPwd(TUser::user_t user, const uint8_t *pwd);
 
     /** Проверяет необходимость ввода пароля после изменения параметра.
      *

@@ -75,8 +75,8 @@ bool LocalParams::addParam(eGB_PARAM newParam) {
 
 // ”становка нового значени€ параметра и его проверка на корректность.
 void LocalParams::setValue(int16_t val) {
-	uint8_t fract = pgm_read_byte(&getPtrParam()->fract);
-	uint8_t disc = getDisc();
+    uint8_t fract = getFract(getParam());
+    uint8_t disc = getDisc(getParam());
 
 	val = val * fract;
 	val = (val / disc) * disc;
@@ -100,7 +100,7 @@ void LocalParams::setValuePwd(const uint8_t *pwd) {
 int16_t LocalParams::getValue() const {
 	int16_t v = val;
 
-	if (getParamType() == Param::PARAM_BITES) {
+    if (getParamType(getParam()) == Param::PARAM_BITES) {
 		uint8_t cur = getNumOfCurrSameParam() - 1;
 		uint8_t bite = cur % 8;
 
@@ -145,9 +145,9 @@ void LocalParams::clearPwd()
 int16_t LocalParams::getMax() const {
 	uint16_t max = 0;
 
-	switch(getDependMax()) {
+    switch(getDependMax(getParam())) {
 		case Param::DEPEND_MAX_NO:
-			max = pgm_read_word(&getPtrParam()->max);
+            max = getAbsMax(getParam());
 			break;
 		case Param::DEPEND_MAX_ON_NUM_DEVS:
 			max = numDevices;
@@ -159,9 +159,9 @@ int16_t LocalParams::getMax() const {
 	// дл€ строковых параметров  в максимуме записано макс.количество элементов
 	// списка, поэтому скорректируем максимальное значение
 
-	Param::PARAM_TYPE type = getParamType();
+    Param::PARAM_TYPE type = getParamType(getParam());
 	if ((type == Param::PARAM_LIST) || (type == Param::PARAM_BITES)) {
-		max = getMin() + max - 1;
+        max = getMin(getParam()) + max - 1;
 	}
 
 	return max;
@@ -180,9 +180,9 @@ uint8_t LocalParams::getNumOfCurrSameParam() const {
 uint8_t LocalParams::getNumOfSameParams() const {
 	uint8_t num = 1;
 
-	switch(getDependSame()) {
+    switch(getDependSame(getParam())) {
 		case Param::DEPEND_SAME_NO:
-			num = pgm_read_byte(&getPtrParam()->num);
+            num = getAbsMaxNumOfSameParams(getParam());
 			break;
 		case Param::DEPEND_SAME_ON_NUM_DEVS:
 			num = numDevices - 1;
@@ -198,26 +198,17 @@ uint8_t LocalParams::getNumOfSameParams() const {
 	return num;
 }
 
-//	¬озвращает значение байта доп. информации дл€ сохранени€ нового значени€.
-uint8_t LocalParams::getSendDop() const {
-	uint8_t dop = 0;
-
-	dop = pgm_read_byte(&getPtrParam()->sendDop);
-
-	return dop;
-}
-
 //	ѕроверка установленного значени€ параметра на корректность.
 void LocalParams::checkValue() {
 	// ƒл€ совместимости с битовыми переменными \a Param::PARAM_BITES
 	// провер€ем значение возвращаемое getValue(), а не работаем со значением
 	// переменной this->val на пр€мую.
 
-    if (getParamType() == Param::PARAM_PWD) {
+    if (getParamType(getParam()) == Param::PARAM_PWD) {
         state = checkPassword() ? STATE_NO_ERROR : STATE_ERROR;
     } else {
         int16_t val = getValue();
-        if ((val >= getMin()) && (val <= getMax())) {
+        if ((val >= getMin(getParam())) && (val <= getMax())) {
             state = STATE_NO_ERROR;
         } else {
             state = STATE_ERROR;

@@ -14,7 +14,7 @@ class LocalParams {
 	/// Максимальное количество параметров в списке.
 	static const uint8_t MAX_NUM_OF_PARAMS = 25;
 
-	/// Максимальное количество байт для битовых переменных.
+    /// Максимальное количество байт для битовых переменных.
 //	static const uint8_t MAX_BUF_BITS_VALUES = 12;
 
 public:
@@ -129,12 +129,6 @@ public:
     /// Сброс пароля.
     void clearPwd();
 
-	/**	Возвращает минимальное значение параметра.
-	 *
-	 * 	@return Минимальное значение параметра.
-	 */
-	int16_t getMin() const { return pgm_read_word(&getPtrParam()->min); }
-
 	/**	Возвращает максимальное значение параметра.
 	 *
 	 *	Для строковых параметров, в максимуме которых хранится кол-во элементов
@@ -144,18 +138,6 @@ public:
 	 * 	@return Максимальное значение параметра.
 	 */
 	int16_t getMax() const;
-
-	/**	Возвращает дискретность параметра ?!
-	 *
-	 * 	@param Дискретность параметра.
-	 */
-	uint8_t getDisc() const { return pgm_read_byte(&getPtrParam()->disc); }
-
-	/**	Возвращает множитель параметра.
-	 *
-	 * 	@param Множитель параметра.
-	 */
-	uint8_t getFract() const { return pgm_read_byte(&getPtrParam()->fract); }
 
 	/**	Возвращает номер текущего параметра.
 	 *
@@ -170,33 +152,6 @@ public:
 	uint8_t getNumOfParams() const {
 		return numOfParams;
 	}
-
-	/**	Возвращает указатель на сторку с названием параметра.
-	 *
-	 * 	Строка находится во FLASH.
-	 *
-	 * 	@return Указатель на строку с названием параметра.
-	 *
-	 */
-	PGM_P getNameOfParam() const {
-		return (PGM_P) getPtrParam()->name;
-	}
-
-	/**	Возвращает указатель на первую строку массива значений параметра.
-	 *
-	 * 	Актуально для переменных значение которых выбирается из списка. Сам
-	 * 	список находится во FLASH.
-	 *
-	 * 	@return Указатель на первую строку массива значений параметра.
-	 *
-	 */
-    PGM_P getListOfValues() const {
-#ifdef AVR
-        return (PGM_P) pgm_read_word(&getPtrParam()->listValues);
-#else
-        return getPtrParam()->listValues;
-#endif
-    }
 
 	/**	Возвращает текущий номер однотипного параметра начиная с 1.
 	 *
@@ -216,88 +171,12 @@ public:
 	 */
 	uint8_t getNumOfSameParams() const;
 
-	/**	Возвращает тип текущего параметра.
-	 *
-	 * 	@return Тип текущего параметра.
-	 */
-	Param::PARAM_TYPE getParamType() const {
-		return (Param::PARAM_TYPE) pgm_read_byte(&getPtrParam()->param);
-	}
-
-	/**	Возвращает тип диапазона значений декущего параметра.
-	 *
-	 * 	@return Тип диапазона значений текущего параметра.
-	 */
-	Param::RANGE_TYPE getRangeType() const {
-		return (Param::RANGE_TYPE) pgm_read_byte(&getPtrParam()->range);
-	}
-
-	/**	Возвращает размерность текущего параметра.
-	 *
-	 * 	@return Размерность текущего параметра.
-	 */
-	Param::DIMENSION getDim() const {
-		return (Param::DIMENSION) pgm_read_byte(&getPtrParam()->dim);
-	}
-
-	/**	Возвращает команду стандартного протокола для текущего параметра.
-	 *
-	 * 	@return Команда стандартного протокола для текущего параметра.
-	 */
-	eGB_COM getCom() const {
-		return (eGB_COM) pgm_read_byte(&getPtrParam()->com);
-	}
-
-	/**	Возвращает тип параметра для сохранения нового значения.
-	 *
-	 * 	@return Тип параметра для сохранения нового значения.
-	 */
-	eGB_SEND_TYPE getSendType() const {
-		return (eGB_SEND_TYPE) pgm_read_byte(&getPtrParam()->send);
-	}
-
-	/**	Возвращает значение байта доп. информации для сохранения нового значения.
-	 *
-	 *	Для параметров, количество которых не постоянно (зависит например от
-	 *	количества команд на передачу) возвращается сумма байта доп.информации и
-	 *	текущего номера повторения.
-	 *
-	 * 	@return Значение байта доп. информации для сохранения нового значения.
-	 */
-	uint8_t getSendDop() const;
-
-	/**	Установка массива значений параметров.
-	 *
-	 * 	Сам массив находится во FLASH, но это учитывается далее.
-	 *
-	 * 	@param *ptr Указатель на массив значений параметров.
-	 */
-	void setFlashParams(const Param** ptr) {
-		fps = ptr;
-    }
-
 	/**	Возвращает текущий параметр.
 	 *
 	 * 	@return Текущий параметр.
 	 */
 	eGB_PARAM getParam() const {
 		return param[currParam];
-	}
-
-	/**	Возвращает зависимость повторений текущего параметра.
-	 *
-	 * 	@return Зависимость текущего параметра.
-	 */
-	Param::DEPEND_SAME getDependSame() const {
-		return (Param::DEPEND_SAME) pgm_read_byte(&getPtrParam()->dependSame);
-	}
-
-	/**	Возвращает зависимость максимума текущего параметра.
-	 *
-	 * 	@return Зависимость текущего параметра.
-	 */
-	Param::DEPEND_MAX getDependMax() const {
-		return (Param::DEPEND_MAX) pgm_read_byte(&getPtrParam()->dependMax);
 	}
 
 	/** Установка кол-ва команд на передачу.
@@ -326,33 +205,14 @@ public:
 		this->numDevices = numDevices;
 	}
 
-    /**	Возвращает необходимый режим для изменения параметра.
-	 *
-	 *	@return Условие для изменения параметра.
-	 */
-    Param::CHANGE_REG getChangeReg() const {
-        return (Param::CHANGE_REG) pgm_read_byte(&getPtrParam()->changeReg);
-	}
-
-    /**	Возвращает необходимого пользователя для изменения параметра.
-     *
-     *	@return Условие для изменения параметра.
-     */
-    Param::CHANGE_USER getChangeUser() const {
-        return (Param::CHANGE_USER) pgm_read_byte(&getPtrParam()->changeUser);
-    }
-
 private:
-
-	const Param** fps;		///< Массив значений параметров.
-
 	eGB_PARAM param[MAX_NUM_OF_PARAMS]; ///< Массив параметров.
 
 	int16_t val;			///< Значение текущего параметра.
 
     uint8_t pwd[PWD_LEN+1]; ///< Значение текущего пароля (+ завершающий 0).
 
-	uint8_t currParam;		///< Номер текущего параметра.
+    uint8_t currParam;		///< Номер текущего параметра.
 
 	uint8_t numOfParams;	///< Количество параметров в текущем списке.
 
@@ -391,18 +251,6 @@ private:
 	 *
 	 */
 	void refreshParam();
-
-	/**	Возвращает указатель на массив значений текущего параметра.
-	 *
-	 * 	@return Указатель на массив значений текущего параметра.
-	 */
-    Param* getPtrParam() const {
-#ifdef AVR
-        return (Param*) pgm_read_word(&fps[param[currParam]]);
-#else
-        return (Param*) fps[param[currParam]];
-#endif
-    }
 };
 
 #endif /* LOCALPARAMS_H_ */

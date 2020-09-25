@@ -113,8 +113,6 @@ clMenu::clMenu() {
 	// установка режима работы подсветки
 	vLCDsetLed(LED_REGIME);
 #endif
-
-	sParam.local.setFlashParams(fParams);
 }
 
 void clMenu::proc(void) {
@@ -4175,7 +4173,7 @@ void clMenu::lvlUser() {
     snprintf_P(&vLCDbuf[0], 21, title);
 
     LocalParams *lp = &sParam.local;
-    if (lp->getCom() == GB_COM_NO) {
+    if (getCom(lp->getParam()) == GB_COM_NO) {
         // Для считывания текущего значения параметра хранящегося в ЕЕПРОМ
         eGB_PARAM param = lp->getParam();
         if (param == GB_PARAM_IS_USER) {
@@ -4585,7 +4583,8 @@ void clMenu::printParam() {
     snprintf_P(&vLCDbuf[20], ROW_LEN + 1, PSTR("Параметр:%u Всего:%u"),
 			sParam.local.getNumOfCurrParam(), sParam.local.getNumOfParams());
 
-    snprintf_P(&vLCDbuf[40], ROW_LEN + 1, sParam.local.getNameOfParam());
+    snprintf_P(&vLCDbuf[40], ROW_LEN + 1,
+            getNameOfParam(sParam.local.getParam()));
 
 	printSameNumber(60);
 	printRange(80);
@@ -4621,13 +4620,13 @@ void clMenu::printRange(uint8_t pos) {
     static prog_uint8_t MAX_CHARS = 11 ;
 
 	LocalParams *lp = &sParam.local;
-	int16_t min = lp->getMin();
+    int16_t min = getMin(lp->getParam());
 	int16_t max = lp->getMax();
 	PGM_P str = fcNullBuf;
 
 	pos += snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Диапазон: "));
 
-	switch(lp->getRangeType()) {
+    switch(getRangeType(lp->getParam())) {
         case Param::RANGE_LIST: {
 			str = PSTR("список");
         } break;
@@ -4673,7 +4672,7 @@ void clMenu::printRange(uint8_t pos) {
         } break;
 	}
 
-	PGM_P dim = fcDimension[lp->getDim()];
+    PGM_P dim = fcDimension[getDim(lp->getParam())];
     snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, min, max, dim);
 }
 
@@ -4693,7 +4692,7 @@ void clMenu::printValue(uint8_t pos) {
 	static prog_uint8_t MAX_CHARS = 11;
 
 	int16_t val = sParam.local.getValue();
-	PGM_P dim = fcDimension[sParam.local.getDim()];
+    PGM_P dim = fcDimension[getDim(sParam.local.getParam())];
 	PGM_P str = fcNullBuf;
 
 	pos += snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Значение: "));
@@ -4716,11 +4715,11 @@ void clMenu::printValue(uint8_t pos) {
 		}
 	} else {
 		// вывод корректного значения
-		switch(sParam.local.getParamType()) {
+        switch(getParamType(sParam.local.getParam())) {
 			case Param::PARAM_BITES: // DOWN
             case Param::PARAM_LIST: {
-				val -= sParam.local.getMin();
-				str = sParam.local.getListOfValues() + (val * STRING_LENGHT);
+                val -= getMin(sParam.local.getParam());
+                str = getListOfValues(sParam.local.getParam()) + (val * STRING_LENGHT);
 				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str);
             } break;
 			case Param::PARAM_I_COR: // DOWN
@@ -4767,7 +4766,7 @@ bool clMenu::checkChangeReg() const
 {
     bool check = false;
     eGB_REGIME regime = sParam.glb.status.getRegime();
-    Param::CHANGE_REG changereg = sParam.local.getChangeReg();
+    Param::CHANGE_REG changereg = getChangeReg(sParam.local.getParam());
 
     switch(changereg) {
         case Param::CHANGE_REG_NO: {
@@ -4784,7 +4783,7 @@ bool clMenu::checkChangeReg() const
 bool clMenu::checkChangeUser(Param::CHANGE_USER chuser) const
 {
     bool check = false;
-    TUser::USER user = sParam.security.User.get();
+    TUser::user_t user = sParam.security.User.get();
 
     switch(chuser) {
         case Param::CHANGE_USER_NO: {
@@ -4801,7 +4800,7 @@ bool clMenu::checkChangeUser(Param::CHANGE_USER chuser) const
     return check;
 }
 
-bool clMenu::checkPwd(TUser::USER user, const uint8_t *pwd)
+bool clMenu::checkPwd(TUser::user_t user, const uint8_t *pwd)
 {
     bool check = false;
     uint8_t *opwd = nullptr;
@@ -4816,16 +4815,16 @@ bool clMenu::checkPwd(TUser::USER user, const uint8_t *pwd)
     qDebug() << msg;
 
     switch(user) {
-        case TUser::USER::OPERATOR: {
+        case TUser::user_t::OPERATOR: {
             check = true;
         } break;
-        case TUser::USER::ADMIN: {
+        case TUser::user_t::ADMIN: {
             opwd = sParam.security.pwdAdmin.get();
         } break;
-        case TUser::USER::ENGINEER: {
+        case TUser::user_t::ENGINEER: {
             opwd = sParam.security.pwdEngineer.get();
         } break;
-        case TUser::USER::MAX: {
+        case TUser::user_t::MAX: {
             check = false;
         } break;
     }
@@ -4845,7 +4844,7 @@ bool clMenu::checkPwdReq(eGB_PARAM param, int16_t value) const
 {
     bool check = false;
 
-    if ((param == GB_PARAM_IS_USER) && (value != TUser::USER::OPERATOR)) {
+    if ((param == GB_PARAM_IS_USER) && (value != TUser::user_t::OPERATOR)) {
         if  (value != sParam.security.User.get()) {
             check = true;
         }
@@ -4862,10 +4861,10 @@ void clMenu::enterParameter() {
 
     if (!checkChangeReg()) {
         setMessage(MSG_WRONG_REGIME);
-    } else if (!checkChangeUser(sParam.local.getChangeUser())){
+    } else if (!checkChangeUser(getChangeUser(sParam.local.getParam()))) {
         setMessage(MSG_WRONG_USER);
     } else {
-		switch(lp->getParamType()) {
+        switch(getParamType(lp->getParam())) {
 			case Param::PARAM_BITES: // DOWN
             case Param::PARAM_LIST: {
 				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
@@ -4885,7 +4884,7 @@ void clMenu::enterParameter() {
 		}
 
 		if (EnterParam.isEnable()) {
-			int16_t min = lp->getMin();
+            int16_t min = getMin(lp->getParam());
 			int16_t val = lp->getValue();
 			int16_t max = lp->getMax();
 
@@ -4897,7 +4896,7 @@ void clMenu::enterParameter() {
 			//
 			// Для остальных параметров в случае ошибки текущего значения,
 			// устанавливается минимум.
-			if (lp->getParamType() == Param::PARAM_I_COR) {
+            if (getParamType(lp->getParam()) == Param::PARAM_I_COR) {
 				min = 0;
 				val = sParam.measParam.getCurrentOut();
 				if ((val < min) || (val > max)) {
@@ -4907,7 +4906,7 @@ void clMenu::enterParameter() {
 					val = 0;
 					max = 0;
 				}
-			} else if (lp->getParamType() == Param::PARAM_U_COR) {
+            } else if (getParamType(lp->getParam()) == Param::PARAM_U_COR) {
 				min = 0;
 				val = sParam.measParam.getVoltageOut();
 				if ((val < min) || (val > max)) {
@@ -4925,17 +4924,16 @@ void clMenu::enterParameter() {
 			EnterParam.setParam(lp->getParam());
 			EnterParam.setValueRange(min, max);
 			EnterParam.setValue(val);
-			EnterParam.list = lp->getListOfValues();
-			EnterParam.setFract(lp->getFract());
-			EnterParam.setDisc(lp->getDisc());
-//			EnterParam.setDopValue(lp->getSendDop());
+            EnterParam.list = getListOfValues(lp->getParam());
+            EnterParam.setFract(getFract(lp->getParam()));
+            EnterParam.setDisc(getDisc(lp->getParam()));
 		}
     }
 }
 
 void clMenu::saveParam()
 {
-    eGB_COM com = sParam.local.getCom();
+    eGB_COM com = getCom(sParam.local.getParam());
 
     // Если у параметра есть команда обмена с блоком БСП, идет
     // работа по записи в БСП.
@@ -4950,10 +4948,10 @@ void clMenu::saveParam()
 void clMenu::saveParamToBsp(eGB_COM com)
 {
     // Подготовка данных для записи в БСП.
-    uint8_t dop = sParam.local.getSendDop();
+    uint8_t dop = getSendDop(sParam.local.getParam());
     uint8_t pos = sParam.local.getNumOfCurrSameParam() - 1;
 
-    switch(sParam.local.getSendType()) {
+    switch(getSendType(sParam.local.getParam())) {
         case GB_SEND_INT8: {
             sParam.txComBuf.setInt8(EnterParam.getValueEnter());
         } break;
@@ -5033,7 +5031,7 @@ void clMenu::saveParamToBsp(eGB_COM com)
     if (com != GB_COM_NO) {
         com = (eGB_COM) (com + GB_COM_MASK_GROUP_WRITE_PARAM);
         sParam.txComBuf.addFastCom(com);
-        sParam.txComBuf.setSendType(sParam.local.getSendType());
+        sParam.txComBuf.setSendType(getSendType(sParam.local.getParam()));
     }
 }
 
@@ -5045,8 +5043,7 @@ void clMenu::saveParamToRam()
         int16_t value = EnterParam.getValueEnter();
 
         if (param == GB_PARAM_IS_USER) {
-            // FIXME Смена должна быть с паролем!
-            sParam.security.User.set((TUser::USER) (value));
+            sParam.security.User.set((TUser::user_t) (value));
         }
     }
 }
@@ -5067,10 +5064,15 @@ void clMenu::setupParam() {
                     EnterParam.setParam(GB_PARAM_IS_PWD);
                     EnterParam.setValueRange(1, 8);
                 } else if (EnterParam.getParam() == GB_PARAM_IS_PWD) {
-                   TUser::USER user = (TUser::USER) EnterParam.last.val;
+                   TUser::user_t user = (TUser::user_t) EnterParam.last.val;
                    if (checkPwd(user, EnterParam.getValuePwd())) {
                        saveParam();
                    } else {
+                       if (user == TUser::user_t::ADMIN) {
+                           sParam.security.pwdAdmin.incCounter();
+                       } else if (user == TUser::user_t::ENGINEER) {
+                           sParam.security.pwdEngineer.incCounter();
+                       }
                        setMessage(MSG_WRONG_PWD);
                    }
                    EnterParam.setDisable();
@@ -5107,7 +5109,7 @@ void clMenu::setupParam() {
 
 	// подмена команды, на команду текущего уровня меню + быстрая команда
 	if (sParam.local.getState() == LocalParams::STATE_READ_PARAM) {
-		eGB_COM com = sParam.local.getCom();
+        eGB_COM com = getCom(sParam.local.getParam());
 		sParam.txComBuf.addFastCom(com);
 		sParam.txComBuf.addCom1(com, 1);
 	}

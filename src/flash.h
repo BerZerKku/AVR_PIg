@@ -7,6 +7,8 @@
 
 #include <avr/pgmspace.h>
 #include "glbDefine.h"
+#include "paramDef.h"
+#include "paramGlb.h"
 #include "flashParams.h"
 
 /// Пустая строка.

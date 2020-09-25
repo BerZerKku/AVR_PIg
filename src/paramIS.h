@@ -41,7 +41,15 @@ public:
         return check;
     }
 
-    /** Устанавливает счетчик ошибочных вводов.
+    /** Возвращает значение пароля.
+     *
+     *  @return Пароль.
+     */
+    uint8_t* get() {
+        return pwd_;
+    }
+
+    /** Устанавливает счетчик ввода неверного пароля.
      *
      *  @param[in] value Значение.
      */
@@ -51,17 +59,22 @@ public:
         return (value == counter_);
     }
 
-    /** Возвращает значение пароля.
-     *
-     *  @return Пароль.
-     */
-    uint8_t* get() {
-        return pwd_;
+    /// Уменьшает счетчик ввода неверного пароля.
+    void decCounter() {
+        if (counter_ > 0) {
+            counter_--;
+        }
     }
 
-    /** Возвращает количество ошибочных вводов пароля.
+    void incCounter() {
+        if (counter_ < PWD_CNT_BLOCK) {
+            counter_++;
+        }
+    }
+
+    /** Возвращает значение счетчика ввода неверного пароля.
      *
-     *  @return Количество ошибочных вводов пароля.
+     *  @return Значение  счетчика.
      */
     uint8_t getCounter() const {
         return counter_;
@@ -102,7 +115,7 @@ class TUser {
 public:
 
     // пользователь
-    enum USER {
+    enum user_t {
         MIN = 0,        //
         OPERATOR = 0,   // Оператор
         ENGINEER,       // Инженер
@@ -119,7 +132,7 @@ public:
      * 	@param val Пользователь.
      * 	@return False в случае ошибочного значения.
      */
-    bool set(USER val) {
+    bool set(user_t val) {
         if ((val >= MIN) && (val < MAX)) {
             user_ = val;
         }
@@ -130,12 +143,12 @@ public:
      *
      * 	@return Пользователь.
      */
-    USER get() const {
+    user_t get() const {
         return user_;
     }
 
 private:
-    USER user_;
+    user_t user_;
 };
 
 class TIsEvent {

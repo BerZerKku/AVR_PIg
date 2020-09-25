@@ -64,7 +64,7 @@ bool clProtocolBspS::getData(bool pc) {
 			stat = getGlbCommand(com, pc);				// команды общие
 
 		LocalParams *lp = &sParam_->local;
-		if (com == lp->getCom()) {
+        if (com == getCom(lp->getParam())) {
 			// по умолчанию загружается значение первого байта,
 			// на отличные от этого параметры далее ведется проверка
 			int16_t val = -1000;
@@ -90,21 +90,21 @@ bool clProtocolBspS::getData(bool pc) {
                 } break;
 				default:
 					uint8_t pos = B1;
-
 					// смещение в зависимости от номера однотипного параметра
-					if (lp->getParamType() == Param::PARAM_BITES) {
+                    if (getParamType(lp->getParam()) == Param::PARAM_BITES) {
 						pos += (lp->getNumOfCurrSameParam() - 1) / 8;
 					} else {
 						pos += lp->getNumOfCurrSameParam() - 1;
 					}
 
-					if (lp->getSendDop() != 0) {
-						pos += lp->getSendDop() - 1;
+                    if (getSendDop(lp->getParam()) != 0) {
+                        pos += getSendDop(lp->getParam()) - 1;
 					}
 
 					// приведение к знаковому типу, в случае если возможно
 					// отрицательное значение параметра
-					val = (lp->getMin() < 0) ? (int8_t) buf[pos] : buf[pos];
+                    val = (getMin(lp->getParam()) < 0) ?
+                               (int8_t) buf[pos] : buf[pos];
 					break;
 			}
 

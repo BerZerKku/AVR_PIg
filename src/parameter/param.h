@@ -8,7 +8,6 @@
 //typedef struct Param Param_t PROGMEM;
 
 struct Param {
-
 	/// –азмернось параметра (св€зана с fcDimension)
 	typedef enum {
 		DIM_NO = 0,		///< Ќет
@@ -97,5 +96,44 @@ struct Param {
     CHANGE_REG changeReg;	///< Ќеобходимый режим дл€ изменени€ параметра.
     CHANGE_USER changeUser; ///< ћинимальный пользователь дл€ изменени€ параметра.
 };
+
+extern const Param *fParams[] PROGMEM;
+
+// ¬озвращает указатель на структуру параметра.
+extern Param const *getPtrParam(eGB_PARAM pn);
+
+// ¬озвращает абсолютный максимум значени€ параметра.
+extern int16_t getAbsMax(eGB_PARAM pn);
+// ¬озвращает абсолютный максимум количества однотипных параметров.
+extern int16_t getAbsMaxNumOfSameParams(eGB_PARAM pn);
+// ¬озвращает требование к режиму дл€ изменени€ параметра.
+extern Param::CHANGE_REG getChangeReg(eGB_PARAM pn);
+// ¬озвращает необходимого пользовател€ дл€ изменени€ параметра.
+extern Param::CHANGE_USER getChangeUser(eGB_PARAM pn);
+// ¬озвращает команду стандартного протокола дл€ параметр.
+extern eGB_COM getCom(eGB_PARAM pn);
+// ¬озвращает зависимость максимума дл€ параметра.
+extern Param::DEPEND_MAX getDependMax(eGB_PARAM pn);
+// ¬озвращает зависимость повторений дл€ параметра.
+extern Param::DEPEND_SAME getDependSame(eGB_PARAM pn);
+// ¬озвращает размерность параметра.
+extern Param::DIMENSION getDim(eGB_PARAM pn);
+// ¬озвращает дискретность дл€ значени€ параметра.
+extern uint8_t getDisc(eGB_PARAM pn);
+// ¬озвращает множитель значени€ дл€ параметра.
+extern uint8_t getFract(eGB_PARAM pn);
+// ¬озвращает указатель на начало списка значений параметра.
+extern PGM_P getListOfValues(eGB_PARAM pn);
+// ¬озвращает минимум значени€ параметра.
+extern int16_t getMin(eGB_PARAM pn);
+// ¬озвращает указатель на строку с названием параметра.
+extern PGM_P getNameOfParam(eGB_PARAM pn);
+extern Param::PARAM_TYPE getParamType(eGB_PARAM pn);
+// ¬озвращает тип диапазона значений дл€ параметра.
+extern Param::RANGE_TYPE getRangeType(eGB_PARAM pn);
+// ¬озвращает значение байта доп. информации дл€ сохранени€ нового значени€.
+extern uint8_t getSendDop(eGB_PARAM pn);
+// ¬озвращает тип параметра дл€ сохранени€ нового значени€.
+extern eGB_SEND_TYPE getSendType(eGB_PARAM pn);
 
 #endif /* PARAM_H_ */
