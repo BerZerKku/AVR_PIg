@@ -50,6 +50,7 @@ void TEnterParam::setDisable() {
 	disc_ = 1;
 	param_ = GB_PARAM_NULL_PARAM;
     clearPwd();
+    clearSetting();
 }
 
 //
@@ -151,7 +152,7 @@ uint8_t TEnterParam::getMaxDigitNumber(eMENU_ENTER_PARAM s) const
     if ((s == MENU_ENTER_PARAM_LIST) || (s == MENU_ENTER_PARAM_LIST_2)) {
         num = 1;
     } else if ((s == MENU_ENTER_PASSWORD) || (s == MENU_ENTER_PASSWORD_NEW)) {
-        num = max_;
+        num = static_cast<uint8_t> (max_);
     } else {
         int16_t max = max_ / 10;
         while(max > 0) {
@@ -175,4 +176,22 @@ void TEnterParam::clearPwd()
         pwd_[i] = '0';
     }
     pwd_[PWD_LEN] = '\0';
+}
+
+//
+void TEnterParam::saveSettings()
+{
+    last.param = param_;
+    last.com = com;
+    last.val = val_;
+    last.dopValue = dopValue_;
+}
+
+//
+void TEnterParam::clearSetting()
+{
+    last.param = eGB_PARAM::GB_PARAM_MAX;
+    last.com = eGB_COM::GB_COM_NO;
+    last.val = 0;
+    last.dopValue = 0;
 }

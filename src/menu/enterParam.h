@@ -12,7 +12,15 @@
 #include "paramGlb.h"
 
 // Настройки необходимые для ввода нового значения параметра.
-class TEnterParam {
+class TEnterParam { 
+    // Структура параметров для предыдущего ввода.
+    struct last_t {
+        eGB_PARAM param;
+        eGB_COM com;
+        int16_t val;
+        uint16_t dopValue;
+    };
+
 public:
 	/**	Конструктор.
 	 */
@@ -162,7 +170,15 @@ public:
 	// установка флага окончания ввода параметра
 	void setEnterValueReady(eMENU_ENTER_PARAM status = MENU_ENTER_PARAM_READY) {
 		status_ = status;
-	}
+
+        if (param_ != eGB_PARAM::GB_PARAM_IS_PWD) {
+            saveSettings();
+        }
+
+        qDebug() << "last.com = " << last.com <<
+                    "last.param = " << last.param <<
+                    "last.val = " << last.val;
+    }
 
 	// указатель на первый элемент списка
 	PGM_P list;
@@ -172,6 +188,9 @@ public:
 
 	// команда на передачу
 	eGB_COM com;
+
+    // Значения предыдущего ввода.
+    last_t last;
 
 private:
 	// текущее значение
@@ -209,6 +228,12 @@ private:
 
     /// Сбрасывает значение пароля в "ноль".
     void clearPwd();
+
+    /// Сохраняет настройки ввода.
+    void saveSettings();
+
+    /// Очищает настройки ввода.
+    void clearSetting();
 };
 
 

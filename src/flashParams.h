@@ -2259,6 +2259,7 @@ static const Param fRingComTr PROGMEM = {
         Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
+// Роль пользователя
 static const Param fUser PROGMEM = {
         "Роль",                 // название параметра
         GB_COM_NO,				// команда стандартного протокола
@@ -2271,7 +2272,7 @@ static const Param fUser PROGMEM = {
         SIZE_OF(fcUser),        // максимальное значение
         1,						// дискретность
         1,						// множитель для стандартного протокола
-        GB_SEND_DOP_PWD,		// тип параметра для сохранения новго значения
+        GB_SEND_NO,             // тип параметра для сохранения новго значения
         1,						// байт дополнительной информации для сохранения
         Param::DEPEND_MAX_NO,	// заивимость максимума
         Param::DEPEND_SAME_NO,	// зависимость повторений
@@ -2279,6 +2280,28 @@ static const Param fUser PROGMEM = {
         Param::CHANGE_USER_NO   // пользователь для изменения
 };
 
+// Пароль локальный, т.е. для выбора роли
+static const Param fPwd PROGMEM = {
+        "Пароль",               // название параметра
+        GB_COM_NO,              // команда стандартного протокола
+        Param::PARAM_PWD,       // тип параметра
+        Param::RANGE_PWD,       // диапазон измнения
+        Param::DIM_NO,			// размерность
+        fcNullBuf,              // массив значений
+        0,						// кол-во повторений параметра
+        1,                      // минимальное значение
+        8,                      // максимальное значение
+        1,						// дискретность
+        1,						// множитель для стандартного протокола
+        GB_SEND_NO,             // тип параметра для сохранения новго значения
+        9,						// байт дополнительной информации для сохранения
+        Param::DEPEND_MAX_NO,	// заивимость максимума
+        Param::DEPEND_SAME_NO,	// зависимость повторений
+        Param::CHANGE_REG_NO,   // режим для изменения
+        Param::CHANGE_USER_NO   // пользователь для изменения
+};
+
+// Пароль инженера
 static const Param fPwdEngineer PROGMEM = {
         "Пароль инженера",      // название параметра
         GB_COM_GET_NET_ADR,     // команда стандартного протокола
@@ -2299,6 +2322,7 @@ static const Param fPwdEngineer PROGMEM = {
         Param::CHANGE_USER_ENGINEER   // пользователь для изменения
 };
 
+// Пароль администратора
 static const Param fPwdAdmin PROGMEM = {
         "Пароль администр.",    // название параметра
         GB_COM_GET_NET_ADR,     // команда стандартного протокола
@@ -2427,6 +2451,7 @@ static const Param* fParams[] PROGMEM  = {
         &fRingComTr,
         // Параметры информационной безопасности
         &fUser,
+        &fPwd,
         &fPwdEngineer,
         &fPwdAdmin
 };

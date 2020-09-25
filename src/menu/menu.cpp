@@ -4234,6 +4234,7 @@ void clMenu::lvlUser() {
 //
 eMENU_ENTER_PARAM clMenu::inputValue() {
     static char strInput[] PROGMEM = "Ввод: ";
+    static char strInputPwd[] PROGMEM = "Пароль: ";
 #ifdef AVR
     static char strListValue_P[] PROGMEM = "%S";
 #else
@@ -4243,14 +4244,20 @@ eMENU_ENTER_PARAM clMenu::inputValue() {
     static char strStrValue[] PROGMEM = "%s";
     static char strFloatValue[] PROGMEM = "%01u.%01u";
 
-    clearLine(NUM_TEXT_LINES);
-
+    eMENU_ENTER_PARAM status = EnterParam.getStatus();
     uint8_t posstart = 5*ROW_LEN;
-    posstart += snprintf_P(&vLCDbuf[posstart], ROW_LEN+1, strInput);
     uint8_t posstop = posstart;
 
+    clearLine(NUM_TEXT_LINES);
+
+    if (status == MENU_ENTER_PASSWORD) {
+        posstart += snprintf_P(&vLCDbuf[posstart], ROW_LEN+1, strInputPwd);
+    } else {
+        posstart += snprintf_P(&vLCDbuf[posstart], ROW_LEN+1, strInput);
+    }
+    posstop = posstart;
+
     // FIXME Исправить проверку выхода за пределы строки!
-	eMENU_ENTER_PARAM status = EnterParam.getStatus();    
 	if (status == MENU_ENTER_PARAM_INT) {
 		int16_t val = EnterParam.getValue();
         posstop += snprintf_P(&vLCDbuf[posstart], ROW_LEN+1, strIntValue, val);
@@ -4794,6 +4801,60 @@ bool clMenu::checkChangeUser(Param::CHANGE_USER chuser) const
     return check;
 }
 
+bool clMenu::checkPwd(TUser::USER user, const uint8_t *pwd)
+{
+    bool check = false;
+    uint8_t *opwd = nullptr;
+
+    QString msg;
+    msg += QString("User = %1").arg(user);
+
+    for(uint8_t i = 0; i < PWD_LEN; i++) {
+        msg += QString("%1").arg(pwd[i]);
+    }
+
+    qDebug() << msg;
+
+    switch(user) {
+        case TUser::USER::OPERATOR: {
+            check = true;
+        } break;
+        case TUser::USER::ADMIN: {
+            opwd = sParam.security.pwdAdmin.get();
+        } break;
+        case TUser::USER::ENGINEER: {
+            opwd = sParam.security.pwdEngineer.get();
+        } break;
+        case TUser::USER::MAX: {
+            check = false;
+        } break;
+    }
+
+    if (opwd != nullptr) {
+        check = true;
+        for(uint8_t i = 0; i < PWD_LEN; i++) {
+            check = check && (opwd[i] == pwd[i]);
+        }
+    }
+
+    return check;
+}
+
+// Проверяет необходимость ввода пароля после изменения параметра.
+bool clMenu::checkPwdReq(eGB_PARAM param, int16_t value) const
+{
+    bool check = false;
+
+    if ((param == GB_PARAM_IS_USER) && (value != TUser::USER::OPERATOR)) {
+        if  (value != sParam.security.User.get()) {
+            check = true;
+        }
+    }
+
+    return check;
+}
+
+
 
 // Настройка параметров для ввода значения с клавиатуры.
 void clMenu::enterParameter() {
@@ -5000,8 +5061,23 @@ void clMenu::setupParam() {
 
         if (EnterParam.isEnable()) {
             if ((this->*enterFunc)() == MENU_ENTER_PARAM_READY) {
-                saveParam();
-                EnterParam.setDisable();
+                if (checkPwdReq(EnterParam.getParam(), EnterParam.getValue())) {
+                    EnterParam.setEnable(MENU_ENTER_PASSWORD);
+                    enterFunc = &clMenu::inputValue;
+                    EnterParam.setParam(GB_PARAM_IS_PWD);
+                    EnterParam.setValueRange(1, 8);
+                } else if (EnterParam.getParam() == GB_PARAM_IS_PWD) {
+                   TUser::USER user = (TUser::USER) EnterParam.last.val;
+                   if (checkPwd(user, EnterParam.getValuePwd())) {
+                       saveParam();
+                   } else {
+                       setMessage(MSG_WRONG_PWD);
+                   }
+                   EnterParam.setDisable();
+                } else {
+                    saveParam();
+                    EnterParam.setDisable();
+                }
             }
         }
     }

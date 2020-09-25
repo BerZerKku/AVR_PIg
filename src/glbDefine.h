@@ -485,6 +485,7 @@ typedef enum {
     GB_PARAM_RING_COM_TR,		///< переназначение команд дискретных входов
     // параметры Информационной безопасности
     GB_PARAM_IS_USER,           ///< пользователь
+    GB_PARAM_IS_PWD,            ///< текущий пароль
     GB_PARAM_IS_PWD_ENGINEER,   ///< пароль инженера
     GB_PARAM_IS_PWD_ADMIN,      ///< пароль администратора
     GB_PARAM_IS_PWD_ERR_CNT,    ///< счетчик ввода неверного пароля
