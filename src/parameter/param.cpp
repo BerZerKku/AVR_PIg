@@ -134,7 +134,7 @@ int16_t getMin(eGB_PARAM pn) {
  * 	@return Указатель на строку с названием параметра.
  */
 PGM_P getNameOfParam(eGB_PARAM pn) {
-    return static_cast<PGM_P> (pgm_read_ptr(&getPtrParam(pn)->name));
+    return (PGM_P) &getPtrParam(pn)->name;
 }
 
 /** Возвращает тип параметра.

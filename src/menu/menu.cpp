@@ -4701,8 +4701,13 @@ void clMenu::printValue(uint8_t pos) {
 		if (blink_) {
 			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("ошибка!!!"));
 		} else {
-            // FIXME Для пароля будет выведено левое значение! Его не должно быть!
-			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("%d"), val);
+			if (getParamType(sParam.local.getParam()) == Param::PARAM_PWD) {
+				for(uint8_t i = 0; i < sParam.local.getMax(); i++) {
+					vLCDbuf[pos++] = '*';
+				}
+			} else {
+				snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("%d"), val);
+			}
 		}
 	} else if (state == LocalParams::STATE_READ_PARAM) {
 		if (blink_) {
