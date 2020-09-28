@@ -128,6 +128,7 @@ extern PGM_P getListOfValues(eGB_PARAM pn);
 extern int16_t getMin(eGB_PARAM pn);
 // Возвращает указатель на строку с названием параметра.
 extern PGM_P getNameOfParam(eGB_PARAM pn);
+// Возвращает тип параметра.
 extern Param::PARAM_TYPE getParamType(eGB_PARAM pn);
 // Возвращает тип диапазона значений для параметра.
 extern Param::RANGE_TYPE getRangeType(eGB_PARAM pn);

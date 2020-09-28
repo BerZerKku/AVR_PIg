@@ -174,10 +174,6 @@ public:
         if (param_ != eGB_PARAM::GB_PARAM_IS_PWD) {
             saveSettings();
         }
-
-        qDebug() << "last.com = " << last.com <<
-                    "last.param = " << last.param <<
-                    "last.val = " << last.val;
     }
 
 	// указатель на первый элемент списка

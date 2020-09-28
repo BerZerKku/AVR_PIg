@@ -137,7 +137,7 @@ PGM_P getNameOfParam(eGB_PARAM pn) {
     return static_cast<PGM_P> (pgm_read_ptr(&getPtrParam(pn)->name));
 }
 
-/** Возвращает тип параметра
+/** Возвращает тип параметра.
  *
  *  @param[in] pn Параметр.
  * 	@return Тип параметра.

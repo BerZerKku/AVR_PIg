@@ -2133,9 +2133,9 @@ static const Param fPwdAdmin PROGMEM = {
 
 // Счетчик ввода неверного пароля инженера
 static const Param fPwdEngineerCnt PROGMEM = {
-        "Ош. ввода инженера",     // название параметра
+        "Ош. ввода инженера",   // название параметра
         GB_COM_GET_NET_ADR,     // команда стандартного протокола
-        Param::PARAM_NO,        // тип параметра
+        Param::PARAM_INT,       // тип параметра
         Param::RANGE_INT,       // диапазон изменения
         Param::DIM_NO,			// размерность
         fcNullBuf,              // массив значений
@@ -2156,7 +2156,7 @@ static const Param fPwdEngineerCnt PROGMEM = {
 static const Param fPwdAdminCnt PROGMEM = {
         "Ош. ввода админа",     // название параметра
         GB_COM_GET_NET_ADR,     // команда стандартного протокола
-        Param::PARAM_NO,        // тип параметра
+        Param::PARAM_INT,       // тип параметра
         Param::RANGE_INT,       // диапазон изменения
         Param::DIM_NO,			// размерность
         fcNullBuf,              // массив значений
