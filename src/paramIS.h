@@ -8,9 +8,7 @@
 #ifndef PARAMIS_H_
 #define PARAMIS_H_
 
-#include "src/glbDefine.h"
-#include <cstdint>
-#include <climits>
+#include "glbDefine.h"
 
 /// Пароль.
 class TPwd {

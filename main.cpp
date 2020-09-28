@@ -4,13 +4,10 @@
  *  Created on: 03.04.2012
  *      Author: Хозяин
  */ 
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <avr/wdt.h>
-#include <avr/eeprom.h>
+#include <avr.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "debug.h"
+#include "debug.hpp"
 #include "glbDefine.h"
 #include "ks0108.h"
 #include "menu.h"
@@ -357,7 +354,6 @@ main(void) {
 	// проводится до включения прерываний, чтобы ничего не мешало
 	eeprom_read_block(&eeprom, (sEeprom*) EEPROM_START_ADDRESS, sizeof(eeprom));
 	EEAR = 0;	// сброс адреса ЕЕПРОМ в 0, для защиты данных
-	menu.sParam.password.init(eeprom.password);
 	menu.sParam.Uart.Interface.set(eeprom.interface);
 	menu.sParam.Uart.Protocol.set(eeprom.protocol);
 	menu.sParam.Uart.BaudRate.set(eeprom.baudRate);
@@ -410,9 +406,6 @@ main(void) {
 					setInterface(&menu.sParam.Uart);
 				}
 
-				// считывание текущего пароля в буфер ЕЕПРОМ
-				eeprom.password = menu.sParam.password.get();
-
 				// установка сетевого адреса
 				uint8_t nadr = menu.sParam.glb.getNetAddress();
 				if (protPCm.getAddressLan() != nadr) {
@@ -432,7 +425,7 @@ main(void) {
 			// где 100 - время рабочего цикла
 			if (++cnt_lcd >= (MENU_TIME_CYLCE / TIME_CYLCE)) {
 				cnt_lcd = 0;
-				menu.main();
+				menu.proc();
 			}
 
 			cnt_wdt++;

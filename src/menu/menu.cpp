@@ -5,10 +5,7 @@
  *      Author: ’оз€ин
  */
 #include <stdio.h>
-
-#ifdef AVR
-#include "debug.h"
-#endif
+#include "debug.hpp"
 
 #include "menu.h"
 #include "ks0108.h"
@@ -4750,7 +4747,6 @@ void clMenu::printValue(uint8_t pos) {
 						dim);
             } break;
             case Param::PARAM_PWD: {
-                qDebug("Password = %s", sParam.local.getValuePwd());
                 for(uint8_t i = 0; i < sParam.local.getMax(); i++) {
                     vLCDbuf[pos++] = '*';
                 }
@@ -4805,26 +4801,17 @@ bool clMenu::checkPwd(TUser::user_t user, const uint8_t *pwd)
     bool check = false;
     uint8_t *opwd = nullptr;
 
-    QString msg;
-    msg += QString("User = %1: input password = ").arg(user);
-
-    for(uint8_t i = 0; i < PWD_LEN; i++) {
-        msg += QString("%1").arg(QChar(pwd[i]));
-    }
-
-    qDebug() << msg;
-
     switch(user) {
-        case TUser::user_t::OPERATOR: {
+        case TUser::OPERATOR: {
             check = true;
         } break;
-        case TUser::user_t::ADMIN: {
+        case TUser::ADMIN: {
             opwd = sParam.security.pwdAdmin.get();
         } break;
-        case TUser::user_t::ENGINEER: {
+        case TUser::ENGINEER: {
             opwd = sParam.security.pwdEngineer.get();
         } break;
-        case TUser::user_t::MAX: {
+        case TUser::MAX: {
             check = false;
         } break;
     }
@@ -4844,7 +4831,7 @@ bool clMenu::checkPwdReq(eGB_PARAM param, int16_t value) const
 {
     bool check = false;
 
-    if ((param == GB_PARAM_IS_USER) && (value != TUser::user_t::OPERATOR)) {
+    if ((param == GB_PARAM_IS_USER) && (value != TUser::OPERATOR)) {
         if  (value != sParam.security.User.get()) {
             check = true;
         }
@@ -5068,9 +5055,9 @@ void clMenu::setupParam() {
                    if (checkPwd(user, EnterParam.getValuePwd())) {
                        saveParam();
                    } else {
-                       if (user == TUser::user_t::ADMIN) {
+                       if (user == TUser::ADMIN) {
                            sParam.security.pwdAdmin.incCounter();
-                       } else if (user == TUser::user_t::ENGINEER) {
+                       } else if (user == TUser::ENGINEER) {
                            sParam.security.pwdEngineer.incCounter();
                        }
                        setMessage(MSG_WRONG_PWD);

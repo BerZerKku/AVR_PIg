@@ -8,7 +8,7 @@
 #ifndef PARAMGLB_H_
 #define PARAMGLB_H_
 
-#include "src/glbDefine.h"
+#include "glbDefine.h"
 
 /// ОБЩИЕ
 /// номер аппарата

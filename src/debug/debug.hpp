@@ -1,14 +1,14 @@
 /*
- * debug.h
+ * debug.hpp
  *
  *  Created on: 27.04.2012
  *      Author: ’оз€ин
  */
 
-#ifndef DEBUG_H_
-#define DEBUG_H_
+#ifndef DEBUG_HPP_
+#define DEBUG_HPP_
 
-#ifdef DEBUG
+#if defined(DEBUG) && defined(AVR)
 
 #include <avr/io.h>
 
@@ -54,4 +54,4 @@ extern stDebug sDebug;
 
 #endif
 
-#endif /* DEBUG_H_ */
+#endif /* DEBUG_HPP_ */

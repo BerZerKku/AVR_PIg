@@ -7,7 +7,7 @@
  * @return ”казатель на структуру параметра.
  */
 Param const * getPtrParam(eGB_PARAM pn) {
-    return static_cast<Param const*> (pgm_read_ptr(&fParams[pn]));
+    return (Param const*) (pgm_read_ptr(&fParams[pn]));
 }
 
 /** ¬озвращает абсолютный максимум значени€ параметра.

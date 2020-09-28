@@ -16,13 +16,8 @@
 #define GLBDEF_H_
 
 #include <stdint.h>
-
-#ifndef MY_TESTS
-	#include <avr/pgmspace.h>
-	#include "debug.h"
-#else
-    #include "wrapper.hpp"
-#endif
+#include "avr.h"
+#include "debug.hpp"
 
 /// размер массива
 #define SIZE_OF(mas) (sizeof(mas) / sizeof(mas[0]))

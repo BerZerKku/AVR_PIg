@@ -11,15 +11,8 @@
 #include "CIec101.h"
 #include "glbDefine.h"
 #include "paramBsp.h"
-
-
-#ifdef AVR
-	#include "debug.h"
-	#include <avr/pgmspace.h>
-#else
-	#define PROGMEM
-	#define pgm_read_byte(a) (*a)
-#endif
+#include "avr.h"
+#include "debug.hpp"
 
 /**	\defgroup Notation Стиль оформления.
  *

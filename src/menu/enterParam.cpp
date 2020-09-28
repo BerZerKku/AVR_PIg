@@ -190,8 +190,8 @@ void TEnterParam::saveSettings()
 //
 void TEnterParam::clearSetting()
 {
-    last.param = eGB_PARAM::GB_PARAM_MAX;
-    last.com = eGB_COM::GB_COM_NO;
+    last.param = GB_PARAM_MAX;
+    last.com = GB_COM_NO;
     last.val = 0;
     last.dopValue = 0;
 }

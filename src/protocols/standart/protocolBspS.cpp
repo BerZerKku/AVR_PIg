@@ -169,11 +169,6 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
                     num = addCom(com, num, sParam_->txComBuf.getBuferAddress());
                 } break;
                 case GB_SEND_DOP_PWD: {
-                    QString buf("Send pkg = ");
-                    uint8_t *b = sParam_->txComBuf.getBuferAddress();
-                    for(uint8_t i = 0; i < PWD_LEN; i++) {
-                        buf += QString("%1 ").arg(*b++, 2, 16, QLatin1Char('0'));
-                    }
                     num = PWD_LEN + 1;
                     num = addCom(com, num, sParam_->txComBuf.getBuferAddress());
                 } break;

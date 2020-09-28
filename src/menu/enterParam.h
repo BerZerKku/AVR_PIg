@@ -171,7 +171,7 @@ public:
 	void setEnterValueReady(eMENU_ENTER_PARAM status = MENU_ENTER_PARAM_READY) {
 		status_ = status;
 
-        if (param_ != eGB_PARAM::GB_PARAM_IS_PWD) {
+        if (param_ != GB_PARAM_IS_PWD) {
             saveSettings();
         }
     }
