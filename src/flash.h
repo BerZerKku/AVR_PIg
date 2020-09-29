@@ -5,7 +5,6 @@
  *      Author: ’оз€ин
  */
 
-#include "avr.h"
 #include "glbDefine.h"
 #include "paramDef.h"
 #include "paramGlb.h"

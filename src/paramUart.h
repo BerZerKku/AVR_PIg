@@ -8,6 +8,8 @@
 #ifndef PARAMUART_H_
 #define PARAMUART_H_
 
+#include <stdint.h>
+
 /// Интерфейс связи
 class TInterface {
 public:
