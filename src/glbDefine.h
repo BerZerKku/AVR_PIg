@@ -458,8 +458,7 @@ typedef enum {
 	GB_PARAM_PRD_COM_SIGNAL,	///< сигнализация команд ПРД
 	// параметры приемника
 	GB_PARAM_PRM_TIME_ON,		///< задержка на фиксацию команды (время включения)
-	GB_PARAM_PRM_TIME_ON_K400,	///< задержка на фиксацию команды (время включения) в К400
-	GB_PARAM_PRM_COM_BLOCK,		///< блокированные команды
+    GB_PARAM_PRM_COM_BLOCK,		///< блокированные команды
 	GB_PARAM_PRM_TIME_OFF,		///< задержка на выключение
 	GB_PARAM_PRM_DR_ENABLE,		///< трансляция ЦП
 	GB_PARAM_PRM_DR_COM_BLOCK,	///< блокированные команды ЦП

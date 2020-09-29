@@ -1598,27 +1598,6 @@ static const Param fPrmTimeOn PROGMEM = {
         Param::CHANGE_USER_ENGINEER // пользователь для изменения
 };
 
-// задержка на фиксацию команды (время включения) в К400
-static const Param fPrmTimeOnK400 PROGMEM = {
-        "Задержка на фикс.ком",	// название параметра
-        GB_COM_PRM_GET_TIME_ON,	// команда стандартного протокола
-        Param::PARAM_INT,		// тип параметра
-        Param::RANGE_INT,		// диапазон измнения
-        Param::DIM_MSEC,		// размерность
-        fcNullBuf,				// массив значений
-        1,						// кол-во повторений параметра
-        0,						// минимальное значение
-        10,						// максимальное значение
-        1,						// дискретность
-        1,						// множитель для стандартного протокола
-        GB_SEND_INT8,			// тип параметра для сохранения новго значения
-        1,						// байт дополнительной информации для сохранения
-        Param::DEPEND_MAX_NO,	// зависимость максимума
-        Param::DEPEND_SAME_NO,	// зависимость повторений
-        Param::CHANGE_REG_DISABLE,  // режим для изменения
-        Param::CHANGE_USER_ENGINEER // пользователь для изменения
-};
-
 // блокированные команды
 static const Param fPrmComBlock PROGMEM = {
         "Блокиров. команды",	// название параметра
@@ -2256,7 +2235,6 @@ const Param* fParams[] PROGMEM  = {
         &fPrdComSignal,
         // Параметры приемника
         &fPrmTimeOn,
-        &fPrmTimeOnK400,
         &fPrmComBlock,
         &fPrmTimeOff,
         &fPrmDrEnable,

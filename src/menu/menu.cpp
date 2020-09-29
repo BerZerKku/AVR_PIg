@@ -3123,7 +3123,7 @@ void clMenu::lvlSetupParamPrm() {
 			sParam.txComBuf.addCom2(GB_COM_PRM_GET_COM);
 
 			sParam.local.addParam(GB_PARAM_PRM_COM_NUMS);
-			sParam.local.addParam(GB_PARAM_PRM_TIME_ON_K400);
+            sParam.local.addParam(GB_PARAM_PRM_TIME_ON);
 			if (numcom != 0) {
 				sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK);
 				sParam.local.addParam(GB_PARAM_PRM_TIME_OFF);
@@ -3144,7 +3144,7 @@ void clMenu::lvlSetupParamPrm() {
 				sParam.local.addParam(GB_PARAM_PRM_INC_SAFETY);
 			}
 		} else if (device == AVANT_OPTO) {
-				sParam.local.addParam(GB_PARAM_PRM_TIME_ON_K400);
+                sParam.local.addParam(GB_PARAM_PRM_TIME_ON);
 				if (numcom != 0) {
 					sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK);
 					sParam.local.addParam(GB_PARAM_PRM_TIME_OFF);
