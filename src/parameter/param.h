@@ -106,7 +106,7 @@ extern Param const *getPtrParam(eGB_PARAM pn);
 // ¬озвращает абсолютный максимум значени€ параметра.
 extern int16_t getAbsMax(eGB_PARAM pn);
 // ¬озвращает абсолютный максимум количества однотипных параметров.
-extern int16_t getAbsMaxNumOfSameParams(eGB_PARAM pn);
+extern uint8_t getAbsMaxNumOfSameParams(eGB_PARAM pn);
 // ¬озвращает требование к режиму дл€ изменени€ параметра.
 extern Param::CHANGE_REG getChangeReg(eGB_PARAM pn);
 // ¬озвращает необходимого пользовател€ дл€ изменени€ параметра.

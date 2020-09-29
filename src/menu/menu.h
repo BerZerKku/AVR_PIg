@@ -75,10 +75,9 @@ class clMenu {
     };
 
     struct save_t {
-        eGB_COM com;
-        uint8_t dop;
-        uint8_t num;
-        uint8_t pwd[PWD_LEN];
+        eGB_COM com;            /// Команда
+        uint8_t number;         /// Дополнительный номер у параметра
+        uint8_t value[PWD_LEN]; /// Текущее значение
     };
 
 public:

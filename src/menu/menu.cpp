@@ -4963,8 +4963,7 @@ void clMenu::saveParamToBsp(eGB_COM com)
             sParam.txComBuf.setInt8(EnterParam.getValue(), 1);
         } break;
 
-        case GB_SEND_BITES_DOP:	// DOWN
-        case GB_SEND_DOP_BITES: {
+        case GB_SEND_BITES_DOP:	{
             uint8_t val = sParam.local.getValueB();
             if (EnterParam.getValue()) {
                 val |= (1 << (pos % 8));
@@ -4973,6 +4972,17 @@ void clMenu::saveParamToBsp(eGB_COM com)
             }
             sParam.txComBuf.setInt8(val, 0);
             sParam.txComBuf.setInt8(pos/8 + dop, 1);
+        } break;
+
+        case GB_SEND_DOP_BITES: {
+            uint8_t val = sParam.local.getValueB();
+            if (EnterParam.getValue()) {
+                val |= (1 << (pos % 8));
+            } else {
+                val &= ~(1 << (pos % 8));
+            }
+            sParam.txComBuf.setInt8(pos/8 + dop, 0);
+            sParam.txComBuf.setInt8(val, 1);
         } break;
 
         case GB_SEND_COR_U: {

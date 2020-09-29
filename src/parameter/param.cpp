@@ -28,8 +28,8 @@ int16_t getAbsMax(eGB_PARAM pn) {
  *  @param[in] pn ѕараметр.
  * 	@return јбсолютный максимум количества однотипных параметров.
  */
-int16_t getAbsMaxNumOfSameParams(eGB_PARAM pn) {
-    return static_cast<int16_t> (pgm_read_word(&getPtrParam(pn)->num));
+uint8_t getAbsMaxNumOfSameParams(eGB_PARAM pn) {
+    return pgm_read_byte(&getPtrParam(pn)->num);
 }
 
 /** ¬озвращает требование к режиму дл€ изменени€ параметра.
