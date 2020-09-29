@@ -5,7 +5,7 @@
  *      Author: ’оз€ин
  */
 
-#include <avr/pgmspace.h>
+#include "avr.h"
 #include "glbDefine.h"
 #include "paramDef.h"
 #include "paramGlb.h"

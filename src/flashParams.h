@@ -8,7 +8,7 @@
 #ifndef FLASHPARAMS_H_
 #define FLASHPARAMS_H_
 
-#include <avr/pgmspace.h>
+#include "avr.h"
 #include "glbDefine.h"
 #include "paramIS.h"
 #include "paramUart.h"
