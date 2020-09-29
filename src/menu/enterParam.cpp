@@ -30,11 +30,6 @@ bool TEnterParam::isEnable() {
 void TEnterParam::setEnable(eMENU_ENTER_PARAM s) {
 
 	if ((s >= MENU_ENTER_PARAM_INT) && (s <= MENU_ENTER_PASSWORD_NEW)) {
-		if ((s == MENU_ENTER_PARAM_LIST) || (s == MENU_ENTER_PARAM_LIST_2)) {
-			disc_ = 1;
-			fract_ = 1;
-        }
-
         clearPwd();
         digit_ = 1;
         digitMin_ = 1;
@@ -47,7 +42,6 @@ void TEnterParam::setEnable(eMENU_ENTER_PARAM s) {
 void TEnterParam::setDisable() {
 	status_ = MENU_ENTER_PARAM_NO;
 	com = GB_COM_NO;
-	disc_ = 1;
 	param_ = GB_PARAM_NULL_PARAM;
     clearPwd();
     clearSetting();
@@ -81,11 +75,6 @@ void TEnterParam::setValue(int16_t val) {
 //
 uint8_t *TEnterParam::getValuePwd() {
     return pwd_;
-}
-
-//
-int16_t TEnterParam::getValueEnter() const {
-    return ((val_ / disc_) * disc_) / fract_;
 }
 
 // Увеличение текущего значения.
@@ -182,16 +171,12 @@ void TEnterParam::clearPwd()
 void TEnterParam::saveSettings()
 {
     last.param = param_;
-    last.com = com;
     last.val = val_;
-    last.dopValue = dopValue_;
 }
 
 //
 void TEnterParam::clearSetting()
 {
     last.param = GB_PARAM_MAX;
-    last.com = GB_COM_NO;
     last.val = 0;
-    last.dopValue = 0;
 }

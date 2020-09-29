@@ -68,6 +68,7 @@ class clMenu {
         MSG_WRONG_USER,         ///< Недостаточно прав для изменения.
         MSG_WRONG_PWD,          ///< Введен не верный пароль.
         MSG_WRONG_DEVICE,       ///< Тип аппарата не определен.
+        MSG_BLOCK_USER,         ///< Выбор роли пользователя заблокирован.
         MSG_DISABLE,            ///< Нужно изменить режим на "Выведен".
         MSG_INIT,               ///< Инициализация.
         //
@@ -75,9 +76,35 @@ class clMenu {
     };
 
     struct save_t {
-        eGB_COM com;            /// Команда
+        eGB_PARAM param;        /// Параметр.
         uint8_t number;         /// Дополнительный номер у параметра
         uint8_t value[PWD_LEN]; /// Текущее значение
+
+        void set(uint8_t value) {
+            this->value[0] = value;
+        }
+
+        void set(int16_t value) {
+            *((int16_t *) this->value) = value;
+        }
+
+        void set(uint8_t *value) {
+            for(uint8_t i = 0; i < PWD_LEN; i++) {
+                this->value[i] = *value++;
+            }
+        }
+
+        int16_t getValue() const {
+            uint8_t disc = getDisc(param);
+            uint8_t fract = getFract(param);
+            int16_t value = *((int16_t *) this->value);
+
+            return ((value / disc) * disc) / fract;
+        }
+
+        uint8_t *getValueArray() {
+            return value;
+        }
     };
 
 public:
@@ -183,6 +210,9 @@ private:
 
 	// параметры для ввода новых значений
 	TEnterParam EnterParam;
+
+    // структура для сохранения параметра
+    save_t save;
 
 	//  настройки для соответствующих аппаратов
 	bool setDeviceK400();
@@ -308,6 +338,19 @@ private:
      */
     bool checkChangeReg() const;
 
+    /** Проверяет счетчик ошибочных вводов пароля для пользователя.
+     *
+     *  Если вводят нового пользователя, то проверяется его счетчик.
+     *  Если вводят другой параметр, проверяется текущий пользователь.
+     *
+     *  FIXME А какой другой параметр может быть?!
+     *
+     *  @param[in] param Параметр
+     *  @param[in] value Знаение параметра.
+     *  @return True если счетчик не достиг запрета ввода.
+     */
+    bool checkErrorCounterUser(eGB_PARAM param, int16_t value) const;
+
     /** Проверяет пользователя на возможность изменения параметра.
      *
      *  @param[in] chuser Необходимый пользователь.
@@ -387,6 +430,9 @@ private:
 
     /// Сохранят параметр в оперативной памяти.
     void saveParamToRam();
+
+    /// Работа блока информационной безопасности.
+    void security();
 
 	/** Работа в меню настройки параметров.
 	 *

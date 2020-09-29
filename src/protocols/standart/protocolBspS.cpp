@@ -502,8 +502,6 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
             stat = hdlrComGetVers(pc);
         } break;
 
-
-
 		case GB_COM_GET_NET_ADR: {
             stat = hdlrComGetNetAdr(pc);
         } break;
@@ -675,8 +673,8 @@ bool clProtocolBspS::hdlrComGetNetAdr(bool pc)
     if (buf[NUM] >= 25) {
         check &= sParam_->security.pwdEngineer.set(&buf[B8]); // bytes = PWD_LEN
         check &= sParam_->security.pwdAdmin.set(&buf[B16]); // bytes = PWD_LEN
-        check &= sParam_->security.pwdEngineer.set(&buf[B24]);
-        check &= sParam_->security.pwdEngineer.set(&buf[B25]);
+        check &= sParam_->security.pwdEngineer.setCounter(buf[B24]);
+        check &= sParam_->security.pwdAdmin.setCounter(buf[B25]);
     }
 
     return check;

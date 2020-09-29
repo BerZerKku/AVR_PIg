@@ -12,6 +12,10 @@
 
 /// Пароль.
 class TPwd {
+    /// время сборса ошибки ввода пароля
+//    static const uint16_t kTickToDecCounter = (600000UL / MENU_TIME_CYLCE);
+    static const uint16_t kTickToDecCounter = (10000UL / MENU_TIME_CYLCE);
+
 public:
 
     // Конструктор.
@@ -22,6 +26,7 @@ public:
             pwd_[i] = 0;
         }
         counter_ = PWD_CNT_BLOCK;
+        time_ = kTickToDecCounter;
     }
 
     /** Устанавливает новое значение пароля.
@@ -49,25 +54,28 @@ public:
 
     /** Устанавливает счетчик ввода неверного пароля.
      *
+     *  Если установленное значение больше текущего то будет "обнулено"
+     *  время до декремента текущего счетчика.
+     *
      *  @param[in] value Значение.
      */
     bool setCounter(uint8_t value) {
+        uint8_t tcounter= counter_;
         counter_ = (value <= PWD_CNT_BLOCK) ? value : PWD_CNT_BLOCK;
+        if (tcounter < counter_) {
+            time_ = kTickToDecCounter;
+        }
 
         return (value == counter_);
     }
 
-    /// Уменьшает счетчик ввода неверного пароля.
-    void decCounter() {
-        if (counter_ > 0) {
-            counter_--;
-        }
-    }
-
+    /// Увеличивает счетчик ошибок ввода пароля.
     void incCounter() {
         if (counter_ < PWD_CNT_BLOCK) {
             counter_++;
         }
+
+        time_ = kTickToDecCounter;
     }
 
     /** Возвращает значение счетчика ввода неверного пароля.
@@ -76,6 +84,21 @@ public:
      */
     uint8_t getCounter() const {
         return counter_;
+    }
+
+    /** Тик таймера сброса счетчика ввода неверного пароля.
+     *
+     *  @return true если значение было изменено.
+     */
+    bool timerTick() {
+        bool change = false;
+        time_ = (time_ > 0) ? time_ - 1 : kTickToDecCounter;
+        if ((time_ == 0) && (counter_ > 0)) {
+            counter_--;
+            change = true;
+        }
+
+        return change;
     }
 
 private:
@@ -107,6 +130,7 @@ private:
 
     uint8_t pwd_[PWD_LEN];
     uint8_t counter_;
+    uint16_t time_;
 };
 
 class TUser {

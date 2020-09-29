@@ -16,9 +16,7 @@ class TEnterParam {
     // Структура параметров для предыдущего ввода.
     struct last_t {
         eGB_PARAM param;
-        eGB_COM com;
         int16_t val;
-        uint16_t dopValue;
     };
 
 public:
@@ -91,9 +89,6 @@ public:
      */
     uint8_t *getValuePwd();
 
-    /// возвращает введеное значение с учетом дискретности и делителя
-    int16_t getValueEnter() const;
-
 	/** Увеличение текущего значения.
 	 *
 	 * 	@param velocity Скорость изменения значения (для ввода целых значений
@@ -149,20 +144,7 @@ public:
 	// установка дополнительного байта
 	void setDopValue(uint16_t byte) { dopValue_ = byte; }
 
-	// возвращает дополнительный байт
-	uint16_t getDopValue() const { return dopValue_; }
-
-	// установка дискретности
-	void setDisc(uint16_t disc) { disc_ = disc; }
-
-	// возвращает дискретность
-	uint16_t getDisc() const { return disc_; }
-
-	// установка делителя
-	void setFract(uint8_t fract) { fract_ = fract; }
-
-	// возвращает делитель
-	uint8_t getFract() const { return fract_; }
+    uint16_t getDopValue() const { return dopValue_;}
 
 	// возвращает текущий статус
 	eMENU_ENTER_PARAM getStatus() const { return status_; }
@@ -203,9 +185,6 @@ private:
 	// байт с дополнительой информацией
 	uint16_t dopValue_;
 
-	// дискретность
-	uint16_t disc_;
-
     // текущий выбранный разряд, начиная с 1
     uint8_t digit_;
     // максимальный разряд для изменения
@@ -213,8 +192,6 @@ private:
     // минимальный разряд для изменения
     uint8_t digitMin_;
 
-	// делитель
-	uint8_t fract_;
 
 	// текущий статус устройства
 	eMENU_ENTER_PARAM status_;

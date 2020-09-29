@@ -112,6 +112,7 @@ clMenu::clMenu() {
 #endif
 }
 
+//
 void clMenu::proc(void) {
 
 	static const char fcNoConnectBsp[] PROGMEM = " Нет связи с БСП!!! ";
@@ -171,6 +172,8 @@ void clMenu::proc(void) {
     if (lvlCreate_) {
         clrMessages();
     }
+
+    security();
 
     if (isMessage()) {
         key_ = KEY_NO;
@@ -1003,6 +1006,17 @@ bool clMenu::printMessage() {
                 "    Тип аппарата    ",
                 "   не определен!!!  "
             };
+            pmsg = (PGM_P) message;
+            nrows = SIZE_OF(message);
+        } break;
+
+        case MSG_BLOCK_USER: {
+            static const char message[][ROW_LEN+1] PROGMEM = {
+                //02345678901234567890
+                "     Выбор роли     ",
+                "    заблокирован    "
+            };
+            // TODO Добавить отображение времени до окончания блокировки!
             pmsg = (PGM_P) message;
             nrows = SIZE_OF(message);
         } break;
@@ -2817,41 +2831,10 @@ void clMenu::lvlRegime() {
         // При попытке перейти в режим "Выведен" из "Введен" или "Готов",
         // происходит запрос пароля. При ошибочном пароле выводится сообщение.
         if (EnterParam.isEnable()) {
-//            eMENU_ENTER_PARAM stat = EnterParam.getStatus();
-//            eGB_REGIME_ENTER val = GB_REGIME_ENTER_MAX;
-
-            // выбор функции ввода : пароль или параметр
-//            (this->*enterFunc)();
-
-//            if (stat == MENU_ENTER_PARAM_READY) {
-//                // проверим пароль, если пытаемся перейти в режим "Выведен"
-//                // из режимов "Введен" и "Готов"
-//                val = (eGB_REGIME_ENTER) EnterParam.getValueEnter();
-
-//                if ((reg == GB_REGIME_ENABLED) || (reg == GB_REGIME_READY)) {
-//                    if (val == GB_REGIME_ENTER_DISABLED) {
-//                        enterFunc = &clMenu::inputPassword;
-//                        EnterParam.setEnable(MENU_ENTER_PASSWORD);
-//                        EnterParam.setDopValue(static_cast<uint16_t>(val));
-//                        val = GB_REGIME_ENTER_MAX;
-//                    }
-//                }
-//            }
-
-//            if (stat == MENU_ENTER_PASSWORD_READY) {
-//                // проверка введеного пароля
-//                if (sParam.password.check(EnterParam.getValue())) {
-//                    val = static_cast<eGB_REGIME_ENTER>(EnterParam.getDopValue());
-//                } else {
-//                    setMessage(MSG_WRONG_PWD);
-//                    EnterParam.setDisable();
-//                }
-//            }
-
             if ((this->*enterFunc)() == MENU_ENTER_PARAM_READY) {
                 eGB_COM com = GB_COM_NO;
 
-                eGB_REGIME_ENTER val = (eGB_REGIME_ENTER) EnterParam.getValueEnter();
+                eGB_REGIME_ENTER val = (eGB_REGIME_ENTER) EnterParam.getValue();
                 if (val == GB_REGIME_ENTER_DISABLED) {
                     com = GB_COM_SET_REG_DISABLED;
                 } else if (val == GB_REGIME_ENTER_ENABLED) {
@@ -3583,11 +3566,8 @@ void clMenu::lvlSetupDT() {
         eMENU_ENTER_PARAM stat = inputValue();
 
 		if (stat == MENU_ENTER_PARAM_READY) {
-			// копирование введеного значение на свое место
-			//			sParam.txComBuf.setInt8(BIN_TO_BCD(EnterParam.getValueEnter()),
-			//					EnterParam.getDopValue());
-			uint8_t t = EnterParam.getDopValue();
-			uint8_t val = EnterParam.getValueEnter();
+            uint8_t t = EnterParam.getDopValue();
+            uint8_t val = EnterParam.getValue();
 			if (t <= 2) {
 				// ввод даты
 				// подменим сохраненное время на текущее
@@ -3619,8 +3599,9 @@ void clMenu::lvlSetupDT() {
 				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getDay()), 2);
 				sParam.txComBuf.addFastCom(EnterParam.com);
 			}
-			sParam.txComBuf.setInt8(0, 6);	// мс всегда 0
-			sParam.txComBuf.setInt8(0, 7);	//
+            sParam.txComBuf.setInt8(0, 6);	// мс всегда 0
+            sParam.txComBuf.setInt8(0, 7);	//
+            sParam.txComBuf.setInt8(0, 8);	//
 			EnterParam.setDisable();
 		}
 	} else
@@ -3669,8 +3650,6 @@ void clMenu::lvlSetupDT() {
 				EnterParam.setDopValue(5);
 			}
 			EnterParam.com = GB_COM_SET_TIME;
-			EnterParam.setDisc(1);
-			EnterParam.setFract(1);
 			// сохраним текущие значения даты и времени
 			// байты расположены в порядке передачи в БСП
 			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getYear()), 0);
@@ -3678,8 +3657,7 @@ void clMenu::lvlSetupDT() {
 			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getDay()), 2);
 			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getHour()), 3);
 			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMinute()), 4);
-			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getSecond()), 5);
-			sParam.txComBuf.setInt8(0, 8);	//
+            sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getSecond()), 5);
 			break;
 
 		case KEY_CANCEL:
@@ -4763,8 +4741,7 @@ void clMenu::printValue(uint8_t pos) {
 }
 
 //
-bool clMenu::checkChangeReg() const
-{
+bool clMenu::checkChangeReg() const {
     bool check = false;
     eGB_REGIME regime = sParam.glb.status.getRegime();
     Param::CHANGE_REG changereg = getChangeReg(sParam.local.getParam());
@@ -4781,8 +4758,37 @@ bool clMenu::checkChangeReg() const
     return check;
 }
 
-bool clMenu::checkChangeUser(Param::CHANGE_USER chuser) const
-{
+//
+bool clMenu::checkErrorCounterUser(eGB_PARAM param, int16_t value) const {
+    bool check = false;
+
+    if (param == GB_PARAM_IS_USER) {
+        TUser::user_t user = static_cast<TUser::user_t> (value);
+
+        switch(user) {
+            case TUser::OPERATOR: {
+                check = true;
+            } break;
+            case TUser::ENGINEER: {
+                uint8_t counter = sParam.security.pwdEngineer.getCounter();
+                check =  counter < getAbsMax(GB_PARAM_IS_PWD_ENG_CNT);
+            } break;
+            case TUser::ADMIN: {
+                uint8_t counter = sParam.security.pwdAdmin.getCounter();
+                check =  counter < getAbsMax(GB_PARAM_IS_PWD_ENG_CNT);
+            } break;
+            //
+            case TUser::MAX: {
+                check = false;
+            } break;
+        }
+    }
+
+    return check;
+}
+
+//
+bool clMenu::checkChangeUser(Param::CHANGE_USER chuser) const {
     bool check = false;
     TUser::user_t user = sParam.security.User.get();
 
@@ -4917,19 +4923,15 @@ void clMenu::enterParameter() {
 			EnterParam.setValueRange(min, max);
 			EnterParam.setValue(val);
             EnterParam.list = getListOfValues(lp->getParam());
-            EnterParam.setFract(getFract(lp->getParam()));
-            EnterParam.setDisc(getDisc(lp->getParam()));
 		}
     }
 }
 
-void clMenu::saveParam()
-{
-    eGB_COM com = getCom(sParam.local.getParam());
-
+void clMenu::saveParam() {
     // Если у параметра есть команда обмена с блоком БСП, идет
     // работа по записи в БСП.
     // Иначе идет запись в ЕЕПРОМ.
+    eGB_COM com = getCom(save.param);
     if (com != GB_COM_NO) {
         saveParamToBsp(com);
     } else {
@@ -4937,35 +4939,34 @@ void clMenu::saveParam()
     }
 }
 
-void clMenu::saveParamToBsp(eGB_COM com)
-{
+void clMenu::saveParamToBsp(eGB_COM com) {
     // Подготовка данных для записи в БСП.
-    uint8_t dop = getSendDop(sParam.local.getParam());
-    uint8_t pos = sParam.local.getNumOfCurrSameParam() - 1;
+    uint8_t dop = getSendDop(save.param);
+    uint8_t pos = save.number - 1;
 
-    switch(getSendType(sParam.local.getParam())) {
+    switch(getSendType(save.param)) {
         case GB_SEND_INT8: {
-            sParam.txComBuf.setInt8(EnterParam.getValueEnter());
+            sParam.txComBuf.setInt8(save.getValue());
         } break;
 
         case GB_SEND_INT8_DOP: {
-            sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 0);
+            sParam.txComBuf.setInt8(save.getValue(), 0);
             sParam.txComBuf.setInt8(pos + dop, 1);
         } break;
 
         case GB_SEND_DOP_INT8: {
             sParam.txComBuf.setInt8(pos + dop, 0);
-            sParam.txComBuf.setInt8(EnterParam.getValueEnter(), 1);
+            sParam.txComBuf.setInt8(save.getValue(), 1);
         } break;
 
         case GB_SEND_INT16_BE: {
-            sParam.txComBuf.setInt8(EnterParam.getValue() >> 8, 0);
-            sParam.txComBuf.setInt8(EnterParam.getValue(), 1);
+            sParam.txComBuf.setInt16BE(save.getValue());
         } break;
 
         case GB_SEND_BITES_DOP:	{
+            // FIXME Убрать привязку к локальному параметру!
             uint8_t val = sParam.local.getValueB();
-            if (EnterParam.getValue()) {
+            if (save.getValue() > 0) {
                 val |= (1 << (pos % 8));
             } else {
                 val &= ~(1 << (pos % 8));
@@ -4975,8 +4976,9 @@ void clMenu::saveParamToBsp(eGB_COM com)
         } break;
 
         case GB_SEND_DOP_BITES: {
+            // FIXME Убрать привязку к локальному параметру!
             uint8_t val = sParam.local.getValueB();
-            if (EnterParam.getValue()) {
+            if (save.getValue() > 0) {
                 val |= (1 << (pos % 8));
             } else {
                 val &= ~(1 << (pos % 8));
@@ -4986,10 +4988,11 @@ void clMenu::saveParamToBsp(eGB_COM com)
         } break;
 
         case GB_SEND_COR_U: {
+            // FIXME Убрать привязку к локальному параметру!
             // если текущее значение коррекции тока равно 0
             // то передается сообщение с под.байтом равным 4
             // означающим сброс коррекции
-            int16_t t =(int16_t) (EnterParam.getValue());
+            int16_t t = save.getValue();
             if (t == 0)
                 dop = 4;
             else {
@@ -5004,10 +5007,11 @@ void clMenu::saveParamToBsp(eGB_COM com)
         } break;
 
         case GB_SEND_COR_I: {
+            // FIXME Убрать привязку к локальному параметру!
             // если текущее значение коррекции тока равно 0
             // то передается сообщение с под.байтом равным 5
             // означающим сброс коррекции
-            int16_t t = static_cast<int16_t>(EnterParam.getValue());
+            int16_t t = save.getValue();
             if (t == 0)
                 dop = 5;
             else {
@@ -5022,7 +5026,7 @@ void clMenu::saveParamToBsp(eGB_COM com)
 
         case GB_SEND_DOP_PWD: {
             sParam.txComBuf.setInt8(dop, 0);
-            sParam.txComBuf.setArray(EnterParam.getValuePwd(), PWD_LEN);
+            sParam.txComBuf.setArray(save.getValueArray(), PWD_LEN);
         } break;
 
         case GB_SEND_NO: {
@@ -5033,20 +5037,38 @@ void clMenu::saveParamToBsp(eGB_COM com)
     if (com != GB_COM_NO) {
         com = (eGB_COM) (com + GB_COM_MASK_GROUP_WRITE_PARAM);
         sParam.txComBuf.addFastCom(com);
-        sParam.txComBuf.setSendType(getSendType(sParam.local.getParam()));
+        sParam.txComBuf.setSendType(getSendType(save.param));
     }
 }
 
 //
 void clMenu::saveParamToRam()
 {
-    eGB_PARAM param= sParam.local.getParam();
-    if (param != GB_PARAM_NULL_PARAM) {
-        int16_t value = EnterParam.getValueEnter();
+    if (save.param != GB_PARAM_NULL_PARAM) {
+        int16_t value = save.getValue();
 
-        if (param == GB_PARAM_IS_USER) {
+        if (save.param == GB_PARAM_IS_USER) {
             sParam.security.User.set((TUser::user_t) (value));
         }
+    }
+}
+
+//
+void clMenu::security() {
+    // Проверяется сброс счетчика ввода ошибочного пароля для Администратора
+    if (sParam.security.pwdAdmin.timerTick()) {
+        save.param = GB_PARAM_IS_PWD_ADM_CNT;
+        save.number = 1;
+        save.set(sParam.security.pwdAdmin.getCounter());
+        saveParam();
+    }
+
+    // Проверяется сброс счетчика ввода ошибочного пароля для Инженера
+    if (sParam.security.pwdEngineer.timerTick()) {
+        save.param = GB_PARAM_IS_PWD_ENG_CNT;
+        save.number = 1;
+        save.set(sParam.security.pwdEngineer.getCounter());
+        saveParam();
     }
 }
 
@@ -5060,25 +5082,56 @@ void clMenu::setupParam() {
 
         if (EnterParam.isEnable()) {
             if ((this->*enterFunc)() == MENU_ENTER_PARAM_READY) {
-                if (checkPwdReq(EnterParam.getParam(), EnterParam.getValue())) {
-                    EnterParam.setEnable(MENU_ENTER_PASSWORD);
-                    enterFunc = &clMenu::inputValue;
-                    EnterParam.setParam(GB_PARAM_IS_PWD);
-                    EnterParam.setValueRange(1, 8);
+                eGB_PARAM param = EnterParam.getParam();
+                int16_t value = EnterParam.getValue();
+                if (checkPwdReq(param, value)) {
+                    if (checkErrorCounterUser(param, value)) {
+                        // Провекра необходимости ввести пароль
+                        EnterParam.setEnable(MENU_ENTER_PASSWORD);
+                        enterFunc = &clMenu::inputValue;
+                        EnterParam.setParam(GB_PARAM_IS_PWD);
+                        EnterParam.setValueRange(1, 8);
+                    } else {
+                        setMessage(MSG_BLOCK_USER);
+                        EnterParam.setDisable();
+                    }
                 } else if (EnterParam.getParam() == GB_PARAM_IS_PWD) {
+                   // Проверка введенного пароля
                    TUser::user_t user = (TUser::user_t) EnterParam.last.val;
                    if (checkPwd(user, EnterParam.getValuePwd())) {
+                       save.param = EnterParam.getParam();
+                       save.number = 1;
+                       save.set(EnterParam.getValuePwd());                       
+                       // FIXME Добавить сброс счетчика ошибок при вводе корректного пароля.
                        saveParam();
                    } else {
                        if (user == TUser::ADMIN) {
                            sParam.security.pwdAdmin.incCounter();
+                           save.param = GB_PARAM_IS_PWD_ADM_CNT;
+                           save.number = 1;
+                           save.set(sParam.security.pwdAdmin.getCounter());
+                           saveParam();
+
                        } else if (user == TUser::ENGINEER) {
                            sParam.security.pwdEngineer.incCounter();
+                           save.param = GB_PARAM_IS_PWD_ENG_CNT;
+                           save.number = 1;
+                           save.set(sParam.security.pwdEngineer.getCounter());
+                           saveParam();
                        }
-                       setMessage(MSG_WRONG_PWD);
+
+                       if (!checkErrorCounterUser(GB_PARAM_IS_USER, user)) {
+                           setMessage(MSG_BLOCK_USER);
+                       } else {
+                           setMessage(MSG_WRONG_PWD);
+                       }
                    }
                    EnterParam.setDisable();
                 } else {
+                    // Сохранение введенного значения.
+                    save.param = EnterParam.getParam();
+                    save.number = sParam.local.getNumOfCurrSameParam();
+                    save.set(EnterParam.getValue());
                     saveParam();
                     EnterParam.setDisable();
                 }
