@@ -135,7 +135,7 @@ public:
 	 *
 	 * 	@param byte Байт данных.
 	 * 	@return Текущая позиция в проверке протокола.
-	 * 	@retval Ожидание первого синхробайта.
+     * 	@retval 0 Ожидание первого синхробайта.
 	 */
 	uint8_t checkByte(uint8_t byte) {
 		uint8_t cnt = cnt_;

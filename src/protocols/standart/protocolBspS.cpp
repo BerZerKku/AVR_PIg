@@ -27,8 +27,7 @@ bool clProtocolBspS::getData(bool pc) {
 
 	mask = com & GB_COM_MASK_GROUP;
 	// ответ на команду изменени€ параметра/режима не требуетс€
-	if ((mask == GB_COM_MASK_GROUP_WRITE_PARAM)
-			|| (mask == GB_COM_MASK_GROUP_WRITE_REGIME)) {
+    if (mask == GB_COM_MASK_GROUP_WRITE_PARAM) {
 		if (com == GB_COM_SET_TIME) {
 			if (buf[NUM] >= 8) {
 				stat =  sParam_->DateTimeReq.setYear(BCD_TO_BIN(buf[B1]));
@@ -48,10 +47,14 @@ bool clProtocolBspS::getData(bool pc) {
 			} else {
 				stat = true;
 			}
-		} else {
+        } else if (com == GB_COM_SET_NET_ADR) {
+            stat = hdlrComGetNetAdr(pc);
+        } else {
 			stat = true;
 		}
-	} else {
+    } else if (mask == GB_COM_MASK_GROUP_WRITE_REGIME) {
+        stat = true;
+    } else {
 		mask = com & GB_COM_MASK_DEVICE;
 
 		if (mask == GB_COM_MASK_DEVICE_DEF)
@@ -535,8 +538,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
     return stat;
 }
 
-bool clProtocolBspS::hdlrComGetComPrdKeep(bool pc)
-{
+bool clProtocolBspS::hdlrComGetComPrdKeep(bool pc) {
     uint8_t act = GB_ACT_NO;
 
     if (sParam_->typeDevice == AVANT_R400M) {
@@ -553,13 +555,11 @@ bool clProtocolBspS::hdlrComGetComPrdKeep(bool pc)
     return (act & GB_ACT_ERROR) == 0;
 }
 
-bool clProtocolBspS::hdlrComGetDeviceNum(bool pc)
-{
+bool clProtocolBspS::hdlrComGetDeviceNum(bool pc) {
     return sParam_->glb.setDeviceNum(buf[B1]);
 }
 
-bool clProtocolBspS::hdlrComGetFault(bool pc)
-{
+bool clProtocolBspS::hdlrComGetFault(bool pc) {
     eGB_TYPE_DEVICE device = sParam_->typeDevice;
 
     sParam_->def.status.setFault(TO_INT16(buf[B1], buf[B2]));
@@ -586,8 +586,7 @@ bool clProtocolBspS::hdlrComGetFault(bool pc)
     return true;
 }
 
-bool clProtocolBspS::hdlrComGetJrnEntry(bool pc)
-{
+bool clProtocolBspS::hdlrComGetJrnEntry(bool pc) {
     bool check = false;
 
     if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_GLB) && (!pc)) {
@@ -632,8 +631,7 @@ bool clProtocolBspS::hdlrComGetJrnEntry(bool pc)
     return check;
 }
 
-bool clProtocolBspS::hdlrComGetMeas(bool pc)
-{
+bool clProtocolBspS::hdlrComGetMeas(bool pc) {
     bool check = (buf[B1] == 0);
     // обработаем посылку, если стоит флаг опроса всех параметров
 
@@ -657,8 +655,7 @@ bool clProtocolBspS::hdlrComGetMeas(bool pc)
     return check;
 }
 
-bool clProtocolBspS::hdlrComGetNetAdr(bool pc)
-{
+bool clProtocolBspS::hdlrComGetNetAdr(bool pc) {
     bool check = true;
 
     check &= sParam_->glb.setNetAddress(buf[B1]);
@@ -680,8 +677,7 @@ bool clProtocolBspS::hdlrComGetNetAdr(bool pc)
     return check;
 }
 
-bool clProtocolBspS::hdlrComGetSost(bool pc)
-{
+bool clProtocolBspS::hdlrComGetSost(bool pc) {
     sParam_->def.status.setRegime((eGB_REGIME) buf[B1]);
     sParam_->def.status.setState(buf[B2]);
     sParam_->def.status.setDopByte(buf[B3]);
@@ -752,8 +748,7 @@ bool clProtocolBspS::hdlrComGetSost(bool pc)
    return true;
 }
 
-bool clProtocolBspS::hdlrComGetTime(bool pc)
-{
+bool clProtocolBspS::hdlrComGetTime(bool pc) {
     // FIXME –азобратьс€ что делает переменна€. «адержка в работе журнала?!
     static uint8_t cntTimeFrame = 0;
     bool check = true;
@@ -801,8 +796,7 @@ bool clProtocolBspS::hdlrComGetTime(bool pc)
     return check;
 }
 
-bool clProtocolBspS::hdlrComGetVers(bool pc)
-{
+bool clProtocolBspS::hdlrComGetVers(bool pc) {
     uint8_t act = GB_ACT_NO;
     // данные о типе аппарата
     act |= sParam_->def.status.setEnable(buf[B1] == 1);

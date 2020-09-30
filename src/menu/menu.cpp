@@ -895,32 +895,41 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 
 // ¬озвращает имеющуюс€ команду на исполнение.
 eGB_COM clMenu::getTxCommand() {
-	static uint8_t cnt = 0;
+    static uint8_t cnt = MIN_NUM_COM_SEND_IN_1_SEK;
+
+    static QVector<eGB_COM> dcom;
 
 	// быстра€ команда идет с самым высоким приоритетом
 	eGB_COM com = sParam.txComBuf.getFastCom();
 
-	if (com == GB_COM_NO) {
-		if (cnt == 0) {
-			com = GB_COM_GET_SOST;
-		} else if (cnt == 1) {
-			com = GB_COM_GET_TIME;
-		} else if (cnt <= (1 + MAX_NUM_COM_BUF2)) {
-			// команды которые должны передаватьс€ минимум раз в секунду
-			com = sParam.txComBuf.getCom2();
-		}
+    for(uint8_t i = 0; (com == GB_COM_NO) && (i < 2); i++) {
+        cnt = cnt < MIN_NUM_COM_SEND_IN_1_SEK ? cnt + 1 : 0;
 
-		if (com == GB_COM_NO) {
-			// команды которые должны периодически передаватьс€
-			com = sParam.txComBuf.getCom1();
-		}
-	}
+        if (cnt == 0) {
+            qDebug() << "Commands per cycle: " <<  showbase << hex << dcom;
+            dcom.clear();
+            com = GB_COM_GET_SOST;
+        } else if (cnt == 1) {
+            com = GB_COM_GET_TIME;
+        }
 
-	if ((++cnt >= MIN_NUM_COM_SEND_IN_1_SEK) || (com == GB_COM_NO)) {
-		cnt = 0;
-	}
+        if (com == GB_COM_NO) {
+            com = sParam.txComBuf.getCom2();
+        }
 
-	return com;
+        if (com == GB_COM_NO) {
+            com = sParam.txComBuf.getCom1();
+            cnt = MIN_NUM_COM_SEND_IN_1_SEK;
+        }
+
+        if (com == GB_COM_NO) {
+            cnt = MIN_NUM_COM_SEND_IN_1_SEK;
+        }
+    }
+
+    dcom.append(com);
+
+    return com;
 }
 
 /** ќчистка текстового буфера
@@ -4138,7 +4147,6 @@ void clMenu::lvlUser() {
 
         // ƒобавить команду!
         sParam.txComBuf.clear();
-        sParam.txComBuf.addCom2(GB_COM_GET_NET_ADR);
 
         sParam.local.clearParams();
         sParam.local.addParam(GB_PARAM_IS_USER);
