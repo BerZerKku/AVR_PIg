@@ -61,10 +61,8 @@
 /// минимальное кол-во команд передаваемых за одну секунду
 #define MIN_NUM_COM_SEND_IN_1_SEK 8
 
-///	максимальное кол-во быстрых команды
-// на данный момент надо только для ТЕСТов РЗСК, т.к. там посылаются 2 команды
-// а так же возможно появление быстрой команды при работе с АСУ ТП
-#define MAX_NUM_FAST_COM 5
+///	максимальное кол-во быстрых команд
+#define MAX_NUM_FAST_COM 8
 
 /// максимальное кол-во команд в первом буфере
 #define MAX_NUM_COM_BUF1 10
@@ -1205,10 +1203,10 @@ public:
 
 	// напряжение выхода
 	uint8_t getVoltageOutInt() const {
-		return (voltOut_ / 10);
+        return static_cast<uint8_t> (voltOut_ / 10);
 	}
 	uint8_t getVoltageOutFract() const {
-		return (voltOut_ % 10);
+        return static_cast<uint8_t> (voltOut_ % 10);
 	}
 	uint16_t getVoltageOut() const {
 		return voltOut_;

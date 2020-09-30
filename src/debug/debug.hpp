@@ -8,7 +8,9 @@
 #ifndef DEBUG_HPP_
 #define DEBUG_HPP_
 
-#if defined(DEBUG) && defined(AVR)
+#include <stdint.h>
+
+#if defined(AVR)
 
 #include <avr/io.h>
 
@@ -17,8 +19,6 @@
 // вывод отладочной информации на экран
 //#define VIEW_DEBUG_PARAM
 //#define IEC101
-
-#define COMPILE_TIME_ASSERT(expression) switch(0) { case 0 : case (expression) : ; }
 
 // тестовые пины
 #define DDR_DBG		DDRE
@@ -34,24 +34,28 @@
 #define CLR_TP2 PORT_DBG &= ~PIN_TP2
 #define TOG_TP2 PORT_DBG ^= PIN_TP2
 
+#endif
+
+//
+#if defined(NDEBUG)
+#define COMPILE_TIME_ASSERT(expression) (void(0))
+#else
+
 // отладочная информация
 struct stDebug {
-	uint8_t byte1;
-	uint8_t byte2;
-	uint8_t byte3;
-	uint8_t byte4;
-	uint8_t byte5;
-	uint8_t byte6;
-	uint8_t byte7;
-	uint8_t byte8;
+    uint8_t byte1;
+    uint8_t byte2;
+    uint8_t byte3;
+    uint8_t byte4;
+    uint8_t byte5;
+    uint8_t byte6;
+    uint8_t byte7;
+    uint8_t byte8;
 };
 
 extern stDebug sDebug;
 
-#else
-
-#define COMPILE_TIME_ASSERT(expression) (void(0))
-
+#define COMPILE_TIME_ASSERT(expression) switch(0) { case 0 : case (expression) : ; }
 #endif
 
 #endif /* DEBUG_HPP_ */

@@ -13,8 +13,11 @@
 /// Пароль.
 class TPwd {
     /// время сборса ошибки ввода пароля
-//    static const uint16_t kTickToDecCounter = (600000UL / MENU_TIME_CYLCE);
+#ifdef NDEBUG
+    static const uint16_t kTickToDecCounter = (600000UL / MENU_TIME_CYLCE);
+#else
     static const uint16_t kTickToDecCounter = (10000UL / MENU_TIME_CYLCE);
+#endif
 
 public:
 
@@ -25,7 +28,10 @@ public:
         for(uint8_t i = 0; i < SIZE_OF(pwd_); i++) {
             pwd_[i] = 0;
         }
+
+        init = false;
         counter_ = PWD_CNT_BLOCK;
+        tcounter_ = counter_;
         time_ = kTickToDecCounter;
     }
 
@@ -60,19 +66,29 @@ public:
      *  @param[in] value Значение.
      */
     bool setCounter(uint8_t value) {
-        uint8_t tcounter= counter_;
         counter_ = (value <= PWD_CNT_BLOCK) ? value : PWD_CNT_BLOCK;
-        if (tcounter < counter_) {
+
+        if (!init) {
+            init = true;
+            tcounter_ = counter_;
+        }
+
+        if (tcounter_ != counter_) {
             time_ = kTickToDecCounter;
         }
 
         return (value == counter_);
     }
 
+    /// Сброс счетчика.
+    void clrCounter() {
+        tcounter_ = 0;
+    }
+
     /// Увеличивает счетчик ошибок ввода пароля.
     void incCounter() {
-        if (counter_ < PWD_CNT_BLOCK) {
-            counter_++;
+        if (tcounter_ < PWD_CNT_BLOCK) {
+            tcounter_++;
         }
 
         time_ = kTickToDecCounter;
@@ -83,18 +99,26 @@ public:
      *  @return Значение  счетчика.
      */
     uint8_t getCounter() const {
-        return counter_;
+        return tcounter_;
     }
 
-    /** Тик таймера сброса счетчика ввода неверного пароля.
+    /** Тик таймера.
      *
-     *  @return true если значение было изменено.
+     *  Считает время до сброса ошибки счетчика.
+     *  Проверяет изменение счетичка.
+     *
+     *  @return true если значение счетчика было изменено.
      */
     bool timerTick() {
         bool change = false;
+
         time_ = (time_ > 0) ? time_ - 1 : kTickToDecCounter;
-        if ((time_ == 0) && (counter_ > 0)) {
-            counter_--;
+
+        if ((time_ == 0) && (tcounter_ > 0)) {
+            tcounter_--;
+        }
+
+        if (init && (tcounter_ != counter_)) {
             change = true;
         }
 
@@ -128,9 +152,11 @@ private:
         }
     }
 
-    uint8_t pwd_[PWD_LEN];
-    uint8_t counter_;
-    uint16_t time_;
+    bool init;              ///< Инициализация (первое считывание).
+    uint8_t pwd_[PWD_LEN];  ///< Пароль.
+    uint8_t counter_;       ///< Счетчик ввода неверного пароля из БСП.
+    uint8_t tcounter_;      ///< Счетчик ввода неверного пароля в БСП-ПИ.
+    uint16_t time_;         ///< Счетчик тиков до уменьшения счетчика ошибок.
 };
 
 class TUser {
@@ -232,10 +258,10 @@ public:
     TIsEvent EventAdmin;
     TIsEvent EventEngineer;
 
+    TUser User;
+
     TPwd pwdAdmin;
     TPwd pwdEngineer;
-
-    TUser User;    
 };
 
 #endif /* PARAMIS_H_ */

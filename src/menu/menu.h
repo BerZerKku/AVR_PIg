@@ -80,15 +80,12 @@ class clMenu {
         uint8_t number;         /// Дополнительный номер у параметра
         uint8_t value[PWD_LEN]; /// Текущее значение
 
-        void set(uint8_t value) {
-            this->value[0] = value;
-        }
 
         void set(int16_t value) {
             *((int16_t *) this->value) = value;
         }
 
-        void set(uint8_t *value) {
+        void set(const uint8_t *value) {
             for(uint8_t i = 0; i < PWD_LEN; i++) {
                 this->value[i] = *value++;
             }
@@ -365,6 +362,13 @@ private:
      *  @return Результат проверки пароля, true если совпал.
      */
     bool checkPwd(TUser::user_t user, const uint8_t *pwd);
+
+    /** Проверяет введенный пароль.
+     *
+     *  @param[in] user Роль пользователя для которого вводился пароль.
+     *  @param[in] pwd Пароль для проверки.
+     */
+    void checkPwdInput(TUser::user_t user, const uint8_t *pwd);
 
     /** Проверяет необходимость ввода пароля после изменения параметра.
      *

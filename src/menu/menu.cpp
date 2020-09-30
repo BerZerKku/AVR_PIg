@@ -173,11 +173,12 @@ void clMenu::proc(void) {
         clrMessages();
     }
 
-    security();
-
     if (isMessage()) {
         key_ = KEY_NO;
     }
+
+    security();
+
 	// вывод в буфер содержимого текущего меню
 	// либо сообщения что тип аппарата не определен
 	clearTextBuf();
@@ -4157,26 +4158,6 @@ void clMenu::lvlUser() {
     }
 
     setupParam();
-//	if (EnterParam.isEnable()) {
-//		// ввод нового значения параметра
-//		eMENU_ENTER_PARAM stat = EnterParam.getStatus();
-
-//		// выбор функции ввода : пароль или параметр
-//		(this->*enterFunc)();
-
-//		if (stat == MENU_ENTER_PASSWORD_READY) {
-//			uint16_t val = EnterParam.getValue();
-
-//			if (sParam.password.check(val)) {
-//				EnterParam.setEnable(MENU_ENTER_PASSWORD_NEW);
-//			} else
-//				EnterParam.setDisable();
-//		} else if (stat == MENU_ENTER_PASSWORD_N_READY) {
-//			uint16_t val = EnterParam.getValue();
-
-//			sParam.password.set(val);
-//		}
-//	}
 
     switch(key_) {
         case KEY_UP:
@@ -4758,7 +4739,7 @@ bool clMenu::checkChangeReg() const {
     return check;
 }
 
-//
+// Проверяет введенный пароль.
 bool clMenu::checkErrorCounterUser(eGB_PARAM param, int16_t value) const {
     bool check = false;
 
@@ -4835,6 +4816,40 @@ bool clMenu::checkPwd(TUser::user_t user, const uint8_t *pwd)
     }
 
     return check;
+}
+
+//
+void clMenu::checkPwdInput(TUser::user_t user, const uint8_t *pwd)
+{
+    if (checkPwd(user, pwd)) {
+        save.param = EnterParam.last.param;
+        save.number = 1;
+        save.set(static_cast<uint8_t> (user));
+        saveParam();
+
+        qDebug() << "checkPwd(user, pwd), last.param = " << save.param <<
+                    ", user = " << user;
+
+        if (user == TUser::ADMIN) {
+            sParam.security.pwdAdmin.clrCounter();
+        } else if (user == TUser::ENGINEER) {
+            sParam.security.pwdEngineer.clrCounter();
+        }
+    } else {
+        if (user == TUser::ADMIN) {
+            sParam.security.pwdAdmin.incCounter();
+        } else if (user == TUser::ENGINEER) {
+            sParam.security.pwdEngineer.incCounter();
+        }
+
+        qDebug() << "!checkPwd(user, pwd)";
+
+        if (!checkErrorCounterUser(GB_PARAM_IS_USER, user)) {
+            setMessage(MSG_BLOCK_USER);
+        } else {
+            setMessage(MSG_WRONG_PWD);
+        }
+    }
 }
 
 // Проверяет необходимость ввода пароля после изменения параметра.
@@ -5042,8 +5057,7 @@ void clMenu::saveParamToBsp(eGB_COM com) {
 }
 
 //
-void clMenu::saveParamToRam()
-{
+void clMenu::saveParamToRam() {
     if (save.param != GB_PARAM_NULL_PARAM) {
         int16_t value = save.getValue();
 
@@ -5085,8 +5099,7 @@ void clMenu::setupParam() {
                 eGB_PARAM param = EnterParam.getParam();
                 int16_t value = EnterParam.getValue();
                 if (checkPwdReq(param, value)) {
-                    if (checkErrorCounterUser(param, value)) {
-                        // Провекра необходимости ввести пароль
+                    if (checkErrorCounterUser(param, value)) {                        
                         EnterParam.setEnable(MENU_ENTER_PASSWORD);
                         enterFunc = &clMenu::inputValue;
                         EnterParam.setParam(GB_PARAM_IS_PWD);
@@ -5095,43 +5108,23 @@ void clMenu::setupParam() {
                         setMessage(MSG_BLOCK_USER);
                         EnterParam.setDisable();
                     }
-                } else if (EnterParam.getParam() == GB_PARAM_IS_PWD) {
-                   // Проверка введенного пароля
-                   TUser::user_t user = (TUser::user_t) EnterParam.last.val;
-                   if (checkPwd(user, EnterParam.getValuePwd())) {
-                       save.param = EnterParam.getParam();
-                       save.number = 1;
-                       save.set(EnterParam.getValuePwd());                       
-                       // FIXME Добавить сброс счетчика ошибок при вводе корректного пароля.
-                       saveParam();
-                   } else {
-                       if (user == TUser::ADMIN) {
-                           sParam.security.pwdAdmin.incCounter();
-                           save.param = GB_PARAM_IS_PWD_ADM_CNT;
-                           save.number = 1;
-                           save.set(sParam.security.pwdAdmin.getCounter());
-                           saveParam();
-
-                       } else if (user == TUser::ENGINEER) {
-                           sParam.security.pwdEngineer.incCounter();
-                           save.param = GB_PARAM_IS_PWD_ENG_CNT;
-                           save.number = 1;
-                           save.set(sParam.security.pwdEngineer.getCounter());
-                           saveParam();
-                       }
-
-                       if (!checkErrorCounterUser(GB_PARAM_IS_USER, user)) {
-                           setMessage(MSG_BLOCK_USER);
-                       } else {
-                           setMessage(MSG_WRONG_PWD);
-                       }
-                   }
-                   EnterParam.setDisable();
+                } else if (param == GB_PARAM_IS_PWD) {
+                    // FIXME А если другие параметры ?!
+                    if (EnterParam.last.param == GB_PARAM_IS_USER) {
+                        qDebug() << "EnterParam.last.param == GB_PARAM_IS_USER";
+                        checkPwdInput((TUser::user_t) EnterParam.last.val,
+                                      EnterParam.getValuePwd());
+                    }
+                    EnterParam.setDisable();
                 } else {
                     // Сохранение введенного значения.
-                    save.param = EnterParam.getParam();
+                    save.param = param;
                     save.number = sParam.local.getNumOfCurrSameParam();
-                    save.set(EnterParam.getValue());
+                    if (getParamType(param) == Param::PARAM_PWD) {
+                        save.set(EnterParam.getValuePwd());
+                    } else {
+                        save.set(value);
+                    }
                     saveParam();
                     EnterParam.setDisable();
                 }
