@@ -136,78 +136,73 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 
 	mask = com & GB_COM_MASK_GROUP;
 
-	if (mask == GB_COM_MASK_GROUP_WRITE_PARAM) {
-		// команды изменени€ параметров
+    if ((mask == GB_COM_MASK_GROUP_WRITE_PARAM) ||
+        (mask == GB_COM_MASK_GROUP_WRITE_REGIME)) {
+        if (com == GB_COM_SET_REG_TEST_1) {
+            // есть две возможные ситуации:
+            // отсылаетс€ команда включени€ “естов
+            // 		при этом передаетс€ 0 байт данных
+            // отсылаютс€ команды установки сигналов в тесте
+            // 		тут последовательно передаютс€ две команды
+            // 		сначала команда дл€  „ (первый байт 1)
+            // 		а при следующем заходе  дл€ –« (первый байт 2)
+            uint8_t t = sParam_->txComBuf.getUInt8(0);
+            if (t != 0) {
+                num = addCom(com, t, sParam_->txComBuf.getUInt8(1));
+            } else {
+                num = addCom(com);										// вкл.
+            }
+        } else {
+            eGB_SEND_TYPE sendType = sParam_->txComBuf.getFastComType();
 
-		eGB_SEND_TYPE sendType = sParam_->txComBuf.getSendType();
+            if ((sendType > GB_SEND_NO) && (sendType < GB_SEND_MAX)) {
+                switch(sendType) {
+                    case GB_SEND_INT8: {
+                        uint8_t byte0 = sParam_->txComBuf.getUInt8(0);
+                        num = addCom(com, byte0);
+                    } break;
+                    case GB_SEND_BITES_DOP:
+                    case GB_SEND_INT8_DOP: {
+                        uint8_t byte0 = sParam_->txComBuf.getUInt8(0);
+                        uint8_t dop = sParam_->txComBuf.getFastComDopByte();
+                        num = addCom(com, byte0, dop);
+                    } break;
+                    case GB_SEND_DOP_INT8:	// DOWN
+                    case GB_SEND_DOP_BITES: {
+                        uint8_t byte0 = sParam_->txComBuf.getUInt8(0);
+                        uint8_t dop = sParam_->txComBuf.getFastComDopByte();
+                        num = addCom(com, dop, byte0);
+                    } break;
+                    case GB_SEND_INT16_BE: {
+                        uint8_t byte0 = sParam_->txComBuf.getUInt8(0);
+                        uint8_t byte1 = sParam_->txComBuf.getUInt8(1);
+                        num = addCom(com, byte0, byte1);
+                    } break;
+                    case GB_SEND_COR_U: // DOWN
+                    case GB_SEND_COR_I: {
+                        num = 3;
+                        uint8_t *array = sParam_->txComBuf.getBuferAddress();
+                        num = addCom(com, num, array);
+                    } break;
+                    case GB_SEND_DOP_PWD: {
+                        num = PWD_LEN + 1;
+                        uint8_t *array = sParam_->txComBuf.getBuferAddress();
+                        num = addCom(com, num, array);
+                    } break;
+                    case GB_SEND_TIME: {
+                        num = 9;
+                        uint8_t *array = sParam_->txComBuf.getBuferAddress();
+                        num = addCom(com, num, array);
+                    } break;
 
-		if (com == GB_COM_SET_TIME) {
-			num = addCom(com, 9, sParam_->txComBuf.getBuferAddress());
-		} else if (com ==  GB_COM_PRM_RES_IND) {
-			num = addCom(com);
-		} else if (com == GB_COM_DEF_SET_TYPE_AC) {
-			num = addCom(com, sParam_->txComBuf.getInt8());
-		} else 	if (sendType != GB_SEND_NO) {
-            uint8_t byte0 = sParam_->txComBuf.getInt8(0);
-            uint8_t byte1 = sParam_->txComBuf.getInt8(1);
-
-			switch(sendType) {
-                case GB_SEND_INT8: {
-                    num = addCom(com, byte0);
-                } break;
-				case GB_SEND_BITES_DOP:
-                case GB_SEND_INT8_DOP: {
-                    num = addCom(com, byte0, byte1);
-                } break;
-				case GB_SEND_DOP_INT8:	// DOWN
-                case GB_SEND_DOP_BITES: {
-                    num = addCom(com, byte0, byte1);
-                } break;
-                case GB_SEND_INT16_BE: {
-                    num = addCom(com, byte0, byte1);
-                } break;
-                case GB_SEND_COR_U: // DOWN
-                case GB_SEND_COR_I: {
-                    num = 3;
-                    num = addCom(com, num, sParam_->txComBuf.getBuferAddress());
-                } break;
-                case GB_SEND_DOP_PWD: {
-                    num = PWD_LEN + 1;
-                    num = addCom(com, num, sParam_->txComBuf.getBuferAddress());
-                } break;
-                case GB_SEND_NO: {
-                } break;
-			}
-		}
-	} else if (mask == GB_COM_MASK_GROUP_WRITE_REGIME) {
-		// команды изменени€ –ежимов –аботы и работы с “естами
-		// по умолчанию отправл€етс€ только код команды
-
-		if (com == GB_COM_SET_CONTROL) {
-			num = addCom(com, sParam_->txComBuf.getInt8());
-		} else if (com == GB_COM_SET_REG_TEST_1) {
-			// есть две возможные ситуации:
-			// отсылаетс€ команда включени€ “естов
-			// 		при этом передаетс€ 0 байт данных
-			// отсылаютс€ команды установки сигналов в тесте
-			// 		тут последовательно передаютс€ две команды
-			// 		сначала команда дл€  „ (первый байт 1)
-			// 		а при следующем заходе  дл€ –« (первый байт 2)
-			uint8_t t = sParam_->txComBuf.getInt8(0);
-			if (t != 0) {
-				num = addCom(com, t, sParam_->txComBuf.getInt8(1));
-			} else {
-				num = addCom(com);										// вкл.
-			}
-		} else {
-			// GB_COM_PRM_ENTER
-			// GB_COM_SET_REG_DISABLED
-			// GB_COM_SET_REG_ENABLED
-			// GB_COM_SET_REG_TEST_2
-			// GB_COM_SET_REG_TEST_1
-			num = addCom(com);
-		}
-	} else if (mask == GB_COM_MASK_GROUP_READ_PARAM) {
+                    case GB_SEND_NO:
+                    case GB_SEND_NO_DATA:
+                    case GB_SEND_MAX: {
+                    } break;
+                }
+            }
+        }
+    } else if (mask == GB_COM_MASK_GROUP_READ_PARAM) {
 		// команды опроса параметров
 		// по умолчанию отправл€етс€ только код команды
 		if (com == GB_COM_GET_MEAS) {
@@ -230,6 +225,10 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 	} else {
 		 setCurrentStatus(PRTS_STATUS_NO);
 	}
+
+    if (sParam_->txComBuf.getFastCom() == com) {
+        sParam_->txComBuf.removeFastCom();
+    }
 
 	return num;
 }

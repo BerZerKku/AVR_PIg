@@ -353,7 +353,9 @@ bool TProtocolPcI::procSetTime() {
 	sParam_->txComBuf.setInt8(BIN_TO_BCD((uint8_t) ms), i++);
 	sParam_->txComBuf.setInt8(BIN_TO_BCD((uint8_t) (ms >> 8)), i++);
 	sParam_->txComBuf.setInt8(1, i++);
-	sParam_->txComBuf.addFastCom(GB_COM_SET_TIME);
+    sParam_->txComBuf.addFastCom(GB_COM_SET_TIME, GB_SEND_MAX);
+
+    // FIXME Исправить сохранение времени по АСУТП!!!
 
 	// сброс флага наличия ответа на команду установки времени в БСП
 	sParam_->DateTimeReq.setTimeBsp_ = false;

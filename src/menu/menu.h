@@ -77,16 +77,18 @@ class clMenu {
 
     struct save_t {
         eGB_PARAM param;        /// Параметр.
-        uint8_t number;         /// Дополнительный номер у параметра
-        uint8_t value[PWD_LEN]; /// Текущее значение
-
+        eGB_COM com;            /// Команда для передачи.
+        eGB_SEND_TYPE sendType; /// Тип параметра для передачи.
+        uint8_t number;         /// Дополнительный номер у параметра.
+        uint8_t dopByte;        /// Дополнительный байт.
+        uint8_t value[PWD_LEN]; /// Текущее значение.
 
         void set(int16_t value) {
             *((int16_t *) this->value) = value;
         }
 
         void set(const uint8_t *value) {
-            for(uint8_t i = 0; i < PWD_LEN; i++) {
+            for(uint8_t i = 0; i < SIZE_OF(this->value); i++) {
                 this->value[i] = *value++;
             }
         }
@@ -427,10 +429,8 @@ private:
     /** Сохраняет параметр в БСП.
      *
      *  Формируется команда для передачи в БСП.
-     *
-     *  @paramp[in] com Команда для передачи.
      */
-    void saveParamToBsp(eGB_COM com);
+    void saveParamToBsp();
 
     /// Сохранят параметр в оперативной памяти.
     void saveParamToRam();

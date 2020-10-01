@@ -47,7 +47,7 @@
 #define BCD_TO_BIN(val) ((val >> 4) * 10 + (val & 0x0F))
 
 /// преобразование целого числа в двоично-десятичный вид
-#define BIN_TO_BCD(val) (((val / 10) << 4) + (val % 10))
+#define BIN_TO_BCD(val) (static_cast<uint8_t> (((val / 10) << 4) + (val % 10)))
 
 /// максимально возможное кол-во состояний устройств
 #define MAX_NUM_DEVICE_STATE 14
@@ -58,9 +58,6 @@
 /// максимальное кол-во предупреждений для любого устройства
 #define MAX_NUM_WARNINGS 16
 
-/// минимальное кол-во команд передаваемых за одну секунду
-#define MIN_NUM_COM_SEND_IN_1_SEK 8
-
 ///	максимальное кол-во быстрых команд
 #define MAX_NUM_FAST_COM 8
 
@@ -70,10 +67,9 @@
 /// максимальное кол-во команд во втором буфере
 #define MAX_NUM_COM_BUF2 4
 
-// не учитываем быстрые команды, т.к. они возникают достаточно редко
-#if (MIN_NUM_COM_SEND_IN_1_SEK - MAX_NUM_COM_BUF2 < 4)
-#error Слишком мало второстепенных команд отправляется в БСП за один период!!!
-#endif
+/// минимальное кол-во команд передаваемых за один цикл
+// 3 = (команда состояния + команда времени + команда из буфера1)
+#define MAX_NUM_COM_SEND_IN_CYLCE (MAX_NUM_COM_BUF2 + 3)
 
 /// максимальное кол-во сигналов в тестах
 #define MAX_NUM_TEST_SIGNAL 100
@@ -187,6 +183,7 @@ enum eGB_TYPE_LINE {
 /// Тип параметра, в плане сохранения нового значения.
 enum eGB_SEND_TYPE {
 	GB_SEND_NO,			///< Команды стандартного протокола нет
+    GB_SEND_NO_DATA,    ///< Команда передается без данных.
 	GB_SEND_INT8,		///< Передается один байт данных.
 	GB_SEND_INT8_DOP,	///< Передается два байта данных (значение, доп.байт).
 	GB_SEND_DOP_INT8,	///< Передается два байта данных (доп.байт, значение).
@@ -195,7 +192,10 @@ enum eGB_SEND_TYPE {
 	GB_SEND_BITES_DOP,	///< Передается битовая переменная (значение, доп.байт).
 	GB_SEND_COR_U,		///< Передается коррекция напряжения.
     GB_SEND_COR_I,		///< Передается коррекция тока.
-    GB_SEND_DOP_PWD     ///< Передается пароль.
+    GB_SEND_DOP_PWD,    ///< Передается пароль.
+    GB_SEND_TIME,       ///< Передать время.
+    //
+    GB_SEND_MAX
 };
 
 /// Кол-во аппаратов в линии
@@ -432,12 +432,7 @@ typedef enum {
 	GB_PARAM_SHIFT_FRONT,		///< сдвиг переднего фронта ПРД
 	GB_PARAM_SHIFT_BACK,		///< сдвиг заднего фронта ПРД
 	GB_PARAM_SHIFT_PRM,			///< сдвиг ПРМ
-	GB_PARAM_SHIFT_PRD,			///< сдвиг ВЧ ПРД от ПУСК
-	GB_PARAM_LIMIT_PRD,			///< ограничение полосы передатчика
-	GB_PARAM_DELAY_OFF_PRM,		///< задержка выключения ПРМ
-	GB_PARAM_DELAY_ON_PRM,		///< задержка включения ПРМ
-	GB_PARAM_DELAY_ON_PRD,		///< задержка включения ПРД
-	GB_PARAM_MIN_TIME_PRD,		///< минимальная длительность ПРД
+    GB_PARAM_SHIFT_PRD,			///< сдвиг ВЧ ПРД от ПУСК
 	// параметры передатчика
 	GB_PARAM_PRD_IN_DELAY,		///< время включения (задержка срабатывания дискретного входа)
 	GB_PARAM_PRD_DURATION_L,	///< длительность команды ВЧ
@@ -452,7 +447,6 @@ typedef enum {
 	GB_PARAM_PRD_FREQ_CORR,		///< коррекция частоты ПРД
 	GB_PARAM_PRD_DEC_CF,		///< снижение уровня КС
 	GB_PARAM_PRD_DEC_TM,		///< снижение уровня ТМ
-	GB_PARAM_PRD_DEFAULT_CF,	///< КС по умолчанию
 	GB_PARAM_PRD_COM_SIGNAL,	///< сигнализация команд ПРД
 	// параметры приемника
 	GB_PARAM_PRM_TIME_ON,		///< задержка на фиксацию команды (время включения)
@@ -1359,6 +1353,13 @@ private:
 class TTxCom {
 	static const uint8_t BUFFER_SIZE = 16;
 
+    typedef struct {
+        eGB_SEND_TYPE type;
+        eGB_COM com;
+        uint8_t dopByte;
+        uint8_t buf[BUFFER_SIZE];
+    } buf_t;
+
 public:
 	TTxCom() {
 		clear();
@@ -1366,41 +1367,51 @@ public:
 
 	// очистка буфера
 	void clear() {
-		numCom1_ = numCom2_ = 0;
-		cnt1_ = cnt2_ = 0;
 		cntComFast = 0;
-		for(uint_fast8_t j = 0; j < MAX_NUM_FAST_COM; j++) {
-			for(uint_fast8_t i = 0; i < BUFFER_SIZE; i++) {
-				buf_[j] [i] = 0;
-			}
+        for(uint_fast8_t i = 0; i < SIZE_OF(comFast_); i++) {
+            clearFastCom(i);
 		}
-		com1_[0] = com2_[0] = GB_COM_NO;
-		sendType = GB_SEND_NO;
+
+        cnt1_ = 0;
+        numCom1_ = 0;
+        for(uint_fast8_t i = 0; i < SIZE_OF(com1_); i++) {
+            com1_[i] = GB_COM_NO;
+        }
+
+        cnt2_ = 0;
+        numCom2_ = 0;
+        for(uint_fast8_t i = 0; i < SIZE_OF(com2_); i++) {
+            com2_[i] = GB_COM_NO;
+        }
 	}
 
-	/** Запись команды в буфер 1.
-	 *
-	 * 	Если num > 0, то заменяется последняя команда в буфере;
-	 * 	Если num = 0 команда добавляется.
-	 * 	@param com Код команды.
-	 * 	@param num Индекс элемента в буфере.
-	 * 	@retval True - в случае успешной записи.
-	 * 	@retval False - если не удалось поместить команду в буфер.
+    /** Записывает команду в буфер 1.
+     *
+     * 	@param[in] com Код команды.
+     * 	@param[in] last Флаг замены последней команды в буфере.
+     *  @return true в случае успешной записи, иначе false.
 	 */
-	bool addCom1(eGB_COM com, uint8_t num = 0) {
+    bool addCom1(eGB_COM com, bool last=false) {
 		bool stat = false;
 
-		if (num > 0) {
-			if (numCom1_ == 0)
-				numCom1_ = 1;
-			com1_[numCom1_ - 1] = com;
-			stat = true;
-		} else {
-			if (numCom1_ < MAX_NUM_COM_BUF1) {
-				com1_[numCom1_++] = com;
-					stat = true;
-			}
-		}
+        if (com != GB_COM_NO) {
+            if (last) {
+                if (numCom1_ == 0) {
+                    numCom1_ = 1;
+                }
+                com1_[numCom1_ - 1] = com;
+                stat = true;
+            } else {
+                if (numCom1_ < MAX_NUM_COM_BUF1) {
+                    com1_[numCom1_++] = com;
+                    stat = true;
+                } else {
+                    qDebug() << hex << "Wrong add command " << com <<
+                                ", buffer size = " << numCom1_;
+                }
+            }
+        }
+
 		return stat;
 	}
 
@@ -1424,6 +1435,15 @@ public:
 		return com;
 	}
 
+    /** Возвращает последнюю команду в буфере команд 1.
+     *
+     *  @return Последняя команда.
+     *  @retval GB_COM_NO В случае если буфер пуст.
+     */
+    eGB_COM lastCom1() const {
+        return (numCom1_ > 0) ? com1_[numCom1_ - 1] : GB_COM_NO;
+    }
+
 	/** Запись команды в буфер 2.
 	 * 	@param com Код команды.
 	 * 	@retval True - в случае успешной записи.
@@ -1431,10 +1451,15 @@ public:
 	 */
 	bool addCom2(eGB_COM com) {
 		bool stat = false;
-		if (numCom2_ < MAX_NUM_COM_BUF2) {
+
+        if ((numCom2_ < MAX_NUM_COM_BUF2) && (com != GB_COM_NO)) {
 			com2_[numCom2_++] = com;
 			stat = true;
-		}
+        } else {
+            qDebug() << hex << "Wrong add command " << com <<
+                        ", buffer size = " << numCom2_;
+        }
+
 		return stat;
 	}
 
@@ -1447,7 +1472,7 @@ public:
 	 * 	@return Код текущей команды.
 	 */
 	eGB_COM getCom2() {
-		eGB_COM com= GB_COM_NO;
+        eGB_COM com = GB_COM_NO;
 
         if (cnt2_ >= numCom2_) {
             cnt2_ = 0;
@@ -1458,67 +1483,133 @@ public:
 		return com;
 	}
 
-	/**	Запись срочной команды в конец очереди.
+    /** Добавляет команду в группу срочных команд.
 	 *
-	 *	При добавлении срочной команды все содержимое буфера передачи сохраняется.
+     *	После добавления команды нужно записать его содержимое!
 	 *
-	 * 	@param com Код срочной команды
+     * 	@param[in] com Команда.
+     *  @param[in] type Тип команды.
+     *  @return true если команда добавлена, иначе false.
 	 */
-	void addFastCom(eGB_COM com) {
-		if (cntComFast < MAX_NUM_FAST_COM) {
-			comFast_[cntComFast] = com;
-			cntComFast++;
+    bool addFastCom(eGB_COM com, eGB_SEND_TYPE type) {
+        bool isadd = false;
 
-			// сохранение данных для быстрой команды
-			for(uint_fast8_t i = 0; i < BUFFER_SIZE; i++) {
-				buf_[cntComFast] [i] = buf_[0] [i];
-			}
+        if ((cntComFast < MAX_NUM_FAST_COM) && (com != GB_COM_NO)) {
+            comFast_[cntComFast].com = com;
+            comFast_[cntComFast].type = type;
+			cntComFast++;
+            isadd = true;
 		}
+
+        return isadd;
 	}
 
-	/**	Считывание срочной команды. При этом идет копирование данных
-	 *
-	 *	При извлечении срочной команды в буфер передачи копируются сохраненные
-	 *	для данной команды данные.
-	 *
+    /** Устанавливает дополнительный байт данных для последней быстрой команды.
+     *
+     *  @param[in] dopbyte Дополнительный байт.
+     *  @return true если байт добавлен, иначе false.
+     */
+    bool setFastComDopByte(uint8_t dopbyte) {
+        bool isadd = false;
+
+        if (cntComFast > 0) {
+            comFast_[cntComFast-1].dopByte = dopbyte;
+            isadd = true;
+        }
+
+        return isadd;
+    }
+
+    /**	Возвращает код срочной команды.
+     *
 	 * 	@return Код срочной команды.
 	 */
-	eGB_COM getFastCom() {
+    eGB_COM getFastCom() const {
 		eGB_COM com = GB_COM_NO;
 
 		if (cntComFast > 0) {
-			com = comFast_[cntComFast - 1];
-
-			// извлечение данныз для быстрой команды
-			for(uint_fast8_t i = 0; i < BUFFER_SIZE; i++) {
-				buf_[0] [i] = buf_[cntComFast] [i];
-			}
-
-			cntComFast--;
+            com = comFast_[cntComFast-1].com;
 		}
 
 		return com;
 	}
 
+    /** Возвращает тип срочной команды.
+     *
+     *  @return Тип срочной команды.
+     */
+    eGB_SEND_TYPE getFastComType() const {
+        eGB_SEND_TYPE type = GB_SEND_NO;
 
-	/**	Запись байт данных в буфер.
-	 * 	@param byte	Байт данных.
-	 * 	@param num Индекс элемента массива.
+        if (cntComFast > 0) {
+            type = comFast_[cntComFast-1].type;
+        }
+
+        return type;
+    }
+
+    /// Убирает последнюю быструю команду из очереди.
+    void removeFastCom() {
+        if (cntComFast > 0) {
+            cntComFast--;
+            clearFastCom(cntComFast);
+        }
+    }
+
+    /** Очищает содержимое в буфере быстрой команды для указанной позиции.
+     *
+     *  @param[i] pos Позиция [0..SIZE_OF(comFast_)).
+     */
+    void clearFastCom(uint8_t pos) {
+        if (pos < SIZE_OF(comFast_)) {
+            comFast_[pos].com = GB_COM_NO;
+            comFast_[pos].type = GB_SEND_NO;
+            comFast_[pos].dopByte = 0;
+            for(uint_fast8_t i = 0; i < BUFFER_SIZE; i++) {
+                comFast_[pos].buf[i] = 0;
+            }
+        }
+    }
+
+    /** Возвращает дополнительный байт для срочной команды.
+    *
+    *   @return Дополнительный байт.
+    */
+    uint8_t getFastComDopByte() const {
+        uint8_t dopbyte = 0;
+
+        if (cntComFast > 0) {
+            dopbyte = comFast_[cntComFast-1].dopByte;
+        }
+
+        return dopbyte;
+    }
+
+
+    /**	Записывает байт данных в буфер.
+     *
+     * 	@param[in] byte	Байт данных.
+     * 	@param[in] pos Индекс элемента буфера данных.
 	 */
-	void setInt8(uint8_t byte, uint8_t num = 0) {
-		if (num < BUFFER_SIZE)
-			buf_[0][num] = byte;
+    void setInt8(uint8_t byte, uint8_t pos = 0) {
+        if ((cntComFast > 0) && (pos < BUFFER_SIZE)) {
+            comFast_[cntComFast-1].buf[pos] = byte;
+        }
 	}
 
-	/** Считывание байта данных.
-	 * 	@param num Индекс элемента массива.
+    /** Возвращает значение заданного элемента из буфера срочной команды.
+     *
+     * 	@param[in] pos Индекс элемента буфера данных.
 	 * 	@return Байт данных.
 	 */
-	uint8_t getInt8(uint8_t num = 0) const {
-		uint8_t byte = 0;
-		if (num < BUFFER_SIZE)
-			byte = buf_[0][num];
-		return byte;
+    uint8_t getUInt8(uint8_t pos) const {
+        uint8_t byte = 0;
+
+        if ((cntComFast > 0) && (pos < BUFFER_SIZE)){
+            byte = comFast_[cntComFast-1].buf[pos];
+        }
+
+        return byte;
 	}
 
 	/**	Запись 2-х байтного числа (uint16_t) в буфер.
@@ -1526,80 +1617,74 @@ public:
 	 * 	@param val Данные.
 	 */
 	void setInt16(uint16_t val) {
-        *((uint16_t *) &buf_[0][1]) = val;
+        if (cntComFast > 0) {
+            *((uint16_t *) comFast_[cntComFast-1].buf) = val;
+        }
 	}
 
     void setInt16BE(int16_t val) {
-        buf_[0][1] = val >> 8;
-        buf_[0][2] = val;
+        if (cntComFast > 0) {
+            comFast_[cntComFast-1].buf[0] = static_cast<uint8_t> (val >> 8);
+            comFast_[cntComFast-1].buf[1] = static_cast<uint8_t> (val);
+        }
     }
 
-	/** Считывание 2-х абйтного числа (uint16_t) из буфера.
+    /** Считывание 2-х абйтного числа (int16_t) из буфера.
 	 * 	Данные хранятся в 1 и 2 элементах массива uint8_t.
 	 * 	@return Данные.
 	 */
-	uint16_t getInt16() const {
-        return *((uint16_t *) &buf_[0][1]);
+    int16_t getInt16() const {
+        uint16_t value = 0;
+
+        if (cntComFast > 0) {
+            value = *((int16_t *) comFast_[cntComFast].buf);
+        }
+
+        return value;
 	}
 
     /** Записывает массив данных в буфер.
      *
      *  @param[in] array Данные.
      *  @param[in] size Количество данных.
+     *  @param[in] pos Начальная позиция в буфере записи.
      */
-    void setArray(const uint8_t *array, uint8_t size) {
-        if (size < BUFFER_SIZE) {
+    void setArray(const uint8_t *array, uint8_t size, uint8_t pos=0) {
+        if ((cntComFast > 0) && ((pos + size) <= BUFFER_SIZE)) {
             for(uint8_t i = 0; i < size; i++) {
-                buf_[0][i+1] = array[i];
+                comFast_[cntComFast-1].buf[i + pos] = array[i];
             }
         }
     }
 
-	/**	Возвращает указатель на буфер данных.
+    /**	Возвращает указатель на буфер данных.
      *
-	 * 	@return Указатель на буфер данных.
-	 */
-	uint8_t* getBuferAddress() {
-        return &buf_[0][0];
-	}
+     * 	@return Указатель на буфер данных.
+     */
+    uint8_t* getBuferAddress() {
+        uint8_t pos = (cntComFast > 0) ? cntComFast - 1 : 0;
 
-	/**	Возвращает тип команды на передачу.
-	 *
-	 * 	@return Тип команды на передачу
-	 */
-	eGB_SEND_TYPE getSendType() const {
-		return sendType;
-	}
-
-	/**	Установка типа команды на передачу.
-	 *
-	 * 	@param sendType Тип команды на передачу.
-	 */
-	void setSendType(eGB_SEND_TYPE sendType) {
-		this->sendType = sendType;
-	}
+        return comFast_[pos].buf;
+    }
 
 private:
-	// тип передаваемой команды
-	eGB_SEND_TYPE sendType;
-	// срочная команда (на изменение)
-	eGB_COM comFast_[MAX_NUM_FAST_COM];
-	// номер текущей срочной команды
-	uint8_t cntComFast;
+    // количество команд в буфере срочных команд
+    uint8_t cntComFast;
+    buf_t comFast_[MAX_NUM_FAST_COM];
+
 	// первый буфер команд
 	eGB_COM com1_[MAX_NUM_COM_BUF1];
 	// кол-во команд в первом буфере
 	uint8_t numCom1_;
 	// номер текущей команды в первом буфере
 	uint8_t cnt1_;
+
 	// второй буфер команд
 	eGB_COM com2_[MAX_NUM_COM_BUF2];
 	// кол-во команд во втором буфере
 	uint8_t numCom2_;
 	// номер текущей команды во втором буфере
 	uint8_t cnt2_;
-    // буфер данных (для каждой быстрой команды)
-	uint8_t buf_[MAX_NUM_FAST_COM + 1] [BUFFER_SIZE];
 };
 
 

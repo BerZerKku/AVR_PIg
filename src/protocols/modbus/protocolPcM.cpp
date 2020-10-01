@@ -77,7 +77,7 @@ TProtocolModbus::CHECK_ERR TProtocolPcM::writeCoil(uint16_t adr, bool val) {
 
 	if ((adr == ADR_C_IND_PRD) || (adr == ADR_C_IND_PRM))  {
 		if (!val)
-			sParam_->txComBuf.addFastCom(GB_COM_PRM_RES_IND);
+            sParam_->txComBuf.addFastCom(GB_COM_PRM_RES_IND, GB_SEND_NO_DATA);
 	}
 
 	return CHECK_ERR_NO;
@@ -181,22 +181,22 @@ TProtocolModbus::CHECK_ERR TProtocolPcM::writeRegister(uint16_t adr, uint16_t va
 	if (adr == ADR_JRN_EVT_NUM) {
 		sParam_->jrnEntry.setNumEntry(val);
 		sParam_->txComBuf.setInt16(sParam_->jrnEntry.getEntryAdress());
-		sParam_->txComBuf.addFastCom(GB_COM_GET_JRN_ENTRY);
+        sParam_->txComBuf.addFastCom(GB_COM_GET_JRN_ENTRY, GB_SEND_NO_DATA);
 	} else if (adr == ADR_JRN_PRM_NUM) {
 		sParam_->jrnEntry.setNumEntry(val);
 		sParam_->txComBuf.setInt16(sParam_->jrnEntry.getEntryAdress());
-		sParam_->txComBuf.addFastCom(GB_COM_PRM_GET_JRN_ENTRY);
+        sParam_->txComBuf.addFastCom(GB_COM_PRM_GET_JRN_ENTRY, GB_SEND_NO_DATA);
 	} else if (adr == ADR_JRN_PRD_NUM) {
 		sParam_->jrnEntry.setNumEntry(val);
 		sParam_->txComBuf.setInt16(sParam_->jrnEntry.getEntryAdress());
-		sParam_->txComBuf.addFastCom(GB_COM_PRD_GET_JRN_ENTRY);
+        sParam_->txComBuf.addFastCom(GB_COM_PRD_GET_JRN_ENTRY, GB_SEND_NO_DATA);
 	} else if (adr == ADR_JRN_DEF_NUM) {
 		sParam_->jrnEntry.setNumEntry(val);
 		sParam_->txComBuf.setInt16(sParam_->jrnEntry.getEntryAdress());
-		sParam_->txComBuf.addFastCom(GB_COM_DEF_GET_JRN_ENTRY);
+        sParam_->txComBuf.addFastCom(GB_COM_DEF_GET_JRN_ENTRY, GB_SEND_NO_DATA);
 	} else if ((adr >= ADR_IND_COM_PRM_16) && (adr <= ADR_IND_COM_PRD_32)) {
 		if (val == 0) {
-			sParam_->txComBuf.addFastCom(GB_COM_PRM_RES_IND);
+            sParam_->txComBuf.addFastCom(GB_COM_PRM_RES_IND, GB_SEND_NO_DATA);
 		}
 	} else if ((adr >= ADR_YEAR) && (adr <= ADR_SECOND)) {
 		if (adr == ADR_YEAR) {
@@ -211,11 +211,12 @@ TProtocolModbus::CHECK_ERR TProtocolPcM::writeRegister(uint16_t adr, uint16_t va
 			val = (val <= 59) ? BIN_TO_BCD(val) : 1;
 		} else if (adr == ADR_SECOND) {
 			val = (val <= 59) ? BIN_TO_BCD(val) : 1;
-			sParam_->txComBuf.addFastCom(GB_COM_SET_TIME);
+            sParam_->txComBuf.addFastCom(GB_COM_SET_TIME, GB_SEND_MAX);
 			sParam_->txComBuf.setInt8(1, 8);
 		}
 		sParam_->txComBuf.setInt8(val, adr - ADR_YEAR);
-	}
+        // FIXME Изменить процесс установки времени по АСУТП!
+    }
 
 	return CHECK_ERR_NO;
 }
@@ -553,13 +554,13 @@ uint16_t TProtocolPcM::readJournalEvent(uint16_t adr) {
 			t = GLB_JRN_EVENT_OPTO_MAX;
 		}
 		sParam_->jrnEntry.setMaxNumJrnEntries(t);
-		sParam_->txComBuf.addFastCom(GB_COM_GET_JRN_CNT);
+        sParam_->txComBuf.addFastCom(GB_COM_GET_JRN_CNT, GB_SEND_NO_DATA);
 	} else {
 		if (adr == ADR_JRN_EVT_CNT_PWR) {
-			sParam_->txComBuf.addFastCom(GB_COM_GET_JRN_CNT);
+            sParam_->txComBuf.addFastCom(GB_COM_GET_JRN_CNT, GB_SEND_NO_DATA);
 		} else if (adr == ADR_JRN_EVT_CNT) {
 			val = jrn->getNumJrnEntries();
-			sParam_->txComBuf.addFastCom(GB_COM_GET_JRN_CNT);
+            sParam_->txComBuf.addFastCom(GB_COM_GET_JRN_CNT, GB_SEND_NO_DATA);
 		} else {
 			if (jrn->isReady()) {
 				if (adr == ADR_JRN_EVT_NUM) {
@@ -618,13 +619,13 @@ uint16_t TProtocolPcM::readJournalPrm(uint16_t adr) {
 			t = GLB_JRN_PRM_OPTO_MAX;
 		}
 		sParam_->jrnEntry.setMaxNumJrnEntries(t);
-		sParam_->txComBuf.addFastCom(GB_COM_PRM_GET_JRN_CNT);
+        sParam_->txComBuf.addFastCom(GB_COM_PRM_GET_JRN_CNT, GB_SEND_NO_DATA);
 	} else {
 		if (adr == ADR_JRN_PRM_CNT_PWR) {
-			sParam_->txComBuf.addFastCom(GB_COM_PRM_GET_JRN_CNT );
+            sParam_->txComBuf.addFastCom(GB_COM_PRM_GET_JRN_CNT, GB_SEND_NO_DATA);
 		} else if (adr == ADR_JRN_PRM_CNT) {
 			val = jrn->getNumJrnEntries();
-			sParam_->txComBuf.addFastCom(GB_COM_PRM_GET_JRN_CNT );
+            sParam_->txComBuf.addFastCom(GB_COM_PRM_GET_JRN_CNT, GB_SEND_NO_DATA);
 		} else {
 			if (jrn->isReady()) {
 				if (adr == ADR_JRN_PRM_NUM) {
@@ -683,13 +684,13 @@ uint16_t TProtocolPcM::readJournalPrd(uint16_t adr) {
 			t = GLB_JRN_PRD_OPTO_MAX;
 		}
 		sParam_->jrnEntry.setMaxNumJrnEntries(t);
-		sParam_->txComBuf.addFastCom(GB_COM_PRD_GET_JRN_CNT);
+        sParam_->txComBuf.addFastCom(GB_COM_PRD_GET_JRN_CNT, GB_SEND_NO_DATA);
 	} else {
 		if (adr == ADR_JRN_PRD_CNT_PWR) {
-			sParam_->txComBuf.addFastCom(GB_COM_PRD_GET_JRN_CNT );
+            sParam_->txComBuf.addFastCom(GB_COM_PRD_GET_JRN_CNT, GB_SEND_NO_DATA);
 		} else if (adr == ADR_JRN_PRD_CNT) {
 			val = jrn->getNumJrnEntries();
-			sParam_->txComBuf.addFastCom(GB_COM_PRD_GET_JRN_CNT );
+            sParam_->txComBuf.addFastCom(GB_COM_PRD_GET_JRN_CNT, GB_SEND_NO_DATA);
 		} else {
 			if (jrn->isReady()) {
 				if (adr == ADR_JRN_PRD_NUM) {
@@ -750,13 +751,13 @@ uint16_t TProtocolPcM::readJournalDef(uint16_t adr) {
 			t = GLB_JRN_DEF_OPTO_MAX;
 		}
 		sParam_->jrnEntry.setMaxNumJrnEntries(t);
-		sParam_->txComBuf.addFastCom(GB_COM_DEF_GET_JRN_CNT);
+        sParam_->txComBuf.addFastCom(GB_COM_DEF_GET_JRN_CNT, GB_SEND_NO_DATA);
 	} else {
 		if (adr == ADR_JRN_DEF_CNT_PWR) {
-			sParam_->txComBuf.addFastCom(GB_COM_DEF_GET_JRN_CNT );
+            sParam_->txComBuf.addFastCom(GB_COM_DEF_GET_JRN_CNT, GB_SEND_NO_DATA);
 		} else if (adr == ADR_JRN_DEF_CNT) {
 			val = jrn->getNumJrnEntries();
-			sParam_->txComBuf.addFastCom(GB_COM_DEF_GET_JRN_CNT );
+            sParam_->txComBuf.addFastCom(GB_COM_DEF_GET_JRN_CNT, GB_SEND_NO_DATA);
 		} else {
 			if (jrn->isReady()) {
 				if (adr == ADR_JRN_DEF_NUM) {

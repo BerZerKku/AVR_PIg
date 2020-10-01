@@ -213,8 +213,7 @@ void clMenu::proc(void) {
 	} else if (!lastConnection) {
 		// если связь с БСП только восстановилась
 		// дважды пошлем команду опроса версии
-		sParam.txComBuf.addFastCom(GB_COM_GET_VERS);
-		//		sParam.txComBuf.addFastCom(GB_COM_GET_VERS);
+        sParam.txComBuf.addFastCom(GB_COM_GET_VERS, GB_SEND_NO_DATA);
 	}
 	lastConnection = connection;
 
@@ -895,18 +894,19 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 
 // Возвращает имеющуюся команду на исполнение.
 eGB_COM clMenu::getTxCommand() {
-    static uint8_t cnt = MIN_NUM_COM_SEND_IN_1_SEK;
+    static uint8_t cnt = MAX_NUM_COM_SEND_IN_CYLCE;
 
     static QVector<eGB_COM> dcom;
 
 	// быстрая команда идет с самым высоким приоритетом
 	eGB_COM com = sParam.txComBuf.getFastCom();
 
+    // двойной проход, для нахождения команды на передачу
     for(uint8_t i = 0; (com == GB_COM_NO) && (i < 2); i++) {
-        cnt = cnt < MIN_NUM_COM_SEND_IN_1_SEK ? cnt + 1 : 0;
+        cnt = cnt < MAX_NUM_COM_SEND_IN_CYLCE ? cnt + 1 : 0;
 
         if (cnt == 0) {
-            qDebug() << "Commands per cycle: " <<  showbase << hex << dcom;
+            qDebug() << "Commands per cycle: " << showbase << hex << dcom;
             dcom.clear();
             com = GB_COM_GET_SOST;
         } else if (cnt == 1) {
@@ -919,11 +919,11 @@ eGB_COM clMenu::getTxCommand() {
 
         if (com == GB_COM_NO) {
             com = sParam.txComBuf.getCom1();
-            cnt = MIN_NUM_COM_SEND_IN_1_SEK;
+            cnt = MAX_NUM_COM_SEND_IN_CYLCE;
         }
 
         if (com == GB_COM_NO) {
-            cnt = MIN_NUM_COM_SEND_IN_1_SEK;
+            cnt = MAX_NUM_COM_SEND_IN_CYLCE;
         }
     }
 
@@ -1141,19 +1141,14 @@ void clMenu::lvlStart() {
 		vLCDdrawBoard(lineParam_);
 
 		sParam.txComBuf.clear();
-		// буфер 2
-		// дополнительные команды
-		// время измеряемые параметры (в ВЧ)
+
 		sParam.txComBuf.addCom2(GB_COM_GET_FAULT);
 		if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 		if (sParam.typeDevice == AVANT_R400M) {
 			sParam.txComBuf.addCom2(GB_COM_DEF_GET_TYPE_AC);
 		}
- 		// буфер 1
-		// неисправности + кол-во аппаратов в линии + сетевой адрес
-		// в Р400м + АК + совместимость
-		// в К400  + совместимость
+
 		sParam.txComBuf.addCom1(GB_COM_DEF_GET_LINE_TYPE);
 		sParam.txComBuf.addCom1(GB_COM_GET_NET_ADR);
 		if (sParam.typeDevice == AVANT_R400M) {
@@ -1251,54 +1246,54 @@ void clMenu::lvlStart() {
 	}
 
 	switch(key_) {
-		case KEY_MENU:
+        case KEY_MENU: {
 			lvlMenu = &clMenu::lvlFirst;
 			lvlCreate_ = true;
-			break;
+        } break;
 
-		case KEY_CALL:
-			sParam.txComBuf.setInt8(GB_CONTROL_CALL);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			break;
+        case KEY_CALL: {
+            sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL, GB_SEND_INT8);
+            sParam.txComBuf.setInt8(GB_CONTROL_CALL);
+        } break;
 
-		case KEY_PUSK_UD:
+        case KEY_PUSK_UD: {
 			if (sParam.def.status.isEnable()) {
 				if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
 					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_ALL);
 				} else {
 					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
 				}
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+                sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL, GB_SEND_INT8);
 			}
-			break;
+        } break;
 
-		case KEY_AC_PUSK_UD:
+        case KEY_AC_PUSK_UD: {
 			if (sParam.def.status.isEnable()) {
 				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_AC_UD);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+                sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL, GB_SEND_INT8);
 			}
-			break;
+        } break;
 
-		case KEY_PUSK_NALAD:
+        case KEY_PUSK_NALAD: {
 			if (sParam.def.status.isEnable()) {
 				if (sParam.def.status.getState() == 7) {
 					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_OFF);
-					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+                    sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL, GB_SEND_INT8);
 				} else {
 					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_ON);
-					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+                    sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL, GB_SEND_INT8);
 				}
 			}
-			break;
+        } break;
 
-		case KEY_AC_RESET:
+        case KEY_AC_RESET: {
 			if (sParam.def.status.isEnable()) {
 				sParam.txComBuf.setInt8(GB_CONTROL_RESET_AC);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+                sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL, GB_SEND_INT8);
 			}
-			break;
+        } break;
 
-		case KEY_AC_PUSK:
+        case KEY_AC_PUSK: {
 			if (sParam.def.status.isEnable()) {
 				if (sParam.typeDevice == AVANT_R400M) {
 					eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
@@ -1309,35 +1304,35 @@ void clMenu::lvlStart() {
 						} else {
 							sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
 						}
-						sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+                        sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC, GB_SEND_INT8);
 					}
 				}
 			}
-			break;
+        } break;
 
-		case KEY_AC_REGIME:
+        case KEY_AC_REGIME: {
 			if (sParam.def.status.isEnable()) {
 				sParam.txComBuf.setInt8(GB_CONTROL_REG_AC);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+                sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL, GB_SEND_INT8);
 			}
-			break;
+        } break;
 
-		case KEY_RESET_IND:
+        case KEY_RESET_IND: {
 			if (sParam.prd.status.isEnable() || sParam.prm.status.isEnable()) {
-				sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
+                sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND, GB_SEND_NO_DATA);
 			}
-			break;
+        } break;
 
-		case KEY_PUSK:
+        case KEY_PUSK: {
 			if (sParam.prm.status.isEnable()) {
-				sParam.txComBuf.addFastCom(GB_COM_PRM_ENTER);
+                sParam.txComBuf.addFastCom(GB_COM_PRM_ENTER, GB_SEND_NO_DATA);
 			}
-			break;
+        } break;
 
-		case KEY_RESET:
+        case KEY_RESET: {
 			sParam.txComBuf.setInt8(GB_CONTROL_RESET_SELF);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			break;
+            sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL, GB_SEND_INT8);
+        } break;
 
 		default:
 			break;
@@ -1556,16 +1551,21 @@ void clMenu::lvlJournal() {
 		Punkts_.clear();
 		Punkts_.add(punkt1);
 
+        sParam.txComBuf.addCom2(GB_COM_GET_JRN_CNT);
+
 		if (sParam.def.status.isEnable()) {
 			Punkts_.add(punkt2);
+            sParam.txComBuf.addCom2(GB_COM_DEF_GET_JRN_CNT);
 		}
 
 		if (sParam.prm.status.isEnable()) {
 			Punkts_.add(punkt3);
+            sParam.txComBuf.addCom2(GB_COM_PRM_GET_JRN_CNT);
 		}
 
 		if (sParam.prd.status.isEnable()) {
 			Punkts_.add(punkt4);
+            sParam.txComBuf.addCom2(GB_COM_PRD_GET_JRN_CNT);
 		}
 	}
 
@@ -1750,13 +1750,13 @@ void clMenu::lvlJournalEvent() {
 	switch(key_) {
 		case KEY_UP:
 			if (sParam.jrnEntry.setPreviousEntry()) {
-				sParam.txComBuf.addFastCom(GB_COM_GET_JRN_ENTRY);
+                sParam.txComBuf.addFastCom(GB_COM_GET_JRN_ENTRY, GB_SEND_MAX);
 				curCom_ = 1;
 			}
 			break;
 		case KEY_DOWN:
 			if (sParam.jrnEntry.setNextEntry()) {
-				sParam.txComBuf.addFastCom(GB_COM_GET_JRN_ENTRY);
+                sParam.txComBuf.addFastCom(GB_COM_GET_JRN_ENTRY, GB_SEND_MAX);
 				curCom_ = 1;
 			}
 			break;
@@ -1892,11 +1892,11 @@ void clMenu::lvlJournalDef() {
 	switch(key_) {
 		case KEY_UP:
 			if (sParam.jrnEntry.setPreviousEntry())
-				sParam.txComBuf.addFastCom(GB_COM_DEF_GET_JRN_ENTRY);
+                sParam.txComBuf.addFastCom(GB_COM_DEF_GET_JRN_ENTRY, GB_SEND_MAX);
 			break;
 		case KEY_DOWN:
 			if (sParam.jrnEntry.setNextEntry())
-				sParam.txComBuf.addFastCom(GB_COM_DEF_GET_JRN_ENTRY);
+                sParam.txComBuf.addFastCom(GB_COM_DEF_GET_JRN_ENTRY, GB_SEND_MAX);
 			break;
 
 		case KEY_CANCEL:
@@ -2043,13 +2043,13 @@ void clMenu::lvlJournalPrm() {
 	switch(key_) {
 		case KEY_UP:
 			if (sParam.jrnEntry.setPreviousEntry()) {
-				sParam.txComBuf.addFastCom(GB_COM_PRM_GET_JRN_ENTRY);
+                sParam.txComBuf.addFastCom(GB_COM_PRM_GET_JRN_ENTRY, GB_SEND_MAX);
 				curCom_ = 1;
 			}
 			break;
 		case KEY_DOWN:
 			if (sParam.jrnEntry.setNextEntry()) {
-				sParam.txComBuf.addFastCom(GB_COM_PRM_GET_JRN_ENTRY);
+                sParam.txComBuf.addFastCom(GB_COM_PRM_GET_JRN_ENTRY, GB_SEND_MAX);
 				curCom_ = 1;
 			}
 			break;
@@ -2216,13 +2216,13 @@ void clMenu::lvlJournalPrd() {
 	switch(key_) {
 		case KEY_UP:
 			if (sParam.jrnEntry.setPreviousEntry()) {
-				sParam.txComBuf.addFastCom(GB_COM_PRD_GET_JRN_ENTRY);
+                sParam.txComBuf.addFastCom(GB_COM_PRD_GET_JRN_ENTRY, GB_SEND_MAX);
 				curCom_ = 1;
 			}
 			break;
 		case KEY_DOWN:
 			if (sParam.jrnEntry.setNextEntry()) {
-				sParam.txComBuf.addFastCom(GB_COM_PRD_GET_JRN_ENTRY);
+                sParam.txComBuf.addFastCom(GB_COM_PRD_GET_JRN_ENTRY, GB_SEND_MAX);
 				curCom_ = 1;
 			}
 			break;
@@ -2583,111 +2583,117 @@ void clMenu::lvlControl() {
 			break;
 
 		case KEY_ENTER: {
-			if (name == punkt02) {
-				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt03) {
-				sParam.txComBuf.setInt8(GB_CONTROL_RESET_SELF);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt04) {
-				sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt05) {
-				sParam.txComBuf.setInt8(GB_CONTROL_CALL);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt06) {
-				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_ON);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt07) {
-				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_OFF);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt08) {
-				sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK);
-				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-			} else if (name == punkt09) {
-				sParam.txComBuf.setInt8(GB_CONTROL_MAN_1);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt10) {
-				sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
-				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-			} else if (name == punkt11) {
-				sParam.txComBuf.setInt8(GB_CONTROL_RESET_AC);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt12) {
-				sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
-				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-			} else if (name == punkt13) {
-				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_AC_UD);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt14) {
-				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt15) {
-				sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_NORM);
-				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-			} else if (name == punkt16) {
-				sParam.txComBuf.setInt8(GB_TYPE_AC_FAST);
-				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-			} else if (name == punkt17) {
-				sParam.txComBuf.setInt8(GB_TYPE_AC_OFF);
-				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-			} else if (name == punkt18) {
-				sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
-				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-			} else if (name == punkt19) {
-				sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_NORM);
-				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-			} else if (name == punkt20) {
-				sParam.txComBuf.setInt8(GB_TYPE_AC_CHECK);
-				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-				//		} else if (p == punkt21) {
-				//			sParam.txComBuf.setInt8(GB_TYPE_AC_CHECK);
-				//			sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-			} else if (name == punkt22) {
-				sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt23) {
-				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt24) {
-				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_2);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt25) {
-				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_3);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt26) {
-				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_ALL);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt27) {
-				sParam.txComBuf.setInt8(GB_CONTROL_MAN_1);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt28) {
-				sParam.txComBuf.setInt8(GB_CONTROL_MAN_2);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt29) {
-				sParam.txComBuf.setInt8(GB_CONTROL_MAN_3);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt30) {
-				sParam.txComBuf.setInt8(GB_CONTROL_MAN_ALL);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt31) {
-				sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_NORM);
-				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-			} else if (name == punkt32) {
-				sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD_1);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt33) {
-				sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD_2);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt34) {
-				sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD_3);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt35) {
-				sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
-			} else if (name == punkt36) {
-				sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			}
+            eGB_COM com = GB_COM_NO;
+            eGB_SEND_TYPE type = GB_SEND_INT8;
+            uint8_t signal = 0;
+
+            if (name == punkt02) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_PUSK_UD_1;
+            } else if (name == punkt03) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_RESET_SELF;
+            } else if (name == punkt04) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_RESET_UD;
+            } else if (name == punkt05) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_CALL;
+            } else if (name == punkt06) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_PUSK_ON;
+            } else if (name == punkt07) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_PUSK_OFF;
+            } else if (name == punkt08) {
+                com = GB_COM_DEF_SET_TYPE_AC;
+                signal = GB_TYPE_AC_PUSK;
+            } else if (name == punkt09) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_MAN_1;
+            } else if (name == punkt10) {
+                com = GB_COM_DEF_SET_TYPE_AC;
+                signal = GB_TYPE_AC_PUSK_SELF;
+            } else if (name == punkt11) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_RESET_AC;
+            } else if (name == punkt12) {
+                com = GB_COM_DEF_SET_TYPE_AC;
+                signal = GB_TYPE_AC_PUSK_SELF;
+            } else if (name == punkt13) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_PUSK_AC_UD;
+            } else if (name == punkt14) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_PUSK_UD_1;
+            } else if (name == punkt15) {
+                com = GB_COM_DEF_SET_TYPE_AC;
+                signal = GB_TYPE_AC_AUTO_NORM;
+            } else if (name == punkt16) {
+                com = GB_COM_DEF_SET_TYPE_AC;
+                signal = GB_TYPE_AC_FAST;
+            } else if (name == punkt17) {
+                com = GB_COM_DEF_SET_TYPE_AC;
+                signal = GB_TYPE_AC_OFF;
+            } else if (name == punkt18) {
+                com = GB_COM_DEF_SET_TYPE_AC;
+                signal = GB_TYPE_AC_PUSK_SELF;
+            } else if (name == punkt19) {
+                com = GB_COM_DEF_SET_TYPE_AC;
+                signal = GB_TYPE_AC_AUTO_NORM;
+            } else if (name == punkt20) {
+                com = GB_COM_DEF_SET_TYPE_AC;
+                signal = GB_TYPE_AC_CHECK;
+            } else if (name == punkt22) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_RESET_UD;
+            } else if (name == punkt23) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_PUSK_UD_1;
+            } else if (name == punkt24) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_PUSK_UD_2;
+            } else if (name == punkt25) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_PUSK_UD_3;
+            } else if (name == punkt26) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_PUSK_UD_ALL;
+            } else if (name == punkt27) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_MAN_1;
+            } else if (name == punkt28) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_MAN_2;
+            } else if (name == punkt29) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_MAN_3;
+            } else if (name == punkt30) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_MAN_ALL;
+            } else if (name == punkt31) {
+                com = GB_COM_DEF_SET_TYPE_AC;
+                signal = GB_TYPE_AC_AUTO_NORM;
+            } else if (name == punkt32) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_RESET_UD_1;
+            } else if (name == punkt33) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_RESET_UD_2;
+            } else if (name == punkt34) {
+                signal = GB_CONTROL_RESET_UD_3;
+                com = GB_COM_SET_CONTROL;
+            } else if (name == punkt35) {
+                com = GB_COM_PRM_RES_IND;
+                type = GB_SEND_NO_DATA;
+            } else if (name == punkt36) {
+                com = GB_COM_SET_CONTROL;
+                signal = GB_CONTROL_RESET_UD;
+            }
+
+            if (sParam.txComBuf.addFastCom(com, type)) {
+                sParam.txComBuf.setInt8(signal);
+            }
 		}
 		break;
 
@@ -2850,7 +2856,7 @@ void clMenu::lvlRegime() {
                 } else if (val == GB_REGIME_ENTER_ENABLED) {
                     com = GB_COM_SET_REG_ENABLED;
                 }
-                sParam.txComBuf.addFastCom(com);
+                sParam.txComBuf.addFastCom(com, GB_SEND_NO_DATA);
                 EnterParam.setDisable();
             }
         }
@@ -3057,11 +3063,6 @@ void clMenu::lvlSetupParamDef() {
 			}
 			sParam.local.addParam(GB_PARAM_FREQ_PRD);
 			sParam.local.addParam(GB_PARAM_FREQ_PRM);
-//			sParam.local.addParam(GB_PARAM_LIMIT_PRD);
-//			sParam.local.addParam(GB_PARAM_DELAY_ON_PRM);
-//			sParam.local.addParam(GB_PARAM_DELAY_OFF_PRM);
-//			sParam.local.addParam(GB_PARAM_DELAY_ON_PRD);
-//			sParam.local.addParam(GB_PARAM_MIN_TIME_PRD);
 		} else if (device == AVANT_OPTO) {
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES);
 			sParam.local.addParam(GB_PARAM_DEF_TYPE);
@@ -3069,6 +3070,8 @@ void clMenu::lvlSetupParamDef() {
 			sParam.local.addParam(GB_PARAM_OVERLAP_OPTO);
 			sParam.local.addParam(GB_PARAM_DELAY_OPTO);
 		}
+
+        sParam.txComBuf.addCom1(getCom(sParam.local.getParam()));
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -3152,6 +3155,8 @@ void clMenu::lvlSetupParamPrm() {
 				sParam.local.addParam(GB_PARAM_PRM_COM_SIGNAL);
 			}
 		}
+
+        sParam.txComBuf.addCom1(getCom(sParam.local.getParam()));
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -3216,7 +3221,6 @@ void clMenu::lvlSetupParamPrd() {
 
 			sParam.local.addParam(GB_PARAM_PRD_DEC_CF);
 			sParam.local.addParam(GB_PARAM_PRD_DEC_TM);
-//			sParam.local.addParam(GB_PARAM_PRD_DEFAULT_CF); убран за ненадобностью
 			sParam.local.addParam(GB_PARAM_PRD_COM_SIGNAL);
 		} else if (device == AVANT_RZSK) {
 			sParam.local.addParam(GB_PARAM_PRD_IN_DELAY);
@@ -3237,6 +3241,8 @@ void clMenu::lvlSetupParamPrd() {
 				sParam.local.addParam(GB_PARAM_PRD_COM_SIGNAL);
 			}
 		}
+
+        sParam.txComBuf.addCom1(getCom(sParam.local.getParam()));
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -3340,8 +3346,8 @@ void clMenu::lvlSetupParamGlb() {
 			// совместимости и кол-ва аппаратов в линии
 			// измеряемые параметры для коррекции
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
-			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
-			sParam.txComBuf.addCom1(GB_COM_DEF_GET_LINE_TYPE);
+            sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
+            sParam.txComBuf.addCom1(GB_COM_DEF_GET_LINE_TYPE);
 
 			sParam.local.addParam(GB_PARAM_COMP_P400);
 			if (comp == GB_COMPATIBILITY_AVANT) {
@@ -3387,6 +3393,8 @@ void clMenu::lvlSetupParamGlb() {
 				sParam.local.addParam(GB_PARAM_BACKUP);
 			}
 		}
+
+        sParam.txComBuf.addCom1(getCom(sParam.local.getParam()));
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -3436,6 +3444,8 @@ void clMenu::lvlSetupParamRing() {
 				sParam.local.addParam(GB_PARAM_RING_COM_TR);
 			}
 		}
+
+        sParam.txComBuf.addCom1(getCom(sParam.local.getParam()));
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -3479,8 +3489,7 @@ void clMenu::lvlSetupInterface() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		sParam.txComBuf.clear();
-        sParam.txComBuf.addCom2(GB_COM_GET_NET_ADR);
+        sParam.txComBuf.clear();
 
 		// если установлена связь по Локальной сети
 		// появляются настройки портов
@@ -3499,6 +3508,8 @@ void clMenu::lvlSetupInterface() {
 			sParam.local.addParam(GB_PARAM_INTF_PARITY);
 			sParam.local.addParam(GB_PARAM_INTF_STOP_BITS);
         }
+
+        sParam.txComBuf.addCom1(getCom(sParam.local.getParam()));
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -3575,57 +3586,52 @@ void clMenu::lvlSetupDT() {
 		snprintf_P(&vLCDbuf[20 * lineParam_], 21, name, cursorLine_);
         eMENU_ENTER_PARAM stat = inputValue();
 
-		if (stat == MENU_ENTER_PARAM_READY) {
-            uint8_t t = EnterParam.getDopValue();
-            uint8_t val = EnterParam.getValue();
-			if (t <= 2) {
-				// ввод даты
-				// подменим сохраненное время на текущее
-				if (t == 0) {
-					// ввод года, проверим дату, т.к. может быть високосный
-					uint8_t month = BCD_TO_BIN(sParam.txComBuf.getInt8(1));
-					uint8_t day = BCD_TO_BIN(sParam.txComBuf.getInt8(2));
-					if (day > sParam.DateTime.getNumDaysInMonth(month, val)) {
-						sParam.txComBuf.setInt8(0x01, 2);
-					}
-				} else if (t == 1) {
-					// ввод месяца, проверим кол-во установленных дней
-					uint8_t day = BCD_TO_BIN(sParam.txComBuf.getInt8(2));
-					if (day > sParam.DateTime.getNumDaysInMonth(val)) {
-						sParam.txComBuf.setInt8(0x01, 2);
-					}
-				}
-				sParam.txComBuf.setInt8(BIN_TO_BCD(val), t);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getHour()), 3);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMinute()), 4);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getSecond()), 5);
-				sParam.txComBuf.addFastCom(EnterParam.com);
-			} else if (t <= 5) {
-				// ввод времени
-				// подменим сохраненную дату на текущую
-				sParam.txComBuf.setInt8(BIN_TO_BCD(val), t);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getYear()), 0);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMonth()),	1);
-				sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getDay()), 2);
-				sParam.txComBuf.addFastCom(EnterParam.com);
-			}
+		if (stat == MENU_ENTER_PARAM_READY) {           
+            sParam.txComBuf.addFastCom(EnterParam.com, GB_SEND_TIME);
+
+            sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getYear()), 0);
+            sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMonth()), 1);
+            sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getDay()), 2);
+            sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getHour()), 3);
+            sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMinute()), 4);
+            sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getSecond()), 5);
             sParam.txComBuf.setInt8(0, 6);	// мс всегда 0
             sParam.txComBuf.setInt8(0, 7);	//
-            sParam.txComBuf.setInt8(0, 8);	//
+            sParam.txComBuf.setInt8(0, 8);    // 0 - установка с меню, 1 - с асутп
+
+            uint8_t val = static_cast<uint8_t> (EnterParam.getValue());
+            uint8_t pos = static_cast<uint8_t> (EnterParam.getDopValue());
+            sParam.txComBuf.setInt8(BIN_TO_BCD(val), pos);
+
+            if (pos == 0) {
+                // ввод года, проверим дату, т.к. может быть високосный
+                uint8_t month = BCD_TO_BIN(sParam.txComBuf.getUInt8(1));
+                uint8_t day = BCD_TO_BIN(sParam.txComBuf.getUInt8(2));
+                if (day > sParam.DateTime.getNumDaysInMonth(month, val)) {
+                    sParam.txComBuf.setInt8(BIN_TO_BCD(1), 2);
+                }
+            } else if (pos == 1) {
+                // ввод месяца, проверим кол-во установленных дней
+                uint8_t day = BCD_TO_BIN(sParam.txComBuf.getUInt8(2));
+                if (day > sParam.DateTime.getNumDaysInMonth(val)) {
+                    sParam.txComBuf.setInt8(BIN_TO_BCD(1), 2);
+                }
+            }
+
 			EnterParam.setDisable();
 		}
 	} else
 		printPunkts();
 
 	switch(key_) {
-		case KEY_UP:
+        case KEY_UP: {
 			cursorLineUp();
-			break;
-		case KEY_DOWN:
+        } break;
+        case KEY_DOWN: {
 			cursorLineDown();
-			break;
+        } break;
 
-		case KEY_ENTER:
+        case KEY_ENTER: {
             enterFunc = &clMenu::inputValue;
 			if (name == punkt1) {
 				EnterParam.setEnable();
@@ -3660,24 +3666,16 @@ void clMenu::lvlSetupDT() {
 				EnterParam.setDopValue(5);
 			}
 			EnterParam.com = GB_COM_SET_TIME;
-			// сохраним текущие значения даты и времени
-			// байты расположены в порядке передачи в БСП
-			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getYear()), 0);
-			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMonth()), 1);
-			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getDay()), 2);
-			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getHour()), 3);
-			sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMinute()), 4);
-            sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getSecond()), 5);
-			break;
+        } break;
 
-		case KEY_CANCEL:
+        case KEY_CANCEL: {
 			lvlMenu = &clMenu::lvlSetup;
 			lvlCreate_ = true;
-			break;
-		case KEY_MENU:
+        } break;
+        case KEY_MENU: {
 			lvlMenu = &clMenu::lvlStart;
 			lvlCreate_ = true;
-			break;
+        } break;
 
 		default:
 			break;
@@ -3805,7 +3803,7 @@ void clMenu::lvlTest() {
 					//
 					sParam.txComBuf.setInt8(0, 0);
 					sParam.txComBuf.setInt8(0, 0);
-					sParam.txComBuf.addFastCom(GB_COM_SET_REG_TEST_1);
+                    sParam.txComBuf.addFastCom(GB_COM_SET_REG_TEST_1, GB_SEND_NO_DATA);
 					lvlMenu = &clMenu::lvlTest1;
 					lvlCreate_ = true;
 				} else if (reg == GB_REGIME_TEST_1) {
@@ -3816,7 +3814,7 @@ void clMenu::lvlTest() {
                 }
 			} else if (name == punkt2) {
 				if ((reg == GB_REGIME_DISABLED) || (reg == GB_REGIME_TEST_1)) {
-					sParam.txComBuf.addFastCom(GB_COM_SET_REG_TEST_2);
+                    sParam.txComBuf.addFastCom(GB_COM_SET_REG_TEST_2, GB_SEND_NO_DATA);
 					lvlMenu = &clMenu::lvlTest2;
 					lvlCreate_ = true;
 				} else if (reg == GB_REGIME_TEST_2) {
@@ -3860,7 +3858,9 @@ void clMenu::lvlTest1() {
 
 		// дополнительные команды
 		sParam.txComBuf.clear();
-		sParam.txComBuf.addCom1(GB_COM_GET_MEAS);	// измерения
+        if (device != AVANT_OPTO) {
+            sParam.txComBuf.addCom2(GB_COM_GET_MEAS);	// измерения
+        }
 		sParam.txComBuf.addCom2(GB_COM_GET_TEST);	// сигналы
 
 		// сигналы для тестов
@@ -3960,12 +3960,11 @@ void clMenu::lvlTest1() {
 			// РЗ
 			sParam.txComBuf.setInt8(2, 0);				// группа РЗ
 			sParam.txComBuf.setInt8(rz, 1);				// текущий сигнал РЗ
-			sParam.txComBuf.addFastCom(EnterParam.com);
+            sParam.txComBuf.addFastCom(EnterParam.com, GB_SEND_MAX);
 			// КЧ
 			sParam.txComBuf.setInt8(1, 0);				// группа КЧ
 			sParam.txComBuf.setInt8(cf, 1);				// текущий сигнал КЧ
-			sParam.txComBuf.addFastCom(EnterParam.com);
-
+            sParam.txComBuf.addFastCom(EnterParam.com, GB_SEND_MAX);
 
 			EnterParam.setDisable();
 		}
@@ -3987,7 +3986,7 @@ void clMenu::lvlTest1() {
 
 	switch(key_) {
 		case KEY_CANCEL:
-			sParam.txComBuf.addFastCom(GB_COM_SET_REG_DISABLED);
+            sParam.txComBuf.addFastCom(GB_COM_SET_REG_DISABLED, GB_SEND_NO_DATA);
 			lvlMenu = &clMenu::lvlTest;
 			lvlCreate_ = true;
 			break;
@@ -4048,7 +4047,7 @@ void clMenu::lvlTest2() {
 		// дополнительные команды
 		sParam.txComBuf.clear();
 		if (device != AVANT_OPTO) {
-			sParam.txComBuf.addCom1(GB_COM_GET_MEAS);	// измерения
+            sParam.txComBuf.addCom2(GB_COM_GET_MEAS);	// измерения
 		}
 		sParam.txComBuf.addCom2(GB_COM_GET_TEST);	// сигналы
 	}
@@ -4115,7 +4114,7 @@ void clMenu::lvlTest2() {
 
 	switch(key_) {
 		case KEY_CANCEL:
-			sParam.txComBuf.addFastCom(GB_COM_SET_REG_DISABLED);
+            sParam.txComBuf.addFastCom(GB_COM_SET_REG_DISABLED, GB_SEND_NO_DATA);
 			lvlMenu = &clMenu::lvlTest;
 			lvlCreate_ = true;
 			break;
@@ -4152,6 +4151,8 @@ void clMenu::lvlUser() {
         sParam.local.addParam(GB_PARAM_IS_USER);
         sParam.local.addParam(GB_PARAM_IS_PWD_ENGINEER);
         sParam.local.addParam(GB_PARAM_IS_PWD_ADMIN);
+
+        sParam.txComBuf.addCom1(getCom(sParam.local.getParam()));
     }
 
     snprintf_P(&vLCDbuf[0], 21, title);
@@ -4833,6 +4834,7 @@ void clMenu::checkPwdInput(TUser::user_t user, const uint8_t *pwd)
         save.param = EnterParam.last.param;
         save.number = 1;
         save.set(static_cast<uint8_t> (user));
+
         saveParam();
 
         qDebug() << "checkPwd(user, pwd), last.param = " << save.param <<
@@ -4950,117 +4952,141 @@ void clMenu::enterParameter() {
     }
 }
 
+//
 void clMenu::saveParam() {
-    // Если у параметра есть команда обмена с блоком БСП, идет
-    // работа по записи в БСП.
-    // Иначе идет запись в ЕЕПРОМ.
-    eGB_COM com = getCom(save.param);
-    if (com != GB_COM_NO) {
-        saveParamToBsp(com);
+    if (save.param < GB_PARAM_MAX) {
+        save.com = getCom(save.param);
+        save.sendType = getSendType(save.param);
+        save.dopByte = getSendDop(save.param);
+    }
+
+    qDebug() << "Save -->" << hex <<
+                "param = " << dec << save.param <<
+                ", com = " << hex << save.com <<
+                ", sendType = " << dec << save.sendType <<
+                ", number = " << hex << save.number <<
+                ", dopByte = " << hex << save.dopByte <<
+                ", value[0] = " << hex << save.value[0] <<
+                ", value[1] = " << hex << save.value[1];
+
+    if (save.com != GB_COM_NO) {
+        saveParamToBsp();
     } else {
         saveParamToRam();
     }
 }
 
-void clMenu::saveParamToBsp(eGB_COM com) {
-    // Подготовка данных для записи в БСП.
-    uint8_t dop = getSendDop(save.param);
-    uint8_t pos = save.number - 1;
+//
+void clMenu::saveParamToBsp() {
+    // TODO Проверить что сохраняются только параметры! Это не для изменения режима!
 
-    switch(getSendType(save.param)) {
-        case GB_SEND_INT8: {
-            sParam.txComBuf.setInt8(save.getValue());
-        } break;
-
-        case GB_SEND_INT8_DOP: {
-            sParam.txComBuf.setInt8(save.getValue(), 0);
-            sParam.txComBuf.setInt8(pos + dop, 1);
-        } break;
-
-        case GB_SEND_DOP_INT8: {
-            sParam.txComBuf.setInt8(pos + dop, 0);
-            sParam.txComBuf.setInt8(save.getValue(), 1);
-        } break;
-
-        case GB_SEND_INT16_BE: {
-            sParam.txComBuf.setInt16BE(save.getValue());
-        } break;
-
-        case GB_SEND_BITES_DOP:	{
-            // FIXME Убрать привязку к локальному параметру!
-            uint8_t val = sParam.local.getValueB();
-            if (save.getValue() > 0) {
-                val |= (1 << (pos % 8));
-            } else {
-                val &= ~(1 << (pos % 8));
-            }
-            sParam.txComBuf.setInt8(val, 0);
-            sParam.txComBuf.setInt8(pos/8 + dop, 1);
-        } break;
-
-        case GB_SEND_DOP_BITES: {
-            // FIXME Убрать привязку к локальному параметру!
-            uint8_t val = sParam.local.getValueB();
-            if (save.getValue() > 0) {
-                val |= (1 << (pos % 8));
-            } else {
-                val &= ~(1 << (pos % 8));
-            }
-            sParam.txComBuf.setInt8(pos/8 + dop, 0);
-            sParam.txComBuf.setInt8(val, 1);
-        } break;
-
-        case GB_SEND_COR_U: {
-            // FIXME Убрать привязку к локальному параметру!
-            // если текущее значение коррекции тока равно 0
-            // то передается сообщение с под.байтом равным 4
-            // означающим сброс коррекции
-            int16_t t = save.getValue();
-            if (t == 0)
-                dop = 4;
-            else {
-                // новая коррекция =
-                // напряжение прибора - (напряжение с БСП - коррекция)
-                t -= (int16_t) (sParam.measParam.getVoltageOut());
-                t += sParam.local.getValue();
-            }
-            sParam.txComBuf.setInt8(dop, 0);
-            sParam.txComBuf.setInt8(t / 10, 1);
-            sParam.txComBuf.setInt8((t % 10) * 10, 2);
-        } break;
-
-        case GB_SEND_COR_I: {
-            // FIXME Убрать привязку к локальному параметру!
-            // если текущее значение коррекции тока равно 0
-            // то передается сообщение с под.байтом равным 5
-            // означающим сброс коррекции
-            int16_t t = save.getValue();
-            if (t == 0)
-                dop = 5;
-            else {
-                // новая коррекция = ток прибора - (ток с БСП - коррекция)
-                t -= static_cast<int16_t>(sParam.measParam.getCurrentOut());
-                t += sParam.local.getValue();
-            }
-            sParam.txComBuf.setInt8(dop, 0);
-            sParam.txComBuf.setInt8((t >> 8), 1);
-            sParam.txComBuf.setInt8((t), 2);
-        } break;
-
-        case GB_SEND_DOP_PWD: {
-            sParam.txComBuf.setInt8(dop, 0);
-            sParam.txComBuf.setArray(save.getValueArray(), PWD_LEN);
-        } break;
-
-        case GB_SEND_NO: {
-            com = GB_COM_NO;
-        } break;
+    if (save.com == GB_COM_NO) {
+        return;
     }
 
-    if (com != GB_COM_NO) {
-        com = (eGB_COM) (com + GB_COM_MASK_GROUP_WRITE_PARAM);
-        sParam.txComBuf.addFastCom(com);
-        sParam.txComBuf.setSendType(getSendType(save.param));
+    if ((save.sendType > GB_SEND_NO) && (save.sendType < GB_SEND_MAX)){
+        uint8_t pos = save.number - 1;
+        uint8_t wrcom = save.com | GB_COM_MASK_GROUP_WRITE_PARAM;
+        save.com = static_cast<eGB_COM> (wrcom);
+
+        qDebug() << "Add fast com!";
+
+        sParam.txComBuf.addFastCom(save.com, save.sendType);
+
+        qDebug() << "Fast com has been added!";
+
+        switch(save.sendType) {
+            case GB_SEND_INT8: {
+                sParam.txComBuf.setInt8(save.getValue());
+            } break;
+
+            case GB_SEND_INT8_DOP: {
+                sParam.txComBuf.setInt8(save.getValue(), 0);
+                sParam.txComBuf.setFastComDopByte(pos + save.dopByte);
+            } break;
+
+            case GB_SEND_DOP_INT8: {
+                sParam.txComBuf.setFastComDopByte(pos + save.dopByte);
+                sParam.txComBuf.setInt8(save.getValue(), 0);
+            } break;
+
+            case GB_SEND_INT16_BE: {
+                sParam.txComBuf.setInt16BE(save.getValue());
+            } break;
+
+            case GB_SEND_BITES_DOP:	{
+                // FIXME Убрать привязку к локальному параметру!
+                uint8_t val = sParam.local.getValueB();
+                if (save.getValue() > 0) {
+                    val |= (1 << (pos % 8));
+                } else {
+                    val &= ~(1 << (pos % 8));
+                }
+                sParam.txComBuf.setInt8(val, 0);
+                sParam.txComBuf.setFastComDopByte(pos/8 + save.dopByte);
+            } break;
+
+            case GB_SEND_DOP_BITES: {
+                // FIXME Убрать привязку к локальному параметру!
+                uint8_t val = sParam.local.getValueB();
+                if (save.getValue() > 0) {
+                    val |= (1 << (pos % 8));
+                } else {
+                    val &= ~(1 << (pos % 8));
+                }
+                sParam.txComBuf.setFastComDopByte(pos/8 + save.dopByte);
+                sParam.txComBuf.setInt8(val, 0);
+            } break;
+
+            case GB_SEND_COR_U: {
+                // FIXME Убрать привязку к локальному параметру!
+                // если текущее значение коррекции тока равно 0
+                // то передается сообщение с под.байтом равным 4
+                // означающим сброс коррекции
+                int16_t t = save.getValue();
+                if (t == 0)
+                    save.dopByte = 4;
+                else {
+                    // новая коррекция =
+                    // напряжение прибора - (напряжение с БСП - коррекция)
+                    t -= (int16_t) (sParam.measParam.getVoltageOut());
+                    t += sParam.local.getValue();
+                }
+                sParam.txComBuf.setInt8(save.dopByte, 0);
+                sParam.txComBuf.setInt8(t / 10, 1);
+                sParam.txComBuf.setInt8((t % 10) * 10, 2);
+            } break;
+
+            case GB_SEND_COR_I: {
+                // FIXME Убрать привязку к локальному параметру!
+                // если текущее значение коррекции тока равно 0
+                // то передается сообщение с под.байтом равным 5
+                // означающим сброс коррекции
+                int16_t t = save.getValue();
+                if (t == 0)
+                    save.dopByte = 5;
+                else {
+                    // новая коррекция = ток прибора - (ток с БСП - коррекция)
+                    t -= static_cast<int16_t>(sParam.measParam.getCurrentOut());
+                    t += sParam.local.getValue();
+                }
+                sParam.txComBuf.setInt8(save.dopByte, 0);
+                sParam.txComBuf.setInt8((t >> 8), 1);
+                sParam.txComBuf.setInt8((t), 2);
+            } break;
+
+            case GB_SEND_DOP_PWD: {
+                sParam.txComBuf.setInt8(save.dopByte, 0);
+                sParam.txComBuf.setArray(save.getValueArray(), PWD_LEN, 1);
+            } break;
+
+            case GB_SEND_TIME:
+            case GB_SEND_NO:
+            case GB_SEND_NO_DATA:
+            case GB_SEND_MAX: {
+
+            } break;
+        }
     }
 }
 
@@ -5088,6 +5114,7 @@ void clMenu::security() {
     // Проверяется сброс счетчика ввода ошибочного пароля для Инженера
     if (sParam.security.pwdEngineer.timerTick()) {
         save.param = GB_PARAM_IS_PWD_ENG_CNT;
+
         save.number = 1;
         save.set(sParam.security.pwdEngineer.getCounter());
         saveParam();
@@ -5096,7 +5123,6 @@ void clMenu::security() {
 
 // Работа в меню настройки параметров.
 void clMenu::setupParam() {
-
     if (isMessage()) {
         printMessage();
     } else {
@@ -5163,12 +5189,12 @@ void clMenu::setupParam() {
 			break;
 	}
 
-	// подмена команды, на команду текущего уровня меню + быстрая команда
-	if (sParam.local.getState() == LocalParams::STATE_READ_PARAM) {
-        eGB_COM com = getCom(sParam.local.getParam());
-		sParam.txComBuf.addFastCom(com);
-		sParam.txComBuf.addCom1(com, 1);
-	}
+    // Замена команды для опроса текущего параметра
+    eGB_COM com = getCom(sParam.local.getParam());
+    if (sParam.txComBuf.lastCom1() != com) {
+        sParam.txComBuf.addFastCom(com, getSendType(sParam.local.getParam()));
+        sParam.txComBuf.addCom1(com, true);
+    }
 
 	// выход из текущего уровня меню, если кол-во параметров равно 0
 	if (sParam.local.getNumOfParams() == 0) {

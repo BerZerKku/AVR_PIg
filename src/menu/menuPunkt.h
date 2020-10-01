@@ -91,10 +91,7 @@ public:
 	 *	@param num	Номер пункта.
 	 * 	@return Название пункта.
 	 */
-	PGM_P getName(uint8_t num) {
-//		if (num >= cnt_)
-//			num = 0;
-//		return name_[num];
+    PGM_P getName(uint8_t num) const {
 		return ((num < cnt_) ? name_[num] : 0);
 	}
 
@@ -103,7 +100,7 @@ public:
 	 *	@param num	Номер пункта.
 	 * 	@return Название пункта.
 	 */
-	uint8_t getNumber(uint8_t num) {
+    uint8_t getNumber(uint8_t num) const {
 		return ((num < cnt_) ? number_[num] : 0);
 	}
 
@@ -112,10 +109,8 @@ public:
 	 * 	@param num Номер пункта.
 	 * 	@return Команда для запроса из БСП.
 	 */
-	eGB_COM getCom(uint8_t num) {
-		if (num >= cnt_)
-			num = 0;
-		return com_[num];
+    eGB_COM getCom(uint8_t num) const {
+        return ((num < cnt_) ? com_[num] : GB_COM_NO);
 	}
 
 	/** Возвращает текущее кол-во пункто меню.
@@ -123,7 +118,7 @@ public:
 	 * 	@return Текущее кол-во пунктов меню.
 	 * 	@retval 0 - Пусто.
 	 */
-	uint8_t getMaxNumPunkts() {
+    uint8_t getMaxNumPunkts() const {
 		return cnt_;
 	}
 
