@@ -194,9 +194,11 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
                         uint8_t *array = sParam_->txComBuf.getBuferAddress();
                         num = addCom(com, num, array);
                     } break;
+                    case GB_SEND_NO_DATA: {
+                        num = addCom(com);
+                    } break;
 
                     case GB_SEND_NO:
-                    case GB_SEND_NO_DATA:
                     case GB_SEND_MAX: {
                     } break;
                 }

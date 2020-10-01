@@ -1504,6 +1504,20 @@ public:
         return isadd;
 	}
 
+    /** Проверяет наличие каоманды в буфере быстрых команд.
+     *
+     *  @param[in] com Команда
+     *  @return true если есть команда в буфере, иначе false.
+     */
+    bool containsFastCom(eGB_COM com) const {
+        for(uint_fast8_t i = 0 ; i < cntComFast; i++) {
+            if (comFast_[i].com == com) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Устанавливает дополнительный байт данных для последней быстрой команды.
      *
      *  @param[in] dopbyte Дополнительный байт.

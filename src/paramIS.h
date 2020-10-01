@@ -125,6 +125,14 @@ public:
         return change;
     }
 
+    /** Возвращает состояние флага инициализации.
+     *
+     *  @return true если значение было установлено, иначе false.
+     */
+    bool isInit() const {
+        return init;
+    }
+
 private:
 
     /** Проверяет корректность пароля.

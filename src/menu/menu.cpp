@@ -22,7 +22,6 @@ static char vLCDbuf[SIZE_BUF_STRING + 1];
 
 
 clMenu::clMenu() {
-
     // Сравнение размера массива команд переназначения и максимального кол-ва транзитных команд
     COMPILE_TIME_ASSERT(SIZE_OF(fcRingRenumber) == (MAX_NUM_COM_RING + 1));
 
@@ -4152,6 +4151,7 @@ void clMenu::lvlUser() {
         sParam.local.addParam(GB_PARAM_IS_PWD_ENGINEER);
         sParam.local.addParam(GB_PARAM_IS_PWD_ADMIN);
 
+        sParam.txComBuf.addCom1(GB_COM_GET_NET_ADR);
         sParam.txComBuf.addCom1(getCom(sParam.local.getParam()));
     }
 
@@ -4203,7 +4203,10 @@ eMENU_ENTER_PARAM clMenu::inputValue() {
 #else
     static char strListValue_P[] PROGMEM = "%s";
 #endif
-    static char strIntValue[] PROGMEM = "%01d";
+    static char strIntValue1[] PROGMEM = "%01d";
+    static char strIntValue2[] PROGMEM = "%02d";
+    static char strIntValue3[] PROGMEM = "%03d";
+    static char strIntValue4[] PROGMEM = "%04d";
     static char strStrValue[] PROGMEM = "%s";
     static char strFloatValue[] PROGMEM = "%01u.%01u";
 
@@ -4222,8 +4225,29 @@ eMENU_ENTER_PARAM clMenu::inputValue() {
 
     // FIXME Исправить проверку выхода за пределы строки!
 	if (status == MENU_ENTER_PARAM_INT) {
-		int16_t val = EnterParam.getValue();
-        posstop += snprintf_P(&vLCDbuf[posstart], ROW_LEN+1, strIntValue, val);
+        PGM_P vstr = NULL;
+        switch(EnterParam.getDigitMax()) {
+            case 1: {
+                vstr = strIntValue1;
+            } break;
+            case 2: {
+                vstr = strIntValue2;
+            } break;
+            case 3: {
+                vstr = strIntValue3;
+            } break;
+            case 4: {
+                vstr = strIntValue4;
+            } break;
+        }
+        if (vstr != NULL) {
+            int16_t val = EnterParam.getValue();
+            posstop += snprintf_P(&vLCDbuf[posstart], ROW_LEN+1, vstr, val);
+        } else {
+            key_ = KEY_CANCEL;
+            qDebug() << "Do not find input string for parameter: " <<
+                        getNameOfParam(EnterParam.getParam());
+        }
 	} else if (status == MENU_ENTER_PARAM_U_COR) {
 		uint16_t val = EnterParam.getValue();
         posstop += snprintf_P(&vLCDbuf[posstart], ROW_LEN+1, strFloatValue,
@@ -4642,14 +4666,31 @@ void clMenu::printRange(uint8_t pos) {
 }
 
 void clMenu::printCursor(uint8_t start, uint8_t stop) {
+    static bool blink = false;
+    uint8_t pos = SIZE_BUF_STRING;
     uint8_t shift = EnterParam.getDigit() - 1;
-    if (blink_) {
+
+    blink = !blink;
+    if (blink) {
         switch(EnterParam.getStatus()) {
+            case MENU_ENTER_PARAM_INT: // DOWN
             case MENU_ENTER_PASSWORD: {
-                vLCDbuf[stop - shift] = '_';
+                pos = stop - shift;
             } break;
+            case MENU_ENTER_PARAM_LIST: {
+                pos = start;
+            } break;
+
+            case MENU_ENTER_PARAM_NO:
+                break;
         }
     }
+
+    if (pos != SIZE_BUF_STRING) {
+        vLCDbuf[pos] = '_';
+    }
+
+
 }
 
 // Вывод на экран текущего значения параметра.
@@ -4834,7 +4875,6 @@ void clMenu::checkPwdInput(TUser::user_t user, const uint8_t *pwd)
         save.param = EnterParam.last.param;
         save.number = 1;
         save.set(static_cast<uint8_t> (user));
-
         saveParam();
 
         qDebug() << "checkPwd(user, pwd), last.param = " << save.param <<
@@ -5103,6 +5143,18 @@ void clMenu::saveParamToRam() {
 
 //
 void clMenu::security() {
+    // FIXME УБрать команду опроса настроек из быстрых команд.
+    // TODO Создать отдельную группу для опроса команд необходимых безопасности и АСУ ТП.
+
+    // Проверка считывания настроек для администратора из БСП
+    if (!sParam.security.pwdAdmin.isInit()) {
+        eGB_COM com = getCom(GB_PARAM_IS_PWD_ADMIN);
+        if (!sParam.txComBuf.containsFastCom(com)) {
+            eGB_SEND_TYPE type = getSendType(GB_PARAM_IS_PWD_ADMIN);
+            sParam.txComBuf.addFastCom(com, type);
+        }
+    }
+
     // Проверяется сброс счетчика ввода ошибочного пароля для Администратора
     if (sParam.security.pwdAdmin.timerTick()) {
         save.param = GB_PARAM_IS_PWD_ADM_CNT;
@@ -5111,10 +5163,18 @@ void clMenu::security() {
         saveParam();
     }
 
+    // Проверка считывания настроек для инженера из БСП
+    if (!sParam.security.pwdEngineer.isInit()) {
+        eGB_COM com = getCom(GB_PARAM_IS_PWD_ENGINEER);
+        if (!sParam.txComBuf.containsFastCom(com)) {
+            eGB_SEND_TYPE type = getSendType(GB_PARAM_IS_PWD_ENGINEER);
+            sParam.txComBuf.addFastCom(com, type);
+        }
+    }
+
     // Проверяется сброс счетчика ввода ошибочного пароля для Инженера
     if (sParam.security.pwdEngineer.timerTick()) {
         save.param = GB_PARAM_IS_PWD_ENG_CNT;
-
         save.number = 1;
         save.set(sParam.security.pwdEngineer.getCounter());
         saveParam();
