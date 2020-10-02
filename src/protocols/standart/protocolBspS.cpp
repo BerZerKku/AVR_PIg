@@ -30,12 +30,12 @@ bool clProtocolBspS::getData(bool pc) {
     if (mask == GB_COM_MASK_GROUP_WRITE_PARAM) {
 		if (com == GB_COM_SET_TIME) {
 			if (buf[NUM] >= 8) {
-				stat =  sParam_->DateTimeReq.setYear(BCD_TO_BIN(buf[B1]));
-				stat &= sParam_->DateTimeReq.setMonth(BCD_TO_BIN(buf[B2]));
-				stat &= sParam_->DateTimeReq.setDay(BCD_TO_BIN(buf[B3]));
-				stat &= sParam_->DateTimeReq.setHour(BCD_TO_BIN(buf[B4]));
-				stat &= sParam_->DateTimeReq.setMinute(BCD_TO_BIN(buf[B5]));
-				stat &= sParam_->DateTimeReq.setSecond(BCD_TO_BIN(buf[B6]));
+				stat =  sParam_->DateTimeReq.setYear(buf[B1]);
+				stat &= sParam_->DateTimeReq.setMonth(buf[B2]);
+				stat &= sParam_->DateTimeReq.setDay(buf[B3]);
+				stat &= sParam_->DateTimeReq.setHour(buf[B4]);
+				stat &= sParam_->DateTimeReq.setMinute(buf[B5]);
+				stat &= sParam_->DateTimeReq.setSecond(buf[B6]);
 
 				// миллисекунды устанавливаются, только если они есть в посылке
 				uint16_t ms = 0;
@@ -271,13 +271,13 @@ bool clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
 		if ((sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_DEF) && (!pc)){
 			if (sParam_->typeDevice == AVANT_OPTO) {
 				// дата
-				sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B3]));
-				sParam_->jrnEntry.dateTime.setMonth(BCD_TO_BIN(buf[B4]));
-				sParam_->jrnEntry.dateTime.setDay(BCD_TO_BIN(buf[B5]));
+				sParam_->jrnEntry.dateTime.setYear(buf[B3]);
+				sParam_->jrnEntry.dateTime.setMonth(buf[B4]);
+				sParam_->jrnEntry.dateTime.setDay(buf[B5]);
 				// время
-				sParam_->jrnEntry.dateTime.setHour(BCD_TO_BIN(buf[B6]));
-				sParam_->jrnEntry.dateTime.setMinute(BCD_TO_BIN(buf[B7]));
-				sParam_->jrnEntry.dateTime.setSecond(BCD_TO_BIN(buf[B8]));
+				sParam_->jrnEntry.dateTime.setHour(buf[B6]);
+				sParam_->jrnEntry.dateTime.setMinute(buf[B7]);
+				sParam_->jrnEntry.dateTime.setSecond(buf[B8]);
 				uint16_t t = TO_INT16(buf[B9], buf[B10]);
 				sParam_->jrnEntry.dateTime.setMsSecond(t);
 				//
@@ -288,13 +288,13 @@ bool clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
 				sParam_->jrnEntry.setReady();
 				stat = true;
 			} else {
-				sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B16]));
-				sParam_->jrnEntry.dateTime.setMonth(BCD_TO_BIN(buf[B15]));
-				sParam_->jrnEntry.dateTime.setDay(BCD_TO_BIN(buf[B14]));
+				sParam_->jrnEntry.dateTime.setYear(buf[B16]);
+				sParam_->jrnEntry.dateTime.setMonth(buf[B15]);
+				sParam_->jrnEntry.dateTime.setDay(buf[B14]);
 				// B13 - день недели
-				sParam_->jrnEntry.dateTime.setHour(BCD_TO_BIN(buf[B12]));
-				sParam_->jrnEntry.dateTime.setMinute(BCD_TO_BIN(buf[B11]));
-				sParam_->jrnEntry.dateTime.setSecond(BCD_TO_BIN(buf[B10]));
+				sParam_->jrnEntry.dateTime.setHour(buf[B12]);
+				sParam_->jrnEntry.dateTime.setMinute(buf[B11]);
+				sParam_->jrnEntry.dateTime.setSecond(buf[B10]);
 				uint16_t t = TO_INT16(buf[B9], buf[B8]);
 				sParam_->jrnEntry.dateTime.setMsSecond(t);
 				sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
@@ -346,13 +346,13 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
 			if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_PRM)&& (!pc)){
 				if (sParam_->typeDevice == AVANT_OPTO) {
 					// дата
-					sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B5]));
-					sParam_->jrnEntry.dateTime.setMonth(BCD_TO_BIN(buf[B6]));
-					sParam_->jrnEntry.dateTime.setDay(BCD_TO_BIN(buf[B7]));
+					sParam_->jrnEntry.dateTime.setYear(buf[B5]);
+					sParam_->jrnEntry.dateTime.setMonth(buf[B6]);
+					sParam_->jrnEntry.dateTime.setDay(buf[B7]);
 					// время
-					sParam_->jrnEntry.dateTime.setHour(BCD_TO_BIN(buf[B8]));
-					sParam_->jrnEntry.dateTime.setMinute(BCD_TO_BIN(buf[B9]));
-					sParam_->jrnEntry.dateTime.setSecond(BCD_TO_BIN(buf[B10]));
+					sParam_->jrnEntry.dateTime.setHour(buf[B8]);
+					sParam_->jrnEntry.dateTime.setMinute(buf[B9]);
+					sParam_->jrnEntry.dateTime.setSecond(buf[B10]);
 					uint16_t t = TO_INT16(buf[B11], buf[B12]);
 					sParam_->jrnEntry.dateTime.setMsSecond(t);
 					//
@@ -360,13 +360,13 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
 					sParam_->jrnEntry.setReady();
 					stat = true;
 				} else {
-					sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B16]));
-					sParam_->jrnEntry.dateTime.setMonth(BCD_TO_BIN(buf[B15]));
-					sParam_->jrnEntry.dateTime.setDay(BCD_TO_BIN(buf[B14]));
+					sParam_->jrnEntry.dateTime.setYear(buf[B16]);
+					sParam_->jrnEntry.dateTime.setMonth(buf[B15]);
+					sParam_->jrnEntry.dateTime.setDay(buf[B14]);
 					// B13 - день недели
-					sParam_->jrnEntry.dateTime.setHour(BCD_TO_BIN(buf[B12]));
-					sParam_->jrnEntry.dateTime.setMinute(BCD_TO_BIN(buf[B11]));
-					sParam_->jrnEntry.dateTime.setSecond(BCD_TO_BIN(buf[B10]));
+					sParam_->jrnEntry.dateTime.setHour(buf[B12]);
+					sParam_->jrnEntry.dateTime.setMinute(buf[B11]);
+					sParam_->jrnEntry.dateTime.setSecond(buf[B10]);
 					uint16_t t = TO_INT16(buf[B9], buf[B8]);
 					sParam_->jrnEntry.dateTime.setMsSecond(t);
 					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
@@ -422,13 +422,13 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 			if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_PRD)&& (!pc)) {
 				if (sParam_->typeDevice == AVANT_OPTO) {
 					// дата
-					sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B5]));
-					sParam_->jrnEntry.dateTime.setMonth(BCD_TO_BIN(buf[B6]));
-					sParam_->jrnEntry.dateTime.setDay(BCD_TO_BIN(buf[B7]));
+					sParam_->jrnEntry.dateTime.setYear(buf[B5]);
+					sParam_->jrnEntry.dateTime.setMonth(buf[B6]);
+					sParam_->jrnEntry.dateTime.setDay(buf[B7]);
 					// время
-					sParam_->jrnEntry.dateTime.setHour(BCD_TO_BIN(buf[B8]));
-					sParam_->jrnEntry.dateTime.setMinute(BCD_TO_BIN(buf[B9]));
-					sParam_->jrnEntry.dateTime.setSecond(BCD_TO_BIN(buf[B10]));
+					sParam_->jrnEntry.dateTime.setHour(buf[B8]);
+					sParam_->jrnEntry.dateTime.setMinute(buf[B9]);
+					sParam_->jrnEntry.dateTime.setSecond(buf[B10]);
 					uint16_t t = TO_INT16(buf[B11], buf[B12]);
 					sParam_->jrnEntry.dateTime.setMsSecond(t);
 					//
@@ -441,13 +441,13 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 					sParam_->jrnEntry.setReady();
 					stat = true;
 				} else {
-					sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B16]));
-					sParam_->jrnEntry.dateTime.setMonth(BCD_TO_BIN(buf[B15]));
-					sParam_->jrnEntry.dateTime.setDay(BCD_TO_BIN(buf[B14]));
+					sParam_->jrnEntry.dateTime.setYear(buf[B16]);
+					sParam_->jrnEntry.dateTime.setMonth(buf[B15]);
+					sParam_->jrnEntry.dateTime.setDay(buf[B14]);
 					// B13 - день недели
-					sParam_->jrnEntry.dateTime.setHour(BCD_TO_BIN(buf[B12]));
-					sParam_->jrnEntry.dateTime.setMinute(BCD_TO_BIN(buf[B11]));
-					sParam_->jrnEntry.dateTime.setSecond(BCD_TO_BIN(buf[B10]));
+					sParam_->jrnEntry.dateTime.setHour(buf[B12]);
+					sParam_->jrnEntry.dateTime.setMinute(buf[B11]);
+					sParam_->jrnEntry.dateTime.setSecond(buf[B10]);
 					uint16_t t = TO_INT16(buf[B9], buf[B8]);
 					sParam_->jrnEntry.dateTime.setMsSecond(t);
 					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
@@ -594,13 +594,13 @@ bool clProtocolBspS::hdlrComGetJrnEntry(bool pc) {
         sParam_->jrnEntry.val = true;
         if (sParam_->typeDevice == AVANT_OPTO) {
             // дата
-            sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B6]));
-            sParam_->jrnEntry.dateTime.setMonth(BCD_TO_BIN(buf[B7]));
-            sParam_->jrnEntry.dateTime.setDay(BCD_TO_BIN(buf[B8]));
+            sParam_->jrnEntry.dateTime.setYear(buf[B6]);
+            sParam_->jrnEntry.dateTime.setMonth(buf[B7]);
+            sParam_->jrnEntry.dateTime.setDay(buf[B8]);
             // время
-            sParam_->jrnEntry.dateTime.setHour(BCD_TO_BIN(buf[B9]));
-            sParam_->jrnEntry.dateTime.setMinute(BCD_TO_BIN(buf[B10]));
-            sParam_->jrnEntry.dateTime.setSecond(BCD_TO_BIN(buf[B11]));
+            sParam_->jrnEntry.dateTime.setHour(buf[B9]);
+            sParam_->jrnEntry.dateTime.setMinute(buf[B10]);
+            sParam_->jrnEntry.dateTime.setSecond(buf[B11]);
             uint16_t t = TO_INT16(buf[B12], buf[B13]);
             sParam_->jrnEntry.dateTime.setMsSecond(t);
             //
@@ -610,14 +610,14 @@ bool clProtocolBspS::hdlrComGetJrnEntry(bool pc) {
             check = true;
         } else {
             // дата
-            sParam_->jrnEntry.dateTime.setYear(BCD_TO_BIN(buf[B16]));
-            sParam_->jrnEntry.dateTime.setMonth(BCD_TO_BIN(buf[B15]));
-            sParam_->jrnEntry.dateTime.setDay(BCD_TO_BIN(buf[B14]));
-            sParam_->jrnEntry.dateTime.setDayWeek(BCD_TO_BIN(buf[B13]));
+            sParam_->jrnEntry.dateTime.setYear(buf[B16]);
+            sParam_->jrnEntry.dateTime.setMonth(buf[B15]);
+            sParam_->jrnEntry.dateTime.setDay(buf[B14]);
+            sParam_->jrnEntry.dateTime.setDayWeek(buf[B13]);
             // время
-            sParam_->jrnEntry.dateTime.setHour(BCD_TO_BIN(buf[B12]));
-            sParam_->jrnEntry.dateTime.setMinute(BCD_TO_BIN(buf[B11]));
-            sParam_->jrnEntry.dateTime.setSecond(BCD_TO_BIN(buf[B10]));
+            sParam_->jrnEntry.dateTime.setHour(buf[B12]);
+            sParam_->jrnEntry.dateTime.setMinute(buf[B11]);
+            sParam_->jrnEntry.dateTime.setSecond(buf[B10]);
             uint16_t t = TO_INT16(buf[B9], buf[B8]);
             sParam_->jrnEntry.dateTime.setMsSecond(t);
             // ! B1 - тип устройства, на данный момент игнорируется
@@ -754,12 +754,12 @@ bool clProtocolBspS::hdlrComGetTime(bool pc) {
     static uint8_t cntTimeFrame = 0;
     bool check = true;
 
-    check &= sParam_->DateTime.setYear(BCD_TO_BIN(buf[B1]));
-    check &= sParam_->DateTime.setMonth(BCD_TO_BIN(buf[B2]));
-    check &= sParam_->DateTime.setDay(BCD_TO_BIN(buf[B3]));
-    check &= sParam_->DateTime.setHour(BCD_TO_BIN(buf[B4]));
-    check &= sParam_->DateTime.setMinute(BCD_TO_BIN(buf[B5]));
-    check &= sParam_->DateTime.setSecond(BCD_TO_BIN(buf[B6]));
+    check &= sParam_->DateTime.setYear(buf[B1]);
+    check &= sParam_->DateTime.setMonth(buf[B2]);
+    check &= sParam_->DateTime.setDay(buf[B3]);
+    check &= sParam_->DateTime.setHour(buf[B4]);
+    check &= sParam_->DateTime.setMinute(buf[B5]);
+    check &= sParam_->DateTime.setSecond(buf[B6]);
     // миллисекунд может не быть в посылке
     uint16_t ms = (buf[NUM] >= 8) ? *((uint16_t *) &buf[B7]) : 0;
     check &= sParam_->DateTime.setMsSecond(ms);
@@ -773,12 +773,12 @@ bool clProtocolBspS::hdlrComGetTime(bool pc) {
             jrn->setCom(buf[B11]);
             jrn->setComSource(buf[B12]);
             // B13
-            jrn->dtime.setYear(BCD_TO_BIN(buf[B14]));
-            jrn->dtime.setMonth(BCD_TO_BIN(buf[B15]));
-            jrn->dtime.setDay(BCD_TO_BIN(buf[B16]));
-            jrn->dtime.setHour(BCD_TO_BIN(buf[B17]));
-            jrn->dtime.setMinute(BCD_TO_BIN(buf[B18]));
-            jrn->dtime.setSecond(BCD_TO_BIN(buf[B19]));
+            jrn->dtime.setYear(buf[B14]);
+            jrn->dtime.setMonth(buf[B15]);
+            jrn->dtime.setDay(buf[B16]);
+            jrn->dtime.setHour(buf[B17]);
+            jrn->dtime.setMinute(buf[B18]);
+            jrn->dtime.setSecond(buf[B19]);
             jrn->dtime.setMsSecond(*((uint16_t *) &buf[B20]));
 
             jrn->setReadyToSend();

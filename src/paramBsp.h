@@ -8,16 +8,18 @@
 #ifndef PARAMBSP_H_
 #define PARAMBSP_H_
 
-#include "txCom.hpp"
+#include "dateTime.hpp"
 #include "glbDefine.h"
+#include "journalEntry.hpp"
+#include "jrnScada.hpp"
+#include "LocalParams.h"
 #include "paramPrm.h"
 #include "paramPrd.h"
 #include "paramDef.h"
 #include "paramGlb.h"
 #include "paramUart.h"
 #include "paramIS.h"
-#include "LocalParams.h"
-
+#include "txCom.hpp"
 
 /// Структура параметров БСП
 struct stGBparam {
@@ -31,10 +33,10 @@ struct stGBparam {
 	eGB_TYPE_OPTO typeOpto;
 
 	// дата/время
-	TDataTime DateTime;
+	TDateTime DateTime;
 
 	// дата/время БСП в момент установки новго времени
-	TDataTime DateTimeReq;
+	TDateTime DateTimeReq;
 
 	// дата/время
 

@@ -348,10 +348,10 @@ bool TProtocolPcI::procSetTime() {
 	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.hours), i++);
 	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.minutes), i++);
 	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.milliseconds / 1000), i++);
-	uint16_t ms = stTime.milliseconds % 1000 + getDelay();
 
-	sParam_->txComBuf.setInt8(BIN_TO_BCD((uint8_t) ms), i++);
-	sParam_->txComBuf.setInt8(BIN_TO_BCD((uint8_t) (ms >> 8)), i++);
+	uint16_t ms = stTime.milliseconds % 1000 + getDelay();
+	sParam_->txComBuf.setInt8((uint8_t) ms, i++);
+	sParam_->txComBuf.setInt8((uint8_t) (ms >> 8), i++);
 	sParam_->txComBuf.setInt8(1, i++);
     sParam_->txComBuf.addFastCom(GB_COM_SET_TIME, GB_SEND_MAX);
 

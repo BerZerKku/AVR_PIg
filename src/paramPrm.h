@@ -8,7 +8,7 @@
 #ifndef PARAMPRM_H_
 #define PARAMPRM_H_
 
-// #include "glbDefine.h"
+#include "deviceStatus.hpp"
 
 /// класс для параметров и настроек приемника
 class TDevicePrm {
