@@ -1131,8 +1131,6 @@ void clMenu::lvlStart() {
     static const char fcCompType[] PROGMEM = "Совместим. %s";
 #endif
 
-    QDEBUG("Hello");
-
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 

@@ -43,18 +43,25 @@
 #define QDEBUG(x) (void(0))
 #define QDINFO(x) (void(0))
 #define QWARNING(x) (void(0))
+#define QCRITICAL(x) (void(0))
+#define
 
-#else
+#else // defined(NDEBUG)
 
 #if defined(QT_CORE_LIB)
+
 #define QDEBUG(x) (qDebug() << x)
 #define QINFO(x) (qInfo() << x)
 #define QWARNING(x) (qWarning() << x)
-#else
+#define QCRITICAL(x) (qCritical() << x)
+
+#else // defined(QT_CORE_LIB)
+
 #define QDEBUG(x) (void(0))
 #define QDINFO(x) (void(0))
 #define QWARNING(x) (void(0))
-#endif
+#define QCRITICAL(x) (void(0))
+#endif // defined(QT_CORE_LIB)
 
 // отладочная информация
 struct stDebug {
@@ -72,6 +79,6 @@ extern stDebug sDebug;
 
 #define COMPILE_TIME_ASSERT(expression) switch(0) { case 0 : case (expression) : ; }
 
-#endif
+#endif // defined(NDEBUG)
 
 #endif /* DEBUG_HPP_ */
