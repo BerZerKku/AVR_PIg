@@ -895,7 +895,7 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 eGB_COM clMenu::getTxCommand() {
     static uint8_t cnt = MAX_NUM_COM_SEND_IN_CYLCE;
 
-    static QVector<eGB_COM> dcom;
+//    static QVector<eGB_COM> dcom;
 
 	// быстрая команда идет с самым высоким приоритетом
 	eGB_COM com = sParam.txComBuf.getFastCom();
@@ -905,8 +905,8 @@ eGB_COM clMenu::getTxCommand() {
         cnt = cnt < MAX_NUM_COM_SEND_IN_CYLCE ? cnt + 1 : 0;
 
         if (cnt == 0) {
-            qDebug() << "Commands per cycle: " << showbase << hex << dcom;
-            dcom.clear();
+//            qDebug() << "Commands per cycle: " << showbase << hex << dcom;
+//            dcom.clear();
             com = GB_COM_GET_SOST;
         } else if (cnt == 1) {
             com = GB_COM_GET_TIME;
@@ -926,7 +926,7 @@ eGB_COM clMenu::getTxCommand() {
         }
     }
 
-    dcom.append(com);
+//    dcom.append(com);
 
     return com;
 }
@@ -4245,8 +4245,8 @@ eMENU_ENTER_PARAM clMenu::inputValue() {
             posstop += snprintf_P(&vLCDbuf[posstart], ROW_LEN+1, vstr, val);
         } else {
             key_ = KEY_CANCEL;
-            qDebug() << "Do not find input string for parameter: " <<
-                        getNameOfParam(EnterParam.getParam());
+//            qDebug() << "Do not find input string for parameter: " <<
+//                        getNameOfParam(EnterParam.getParam());
         }
 	} else if (status == MENU_ENTER_PARAM_U_COR) {
 		uint16_t val = EnterParam.getValue();
@@ -4877,9 +4877,6 @@ void clMenu::checkPwdInput(TUser::user_t user, const uint8_t *pwd)
         save.set(static_cast<uint8_t> (user));
         saveParam();
 
-        qDebug() << "checkPwd(user, pwd), last.param = " << save.param <<
-                    ", user = " << user;
-
         if (user == TUser::ADMIN) {
             sParam.security.pwdAdmin.clrCounter();
         } else if (user == TUser::ENGINEER) {
@@ -4891,8 +4888,6 @@ void clMenu::checkPwdInput(TUser::user_t user, const uint8_t *pwd)
         } else if (user == TUser::ENGINEER) {
             sParam.security.pwdEngineer.incCounter();
         }
-
-        qDebug() << "!checkPwd(user, pwd)";
 
         if (!checkErrorCounterUser(GB_PARAM_IS_USER, user)) {
             setMessage(MSG_BLOCK_USER);
@@ -5000,14 +4995,14 @@ void clMenu::saveParam() {
         save.dopByte = getSendDop(save.param);
     }
 
-    qDebug() << "Save -->" << hex <<
-                "param = " << dec << save.param <<
-                ", com = " << hex << save.com <<
-                ", sendType = " << dec << save.sendType <<
-                ", number = " << hex << save.number <<
-                ", dopByte = " << hex << save.dopByte <<
-                ", value[0] = " << hex << save.value[0] <<
-                ", value[1] = " << hex << save.value[1];
+//    qDebug() << "Save -->" << hex <<
+//                "param = " << dec << save.param <<
+//                ", com = " << hex << save.com <<
+//                ", sendType = " << dec << save.sendType <<
+//                ", number = " << hex << save.number <<
+//                ", dopByte = " << hex << save.dopByte <<
+//                ", value[0] = " << hex << save.value[0] <<
+//                ", value[1] = " << hex << save.value[1];
 
     if (save.com != GB_COM_NO) {
         saveParamToBsp();
@@ -5029,11 +5024,7 @@ void clMenu::saveParamToBsp() {
         uint8_t wrcom = save.com | GB_COM_MASK_GROUP_WRITE_PARAM;
         save.com = static_cast<eGB_COM> (wrcom);
 
-        qDebug() << "Add fast com!";
-
         sParam.txComBuf.addFastCom(save.com, save.sendType);
-
-        qDebug() << "Fast com has been added!";
 
         switch(save.sendType) {
             case GB_SEND_INT8: {
@@ -5205,7 +5196,6 @@ void clMenu::setupParam() {
                 } else if (param == GB_PARAM_IS_PWD) {
                     // FIXME А если другие параметры ?!
                     if (EnterParam.last.param == GB_PARAM_IS_USER) {
-                        qDebug() << "EnterParam.last.param == GB_PARAM_IS_USER";
                         checkPwdInput((TUser::user_t) EnterParam.last.val,
                                       EnterParam.getValuePwd());
                     }

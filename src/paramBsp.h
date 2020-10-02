@@ -8,6 +8,7 @@
 #ifndef PARAMBSP_H_
 #define PARAMBSP_H_
 
+#include "txCom.hpp"
 #include "glbDefine.h"
 #include "paramPrm.h"
 #include "paramPrd.h"
