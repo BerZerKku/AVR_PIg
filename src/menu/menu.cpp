@@ -1131,6 +1131,8 @@ void clMenu::lvlStart() {
     static const char fcCompType[] PROGMEM = "Совместим. %s";
 #endif
 
+    QDEBUG("Hello");
+
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 
@@ -3516,9 +3518,6 @@ void clMenu::lvlSetupInterface() {
 	setupParam();
 
     // FIXME При смене интерфейса на экране появляется "чтение..."
-    // Надо или исправить это, либо сделать подобное для всех параметров.
-    // Т.е. после ввода локального параметра считывать его значение!.
-
 
     if (interface != sParam.Uart.Interface.get()) {
         lvlCreate_ = true;
@@ -5013,8 +5012,6 @@ void clMenu::saveParam() {
 
 //
 void clMenu::saveParamToBsp() {
-    // TODO Проверить что сохраняются только параметры! Это не для изменения режима!
-
     if (save.com == GB_COM_NO) {
         return;
     }
@@ -5194,7 +5191,7 @@ void clMenu::setupParam() {
                         EnterParam.setDisable();
                     }
                 } else if (param == GB_PARAM_IS_PWD) {
-                    // FIXME А если другие параметры ?!
+                    // FIXME А если параметр не GB_PARAM_IS_USER ?!
                     if (EnterParam.last.param == GB_PARAM_IS_USER) {
                         checkPwdInput((TUser::user_t) EnterParam.last.val,
                                       EnterParam.getValuePwd());

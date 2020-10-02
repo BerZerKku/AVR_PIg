@@ -86,7 +86,14 @@ uint8_t TDateTime::getNumDaysInMonth(uint8_t month, uint8_t year) const {
 	if ((month == 4) || (month == 6) || (month == 9) || (month == 11)) {
 		num = 30;
 	} else if (month == 2) {
-		num = ((year % 4) == 0) ? 29 : 28;
+        num = 28;
+        if ((year % 400) == 0) {
+            num += 1;
+        } else {
+            if (((year % 4) == 0) && ((year % 100) != 0))  {
+                num += 1;
+            }
+        }
 	} else if ((month != 0) && (month < 13)) {
 		num = 31;
 	}
@@ -146,7 +153,7 @@ bool TDateTime::setDayWeek(uint8_t val) {
 
 	val = BCD_TO_BIN(val);
 
-	if ((val >= 1) || (val <= 7)) {
+    if ((val >= 1) && (val <= 7)) {
 		dayWeek_ = val;
 		stat = true;
 	} else {

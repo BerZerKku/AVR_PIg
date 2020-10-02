@@ -15,9 +15,10 @@
 /// Класс для даты и времени
 class TDateTime {
 public:
-	// флаг установки нового времени
+    /// Флаг установки нового времени.
 	bool setTimeBsp_;
 
+    /// Конструктор.
 	TDateTime() {
 		msSecond_ = 0;
 		second_ = 0;
@@ -31,56 +32,108 @@ public:
 		setTimeBsp_ = false;
 	}
 
-	// Считывание и установка секунд
+    /// Возвращает секунды.
 	uint8_t getSecond() const {
 		return second_;
 	}
+
+    /** Устанавливает секунды.
+     *
+     *  @param[in] val Значение в BCD коде.
+     *  @return true если значение установлено, иначе false.
+     */
 	bool setSecond(uint8_t val);
 
-	// считывание и установка минут
+    /// Возвращает минуты.
 	uint8_t getMinute() const {
 		return minute_;
 	}
+
+    /** Устанавливает минуты.
+     *
+     *  @param[in] val Значение в BCD коде.
+     *  @return true если значение установлено, иначе false.
+     */
 	bool setMinute(uint8_t val);
 
-	// считывание и установка часов
+    /// Возвращает часы.
 	uint8_t getHour() const {
 		return hour_;
 	}
+
+    /** Устанавливает часы.
+     *
+     *  @param[in] val Значение в BCD коде.
+     *  @return true если значение установлено, иначе false.
+     */
 	bool setHour(uint8_t val);
 
-	// считывание и установка дня
+    /// Возвращает день.
 	uint8_t getDay() const {
 		return day_;
 	}
+
+    /** Устанавливает день.
+     *
+     *  @param[in] val Значение в BCD коде.
+     *  @return true если значение установлено, иначе false.
+     */
 	bool setDay(uint8_t val);
 
-	// возвращает кол-во дней в месяце
-	// если месяц или год не заданы, возвращается для текущего
+    /** Возвращает количество дней для заданного месяца и года.
+     *
+     *  @param[in] month Месяц (если 0, то берется текущий).
+     *  @param[in] year Год (если 0, то берется текущий).
+     *  @return Количество дней в месяце.
+     */
 	uint8_t getNumDaysInMonth(uint8_t month = 0, uint8_t year = 0) const;
 
-	// считывание и установка месяца
+    /// Возвращает месяц.
 	uint8_t getMonth() const {
 		return month_;
 	}
+
+    /** Устанавливает месяц.
+     *
+     *  @param[in] val Значение в BCD коде.
+     *  @return true если значение установлено, иначе false.
+     */
 	bool setMonth(uint8_t val);
 
-	// считывание и установка года
+    /// Возвращает год.
 	uint8_t getYear() const {
 		return year_;
 	}
+
+    /** Устанавливает год.
+     *
+     *  @param[in] val Значение в BCD коде.
+     *  @return true если значение установлено, иначе false.
+     */
 	bool setYear(uint8_t val);
 
-	// считывание и установка миллисекунд
+    /// Возвращает миллисекунды.
 	uint16_t getMsSecond() const {
 		return msSecond_;
 	}
+
+    /** Устанавливает миллисекунды
+     *
+     *  @param[in] val Значение.
+     *  @return true если значение установлено, иначе false.
+     */
 	bool setMsSecond(uint16_t val);
 
-	// день недели
+    /// Возвращает день недели.
 	uint8_t getDayOfWeek() const {
 		return dayWeek_;
 	}
+
+    /** Устанавливает день недели.
+     *
+     *  @param[in] val Значение в BCD коде.
+     *  @return true если значение установлено, иначе false.
+     */
 	bool setDayWeek(uint8_t val);
 
 private:
