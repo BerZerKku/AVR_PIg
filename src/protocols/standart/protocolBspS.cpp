@@ -18,53 +18,42 @@ clProtocolS(buf, size, sParam) {
  * 	@return True - в случае успешной обработки, False - в случае ошибки.
  */
 bool clProtocolBspS::getData(bool pc) {
-	bool stat = false;
 	uint8_t mask = 0;
 	eGB_COM com = (eGB_COM) buf[2];
 
 	// сообщение обработано, выставим флаг на чтение
-	 setCurrentStatus(PRTS_STATUS_NO);
+	setCurrentStatus(PRTS_STATUS_NO);
 
 	mask = com & GB_COM_MASK_GROUP;
 	// ответ на команду изменения параметра/режима не требуется
     if (mask == GB_COM_MASK_GROUP_WRITE_PARAM) {
 		if (com == GB_COM_SET_TIME) {
 			if (buf[NUM] >= 8) {
-				stat =  sParam_->DateTimeReq.setYear(buf[B1]);
-				stat &= sParam_->DateTimeReq.setMonth(buf[B2]);
-				stat &= sParam_->DateTimeReq.setDay(buf[B3]);
-				stat &= sParam_->DateTimeReq.setHour(buf[B4]);
-				stat &= sParam_->DateTimeReq.setMinute(buf[B5]);
-				stat &= sParam_->DateTimeReq.setSecond(buf[B6]);
-
-				// миллисекунды устанавливаются, только если они есть в посылке
-				uint16_t ms = 0;
-				if (buf[NUM] >= 8) {
-					ms = *((uint16_t *) &buf[B7]);
-					sParam_->DateTimeReq.setTimeBsp_ = true;
-				}
-				stat &= sParam_->DateTimeReq.setMsSecond(ms);
-			} else {
-				stat = true;
+				sParam_->DateTimeReq.setYear(buf[B1]);
+				sParam_->DateTimeReq.setMonth(buf[B2]);
+				sParam_->DateTimeReq.setDay(buf[B3]);
+				sParam_->DateTimeReq.setHour(buf[B4]);
+				sParam_->DateTimeReq.setMinute(buf[B5]);
+				sParam_->DateTimeReq.setSecond(buf[B6]);
+				sParam_->DateTimeReq.setMsSecond(*((uint16_t *) &buf[B7]));
+				sParam_->DateTimeReq.setTimeBsp_ = true;
 			}
         } else if (com == GB_COM_SET_NET_ADR) {
-            stat = hdlrComGetNetAdr(pc);
-        } else {
-			stat = true;
-		}
+            hdlrComGetNetAdr(pc);
+        }
     } else if (mask == GB_COM_MASK_GROUP_WRITE_REGIME) {
-        stat = true;
+        //
     } else {
 		mask = com & GB_COM_MASK_DEVICE;
 
 		if (mask == GB_COM_MASK_DEVICE_DEF)
-			stat = getDefCommand(com, pc);				// команды защиты
+			getDefCommand(com, pc);				// команды защиты
 		else if (mask == GB_COM_MASK_DEVICE_PRM)
-			stat = getPrmCommand(com, pc);				// команды приемника
+			getPrmCommand(com, pc);				// команды приемника
 		else if (mask == GB_COM_MASK_DEVICE_PRD)
-			stat = getPrdCommand(com, pc);				// команды передатчика
+			getPrdCommand(com, pc);				// команды передатчика
 		else
-			stat = getGlbCommand(com, pc);				// команды общие
+			getGlbCommand(com, pc);				// команды общие
 
 		LocalParams *lp = &sParam_->local;
         if (com == getCom(lp->getParam())) {
@@ -117,7 +106,7 @@ bool clProtocolBspS::getData(bool pc) {
 		}
 	}
 
-	return stat;
+	return true;
 }
 
 /**	Формирование посылки и отправка заданной команды.
@@ -241,11 +230,9 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
  * 	@param pc True - команда запрошенная с ПК, False - запрошенная с ПИ-БСП.
  * 	@return True - в случае успешной обработки, False - в случае ошибки.
  */
-bool clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
-	bool stat = false;
-
+void clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
 	if (com == GB_COM_DEF_GET_LINE_TYPE) {
-		stat = sParam_->def.setNumDevices((eGB_NUM_DEVICES) (buf[B1]));
+		sParam_->def.setNumDevices((eGB_NUM_DEVICES) (buf[B1]));
 		uint8_t act = sParam_->glb.setNumDevices((eGB_NUM_DEVICES) (buf[B1]));
 		sParam_->local.setNumDevices(sParam_->glb.getNumDevices() + 1);
 		if (act & GB_ACT_NEW)
@@ -253,7 +240,7 @@ bool clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
 	} else  if (com == GB_COM_DEF_GET_TYPE_AC) {
 		// 1 байт - тип АК
 		// 2-5 - время до АК
-		stat = sParam_->def.setTypeAC((eGB_TYPE_AC) buf[B1]);
+		sParam_->def.setTypeAC((eGB_TYPE_AC) buf[B1]);
 		//				uint32_t t = buf[B2];
 		//				t <<= 8;
 		//				t += buf[B3];
@@ -261,11 +248,11 @@ bool clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
 		//				t += buf[B4];
 		//				t <<= 8;
 		//				t += buf[B5];
-		stat |= sParam_->def.setTimeToAC(*((uint32_t *) &buf[B2]));
+		sParam_->def.setTimeToAC(*((uint32_t *) &buf[B2]));
 	} else if (com == GB_COM_DEF_GET_JRN_CNT) {
 		uint16_t t = *((uint16_t *) &buf[B1]);
 		if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_DEF) {
-			stat = sParam_->jrnEntry.setNumJrnEntry(t);
+			sParam_->jrnEntry.setNumJrnEntry(t);
 		}
 	} else if (com == GB_COM_DEF_GET_JRN_ENTRY) {
 		if ((sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_DEF) && (!pc)){
@@ -286,7 +273,6 @@ bool clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
 				sParam_->jrnEntry.setSignalDef((buf[B1] << 4) + (buf[B2] & 0x0F));
 //				sParam_->jrnEntry.setEventType(buf[B3]);
 				sParam_->jrnEntry.setReady();
-				stat = true;
 			} else {
 				sParam_->jrnEntry.dateTime.setYear(buf[B16]);
 				sParam_->jrnEntry.dateTime.setMonth(buf[B15]);
@@ -302,12 +288,9 @@ bool clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
 				sParam_->jrnEntry.setSignalDef((buf[B2] << 4) + (buf[B4] & 0x0F));
 				sParam_->jrnEntry.setEventType(buf[B3]);
 				sParam_->jrnEntry.setReady();
-				stat = true;
 			}
 		}
 	}
-
-	return stat;
 }
 
 /**	Обработка принятой команды Приемника.
@@ -317,11 +300,8 @@ bool clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
  * 	@retval True - в случае успешной обработки
  * 	@retval False - в случае ошибки.
  */
-bool clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
-	bool stat = false;
-
+void clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
 	switch(com) {
-
 		case GB_COM_PRM_GET_COM: {
 			uint8_t act = GB_ACT_NO;
 			if (sParam_->typeDevice == AVANT_K400) {
@@ -337,7 +317,7 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
 		case GB_COM_PRM_GET_JRN_CNT: {
 			uint16_t t = *((uint16_t *) &buf[B1]);
 			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRM) {
-				stat = sParam_->jrnEntry.setNumJrnEntry(t);
+				sParam_->jrnEntry.setNumJrnEntry(t);
 			}
 		}
 		break;
@@ -358,7 +338,6 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
 					//
 					sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B1]);
 					sParam_->jrnEntry.setReady();
-					stat = true;
 				} else {
 					sParam_->jrnEntry.dateTime.setYear(buf[B16]);
 					sParam_->jrnEntry.dateTime.setMonth(buf[B15]);
@@ -375,7 +354,6 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
 					sParam_->jrnEntry.setSrcCom(buf[B4]);
 					sParam_->jrnEntry.setReady();
 				}
-				stat = true;
 			}
 		}
 		break;
@@ -383,8 +361,6 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
 		default:
 			break;
 	}
-
-	return stat;
 }
 
 /**	Обработка принятой команды Передатчика.
@@ -393,11 +369,8 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
  * 	@param pc True - команда запрошенная с ПК, False - запрошенная с ПИ-БСП.
  * 	@return True - в случае успешной обработки, False - в случае ошибки.
  */
-bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
-	bool stat = false;
-
+void clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 	switch (com) {
-
 		case GB_COM_PRD_GET_COM: {
 			uint8_t act = GB_ACT_NO;
 			if (sParam_->typeDevice == AVANT_K400) {
@@ -413,7 +386,7 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 		case GB_COM_PRD_GET_JRN_CNT: {
 			uint16_t t = *((uint16_t *) &buf[B1]);
 			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRD) {
-				stat = sParam_->jrnEntry.setNumJrnEntry(t);
+				sParam_->jrnEntry.setNumJrnEntry(t);
 			}
 		}
 		break;
@@ -439,7 +412,6 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 						sParam_->jrnEntry.setOpticEntryDR((uint8_t *) &buf[B13]);
 					}
 					sParam_->jrnEntry.setReady();
-					stat = true;
 				} else {
 					sParam_->jrnEntry.dateTime.setYear(buf[B16]);
 					sParam_->jrnEntry.dateTime.setMonth(buf[B15]);
@@ -455,7 +427,6 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 					sParam_->jrnEntry.setEventType(buf[B3]);
 					sParam_->jrnEntry.setSourceCom((eGB_SOURCE_COM) buf[B4]);
 					sParam_->jrnEntry.setReady();
-					stat = true;
 				}
 			}
 		}
@@ -464,8 +435,6 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 		default:
 			break;
 	}
-
-	return stat;
 }
 
 /**	Обработка принятой Общей команды.
@@ -474,40 +443,38 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
  * 	@param pc True - команда запрошенная с ПК, False - запрошенная с ПИ-БСП.
  * 	@return True - в случае успешной обработки, False - в случае ошибки.
  */
-bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
-	bool stat = false;
-
+void clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 	switch (com) {
         case GB_COM_GET_SOST: {
-            stat = hdlrComGetSost(pc);
+            hdlrComGetSost(pc);
         } break;
 
         case GB_COM_GET_FAULT: {
-            stat = hdlrComGetFault(pc);
+            hdlrComGetFault(pc);
         } break;
 
 		case GB_COM_GET_TIME: {
-            stat = hdlrComGetTime(pc);
+            hdlrComGetTime(pc);
         } break;      
 
 		case GB_COM_GET_MEAS: {
-            stat = hdlrComGetMeas(pc);
+            hdlrComGetMeas(pc);
         } break;
 
         case GB_COM_GET_COM_PRD_KEEP: {
-            stat = hdlrComGetComPrdKeep(pc);
+            hdlrComGetComPrdKeep(pc);
         }  break;
 
         case GB_COM_GET_DEVICE_NUM: {
-            stat = hdlrComGetDeviceNum(pc);
+            hdlrComGetDeviceNum(pc);
         } break;
 
 		case GB_COM_GET_VERS: {
-            stat = hdlrComGetVers(pc);
+            hdlrComGetVers(pc);
         } break;
 
 		case GB_COM_GET_NET_ADR: {
-            stat = hdlrComGetNetAdr(pc);
+            hdlrComGetNetAdr(pc);
         } break;
 
 		case GB_COM_GET_TEST: {
@@ -521,13 +488,13 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 		case GB_COM_GET_JRN_CNT: {
 			uint16_t t = *((uint16_t *) &buf[B1]);
 			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_GLB) {
-				stat = sParam_->jrnEntry.setNumJrnEntry(t);
+				sParam_->jrnEntry.setNumJrnEntry(t);
 			}
 		}
 		break;
 
         case GB_COM_GET_JRN_ENTRY: {
-            stat = hdlrComGetJrnEntry(pc);
+            hdlrComGetJrnEntry(pc);
 		}
 		break;
 
@@ -535,11 +502,9 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			break;
 
 	}
-
-    return stat;
 }
 
-bool clProtocolBspS::hdlrComGetComPrdKeep(bool pc) {
+void clProtocolBspS::hdlrComGetComPrdKeep(bool pc) {
     uint8_t act = GB_ACT_NO;
 
     if (sParam_->typeDevice == AVANT_R400M) {
@@ -549,18 +514,18 @@ bool clProtocolBspS::hdlrComGetComPrdKeep(bool pc) {
         // совместимость К400
         act = sParam_->glb.setCompK400((eGB_COMP_K400) buf[B2]);
     }
+
     // в случае записи нового значения, сбросим флаг конфигурации
-    if (act & GB_ACT_NEW)
+    if (act & GB_ACT_NEW) {
         sParam_->device = false;
-
-    return (act & GB_ACT_ERROR) == 0;
+    }
 }
 
-bool clProtocolBspS::hdlrComGetDeviceNum(bool pc) {
-    return sParam_->glb.setDeviceNum(buf[B1]);
+void clProtocolBspS::hdlrComGetDeviceNum(bool pc) {
+    sParam_->glb.setDeviceNum(buf[B1]);
 }
 
-bool clProtocolBspS::hdlrComGetFault(bool pc) {
+void clProtocolBspS::hdlrComGetFault(bool pc) {
     eGB_TYPE_DEVICE device = sParam_->typeDevice;
 
     sParam_->def.status.setFault(TO_INT16(buf[B1], buf[B2]));
@@ -583,13 +548,9 @@ bool clProtocolBspS::hdlrComGetFault(bool pc) {
 
     sParam_->glb.status.setFault(TO_INT16(buf[B13], buf[B14]));
     sParam_->glb.status.setWarning(TO_INT16(buf[B15],buf[B16]));
-
-    return true;
 }
 
-bool clProtocolBspS::hdlrComGetJrnEntry(bool pc) {
-    bool check = false;
-
+void clProtocolBspS::hdlrComGetJrnEntry(bool pc) {
     if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_GLB) && (!pc)) {
         sParam_->jrnEntry.val = true;
         if (sParam_->typeDevice == AVANT_OPTO) {
@@ -607,7 +568,6 @@ bool clProtocolBspS::hdlrComGetJrnEntry(bool pc) {
             sParam_->jrnEntry.setRegime((eGB_REGIME) buf[B1]);
             sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B2]);
             sParam_->jrnEntry.setReady();
-            check = true;
         } else {
             // дата
             sParam_->jrnEntry.dateTime.setYear(buf[B16]);
@@ -625,18 +585,13 @@ bool clProtocolBspS::hdlrComGetJrnEntry(bool pc) {
             sParam_->jrnEntry.setEventType(buf[B2]);
             sParam_->jrnEntry.setRegime((eGB_REGIME) buf[B3]);
             sParam_->jrnEntry.setReady();
-            check = true;
         }
     }
-
-    return check;
 }
 
-bool clProtocolBspS::hdlrComGetMeas(bool pc) {
-    bool check = (buf[B1] == 0);
+void clProtocolBspS::hdlrComGetMeas(bool pc) {
     // обработаем посылку, если стоит флаг опроса всех параметров
-
-    if (check) {
+    if (buf[B1] == 0) {
         sParam_->measParam.setResistOut(TO_INT16(buf[B2], buf[B3]));
         sParam_->measParam.setCurrentOut(TO_INT16(buf[B4],buf[B5]));
         // в buf[B7] передатся дробная часть напряжения * 100
@@ -652,33 +607,27 @@ bool clProtocolBspS::hdlrComGetMeas(bool pc) {
         sParam_->measParam.setPulseWidth(TO_INT16(buf[B14], buf[B15]));
         sParam_->measParam.setFreqDev(buf[B17]);
     }
-
-    return check;
 }
 
-bool clProtocolBspS::hdlrComGetNetAdr(bool pc) {
-    bool check = true;
-
-    check &= sParam_->glb.setNetAddress(buf[B1]);
+void clProtocolBspS::hdlrComGetNetAdr(bool pc) {
+    sParam_->glb.setNetAddress(buf[B1]);
     if (buf[NUM] >= 7) {
-        check &= sParam_->Uart.Interface.set((TInterface::INTERFACE) buf[B2]);
-        check &= sParam_->Uart.Protocol.set((TProtocol::PROTOCOL) buf[B3]);
-        check &= sParam_->Uart.BaudRate.set((TBaudRate::BAUD_RATE) buf[B4]);
-        check &= sParam_->Uart.DataBits.set((TDataBits::DATA_BITS) buf[B5]);
-        check &= sParam_->Uart.Parity.set((TParity::PARITY) buf[B6]);
-        check &= sParam_->Uart.StopBits.set((TStopBits::STOP_BITS) buf[B7]);
+        sParam_->Uart.Interface.set((TInterface::INTERFACE) buf[B2]);
+        sParam_->Uart.Protocol.set((TProtocol::PROTOCOL) buf[B3]);
+        sParam_->Uart.BaudRate.set((TBaudRate::BAUD_RATE) buf[B4]);
+        sParam_->Uart.DataBits.set((TDataBits::DATA_BITS) buf[B5]);
+        sParam_->Uart.Parity.set((TParity::PARITY) buf[B6]);
+        sParam_->Uart.StopBits.set((TStopBits::STOP_BITS) buf[B7]);
     }
     if (buf[NUM] >= 25) {
-        check &= sParam_->security.pwdEngineer.set(&buf[B8]); // bytes = PWD_LEN
-        check &= sParam_->security.pwdAdmin.set(&buf[B16]); // bytes = PWD_LEN
-        check &= sParam_->security.pwdEngineer.setCounter(buf[B24]);
-        check &= sParam_->security.pwdAdmin.setCounter(buf[B25]);
+        sParam_->security.pwdEngineer.set(&buf[B8]); // bytes = PWD_LEN
+        sParam_->security.pwdAdmin.set(&buf[B16]); // bytes = PWD_LEN
+        sParam_->security.pwdEngineer.setCounter(buf[B24]);
+        sParam_->security.pwdAdmin.setCounter(buf[B25]);
     }
-
-    return check;
 }
 
-bool clProtocolBspS::hdlrComGetSost(bool pc) {
+void clProtocolBspS::hdlrComGetSost(bool pc) {
     sParam_->def.status.setRegime((eGB_REGIME) buf[B1]);
     sParam_->def.status.setState(buf[B2]);
     sParam_->def.status.setDopByte(buf[B3]);
@@ -745,24 +694,21 @@ bool clProtocolBspS::hdlrComGetSost(bool pc) {
             reg = GB_REGIME_ENABLED;
     }
     sParam_->glb.status.setRegime(reg);
-
-   return true;
 }
 
-bool clProtocolBspS::hdlrComGetTime(bool pc) {
+void clProtocolBspS::hdlrComGetTime(bool pc) {
     // FIXME Разобраться что делает переменная. Задержка в работе журнала?!
     static uint8_t cntTimeFrame = 0;
-    bool check = true;
 
-    check &= sParam_->DateTime.setYear(buf[B1]);
-    check &= sParam_->DateTime.setMonth(buf[B2]);
-    check &= sParam_->DateTime.setDay(buf[B3]);
-    check &= sParam_->DateTime.setHour(buf[B4]);
-    check &= sParam_->DateTime.setMinute(buf[B5]);
-    check &= sParam_->DateTime.setSecond(buf[B6]);
+    sParam_->DateTime.setYear(buf[B1]);
+    sParam_->DateTime.setMonth(buf[B2]);
+    sParam_->DateTime.setDay(buf[B3]);
+    sParam_->DateTime.setHour(buf[B4]);
+    sParam_->DateTime.setMinute(buf[B5]);
+    sParam_->DateTime.setSecond(buf[B6]);
     // миллисекунд может не быть в посылке
     uint16_t ms = (buf[NUM] >= 8) ? *((uint16_t *) &buf[B7]) : 0;
-    check &= sParam_->DateTime.setMsSecond(ms);
+    sParam_->DateTime.setMsSecond(ms);
 
     // новая запись журнала, для передачи в АСУ ТП
     if (buf[NUM] >= 21) {
@@ -793,11 +739,9 @@ bool clProtocolBspS::hdlrComGetTime(bool pc) {
             }
         }
     }
-
-    return check;
 }
 
-bool clProtocolBspS::hdlrComGetVers(bool pc) {
+void clProtocolBspS::hdlrComGetVers(bool pc) {
     uint8_t act = GB_ACT_NO;
     // данные о типе аппарата
     act |= sParam_->def.status.setEnable(buf[B1] == 1);
@@ -870,8 +814,6 @@ bool clProtocolBspS::hdlrComGetVers(bool pc) {
     if (act & GB_ACT_NEW) {
         sParam_->device = false;
     }
-
-    return ((act & GB_ACT_ERROR) != GB_ACT_ERROR);
 }
 
 /**	Формирование сообщения команды считавания кол-ва и самих записей журнала.

@@ -38,8 +38,6 @@ struct stGBparam {
 	// дата/время БСП в момент установки новго времени
 	TDateTime DateTimeReq;
 
-	// дата/время
-
 	// измеряемые параметры
 	TMeasuredParameters measParam;
 

@@ -22,20 +22,20 @@ public:
 	uint8_t sendData(eGB_COM com);
 
 private:
-	bool getDefCommand(eGB_COM com, bool pc);
-	bool getPrmCommand(eGB_COM com, bool pc);
-	bool getPrdCommand(eGB_COM com, bool pc);
-	bool getGlbCommand(eGB_COM com, bool pc);
+	void getDefCommand(eGB_COM com, bool pc);
+	void getPrmCommand(eGB_COM com, bool pc);
+	void getPrdCommand(eGB_COM com, bool pc);
+	void getGlbCommand(eGB_COM com, bool pc);
 
-    bool hdlrComGetComPrdKeep(bool pc);
-    bool hdlrComGetDeviceNum(bool pc);
-    bool hdlrComGetFault(bool pc);
-    bool hdlrComGetJrnEntry(bool pc);
-    bool hdlrComGetMeas(bool pc);
-    bool hdlrComGetNetAdr(bool pc);
-    bool hdlrComGetSost(bool pc);
-    bool hdlrComGetTime(bool pc);
-    bool hdlrComGetVers(bool pc);
+    void hdlrComGetComPrdKeep(bool pc);
+    void hdlrComGetDeviceNum(bool pc);
+    void hdlrComGetFault(bool pc);
+    void hdlrComGetJrnEntry(bool pc);
+    void hdlrComGetMeas(bool pc);
+    void hdlrComGetNetAdr(bool pc);
+    void hdlrComGetSost(bool pc);
+    void hdlrComGetTime(bool pc);
+    void hdlrComGetVers(bool pc);
 
 //	uint8_t sendModifGlbCommand(eGB_COM com);
 
