@@ -44,7 +44,6 @@
 #define QDINFO(x) (void(0))
 #define QWARNING(x) (void(0))
 #define QCRITICAL(x) (void(0))
-#define
 
 #else // defined(NDEBUG)
 
