@@ -883,6 +883,26 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 		lvlMenu = &clMenu::lvlError;
 	}
 
+    sParam.txComBuf.clearCom1();
+    sParam.txComBuf.addCom1(GB_COM_GET_NET_ADR);
+    sParam.txComBuf.addCom1(GB_COM_DEF_GET_LINE_TYPE);
+    if (sParam.typeDevice == AVANT_R400M) {
+        sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
+    } else if (sParam.typeDevice == AVANT_K400) {
+        sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
+    }
+
+    sParam.txComBuf.addCom1(GB_COM_GET_JRN_CNT);
+    if (sParam.def.status.isEnable()) {
+        sParam.txComBuf.addCom1(GB_COM_DEF_GET_JRN_CNT);
+    }
+    if (sParam.prd.status.isEnable()) {
+        sParam.txComBuf.addCom1(GB_COM_PRD_GET_JRN_CNT);
+    }
+    if (sParam.prm.status.isEnable()) {
+        sParam.txComBuf.addCom1(GB_COM_PRM_GET_JRN_CNT);
+    }
+
 	// "сброс" флага необходимости проверки типа аппарата
 	sParam.device = true;
 	// обнавление текущего уровня меню
@@ -910,6 +930,8 @@ eGB_COM clMenu::getTxCommand() {
             com = GB_COM_GET_SOST;
         } else if (cnt == 1) {
             com = GB_COM_GET_TIME;
+        } else if (cnt == 2) {
+            com = sParam.txComBuf.getLocalCom();
         }
 
         if (com == GB_COM_NO) {
@@ -967,7 +989,6 @@ void clMenu::setMessage(clMenu::msg_t msg)
 }
 
 bool clMenu::printMessage() {
-    bool isprint = false;
     PGM_P pmsg = nullptr;
     uint8_t nrows = 0;
 
@@ -1051,23 +1072,18 @@ bool clMenu::printMessage() {
     }
 
     if (nrows > 0) {
-        uint8_t i = 3;
-        // вывод сообщения
-        while(nrows > 0) {
-            snprintf_P(&vLCDbuf[(i - 1)*ROW_LEN], ROW_LEN + 1, pmsg);
-            pmsg += ROW_LEN + 1;
-            i++;
-            nrows--;
+        uint8_t start = ((lineParam_ != 2) || (nrows != 2)) ? 3 : 4;
+        for(uint8_t line = lineParam_ + 1; line <= NUM_TEXT_LINES; line++) {
+            if ((line >= start) && ((line - start) < nrows)) {
+                snprintf_P(&vLCDbuf[(line - 1)*ROW_LEN], ROW_LEN + 1, pmsg);
+                pmsg += ROW_LEN + 1;
+            } else {
+                clearLine(line);
+            }
         }
-        // очистка оставшихся строк
-        while(i <= NUM_TEXT_LINES) {
-            clearLine(i);
-            i++;
-        }
-        isprint = true;
     }
 
-    return isprint;
+    return nrows > 0;
 }
 
 bool clMenu::isMessage() const {
@@ -1146,25 +1162,7 @@ void clMenu::lvlStart() {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 		if (sParam.typeDevice == AVANT_R400M) {
 			sParam.txComBuf.addCom2(GB_COM_DEF_GET_TYPE_AC);
-		}
-
-		sParam.txComBuf.addCom1(GB_COM_DEF_GET_LINE_TYPE);
-		sParam.txComBuf.addCom1(GB_COM_GET_NET_ADR);
-		if (sParam.typeDevice == AVANT_R400M) {
-			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
-		} else if (sParam.typeDevice == AVANT_K400) {
-			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
-		}
-		sParam.txComBuf.addCom1(GB_COM_GET_JRN_CNT);
-		if (sParam.def.status.isEnable()) {
-			sParam.txComBuf.addCom1(GB_COM_DEF_GET_JRN_CNT);
-		}
-		if (sParam.prd.status.isEnable()) {
-			sParam.txComBuf.addCom1(GB_COM_PRD_GET_JRN_CNT);
-		}
-		if (sParam.prm.status.isEnable()) {
-			sParam.txComBuf.addCom1(GB_COM_PRM_GET_JRN_CNT);
-		}
+		}        
 	}
 
 	// вывод на экран измеряемых параметров
@@ -1648,7 +1646,7 @@ void clMenu::lvlJournalEvent() {
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
-		sParam.txComBuf.addCom1(GB_COM_GET_JRN_CNT);
+        sParam.txComBuf.setLocalCom(GB_COM_GET_JRN_CNT);
 		sParam.txComBuf.addCom2(GB_COM_GET_JRN_ENTRY);
 		sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 	}
@@ -1829,7 +1827,7 @@ void clMenu::lvlJournalDef() {
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
-		sParam.txComBuf.addCom1(GB_COM_DEF_GET_JRN_CNT);
+        sParam.txComBuf.setLocalCom(GB_COM_DEF_GET_JRN_CNT);
 		sParam.txComBuf.addCom2(GB_COM_DEF_GET_JRN_ENTRY);
 		sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 	}
@@ -1947,7 +1945,7 @@ void clMenu::lvlJournalPrm() {
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
-		sParam.txComBuf.addCom1(GB_COM_PRM_GET_JRN_CNT);
+        sParam.txComBuf.setLocalCom(GB_COM_PRM_GET_JRN_CNT);
 		sParam.txComBuf.addCom2(GB_COM_PRM_GET_JRN_ENTRY);
 		sParam.txComBuf.addCom2(GB_COM_GET_DEVICE_NUM);
 		sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
@@ -2123,7 +2121,7 @@ void clMenu::lvlJournalPrd() {
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
-		sParam.txComBuf.addCom1(GB_COM_PRD_GET_JRN_CNT);
+        sParam.txComBuf.setLocalCom(GB_COM_PRD_GET_JRN_CNT);
 		sParam.txComBuf.addCom2(GB_COM_PRD_GET_JRN_ENTRY);
 		sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 	}
@@ -2467,8 +2465,6 @@ void clMenu::lvlControl() {
 		// доплнительные команды
 		sParam.txComBuf.clear();
 		if (sParam.typeDevice == AVANT_R400M) {
-			// совместимость
-			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
 			// кол-во аппаратов в линии
 			sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
 			// номер текущего аппарата
@@ -3069,8 +3065,6 @@ void clMenu::lvlSetupParamDef() {
 			sParam.local.addParam(GB_PARAM_OVERLAP_OPTO);
 			sParam.local.addParam(GB_PARAM_DELAY_OPTO);
 		}
-
-        sParam.txComBuf.addCom1(getCom(sParam.local.getParam()));
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -3154,8 +3148,6 @@ void clMenu::lvlSetupParamPrm() {
 				sParam.local.addParam(GB_PARAM_PRM_COM_SIGNAL);
 			}
 		}
-
-        sParam.txComBuf.addCom1(getCom(sParam.local.getParam()));
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -3240,8 +3232,6 @@ void clMenu::lvlSetupParamPrd() {
 				sParam.local.addParam(GB_PARAM_PRD_COM_SIGNAL);
 			}
 		}
-
-        sParam.txComBuf.addCom1(getCom(sParam.local.getParam()));
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -3345,9 +3335,6 @@ void clMenu::lvlSetupParamGlb() {
 			// совместимости и кол-ва аппаратов в линии
 			// измеряемые параметры для коррекции
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
-            sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
-            sParam.txComBuf.addCom1(GB_COM_DEF_GET_LINE_TYPE);
-
 			sParam.local.addParam(GB_PARAM_COMP_P400);
 			if (comp == GB_COMPATIBILITY_AVANT) {
 				sParam.local.addParam(GB_PARAM_TIME_SYNCH);
@@ -3392,8 +3379,6 @@ void clMenu::lvlSetupParamGlb() {
 				sParam.local.addParam(GB_PARAM_BACKUP);
 			}
 		}
-
-        sParam.txComBuf.addCom1(getCom(sParam.local.getParam()));
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -3443,8 +3428,6 @@ void clMenu::lvlSetupParamRing() {
 				sParam.local.addParam(GB_PARAM_RING_COM_TR);
 			}
 		}
-
-        sParam.txComBuf.addCom1(getCom(sParam.local.getParam()));
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -3507,8 +3490,6 @@ void clMenu::lvlSetupInterface() {
 			sParam.local.addParam(GB_PARAM_INTF_PARITY);
 			sParam.local.addParam(GB_PARAM_INTF_STOP_BITS);
         }
-
-        sParam.txComBuf.addCom1(getCom(sParam.local.getParam()));
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
@@ -3574,10 +3555,12 @@ void clMenu::lvlSetupDT() {
 
 	snprintf_P(&vLCDbuf[20], 21, title);
 
-	printMeasParam(0, MENU_MEAS_PARAM_DATE);
-	printMeasParam(1, MENU_MEAS_PARAM_TIME);
+    printMeasParam(0, MENU_MEAS_PARAM_DATE);
+    printMeasParam(1, MENU_MEAS_PARAM_TIME);
 
-	if (EnterParam.isEnable()) {
+    if (isMessage()) {
+        printMessage();
+    } else if (EnterParam.isEnable()) {
 		// вывод текущего пункта
 		snprintf_P(&vLCDbuf[20 * lineParam_], 21, name, cursorLine_);
         eMENU_ENTER_PARAM stat = inputValue();
@@ -3616,8 +3599,10 @@ void clMenu::lvlSetupDT() {
 
 			EnterParam.setDisable();
 		}
-	} else
+    } else {
 		printPunkts();
+    }
+
 
 	switch(key_) {
         case KEY_UP: {
@@ -3628,40 +3613,44 @@ void clMenu::lvlSetupDT() {
         } break;
 
         case KEY_ENTER: {
-            enterFunc = &clMenu::inputValue;
-			if (name == punkt1) {
-				EnterParam.setEnable();
-				EnterParam.setValueRange(0, 99);
-				EnterParam.setValue(sParam.DateTime.getYear());
-				EnterParam.setDopValue(0);
-			} else if (name == punkt2) {
-				EnterParam.setEnable();
-				EnterParam.setValueRange(1, 12);
-				EnterParam.setValue(sParam.DateTime.getMonth());
-				EnterParam.setDopValue(1);
-			} else if (name == punkt3) {
-				EnterParam.setEnable();
-				uint8_t max = sParam.DateTime.getNumDaysInMonth();
-				EnterParam.setValueRange(1, max);
-				EnterParam.setValue(sParam.DateTime.getDay());
-				EnterParam.setDopValue(2);
-			} else if (name == punkt4) {
-				EnterParam.setEnable();
-				EnterParam.setValueRange(0, 23);
-				EnterParam.setValue(sParam.DateTime.getHour());
-				EnterParam.setDopValue(3);
-			} else if (name == punkt5) {
-				EnterParam.setEnable();
-				EnterParam.setValueRange(0, 59);
-				EnterParam.setValue(sParam.DateTime.getMinute());
-				EnterParam.setDopValue(4);
-			} else if (name == punkt6) {
-				EnterParam.setEnable();
-				EnterParam.setValueRange(0, 59);
-				EnterParam.setValue(sParam.DateTime.getSecond());
-				EnterParam.setDopValue(5);
-			}
-			EnterParam.com = GB_COM_SET_TIME;
+            if (!checkChangeUser(Param::CHANGE_USER_ENGINEER)) {
+                setMessage(MSG_WRONG_USER);
+            } else {
+                enterFunc = &clMenu::inputValue;
+                if (name == punkt1) {
+                    EnterParam.setEnable();
+                    EnterParam.setValueRange(0, 99);
+                    EnterParam.setValue(sParam.DateTime.getYear());
+                    EnterParam.setDopValue(0);
+                } else if (name == punkt2) {
+                    EnterParam.setEnable();
+                    EnterParam.setValueRange(1, 12);
+                    EnterParam.setValue(sParam.DateTime.getMonth());
+                    EnterParam.setDopValue(1);
+                } else if (name == punkt3) {
+                    EnterParam.setEnable();
+                    uint8_t max = sParam.DateTime.getNumDaysInMonth();
+                    EnterParam.setValueRange(1, max);
+                    EnterParam.setValue(sParam.DateTime.getDay());
+                    EnterParam.setDopValue(2);
+                } else if (name == punkt4) {
+                    EnterParam.setEnable();
+                    EnterParam.setValueRange(0, 23);
+                    EnterParam.setValue(sParam.DateTime.getHour());
+                    EnterParam.setDopValue(3);
+                } else if (name == punkt5) {
+                    EnterParam.setEnable();
+                    EnterParam.setValueRange(0, 59);
+                    EnterParam.setValue(sParam.DateTime.getMinute());
+                    EnterParam.setDopValue(4);
+                } else if (name == punkt6) {
+                    EnterParam.setEnable();
+                    EnterParam.setValueRange(0, 59);
+                    EnterParam.setValue(sParam.DateTime.getSecond());
+                    EnterParam.setDopValue(5);
+                }
+                EnterParam.com = GB_COM_SET_TIME;
+            }
         } break;
 
         case KEY_CANCEL: {
@@ -3759,10 +3748,7 @@ void clMenu::lvlTest() {
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
-		if (sParam.typeDevice == AVANT_R400M) {
-			// совместимость в Р400М
-			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
-		}
+        sParam.txComBuf.setLocalCom(GB_COM_GET_COM_PRD_KEEP);
 	}
 
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
@@ -4148,8 +4134,7 @@ void clMenu::lvlUser() {
         sParam.local.addParam(GB_PARAM_IS_PWD_ENGINEER);
         sParam.local.addParam(GB_PARAM_IS_PWD_ADMIN);
 
-        sParam.txComBuf.addCom1(GB_COM_GET_NET_ADR);
-        sParam.txComBuf.addCom1(getCom(sParam.local.getParam()));
+        sParam.txComBuf.setLocalCom(GB_COM_GET_NET_ADR);
     }
 
     snprintf_P(&vLCDbuf[0], 21, title);
@@ -4261,6 +4246,12 @@ eMENU_ENTER_PARAM clMenu::inputValue() {
     } else if (status == MENU_ENTER_PASSWORD) {
         uint8_t *val = EnterParam.getValuePwd();
         posstop += snprintf_P(&vLCDbuf[posstart], ROW_LEN+1, strStrValue, val);
+        uint8_t pos = posstop - EnterParam.getDigit();
+        for(uint8_t i = posstart; i < posstop; i++) {
+            if (i != pos) {
+                vLCDbuf[i] = '*';
+            }
+        }
     } else {
 		key_ = KEY_CANCEL;
     }
@@ -5129,33 +5120,12 @@ void clMenu::saveParamToRam() {
 
 //
 void clMenu::security() {
-    // FIXME УБрать команду опроса настроек из быстрых команд.
-    // TODO Создать отдельную группу для опроса команд необходимых безопасности и АСУ ТП.
-
-    // Проверка считывания настроек для администратора из БСП
-    if (!sParam.security.pwdAdmin.isInit()) {
-        eGB_COM com = getCom(GB_PARAM_IS_PWD_ADMIN);
-        if (!sParam.txComBuf.containsFastCom(com)) {
-            eGB_SEND_TYPE type = getSendType(GB_PARAM_IS_PWD_ADMIN);
-            sParam.txComBuf.addFastCom(com, type);
-        }
-    }
-
     // Проверяется сброс счетчика ввода ошибочного пароля для Администратора
     if (sParam.security.pwdAdmin.timerTick()) {
         save.param = GB_PARAM_IS_PWD_ADM_CNT;
         save.number = 1;
         save.set(sParam.security.pwdAdmin.getCounter());
         saveParam();
-    }
-
-    // Проверка считывания настроек для инженера из БСП
-    if (!sParam.security.pwdEngineer.isInit()) {
-        eGB_COM com = getCom(GB_PARAM_IS_PWD_ENGINEER);
-        if (!sParam.txComBuf.containsFastCom(com)) {
-            eGB_SEND_TYPE type = getSendType(GB_PARAM_IS_PWD_ENGINEER);
-            sParam.txComBuf.addFastCom(com, type);
-        }
     }
 
     // Проверяется сброс счетчика ввода ошибочного пароля для Инженера
@@ -5236,9 +5206,9 @@ void clMenu::setupParam() {
 
     // Замена команды для опроса текущего параметра
     eGB_COM com = getCom(sParam.local.getParam());
-    if (sParam.txComBuf.lastCom1() != com) {
+    if (sParam.txComBuf.getLocalCom() != com) {
         sParam.txComBuf.addFastCom(com, getSendType(sParam.local.getParam()));
-        sParam.txComBuf.addCom1(com, true);
+        sParam.txComBuf.setLocalCom(com);
     }
 
 	// выход из текущего уровня меню, если кол-во параметров равно 0

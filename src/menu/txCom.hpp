@@ -10,6 +10,33 @@
 
 #include "glbDefine.h"
 
+/// максимальное кол-во команд в первом буфере
+#define MAX_NUM_COM_BUF1 8
+
+///	максимальное кол-во быстрых команд
+#define MAX_NUM_FAST_COM 8
+
+/// максимальное кол-во команд во втором буфере
+#define MAX_NUM_COM_BUF2 4
+
+/// минимальное кол-во команд передаваемых за один цикл
+// 3 = (команда состояния + команда времени + команда из буфера1 + локальная команда)
+#define MAX_NUM_COM_SEND_IN_CYLCE (MAX_NUM_COM_BUF2 + 4)
+
+//
+template<typename T, uint8_t size, T defvalue, bool isend>
+class buf {
+    uint8_t cnt;
+    uint8_t len;
+    T buffer[size];
+
+  public:
+    buf ();
+    void clear();
+    bool set(T value);
+    T get();
+};
+
 // класс для передачи команд
 class TTxCom {
 	static const uint8_t BUFFER_SIZE = 16;
@@ -24,6 +51,8 @@ class TTxCom {
 public:
 	TTxCom() {
 		clear();
+        clearCom1();
+        clearFastCom();
 	}
 
 	// очистка буфера
@@ -31,11 +60,15 @@ public:
 
     /** Записывает команду в буфер 1.
      *
+     *  Команды используются для постоянного опроса, независимо от текущего
+     *  уровня меню.
+     *  Устанавливаются при формировании меню для устройства.
+     *
      * 	@param[in] com Код команды.
      * 	@param[in] last Флаг замены последней команды в буфере.
      *  @return true в случае успешной записи, иначе false.
 	 */
-    bool addCom1(eGB_COM com, bool last=false);
+    bool addCom1(eGB_COM com);
 
 	/** Последовательная выдача имеющихся в буфере 1 команд (по кругу).
      *
@@ -47,19 +80,15 @@ public:
 	 */
     eGB_COM getCom1();
 
-    /** Возвращает последнюю команду в буфере команд 1.
-     *
-     *  @return Последняя команда.
-     *  @retval GB_COM_NO В случае если буфер пуст.
-     */
-    eGB_COM lastCom1() const;
+    /// Очистка буфера команд 1.
+    void clearCom1();
 
 	/** Запись команды в буфер 2.
 	 * 	@param com Код команды.
 	 * 	@retval True - в случае успешной записи.
 	 * 	@retval False - если не удалось поместить команду в буфер.
 	 */
-	bool addCom2(eGB_COM com);
+    bool addCom2(eGB_COM com);
 
 	/** Последовательная выдача имеющихся в буфере 2 команд (по кругу).
      *
@@ -69,7 +98,7 @@ public:
      *
 	 * 	@return Код текущей команды.
 	 */
-	eGB_COM getCom2();
+    eGB_COM getCom2();
 
     /** Добавляет команду в группу срочных команд.
 	 *
@@ -80,13 +109,6 @@ public:
      *  @return true если команда добавлена, иначе false.
 	 */
     bool addFastCom(eGB_COM com, eGB_SEND_TYPE type);
-
-    /** Проверяет наличие каоманды в буфере быстрых команд.
-     *
-     *  @param[in] com Команда
-     *  @return true если есть команда в буфере, иначе false.
-     */
-    bool containsFastCom(eGB_COM com) const;
 
     /** Устанавливает дополнительный байт данных для последней быстрой команды.
      *
@@ -110,18 +132,14 @@ public:
     /// Убирает последнюю быструю команду из очереди.
     void removeFastCom();
 
-    /** Очищает содержимое в буфере быстрой команды для указанной позиции.
-     *
-     *  @param[i] pos Позиция [0..SIZE_OF(comFast_)).
-     */
-    void clearFastCom(uint8_t pos);
+    /// Очищает очередь быстрых команд.
+    void clearFastCom();
 
     /** Возвращает дополнительный байт для срочной команды.
     *
     *   @return Дополнительный байт.
     */
     uint8_t getFastComDopByte() const;
-
 
     /**	Записывает байт данных в буфер.
      *
@@ -165,24 +183,77 @@ public:
      */
     uint8_t* getBuferAddress();
 
+    /** Устанавливает локальную команду.
+     *
+     *  Если команда GB_COM_NO, то смены локальной команды не произойдет.
+     *
+     *  @param[in] com Команда.
+     */
+    void setLocalCom(eGB_COM com) {
+        if (com != GB_COM_NO) {
+            localCom = com;
+        }
+    }
+
+    /** Возвращает локальную команду.
+     *
+     *  @return Команда.
+     */
+    eGB_COM getLocalCom() const {
+        return localCom;
+    }
 private:
     // количество команд в буфере срочных команд
     uint8_t cntComFast;
     buf_t comFast_[MAX_NUM_FAST_COM];
 
-	// первый буфер команд
-	eGB_COM com1_[MAX_NUM_COM_BUF1];
-	// кол-во команд в первом буфере
-	uint8_t numCom1_;
-	// номер текущей команды в первом буфере
-	uint8_t cnt1_;
+    eGB_COM localCom;
+    buf<eGB_COM, MAX_NUM_COM_BUF1, GB_COM_NO, false> bufCom1;
+    buf<eGB_COM, MAX_NUM_COM_BUF1, GB_COM_NO, true> bufCom2;
 
-	// второй буфер команд
-	eGB_COM com2_[MAX_NUM_COM_BUF2];
-	// кол-во команд во втором буфере
-	uint8_t numCom2_;
-	// номер текущей команды во втором буфере
-	uint8_t cnt2_;
+    /** Очищает содержимое в буфере быстрой команды для указанной позиции.
+     *
+     *  @param[i] pos Позиция [0..SIZE_OF(comFast_)).
+     */
+    void clearFastCom(uint8_t pos);
 };
+
+template<typename T, uint8_t size, T defvalue, bool isend>
+buf<T, size, defvalue, isend>::buf() {
+}
+
+template<typename T, uint8_t size, T defvalue, bool isend>
+void  buf<T, size, defvalue, isend>::clear() {
+    len = 0;
+    cnt = 0;
+    for(uint8_t i = 0; i < size; i++) {
+        buffer[i] = defvalue;
+    }
+}
+
+template<typename T, uint8_t size, T defvalue, bool isend>
+bool  buf<T, size, defvalue, isend>::set(T value) {
+    if (len < size) {
+        buffer[len++] = value;
+        return true;
+    } else {
+        QDEBUG("Command adding error. Buffer is full!");
+    }
+    return false;
+}
+
+template<typename T, uint8_t size, T defvalue, bool isend>
+T  buf<T, size, defvalue, isend>::get() {
+    T value = defvalue;
+    if (cnt < len) {
+        value = buffer[cnt++];
+    } else {
+        cnt = 0;
+        if (!isend) {
+            value = buffer[cnt];
+        }
+    }
+    return value;
+}
 
 #endif /* TX_COM_HPP_ */
