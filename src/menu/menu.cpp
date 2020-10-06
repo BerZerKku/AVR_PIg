@@ -1648,101 +1648,101 @@ void clMenu::lvlJournalEvent() {
 		sParam.txComBuf.clear();
         sParam.txComBuf.setLocalCom(GB_COM_GET_JRN_CNT);
 		sParam.txComBuf.addCom2(GB_COM_GET_JRN_ENTRY);
-		sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
+        sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 	}
 
-	eGB_TYPE_DEVICE device = sParam.typeDevice;
+    eGB_TYPE_DEVICE device = sParam.typeDevice;
 
-	// номер текущей записи в архиве и максимальное кол-во записей
-	uint16_t cur_entry = sParam.jrnEntry.getCurrentEntry();
-	uint16_t num_entries = sParam.jrnEntry.getNumJrnEntries();
+    // номер текущей записи в архиве и максимальное кол-во записей
+    uint16_t cur_entry = sParam.jrnEntry.getCurrentEntry();
+    uint16_t num_entries = sParam.jrnEntry.getNumJrnEntries();
 
-	uint8_t poz = 0;
-	// вывод названия текущего пункта меню
-	snprintf_P(&vLCDbuf[poz], 21, title);
-	poz += 20;
+    uint8_t poz = 0;
+    // вывод названия текущего пункта меню
+    snprintf_P(&vLCDbuf[poz], 21, title);
+    poz += 20;
 
-	// вывод номер текущей записи и их кол-ва
-	if (num_entries != 0) {
-		if (device == AVANT_OPTO) {
-			// в оптике дополнительно выводится кол-во событий в одной записи
-			snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntriesOpto, cur_entry,
-					num_entries, sParam.jrnEntry.getNumOpticsEntries());
-		} else {
-			snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
-		}
-	}
-	poz += 20;
+    // вывод номер текущей записи и их кол-ва
+    if (num_entries != 0) {
+        if (device == AVANT_OPTO) {
+            // в оптике дополнительно выводится кол-во событий в одной записи
+            snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntriesOpto, cur_entry,
+                       num_entries, sParam.jrnEntry.getNumOpticsEntries());
+        } else {
+            snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+        }
+    }
+    poz += 20;
 
-	if (num_entries == 0) {
-		// вывод сообщения об отсутствии записей в журнале
-		snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
-	} else if (!sParam.jrnEntry.isReady()) {
-		// ифнорация о текущей записи еще не получена
-		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
-	} else {
-		// вывод режима
-		snprintf_P(&vLCDbuf[poz], 21, fcRegimeJrn);
-		snprintf_P(&vLCDbuf[poz + 7], 13,
-				fcRegime[sParam.jrnEntry.getRegime()]);
-		poz += 20;
-		// вывод даты
-		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
-				sParam.jrnEntry.dateTime.getDay(),
-				sParam.jrnEntry.dateTime.getMonth(),
-				sParam.jrnEntry.dateTime.getYear());
-		poz += 20;
-		//	    snprintf_P(&vLCDbuf[poz],4,fcDevices[sParam.journalEntry.getDevice()]);
-		// вывод времени
-		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
-				sParam.jrnEntry.dateTime.getHour(),
-				sParam.jrnEntry.dateTime.getMinute(),
-				sParam.jrnEntry.dateTime.getSecond(),
-				sParam.jrnEntry.dateTime.getMsSecond());
-		poz += 20;
+    if (num_entries == 0) {
+        // вывод сообщения об отсутствии записей в журнале
+        snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
+    } else if (!sParam.jrnEntry.isReady()) {
+        // ифнорация о текущей записи еще не получена
+        snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
+    } else {
+        // вывод режима
+        snprintf_P(&vLCDbuf[poz], 21, fcRegimeJrn);
+        snprintf_P(&vLCDbuf[poz + 7], 13,
+                   fcRegime[sParam.jrnEntry.getRegime()]);
+        poz += 20;
+        // вывод даты
+        snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
+                   sParam.jrnEntry.dateTime.getDay(),
+                   sParam.jrnEntry.dateTime.getMonth(),
+                   sParam.jrnEntry.dateTime.getYear());
+        poz += 20;
+        //	    snprintf_P(&vLCDbuf[poz],4,fcDevices[sParam.journalEntry.getDevice()]);
+        // вывод времени
+        snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
+                   sParam.jrnEntry.dateTime.getHour(),
+                   sParam.jrnEntry.dateTime.getMinute(),
+                   sParam.jrnEntry.dateTime.getSecond(),
+                   sParam.jrnEntry.dateTime.getMsSecond());
+        poz += 20;
 
-		// вывод события
-		// в оптике в одной записи может быть много событий, поэтому
-		// считывается код события в записи
-		uint8_t event = 0;
-		if (device == AVANT_OPTO) {
-			// проверка текущего номера событий с кол-вом событий в записи
-			if (curCom_ > sParam.jrnEntry.getNumOpticsEntries())
-				curCom_ = 1;
-			event = sParam.jrnEntry.getOpticEntry(curCom_);
-		} else {
-			event = sParam.jrnEntry.getEventType();
-		}
+        // вывод события
+        // в оптике в одной записи может быть много событий, поэтому
+        // считывается код события в записи
+        uint8_t event = 0;
+        if (device == AVANT_OPTO) {
+            // проверка текущего номера событий с кол-вом событий в записи
+            if (curCom_ > sParam.jrnEntry.getNumOpticsEntries())
+                curCom_ = 1;
+            event = sParam.jrnEntry.getOpticEntry(curCom_);
+        } else {
+            event = sParam.jrnEntry.getEventType();
+        }
 
-		eGB_TYPE_DEVICE device = sParam.typeDevice;
-		if (device == AVANT_R400M) {
-			snprintf_P(&vLCDbuf[poz], 21, fcJrnEventR400_MSK[event], event);
-		} else if (device == AVANT_K400) {
-			if (event <= MAX_JRN_EVENT_VALUE) {
-				uint8_t dev = (uint8_t) sParam.jrnEntry.getDeviceJrn();
-				snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event],
-						fcDevicesK400[dev]);
-			} else {
-				snprintf_P(&vLCDbuf[poz], 21,
-						fcJrnEventK400[MAX_JRN_EVENT_VALUE], event);
-			}
-		} else if (device == AVANT_RZSK) {
-			if (event < MAX_JRN_EVENT_VALUE) {
-				uint8_t dev = (uint8_t) sParam.jrnEntry.getDeviceJrn();
-				snprintf_P(&vLCDbuf[poz], 21, fcJrnEventRZSK[event],
-						fcDevicesK400[dev]);
-			} else {
-				snprintf_P(&vLCDbuf[poz], 21,
-						fcJrnEventRZSK[MAX_JRN_EVENT_VALUE], event);
-			}
-		} else if (device == AVANT_OPTO) {
-			if (sParam.glb.getTypeOpto() == TYPE_OPTO_RING_UNI) {
-				snprintf_P(&vLCDbuf[poz], 21, fcJrnEventOPTOring[event], event);
-			} else {
-				snprintf_P(&vLCDbuf[poz], 21, fcJrnEventOPTO[event], event);
-			}
-		}
-	}
+        eGB_TYPE_DEVICE device = sParam.typeDevice;
+        if (device == AVANT_R400M) {
+            snprintf_P(&vLCDbuf[poz], 21, fcJrnEventR400_MSK[event], event);
+        } else if (device == AVANT_K400) {
+            if (event <= MAX_JRN_EVENT_VALUE) {
+                uint8_t dev = (uint8_t) sParam.jrnEntry.getDeviceJrn();
+                snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event],
+                           fcDevicesK400[dev]);
+            } else {
+                snprintf_P(&vLCDbuf[poz], 21,
+                           fcJrnEventK400[MAX_JRN_EVENT_VALUE], event);
+            }
+        } else if (device == AVANT_RZSK) {
+            if (event < MAX_JRN_EVENT_VALUE) {
+                uint8_t dev = (uint8_t) sParam.jrnEntry.getDeviceJrn();
+                snprintf_P(&vLCDbuf[poz], 21, fcJrnEventRZSK[event],
+                           fcDevicesK400[dev]);
+            } else {
+                snprintf_P(&vLCDbuf[poz], 21,
+                           fcJrnEventRZSK[MAX_JRN_EVENT_VALUE], event);
+            }
+        } else if (device == AVANT_OPTO) {
+            if (sParam.glb.getTypeOpto() == TYPE_OPTO_RING_UNI) {
+                snprintf_P(&vLCDbuf[poz], 21, fcJrnEventOPTOring[event], event);
+            } else {
+                snprintf_P(&vLCDbuf[poz], 21, fcJrnEventOPTO[event], event);
+            }
+        }
+    }
 
 	switch(key_) {
 		case KEY_UP:
@@ -1793,7 +1793,7 @@ void clMenu::lvlJournalEvent() {
 	// поместим в сообщение для БСП адрес необходимой записи
 	// размещен в конце, чтобы не терять время до следующего обращения к
 	// данному пункту меню
-	sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
+    sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 }
 
 /** Уровень меню. Журнал защиты.
@@ -4778,32 +4778,26 @@ bool clMenu::checkChangeReg() const {
 }
 
 // Проверяет введенный пароль.
-bool clMenu::checkErrorCounterUser(eGB_PARAM param, int16_t value) const {
-    bool check = false;
+bool clMenu::isLockUser(int16_t value) const {
+    bool lock = true;
 
-    if (param == GB_PARAM_IS_USER) {
-        TUser::user_t user = static_cast<TUser::user_t> (value);
-
-        switch(user) {
-            case TUser::OPERATOR: {
-                check = true;
-            } break;
-            case TUser::ENGINEER: {
-                uint8_t counter = sParam.security.pwdEngineer.getCounter();
-                check =  counter < getAbsMax(GB_PARAM_IS_PWD_ENG_CNT);
-            } break;
-            case TUser::ADMIN: {
-                uint8_t counter = sParam.security.pwdAdmin.getCounter();
-                check =  counter < getAbsMax(GB_PARAM_IS_PWD_ENG_CNT);
-            } break;
-            //
-            case TUser::MAX: {
-                check = false;
-            } break;
-        }
+    switch(static_cast<TUser::user_t> (value)) {
+    case TUser::OPERATOR: {
+        lock = false;
+    } break;
+    case TUser::ENGINEER: {
+        lock = sParam.security.pwdEngineer.isLock();
+    } break;
+    case TUser::ADMIN: {
+        lock = sParam.security.pwdAdmin.isLock();
+    } break;
+    //
+    case TUser::MAX: {
+        lock = true;
+    } break;
     }
 
-    return check;
+    return lock;
 }
 
 //
@@ -4877,7 +4871,7 @@ void clMenu::checkPwdInput(TUser::user_t user, const uint8_t *pwd)
             sParam.security.pwdEngineer.incCounter();
         }
 
-        if (!checkErrorCounterUser(GB_PARAM_IS_USER, user)) {
+        if (isLockUser(user)) {
             setMessage(MSG_BLOCK_USER);
         } else {
             setMessage(MSG_WRONG_PWD);
@@ -5120,6 +5114,13 @@ void clMenu::saveParamToRam() {
 
 //
 void clMenu::security() {
+    // Сброс настроек при потере связи.
+    if (!isConnectionBsp()) {
+        sParam.security.pwdEngineer.reset();
+        sParam.security.pwdAdmin.reset();
+        sParam.security.User.reset();
+    }
+
     // Проверяется сброс счетчика ввода ошибочного пароля для Администратора
     if (sParam.security.pwdAdmin.timerTick()) {
         save.param = GB_PARAM_IS_PWD_ADM_CNT;
@@ -5149,7 +5150,7 @@ void clMenu::setupParam() {
                 eGB_PARAM param = EnterParam.getParam();
                 int16_t value = EnterParam.getValue();
                 if (checkPwdReq(param, value)) {
-                    if (checkErrorCounterUser(param, value)) {                        
+                    if (!isLockUser(value)) {
                         EnterParam.setEnable(MENU_ENTER_PASSWORD);
                         enterFunc = &clMenu::inputValue;
                         EnterParam.setParam(GB_PARAM_IS_PWD);
@@ -5217,6 +5218,7 @@ void clMenu::setupParam() {
 	}
 }
 
+//
 bool clMenu::checkLedOn() {
 	bool ledOn = false;
 
@@ -5261,6 +5263,10 @@ bool clMenu::checkLedOn() {
 			ledOn = true;
 		}
 	}
+
+    if (!isConnectionBsp()) {
+        ledOn = true;
+    }
 
 	if (sParam.glb.isLedOn()) {
 		ledOn = true;

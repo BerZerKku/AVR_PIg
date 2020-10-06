@@ -132,9 +132,9 @@ uint8_t TTxCom::getUInt8(uint8_t pos) const {
 
 //
 void TTxCom::setInt16(uint16_t val) {
-	if (cntComFast > 0) {
-		*((uint16_t *) comFast_[cntComFast-1].buf) = val;
-	}
+    if (cntComFast > 0) {
+        *((uint16_t *) comFast_[cntComFast-1].buf) = val;
+    }
 }
 
 //

@@ -10,29 +10,25 @@
 
 #include "glbDefine.h"
 
+// TODO Сделать описание работы паролей и по возможности упростить алгоритм/изменение.
+
 /// Пароль.
 class TPwd {
     /// время сборса ошибки ввода пароля
 #ifdef NDEBUG
-    static const uint16_t kTickToDecCounter = (600000UL / MENU_TIME_CYLCE);
+#define kTickToDecCounter (600000UL / MENU_TIME_CYLCE);
 #else
-    static const uint16_t kTickToDecCounter = (10000UL / MENU_TIME_CYLCE);
+#define kTickToDecCounter (10000UL / MENU_TIME_CYLCE);
 #endif
-
+#define kMaskLock 0x04
 public:
-
     // Конструктор.
     TPwd() {
         COMPILE_TIME_ASSERT(SIZE_OF(pwd_) == PWD_LEN);
+        COMPILE_TIME_ASSERT(PWD_CNT_BLOCK == 0x03);
+        COMPILE_TIME_ASSERT(kMaskLock == 0x04);
 
-        for(uint8_t i = 0; i < SIZE_OF(pwd_); i++) {
-            pwd_[i] = 0;
-        }
-
-        init = false;
-        counter_ = PWD_CNT_BLOCK;
-        tcounter_ = counter_;
-        time_ = kTickToDecCounter;
+        reset();
     }
 
     /** Устанавливает новое значение пароля.
@@ -66,15 +62,14 @@ public:
      *  @param[in] value Значение.
      */
     bool setCounter(uint8_t value) {
-        counter_ = (value <= PWD_CNT_BLOCK) ? value : PWD_CNT_BLOCK;
+        counter_ = value & kMaskLock;
+        value  &= ~kMaskLock;
+        counter_ += (value <= PWD_CNT_BLOCK) ? value : PWD_CNT_BLOCK;
 
-        if (!init) {
-            init = true;
+        if (!isInit()) {
             tcounter_ = counter_;
-        }
-
-        if (tcounter_ != counter_) {
             time_ = kTickToDecCounter;
+            init_ = true;
         }
 
         return (value == counter_);
@@ -82,13 +77,26 @@ public:
 
     /// Сброс счетчика.
     void clrCounter() {
-        tcounter_ = 0;
+        if (isInit()) {
+            tcounter_ = 0;
+        }
     }
 
     /// Увеличивает счетчик ошибок ввода пароля.
     void incCounter() {
-        if (tcounter_ < PWD_CNT_BLOCK) {
-            tcounter_++;
+        if (isInit()) {
+            uint8_t value = tcounter_ & ~kMaskLock;
+            tcounter_ &= ~kMaskLock;
+
+            if (value < PWD_CNT_BLOCK) {
+                value++;
+            }
+
+            if (value >= PWD_CNT_BLOCK) {
+                value = PWD_CNT_BLOCK | kMaskLock;
+            }
+
+            tcounter_ |= value;
         }
 
         time_ = kTickToDecCounter;
@@ -102,6 +110,21 @@ public:
         return tcounter_;
     }
 
+    /** Установка наличия инициализации счетчика.
+     *
+     *  @param[in] value Состояние инициализации.
+     */
+    void reset() {
+        init_ = false;
+        counter_ = PWD_CNT_BLOCK | kMaskLock;
+        tcounter_ = counter_;
+        time_ = kTickToDecCounter;
+
+        for(uint8_t i = 0; i < SIZE_OF(pwd_); i++) {
+            pwd_[i] = 0;
+        }
+    }
+
     /** Тик таймера.
      *
      *  Считает время до сброса ошибки счетчика.
@@ -112,17 +135,36 @@ public:
     bool timerTick() {
         bool change = false;
 
-        time_ = (time_ > 0) ? time_ - 1 : kTickToDecCounter;
+        if (isInit()) {
+            time_ = (time_ > 0) ? time_ - 1 : kTickToDecCounter;
 
-        if ((time_ == 0) && (tcounter_ > 0)) {
-            tcounter_--;
-        }
+            if (time_ == 0) {
+                uint8_t value = tcounter_ & ~kMaskLock;
+                tcounter_ &= kMaskLock;
 
-        if (init && (tcounter_ != counter_)) {
-            change = true;
+                if (value > 0) {
+                    value--;
+                }
+
+                tcounter_ = (value == 0) ? 0 : (tcounter_ | value);
+            }
+
+            if (tcounter_ != counter_) {
+                change = true;
+            }
         }
 
         return change;
+    }
+
+    /// Возвращает время до декремента счетчика ошибок.
+    uint16_t getTicksToDecrement() const {
+        return time_;
+    }
+
+    /// Возвращает текущее состояние блокировки выбора роли.
+    bool isLock() const {
+        return tcounter_ & kMaskLock;
     }
 
     /** Возвращает состояние флага инициализации.
@@ -130,7 +172,7 @@ public:
      *  @return true если значение было установлено, иначе false.
      */
     bool isInit() const {
-        return init;
+        return init_;
     }
 
 private:
@@ -160,7 +202,7 @@ private:
         }
     }
 
-    bool init;              ///< Инициализация (первое считывание).
+    bool init_;             ///< Инициализация (первое считывание).
     uint8_t pwd_[PWD_LEN];  ///< Пароль.
     uint8_t counter_;       ///< Счетчик ввода неверного пароля из БСП.
     uint8_t tcounter_;      ///< Счетчик ввода неверного пароля в БСП-ПИ.
@@ -180,7 +222,7 @@ public:
     };
 
     TUser() {
-        user_ = OPERATOR;
+        reset();
     }
 
     /**	Запись.
@@ -201,6 +243,11 @@ public:
      */
     user_t get() const {
         return user_;
+    }
+
+    /// Сброс роли на оператора.
+    void reset() {
+        user_ = OPERATOR;
     }
 
 private:

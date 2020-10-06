@@ -298,7 +298,8 @@ public:
 		return numCom_;
 	}
 
-	/** Установка источника передаваемой команды.
+    /** Устанавливает источник передаваемой команды.
+     *
 	 *	В случае не корректного значения, в параметр будет записано значение
 	 *	\a GB_SOURCE_COM_MAX.
 	 *
@@ -326,7 +327,7 @@ public:
 		return stat;
 	}
 
-	/** Считывание источника передаваемой команды.
+    /** Возвращает источник передаваемой команды.
 	 *
 	 *	@return Источник передаваемой команды.
 	 */
@@ -334,97 +335,154 @@ public:
 		return sourceCom_;
 	}
 
-	// количество записей в журнале
-	bool setNumJrnEntry(uint16_t val) {
-		bool stat = false;
+    /** Устанавливает количество записей в журнале.
+     *
+     *  В случае переполнения журнала, новые записи начинают перезаписывать
+     *  старые. При этом выставляется флаг переполнения 0xC000 и в принимаемом
+     *  значении указывается адрес "первой" т.е. самой новой записи.
+     *
+     *  @param[in] val Количество записей в журнале или адрес первой записи.
+     *  @return true если количество записей не превышает допустимое, иначе false.
+     */
+    bool setNumJrnEntry(uint16_t val) {
+        bool stat = false;
 
-		overflow_ = (val & 0xC000) != 0;
+        overflow_ = (val & 0xC000) != 0;
 
-		val &= 0x3FFF;
+        val &= 0x3FFF;
 
-		if (val <= maxNumJrnEntry_) {
-			if (overflow_) {
-				numJrnEntries_ = maxNumJrnEntry_;
-				addressFirstEntry_ = val;
-			} else {
-				numJrnEntries_ = val;
-				addressFirstEntry_ = 0;
-			}
-			stat = true;
-		}
-		return stat;
-	}
+        if (val <= maxNumJrnEntry_) {
+            if (overflow_) {
+                numJrnEntries_ = maxNumJrnEntry_;
+                addressFirstEntry_ = val;
+            } else {
+                numJrnEntries_ = val;
+                addressFirstEntry_ = 0;
+            }
+            stat = true;
+        }
+
+        return stat;
+    }
+
+    /** Возвращает количесто записей в журнале.
+     *
+     *  @return Количество записей в журнале.
+     */
 	uint16_t getNumJrnEntries() const {
 		return numJrnEntries_;
 	}
 
-	// максимальное кол-во записей в журнале
+    /** Устанавливает максимальное количество записей в журнале.
+     *
+     *
+     *  @param[in] max Максимальное количество записей в журнале.
+     *  @return true если занчение не превышает допустимое, иначе false.
+     */
 	bool setMaxNumJrnEntries(uint16_t max) {
 		bool stat = false;
+
 		if (max <= GLB_JRN_MAX) {
 			stat = true;
 			maxNumJrnEntry_ = max;
 		}
+
 		return stat;
 	}
+
+    /** Возвращает максимальное количество записей в журнале.
+     *
+     *  @return Максимальное количество записей в журнале.
+     */
 	uint16_t getMaxNumJrnEntry() const {
 		return maxNumJrnEntry_;
 	}
 
-	// переполнение журнала
-	bool isOverflow() const {
-		return overflow_;
-	}
-
-	// номер адреса текущей записи в журнале
+    /** Возвращает абсолютный адрес текущей записи в журнале.
+     *
+     *  Журнал перезаписывается по кругу, поэтому начало и конец журнала
+     *  постоянно перезаписываются.
+     *  В данной функции вычисляется абсолютный адрес в журнале, чтобы при
+     *  добавлении новой записи в журнал, текущая запись на экране не менялась.
+     *
+     *  @return Абсолютный адрес записи в журнале.
+     */
 	uint16_t getEntryAdress() const {
-		return (currentEntry_ + addressFirstEntry_ - 1) % numJrnEntries_;
+        uint16_t address = 0;
+
+        if (numJrnEntries_ > 0) {
+            address= (currentEntry_ + addressFirstEntry_ - 1) % numJrnEntries_;
+        }
+
+        return address;
 	}
 
-	// текущая запись
+    /** Возвращает адрес текущей записи в журнале.
+     *
+     *  @return Адрес текущей записи.
+     */
 	uint16_t getCurrentEntry() const {
 		return currentEntry_;
 	}
-	// следующая/предыдущая запись возвращает true если новое значение
-	// отличается от предыдущего
+
+    /** Переход к следующей записи в журнале.
+     *
+     *  @return true если переход был, иначе false.
+     */
 	bool setNextEntry() {
-		bool stat = false;
-		uint16_t tmp = currentEntry_;
-		tmp = (tmp < numJrnEntries_) ? currentEntry_ + 1 : 1;
-		if (tmp != currentEntry_) {
+		bool stat = false;        
+        uint16_t tmp = currentEntry_;
+
+        tmp = (tmp < numJrnEntries_) ? currentEntry_ + 1 : 1;
+        if (tmp != currentEntry_) {
 			currentEntry_ = tmp;
 			ready_ = false;
 			stat = true;
 		}
 		return stat;
 	}
+
+    /** Переход к предыдущей записи в журнале.
+     *
+     *  @return true если переход был, иначе false.
+     */
 	bool setPreviousEntry() {
 		bool stat = false;
 		uint16_t tmp = currentEntry_;
+
 		tmp = (tmp > 1) ? tmp - 1 : numJrnEntries_;
 		if (tmp != currentEntry_) {
 			currentEntry_ = tmp;
 			ready_ = false;
 			stat = true;
 		}
+
 		return stat;
 	}
 
-	// Установка номера записи
+    /** Устанавливает номер записи.
+     *
+     *  @param[in] num Номер записи.
+     *  @return true если номер не превышает допустимый, иначе false.
+     */
 	bool setNumEntry(uint16_t num) {
 		bool stat = false;
+
 		if (num <= numJrnEntries_) {
 			currentEntry_ = num;
 			ready_ = false;
 			stat = true;
 		}
+
 		return stat;
 	}
 
-	// утстановка и считывание флага получения информации о текущей записи
+    /// Устанавливает флаг наличия записи (запись получена).
 	bool setReady() {
 		return (ready_ = true);
 	}
+
+    /// Проверяет флаг наличия записи.
 	bool isReady() const {
 		return ready_;
 	}
