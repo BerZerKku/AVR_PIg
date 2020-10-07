@@ -16,33 +16,20 @@
 class TPwd {
     /// время сборса ошибки ввода пароля
 #ifdef NDEBUG
-static const uint16_t kTickToDecCounter PROGMEM = 600000UL / MENU_TIME_CYLCE;
+#define kTickToDecCounter (600000UL / MENU_TIME_CYLCE)
 #else
-static const uint16_t kTickToDecCounter PROGMEM = 10000UL / MENU_TIME_CYLCE;
+#define kTickToDecCounter (10000UL / MENU_TIME_CYLCE)
 #endif
 public:
     // Конструктор.
-    TPwd() {
-        COMPILE_TIME_ASSERT(SIZE_OF(pwd_) == PWD_LEN);
-        COMPILE_TIME_ASSERT(PWD_CNT_BLOCK == 0x03);
-
-        reset();
-    }
+    TPwd();
 
     /** Устанавливает новое значение пароля.
      *
      *  @param[in] pwd Пароль.
      *  @return false в случае ошибочного значения.
      */
-    bool set(uint8_t *pwd) {
-        bool check = checkValue(pwd);
-
-        if (check) {
-            setValue(pwd);
-        }
-
-        return check;
-    }
+    bool set(uint8_t *pwd);
 
     /** Возвращает значение пароля.
      *
@@ -59,47 +46,16 @@ public:
      *
      *  @param[in] value Значение.
      */
-    bool setCounter(uint8_t value) {
-        counter_ = (value <= 2*PWD_CNT_BLOCK) ? value : 2*PWD_CNT_BLOCK;
-
-        if (!isInit()) {
-            if (counter_ == PWD_CNT_BLOCK) {
-                counter_ = 2 * PWD_CNT_BLOCK;
-            }
-            tcounter_ = counter_;
-            time_ = (counter_ > 0) ? pgm_read_word(&kTickToDecCounter) : 0;
-            init_ = true;
-        }
-
-        return (value == counter_);
-    }
+    bool setCounter(uint8_t value);
 
     /// Сброс счетчика.
-    void clrCounter() {
-        if (isInit()) {
-            tcounter_ = 0;
-        }
-    }
+    void clrCounter();
 
     /** Увеличивает счетчик ошибок ввода пароля.
      *
      *  Если это первый ошибочный ввод таймер будет сброшен.
      */
-    void incCounter() {
-        if (tcounter_ == 0) {
-            time_ = pgm_read_word(&kTickToDecCounter);
-        }
-
-        if (isInit()) {
-            if (tcounter_ <= PWD_CNT_BLOCK) {
-                tcounter_++;
-            }
-
-            if (tcounter_ >= PWD_CNT_BLOCK) {
-                tcounter_ = 2*PWD_CNT_BLOCK;
-            }
-        }
-    }
+    void incCounter();
 
     /** Возвращает значение счетчика ввода неверного пароля.
      *
@@ -115,16 +71,7 @@ public:
      *
      *  @param[in] value Состояние инициализации.
      */
-    void reset() {
-        init_ = false;
-        counter_ = 2*PWD_CNT_BLOCK;
-        tcounter_ = counter_;
-        time_ = pgm_read_word(&kTickToDecCounter);
-
-        for(uint8_t i = 0; i < SIZE_OF(pwd_); i++) {
-            pwd_[i] = 0;
-        }
-    }
+    void reset();
 
     /** Тик таймера.
      *
@@ -133,35 +80,7 @@ public:
      *
      *  @return true если значение счетчика было изменено.
      */
-    bool tick() {
-        bool change = false;
-
-        if (isInit()) {
-            if (tcounter_ > 0) {
-                if (time_ > 0) {
-                    time_--;
-                }
-
-                if (time_ == 0) {
-                    tcounter_--;
-
-                    if (tcounter_ == PWD_CNT_BLOCK) {
-                        tcounter_ = 0;
-                    }
-
-                    if (tcounter_ > 0) {
-                        time_ = pgm_read_word(&kTickToDecCounter);
-                    }
-                }
-            }
-
-            if (tcounter_ != counter_) {
-                change = true;
-            }
-        }
-
-        return change;
-    }
+    bool tick();
 
     /// Возвращает время до декремента счетчика ошибок.
     uint16_t getTicksToDecrement() const {
@@ -188,25 +107,13 @@ private:
      *  @param[in] pwd Пароль.
      *  @return Результат проверки, true если все в порядке.
      */
-    bool checkValue(uint8_t *pwd) const {
-        bool check = true;
-
-        for(uint8_t i = 0; i < SIZE_OF(pwd_); i++) {
-            check &= ((pwd[i] >= '0') && (pwd[i] <= '9'));
-        }
-
-        return check;
-    }
+    bool checkValue(uint8_t *pwd) const;
 
     /** Устанавливает значение пароля.
      *
      *  @param[in] pwd Пароль.
      */
-    void setValue(uint8_t *pwd) {
-        for(uint8_t i = 0; i < SIZE_OF(pwd_); i++) {
-            pwd_[i] = pwd[i];
-        }
-    }
+    void setValue(uint8_t *pwd);
 
     bool init_;             ///< Инициализация (первое считывание).
     uint8_t pwd_[PWD_LEN];  ///< Пароль.
@@ -217,11 +124,10 @@ private:
 
 class TUser {
 
-
 #ifdef NDEBUG
-    static const uint16_t kTimeToReset PROGMEM = (900000UL / MENU_TIME_CYLCE);
+#define kTimeToReset (900000UL / MENU_TIME_CYLCE)
 #else
-    static const uint16_t kTimeToReset PROGMEM = (300000UL / MENU_TIME_CYLCE);
+#define kTimeToReset (300000UL / MENU_TIME_CYLCE)
 #endif
 public:
 
@@ -234,25 +140,14 @@ public:
         MAX
     };
 
-    TUser() {
-        reset();
-    }
+    TUser();
 
     /**	Запись.
      *
      * 	@param val Пользователь.
      * 	@return False в случае ошибочного значения.
      */
-    bool set(user_t val) {
-        if ((val >= MIN) && (val < MAX)) {
-            if (user_ != val) {
-                time_ = pgm_read_word(&kTimeToReset);
-                user_ = val;
-            }
-        }
-
-        return (user_ == val);
-    }
+    bool set(user_t val);
 
     /**	Чтение.
      *
@@ -266,22 +161,10 @@ public:
      *
      *  Проверяется время до сброса текущей роли.
      */
-    void tick() {
-        if (time_ > 0) {
-            time_--;
-        }
-
-        if (time_ == 0) {
-            reset();
-        }
-    }
+    void tick();
 
     /// Сброс таймера.
-    void resetTimer() {
-        if (user_ != OPERATOR) {
-            time_ = pgm_read_word(&kTimeToReset);
-        }
-    }
+    void resetTimer();
 
     /// Возвращает текущее значение таймера.
     uint16_t getTimer() {
@@ -289,10 +172,7 @@ public:
     }
 
     /// Сброс роли на оператора.
-    void reset() {
-        user_ = OPERATOR;
-        time_ = 0;
-    }
+    void reset();
 
 private:
     user_t user_;

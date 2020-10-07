@@ -2735,26 +2735,6 @@ void clMenu::lvlSetup() {
 
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
 	printPunkts();
-//	if (EnterParam.isEnable()) {
-//		// ввод нового значения параметра
-//		eMENU_ENTER_PARAM stat = EnterParam.getStatus();
-
-//		// выбор функции ввода : пароль или параметр
-//		(this->*enterFunc)();
-
-//		if (stat == MENU_ENTER_PASSWORD_READY) {
-//			uint16_t val = EnterParam.getValue();
-
-//			if (sParam.password.check(val)) {
-//				EnterParam.setEnable(MENU_ENTER_PASSWORD_NEW);
-//			} else
-//				EnterParam.setDisable();
-//		} else if (stat == MENU_ENTER_PASSWORD_N_READY) {
-//			uint16_t val = EnterParam.getValue();
-
-//			sParam.password.set(val);
-//		}
-//	}
 
 	switch(key_) {
 		case KEY_UP:
@@ -2786,9 +2766,6 @@ void clMenu::lvlSetup() {
 			} else if (name == punkt4) {
                 lvlMenu = &clMenu::lvlUser;
                 lvlCreate_ = true;
-//				enterFunc = &clMenu::enterPassword;
-//				EnterParam.setEnable(MENU_ENTER_PASSWORD);
-//				EnterParam.com = GB_COM_NO;
 			} else if (name == punkt5) {
 				lvlMenu = &clMenu::lvlSetupInterface;
 				lvlCreate_ = true;
