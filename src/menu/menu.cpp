@@ -153,6 +153,7 @@ void clMenu::proc(void) {
 			tmp = KEY_NO;
 		key_ = tmp;
 
+        sParam.security.User.resetTimer();
 		vLCDsetLed(LED_SWITCH);
 	}
 
@@ -5116,13 +5117,19 @@ void clMenu::saveParamToRam() {
 void clMenu::security() {
     // Сброс настроек при потере связи.
     if (!isConnectionBsp()) {
-        sParam.security.pwdEngineer.reset();
-        sParam.security.pwdAdmin.reset();
+        if (sParam.security.pwdEngineer.isInit()) {
+            sParam.security.pwdEngineer.reset();
+        }
+        if (sParam.security.pwdAdmin.isInit()) {
+            sParam.security.pwdAdmin.reset();
+        }
         sParam.security.User.reset();
     }
 
+    sParam.security.User.tick();
+
     // Проверяется сброс счетчика ввода ошибочного пароля для Администратора
-    if (sParam.security.pwdAdmin.timerTick()) {
+    if (sParam.security.pwdAdmin.tick()) {
         save.param = GB_PARAM_IS_PWD_ADM_CNT;
         save.number = 1;
         save.set(sParam.security.pwdAdmin.getCounter());
@@ -5130,7 +5137,7 @@ void clMenu::security() {
     }
 
     // Проверяется сброс счетчика ввода ошибочного пароля для Инженера
-    if (sParam.security.pwdEngineer.timerTick()) {
+    if (sParam.security.pwdEngineer.tick()) {
         save.param = GB_PARAM_IS_PWD_ENG_CNT;
         save.number = 1;
         save.set(sParam.security.pwdEngineer.getCounter());
@@ -5265,6 +5272,10 @@ bool clMenu::checkLedOn() {
 	}
 
     if (!isConnectionBsp()) {
+        ledOn = true;
+    }
+
+    if (sParam.security.User.get() != TUser::OPERATOR) {
         ledOn = true;
     }
 

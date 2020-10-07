@@ -16,17 +16,15 @@
 class TPwd {
     /// время сборса ошибки ввода пароля
 #ifdef NDEBUG
-#define kTickToDecCounter (600000UL / MENU_TIME_CYLCE);
+static const uint16_t kTickToDecCounter PROGMEM = 600000UL / MENU_TIME_CYLCE;
 #else
-#define kTickToDecCounter (10000UL / MENU_TIME_CYLCE);
+static const uint16_t kTickToDecCounter PROGMEM = 10000UL / MENU_TIME_CYLCE;
 #endif
-#define kMaskLock 0x04
 public:
     // Конструктор.
     TPwd() {
         COMPILE_TIME_ASSERT(SIZE_OF(pwd_) == PWD_LEN);
         COMPILE_TIME_ASSERT(PWD_CNT_BLOCK == 0x03);
-        COMPILE_TIME_ASSERT(kMaskLock == 0x04);
 
         reset();
     }
@@ -62,13 +60,14 @@ public:
      *  @param[in] value Значение.
      */
     bool setCounter(uint8_t value) {
-        counter_ = value & kMaskLock;
-        value  &= ~kMaskLock;
-        counter_ += (value <= PWD_CNT_BLOCK) ? value : PWD_CNT_BLOCK;
+        counter_ = (value <= 2*PWD_CNT_BLOCK) ? value : 2*PWD_CNT_BLOCK;
 
         if (!isInit()) {
+            if (counter_ == PWD_CNT_BLOCK) {
+                counter_ = 2 * PWD_CNT_BLOCK;
+            }
             tcounter_ = counter_;
-            time_ = kTickToDecCounter;
+            time_ = (counter_ > 0) ? pgm_read_word(&kTickToDecCounter) : 0;
             init_ = true;
         }
 
@@ -82,24 +81,24 @@ public:
         }
     }
 
-    /// Увеличивает счетчик ошибок ввода пароля.
+    /** Увеличивает счетчик ошибок ввода пароля.
+     *
+     *  Если это первый ошибочный ввод таймер будет сброшен.
+     */
     void incCounter() {
-        if (isInit()) {
-            uint8_t value = tcounter_ & ~kMaskLock;
-            tcounter_ &= ~kMaskLock;
-
-            if (value < PWD_CNT_BLOCK) {
-                value++;
-            }
-
-            if (value >= PWD_CNT_BLOCK) {
-                value = PWD_CNT_BLOCK | kMaskLock;
-            }
-
-            tcounter_ |= value;
+        if (tcounter_ == 0) {
+            time_ = pgm_read_word(&kTickToDecCounter);
         }
 
-        time_ = kTickToDecCounter;
+        if (isInit()) {
+            if (tcounter_ <= PWD_CNT_BLOCK) {
+                tcounter_++;
+            }
+
+            if (tcounter_ >= PWD_CNT_BLOCK) {
+                tcounter_ = 2*PWD_CNT_BLOCK;
+            }
+        }
     }
 
     /** Возвращает значение счетчика ввода неверного пароля.
@@ -110,15 +109,17 @@ public:
         return tcounter_;
     }
 
-    /** Установка наличия инициализации счетчика.
+    /** Сброс настроек.
+     *
+     *  Настройки сбрасываются при обрыве связи с БСП.
      *
      *  @param[in] value Состояние инициализации.
      */
     void reset() {
         init_ = false;
-        counter_ = PWD_CNT_BLOCK | kMaskLock;
+        counter_ = 2*PWD_CNT_BLOCK;
         tcounter_ = counter_;
-        time_ = kTickToDecCounter;
+        time_ = pgm_read_word(&kTickToDecCounter);
 
         for(uint8_t i = 0; i < SIZE_OF(pwd_); i++) {
             pwd_[i] = 0;
@@ -132,21 +133,26 @@ public:
      *
      *  @return true если значение счетчика было изменено.
      */
-    bool timerTick() {
+    bool tick() {
         bool change = false;
 
         if (isInit()) {
-            time_ = (time_ > 0) ? time_ - 1 : kTickToDecCounter;
-
-            if (time_ == 0) {
-                uint8_t value = tcounter_ & ~kMaskLock;
-                tcounter_ &= kMaskLock;
-
-                if (value > 0) {
-                    value--;
+            if (tcounter_ > 0) {
+                if (time_ > 0) {
+                    time_--;
                 }
 
-                tcounter_ = (value == 0) ? 0 : (tcounter_ | value);
+                if (time_ == 0) {
+                    tcounter_--;
+
+                    if (tcounter_ == PWD_CNT_BLOCK) {
+                        tcounter_ = 0;
+                    }
+
+                    if (tcounter_ > 0) {
+                        time_ = pgm_read_word(&kTickToDecCounter);
+                    }
+                }
             }
 
             if (tcounter_ != counter_) {
@@ -164,7 +170,7 @@ public:
 
     /// Возвращает текущее состояние блокировки выбора роли.
     bool isLock() const {
-        return tcounter_ & kMaskLock;
+        return tcounter_ >= PWD_CNT_BLOCK;
     }
 
     /** Возвращает состояние флага инициализации.
@@ -210,6 +216,13 @@ private:
 };
 
 class TUser {
+
+
+#ifdef NDEBUG
+    static const uint16_t kTimeToReset PROGMEM = (900000UL / MENU_TIME_CYLCE);
+#else
+    static const uint16_t kTimeToReset PROGMEM = (300000UL / MENU_TIME_CYLCE);
+#endif
 public:
 
     // пользователь
@@ -232,8 +245,12 @@ public:
      */
     bool set(user_t val) {
         if ((val >= MIN) && (val < MAX)) {
-            user_ = val;
+            if (user_ != val) {
+                time_ = pgm_read_word(&kTimeToReset);
+                user_ = val;
+            }
         }
+
         return (user_ == val);
     }
 
@@ -245,13 +262,41 @@ public:
         return user_;
     }
 
+    /** Тик таймера.
+     *
+     *  Проверяется время до сброса текущей роли.
+     */
+    void tick() {
+        if (time_ > 0) {
+            time_--;
+        }
+
+        if (time_ == 0) {
+            reset();
+        }
+    }
+
+    /// Сброс таймера.
+    void resetTimer() {
+        if (user_ != OPERATOR) {
+            time_ = pgm_read_word(&kTimeToReset);
+        }
+    }
+
+    /// Возвращает текущее значение таймера.
+    uint16_t getTimer() {
+        return time_;
+    }
+
     /// Сброс роли на оператора.
     void reset() {
         user_ = OPERATOR;
+        time_ = 0;
     }
 
 private:
     user_t user_;
+    uint16_t time_;
 };
 
 class TIsEvent {
