@@ -147,20 +147,36 @@ public:
 	eGB_COM getTxCommand();
 
 	/** Возвращает текущее состояние связи с БСП.
-	 * 	@retval True - связь с БСП есть.
-	 * 	@retval False - связи с БСП нет.
+     *
+     *  @return true если есть связь с БСП, иначе false.
 	 */
 	bool isConnectionBsp() const {
 		return connectionBsp_;
 	}
 
-	/** Устнаовка флага наличия связи с БСП.
-	 * 	@retval True - связь есть.
-	 * 	@retval False - связи нет.
+    /** Установливает флаг наличия связи с БСП.
+     *
+     *  @param[in] connection Флаг наличия связи.
 	 */
-	void setConnectionBsp(bool f) {
-		connectionBsp_ = f;
+    void setConnectionBsp(bool connection) {
+        connectionBsp_ = connection;
 	}
+
+    /** Возвращает текущее состояние связи с ПК.
+     *
+     *  @return true если есть связь с ПК, иначе false.
+     */
+    bool isConnectionPc() const {
+        return connectionPc_;
+    }
+
+    /** Установливает флага наличия связи с ПК.
+     *
+     *  @param[in] connection Флаг наличия связи.
+     */
+    void setConnectionPc(bool connection) {
+        connectionPc_ = connection;
+    }
 
 	/** Параметры
 	 */
@@ -176,8 +192,10 @@ private:
 	// флаг смены измеряемых параметров
 	bool blinkMeasParam_;
 
-	// флаг текущего сосотояния связи с БСП, True - есть
+    // флаг текущего сосотояния связи с БСП, true - есть
 	bool connectionBsp_;
+    // флаг текущего состояния связи с ПК, true - есть
+    bool connectionPc_;
 
 	// true - необходимо вывести на экран курсор
 	bool cursorEnable_;

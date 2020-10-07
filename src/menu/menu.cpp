@@ -5104,6 +5104,10 @@ void clMenu::security() {
         sParam.security.UserPc.reset();
     }
 
+    if (!isConnectionPc()) {
+        sParam.security.UserPc.reset();
+    }
+
     sParam.security.UserPi.tick();
     sParam.security.UserPc.tick();
 
@@ -5255,6 +5259,10 @@ bool clMenu::checkLedOn() {
     }
 
     if (sParam.security.UserPi.get() != TUser::OPERATOR) {
+        ledOn = true;
+    }
+
+    if (sParam.security.UserPc.get() != TUser::OPERATOR) {
         ledOn = true;
     }
 

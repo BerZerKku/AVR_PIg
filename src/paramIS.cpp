@@ -165,6 +165,6 @@ void TUser::resetTimer() {
 }
 
 void TUser::reset() {
-        user_ = OPERATOR;
-        time_ = 0;
-    }
+    user_ = OPERATOR;
+    time_ = 0;
+}

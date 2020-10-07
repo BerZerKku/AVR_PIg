@@ -10,17 +10,14 @@
 
 /// Время работы одного цикла (зависит от настройки таймеров), мс
 #define TIME_CYLCE 100
-
-
-
 /// Максимальное кол-во неполученных сообщений от БСП для ошибки связи
 #define MAX_LOST_COM_FROM_BSP 10
-
+/// Максимальное время отсуствия сообщений для определения обрыва связи с ПК
+#define TIME_LOST_PC_CONNECTION 3
+/// Количество пропавших сообщений подряд для определения обрыва связи с ПК
+#define MAX_LOST_COM_FROM_PC (TIME_LOST_PC_CONNECTION * (1000 / TIME_CYLCE))
 /// адрес датчика температуры
 #define TEMP_IC_ADR 0x48
-
-/// Флаг, устанавливается каждые 100мс
-static volatile bool b100ms = false;
 
 /// Последняя команда полученная с ПК
 static uint8_t lastPcCom = 0;
@@ -48,6 +45,10 @@ void bspRead() {
     // кол-во неполученных сообщений с БСП
     static uint8_t cntLostCom = 0;
 
+    if (cntLostCom < MAX_LOST_COM_FROM_BSP) {
+        cntLostCom++;
+    }
+
     // перед приемом проверим статус на залипание
     protBSPs.checkStat();
     // Проверка наличия сообщения с БСП и ее обработка
@@ -68,24 +69,21 @@ void bspRead() {
                 }
             }
         }
-
-        // после принятия и обработки сообщения сбросим код предыдущей
-        // запрашиваемой команды
         lastPcCom = 0;
-        // сброс счетчика потерянных сообщений с БСП
         cntLostCom = 0;
-    } else {
-        // в случае превышения порога потерянных сообщений при обмене с БСП
-        // флаг состояния сбрасывается в False
-        if (cntLostCom < MAX_LOST_COM_FROM_BSP) {
-            cntLostCom++;
-        }
     }
 
     menu.setConnectionBsp(cntLostCom < MAX_LOST_COM_FROM_BSP);
 }
 
 void pcRead() {
+    // кол-во неполученных сообщений с БСП
+    static uint8_t cntLostCom = 0;
+
+    if (cntLostCom < MAX_LOST_COM_FROM_PC) {
+        cntLostCom++;
+    }
+
     if (protPCs.isEnable()) {
         // перед приемом проверим статус на залипание
         protPCs.checkStat();
@@ -108,6 +106,7 @@ void pcRead() {
                     }
                 }
             }
+            cntLostCom = 0;
         }
     } else if (protPCm.isEnable()) {
         if (protPCm.isReadData()) {
@@ -118,6 +117,8 @@ void pcRead() {
             protPCi.readData();
         }
     }
+
+    menu.setConnectionPc(cntLostCom < MAX_LOST_COM_FROM_PC);
 }
 
 uint8_t pcWrite() {
