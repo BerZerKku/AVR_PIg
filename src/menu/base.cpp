@@ -227,16 +227,12 @@ void mainCycle(void) {
         cnt_1s = 0;
 
 
-        // TODO Добавить смену интерфейса на железе
-
+        // TODO Добавить смену интерфейса и протокола на железе
         if (isUartPcReinit(&menu.sParam.Uart)) {
-            // установка интерфейса связи с АВАНТом
             setInterface(&menu.sParam.Uart);
         }
 
         // TODO Перенести установку сетевого адреса в другое место
-
-        // установка сетевого адреса
         uint8_t nadr = menu.sParam.glb.getNetAddress();
         if (protPCm.getAddressLan() != nadr) {
             protPCm.setAddressLan(nadr);

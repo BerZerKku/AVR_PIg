@@ -232,13 +232,14 @@ private:
 class TInfoSecurity {
 public:
     TInfoSecurity() {
-        User.set(TUser::OPERATOR);
+        UserPi.set(TUser::OPERATOR);
     }
 
     TIsEvent EventAdmin;
     TIsEvent EventEngineer;
 
-    TUser User;
+    TUser UserPi;
+    TUser UserPc;
 
     TPwd pwdAdmin;
     TPwd pwdEngineer;

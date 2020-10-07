@@ -153,7 +153,7 @@ void clMenu::proc(void) {
 			tmp = KEY_NO;
 		key_ = tmp;
 
-        sParam.security.User.resetTimer();
+        sParam.security.UserPi.resetTimer();
 		vLCDsetLed(LED_SWITCH);
 	}
 
@@ -4122,7 +4122,7 @@ void clMenu::lvlUser() {
         // Для считывания текущего значения параметра хранящегося в ЕЕПРОМ
         eGB_PARAM param = lp->getParam();
         if (param == GB_PARAM_IS_USER) {
-            lp->setValue(sParam.security.User.get());
+            lp->setValue(sParam.security.UserPi.get());
         }
     }
 
@@ -4781,7 +4781,7 @@ bool clMenu::isLockUser(int16_t value) const {
 //
 bool clMenu::checkChangeUser(Param::CHANGE_USER chuser) const {
     bool check = false;
-    TUser::user_t user = sParam.security.User.get();
+    TUser::user_t user = sParam.security.UserPi.get();
 
     switch(chuser) {
         case Param::CHANGE_USER_NO: {
@@ -4863,7 +4863,7 @@ bool clMenu::checkPwdReq(eGB_PARAM param, int16_t value) const
     bool check = false;
 
     if ((param == GB_PARAM_IS_USER) && (value != TUser::OPERATOR)) {
-        if  (value != sParam.security.User.get()) {
+        if  (value != sParam.security.UserPi.get()) {
             check = true;
         }
     }
@@ -5085,7 +5085,7 @@ void clMenu::saveParamToRam() {
         int16_t value = save.getValue();
 
         if (save.param == GB_PARAM_IS_USER) {
-            sParam.security.User.set((TUser::user_t) (value));
+            sParam.security.UserPi.set((TUser::user_t) (value));
         }
     }
 }
@@ -5100,10 +5100,12 @@ void clMenu::security() {
         if (sParam.security.pwdAdmin.isInit()) {
             sParam.security.pwdAdmin.reset();
         }
-        sParam.security.User.reset();
+        sParam.security.UserPi.reset();
+        sParam.security.UserPc.reset();
     }
 
-    sParam.security.User.tick();
+    sParam.security.UserPi.tick();
+    sParam.security.UserPc.tick();
 
     // Проверяется сброс счетчика ввода ошибочного пароля для Администратора
     if (sParam.security.pwdAdmin.tick()) {
@@ -5252,7 +5254,7 @@ bool clMenu::checkLedOn() {
         ledOn = true;
     }
 
-    if (sParam.security.User.get() != TUser::OPERATOR) {
+    if (sParam.security.UserPi.get() != TUser::OPERATOR) {
         ledOn = true;
     }
 
