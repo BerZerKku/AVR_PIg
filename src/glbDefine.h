@@ -274,8 +274,8 @@ enum eGB_COM {
 	GB_COM_SET_REG_DISABLED 	= 0x70,	// +
 	GB_COM_SET_REG_ENABLED 		= 0x71,	// +
 	GB_COM_SET_CONTROL 			= 0x72,	// +
-	GB_COM_SET_PASSWORD 		= 0x73,	// + ! только с ПК
-	GB_COM_GET_PASSWORD 		= 0x74,	// + ! только с ПК
+    GB_COM_SET_USER             = 0x73,	// + ! только с ПК
+    GB_COM_GET_USER             = 0x74,	// + ! только с ПК
 	GB_COM_SET_REG_TEST_2 		= 0x7D,	// +
 	GB_COM_SET_REG_TEST_1 		= 0x7E,	// +
 	GB_COM_DEF_SET_DEF_TYPE 	= 0x81,	// +

@@ -30,6 +30,20 @@ public:
 	 */
 	bool modifyVersionCom();
 
+private:
+
+    /** Обработка принятой команды чтения пользователя.
+     *
+     *  @param[in] com Команда.
+     */
+    bool hdlrComGetUser(eGB_COM com);
+
+    /** Обработка принятой команды записи пользователя.
+     *
+     *  @param[in] com Команда.
+     */
+    bool hdlrComSetUser(eGB_COM com);
+
 };
 
 

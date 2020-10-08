@@ -12,116 +12,6 @@
 
 // TODO Сделать описание работы паролей и по возможности упростить алгоритм/изменение.
 
-/// Пароль.
-class TPwd {
-    /// время сборса ошибки ввода пароля
-#ifdef NDEBUG
-#define kTickToDecCounter (600000UL / MENU_TIME_CYLCE)
-#else
-#define kTickToDecCounter (10000UL / MENU_TIME_CYLCE)
-#endif
-public:
-    // Конструктор.
-    TPwd();
-
-    /** Устанавливает новое значение пароля.
-     *
-     *  @param[in] pwd Пароль.
-     *  @return false в случае ошибочного значения.
-     */
-    bool set(uint8_t *pwd);
-
-    /** Возвращает значение пароля.
-     *
-     *  @return Пароль.
-     */
-    uint8_t* get() {
-        return pwd_;
-    }
-
-    /** Устанавливает счетчик ввода неверного пароля.
-     *
-     *  Если установленное значение больше текущего то будет "обнулено"
-     *  время до декремента текущего счетчика.
-     *
-     *  @param[in] value Значение.
-     */
-    bool setCounter(uint8_t value);
-
-    /// Сброс счетчика.
-    void clrCounter();
-
-    /** Увеличивает счетчик ошибок ввода пароля.
-     *
-     *  Если это первый ошибочный ввод таймер будет сброшен.
-     */
-    void incCounter();
-
-    /** Возвращает значение счетчика ввода неверного пароля.
-     *
-     *  @return Значение  счетчика.
-     */
-    uint8_t getCounter() const {
-        return tcounter_;
-    }
-
-    /** Сброс настроек.
-     *
-     *  Настройки сбрасываются при обрыве связи с БСП.
-     *
-     *  @param[in] value Состояние инициализации.
-     */
-    void reset();
-
-    /** Тик таймера.
-     *
-     *  Считает время до сброса ошибки счетчика.
-     *  Проверяет изменение счетичка.
-     *
-     *  @return true если значение счетчика было изменено.
-     */
-    bool tick();
-
-    /// Возвращает время до декремента счетчика ошибок.
-    uint16_t getTicksToDecrement() const {
-        return time_;
-    }
-
-    /// Возвращает текущее состояние блокировки выбора роли.
-    bool isLock() const {
-        return tcounter_ >= PWD_CNT_BLOCK;
-    }
-
-    /** Возвращает состояние флага инициализации.
-     *
-     *  @return true если значение было установлено, иначе false.
-     */
-    bool isInit() const {
-        return init_;
-    }
-
-private:
-
-    /** Проверяет корректность пароля.
-     *
-     *  @param[in] pwd Пароль.
-     *  @return Результат проверки, true если все в порядке.
-     */
-    bool checkValue(uint8_t *pwd) const;
-
-    /** Устанавливает значение пароля.
-     *
-     *  @param[in] pwd Пароль.
-     */
-    void setValue(uint8_t *pwd);
-
-    bool init_;             ///< Инициализация (первое считывание).
-    uint8_t pwd_[PWD_LEN];  ///< Пароль.
-    uint8_t counter_;       ///< Счетчик ввода неверного пароля из БСП.
-    uint8_t tcounter_;      ///< Счетчик ввода неверного пароля в БСП-ПИ.
-    uint16_t time_;         ///< Счетчик тиков до уменьшения счетчика ошибок.
-};
-
 class TUser {
 
 #ifdef NDEBUG
@@ -177,6 +67,170 @@ public:
 private:
     user_t user_;
     uint16_t time_;
+};
+
+/// Пароль.
+class TPwd {
+    /// время сборса ошибки ввода пароля
+#ifdef NDEBUG
+#define kTickToDecCounter (600000UL / MENU_TIME_CYLCE)
+#else
+#define kTickToDecCounter (30000UL / MENU_TIME_CYLCE)
+#endif
+
+    struct pwd_t {
+        bool init;             ///< Инициализация (первое считывание).
+        uint8_t pwd[PWD_LEN];  ///< Пароль.
+        uint8_t counter;       ///< Счетчик ввода неверного пароля.
+        uint8_t tcounter;      ///< Счетчик ввода неверного пароля из БСП.
+        uint16_t ticks;        ///< Счетчик тиков до уменьшения счетчика ошибок.
+    };
+
+public:
+    // Конструктор.
+    TPwd();
+
+    /** Возвращает результат проверки пароля для пользователя.
+     *
+     *  Для TUser::OPERATOR всегда возвращается true.
+     *  Для TUser::MAX или ошибочном значении возвращается false.
+     *  Для заблокированного пользователя возвращается false.
+     *
+     *  @param[in] user Пользователь.
+     *  @param[in] pwd Пароль.
+     *  @return true если пароль верен, иначе false.
+     */
+    bool checkPassword(TUser::user_t user, const uint8_t *pwd);
+
+    /** Возвращает значение пароля.
+     *
+     *  @param[in] user Пользователь.
+     *  @return Пароль.
+     *  @return NULL в случае отсутствия пароля.
+     */
+    uint8_t* getPwd(TUser::user_t user);
+
+    /** Устанавливает новое значение пароля.
+     *
+     *  @param[in] user Пользователь.
+     *  @param[in] pwd Пароль.
+     *  @return true если пароль установлен, иначе false.
+     */
+    bool setPwd(TUser::user_t user, uint8_t *password);
+
+    /** Устанавливает счетчик ввода неверного пароля.
+     *
+     *  Если установленное значение больше текущего то будет "обнулено"
+     *  время до декремента текущего счетчика.
+     *
+     *  @param[in] user Пользователь.
+     *  @param[in] value Значение.
+     */
+    void setCounter(TUser::user_t user, uint8_t value);
+
+    /** Сброс счетчика.
+     *
+     *  @param[in] user Пользователь.
+     */
+    void clrCounter(TUser::user_t user);
+
+    /** Увеличивает счетчик ошибок ввода пароля.
+     *
+     *  Если это первый ошибочный ввод таймер будет сброшен.
+     *
+     *  @param[in] user Пользователь
+     */
+    void incCounter(TUser::user_t user);
+
+    /** Возвращает значение счетчика ввода неверного пароля.
+     *
+     *  Для TUser::OPERATOR всегда возвращается 0.
+     *  Для TUser::MAX или ошибочном значении возвращается 0xFF.
+     *
+     *  @param[in] user Пользователь
+     *  @return Значение  счетчика.
+     */
+    uint8_t getCounter(TUser::user_t user) const;
+
+    /** Возвращает время до окончания блокировки в секундах.
+     *
+     *  Для TUser::OPERATOR всегда возвращается 0.
+     *  Для TUser::MAX или ошибочном значении возвращается 9999.
+     *
+     *  @param[in] user Пользователь.
+     *  @return Время до блокировки.
+     */
+    uint16_t getLockTime(TUser::user_t user) const;
+
+    /** Сброс настроек.
+     *
+     *  Настройки сбрасываются при обрыве связи с БСП.
+     *
+     *  @param[in] user Пользователь
+     */
+    void reset(TUser::user_t user);
+
+    /** Тик таймера.
+     *
+     *  Считает время до сброса ошибки счетчика.
+     *  Проверяет изменение счетчика.
+     *
+     *  @param[in] user Пользователь
+     *  @return true если значение счетчика было изменено.
+     */
+    bool tick(TUser::user_t user);
+
+    /** Возвращает состояние флага инициализации.
+     *
+     *  Для TUser::OPERATOR всегда возвращается true.
+     *  Для TUser::MAX или ошибочном значении возвращается false.
+     *
+     *  @param[in] index Индекс пользователя в массиве.
+     *  @return true если значение было установлено, иначе false.
+     */
+    bool isInit(TUser::user_t user) const;
+
+    /** Возвращает текущее состояние блокировки выбора роли.
+     *
+     *  Для TUser::OPERATOR всегда возвращается false.
+     *  Для TUser::MAX или ошибочном значении возвращается true.
+     *
+     *  @param[in] user Пользователь
+     */
+    bool isLocked(TUser::user_t user) const;
+
+private:
+    pwd_t password[TUser::MAX-TUser::OPERATOR];
+
+    /** Возвращает состояние флага инициализации.
+     *
+     *  @param[in] index Индекс пользователя в массиве.
+     *  @return true если значение было установлено, иначе false.
+     */
+    bool isInit(int8_t index) const;
+
+    /** Проверяет корректность символов пароля.
+     *
+     *  @param[in] user Пользователь.
+     *  @param[in] pwd Пароль.
+     *  @return Результат проверки, true если все в порядке.
+     */
+    bool checkValue(uint8_t *password) const;
+
+    /** Возвращает индекс пользователя в массиве.
+     *
+     *  @param[in] user Пользователь
+     *  @return Индекс пользователя в массиве.
+     *  @retval -1, если пользователя нет.
+     */
+    int8_t getUserIndex(TUser::user_t user) const;
+
+    /** Устанавливает количество тиков таймера до сброса блокировки роли.
+     *
+     *  @param[in] index Индекс пользователя в массиве.
+     *  @param[in] cnt Количество интервалов времени до сброса блокировки.
+     */
+    void setTicks(int8_t index, bool enable);
 };
 
 class TIsEvent {
@@ -241,8 +295,7 @@ public:
     TUser UserPi;
     TUser UserPc;
 
-    TPwd pwdAdmin;
-    TPwd pwdEngineer;
+    TPwd pwd;
 };
 
 #endif /* PARAMIS_H_ */

@@ -4757,25 +4757,7 @@ bool clMenu::checkChangeReg() const {
 
 // Проверяет введенный пароль.
 bool clMenu::isLockUser(int16_t value) const {
-    bool lock = true;
-
-    switch(static_cast<TUser::user_t> (value)) {
-    case TUser::OPERATOR: {
-        lock = false;
-    } break;
-    case TUser::ENGINEER: {
-        lock = sParam.security.pwdEngineer.isLock();
-    } break;
-    case TUser::ADMIN: {
-        lock = sParam.security.pwdAdmin.isLock();
-    } break;
-    //
-    case TUser::MAX: {
-        lock = true;
-    } break;
-    }
-
-    return lock;
+    return sParam.security.pwd.isLocked(static_cast<TUser::user_t> (value));
 }
 
 //
@@ -4798,34 +4780,8 @@ bool clMenu::checkChangeUser(Param::CHANGE_USER chuser) const {
     return check;
 }
 
-bool clMenu::checkPwd(TUser::user_t user, const uint8_t *pwd)
-{
-    bool check = false;
-    uint8_t *opwd = nullptr;
-
-    switch(user) {
-        case TUser::OPERATOR: {
-            check = true;
-        } break;
-        case TUser::ADMIN: {
-            opwd = sParam.security.pwdAdmin.get();
-        } break;
-        case TUser::ENGINEER: {
-            opwd = sParam.security.pwdEngineer.get();
-        } break;
-        case TUser::MAX: {
-            check = false;
-        } break;
-    }
-
-    if (opwd != nullptr) {
-        check = true;
-        for(uint8_t i = 0; i < PWD_LEN; i++) {
-            check = check && (opwd[i] == pwd[i]);
-        }
-    }
-
-    return check;
+bool clMenu::checkPwd(TUser::user_t user, const uint8_t *pwd) {
+    sParam.security.pwd.checkPassword(user, pwd);
 }
 
 //
@@ -4836,18 +4792,9 @@ void clMenu::checkPwdInput(TUser::user_t user, const uint8_t *pwd)
         save.number = 1;
         save.set(static_cast<uint8_t> (user));
         saveParam();
-
-        if (user == TUser::ADMIN) {
-            sParam.security.pwdAdmin.clrCounter();
-        } else if (user == TUser::ENGINEER) {
-            sParam.security.pwdEngineer.clrCounter();
-        }
+        sParam.security.pwd.clrCounter(user);
     } else {
-        if (user == TUser::ADMIN) {
-            sParam.security.pwdAdmin.incCounter();
-        } else if (user == TUser::ENGINEER) {
-            sParam.security.pwdEngineer.incCounter();
-        }
+        sParam.security.pwd.incCounter(user);
 
         if (isLockUser(user)) {
             setMessage(MSG_BLOCK_USER);
@@ -5094,36 +5041,37 @@ void clMenu::saveParamToRam() {
 void clMenu::security() {
     // Сброс настроек при потере связи.
     if (!isConnectionBsp()) {
-        if (sParam.security.pwdEngineer.isInit()) {
-            sParam.security.pwdEngineer.reset();
+        if (sParam.security.pwd.isInit(TUser::ENGINEER)) {
+            sParam.security.pwd.reset(TUser::ENGINEER);
         }
-        if (sParam.security.pwdAdmin.isInit()) {
-            sParam.security.pwdAdmin.reset();
+        if (sParam.security.pwd.isInit(TUser::ADMIN)) {
+            sParam.security.pwd.reset(TUser::ADMIN);
         }
+
         sParam.security.UserPi.reset();
         sParam.security.UserPc.reset();
     }
 
     if (!isConnectionPc()) {
-        sParam.security.UserPc.reset();
+//        sParam.security.UserPc.reset();
     }
 
     sParam.security.UserPi.tick();
     sParam.security.UserPc.tick();
 
     // Проверяется сброс счетчика ввода ошибочного пароля для Администратора
-    if (sParam.security.pwdAdmin.tick()) {
+    if (sParam.security.pwd.tick(TUser::ADMIN)) {
         save.param = GB_PARAM_IS_PWD_ADM_CNT;
         save.number = 1;
-        save.set(sParam.security.pwdAdmin.getCounter());
+        save.set(sParam.security.pwd.getCounter(TUser::ADMIN));
         saveParam();
     }
 
     // Проверяется сброс счетчика ввода ошибочного пароля для Инженера
-    if (sParam.security.pwdEngineer.tick()) {
+    if (sParam.security.pwd.tick(TUser::ENGINEER)) {
         save.param = GB_PARAM_IS_PWD_ENG_CNT;
         save.number = 1;
-        save.set(sParam.security.pwdEngineer.getCounter());
+        save.set(sParam.security.pwd.getCounter(TUser::ENGINEER));
         saveParam();
     }
 }

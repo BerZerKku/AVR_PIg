@@ -11,33 +11,21 @@ clProtocolS(buf, size, sParam) {
 
 }
 
-
 bool clProtocolPcS::getData() {
 
 	bool stat = false;
 	eGB_COM com = (eGB_COM) buf[2];
 
-	if (com == GB_COM_GET_PASSWORD)	{
-        // FIXME Команда считывания пароля с ПК.
-//		uint16_t tmp = sParam_->password.get();
-//		buf[3] = 2;
-//		buf[4] = tmp >> 8;
-//		buf[5] = tmp;
-		addCom();
-		stat = true;
-	} else if (com == GB_COM_SET_PASSWORD) {
-        // FIXME Команда установки нового значения пароля.
-//		if (buf[3] == 2) {
-//			uint16_t tmp = ((uint16_t) buf[4] << 8) + buf[5];
-//			sParam_->password.set(tmp);
-//		}
-		addCom(); // эхо
-		stat = true;
+    if (com == GB_COM_GET_USER)	{
+        stat = hdlrComGetUser(com);
+    } else if (com == GB_COM_SET_USER) {
+        stat = hdlrComSetUser(com);
 	}
 
 	return stat;
 }
 
+//
 bool clProtocolPcS::modifyVersionCom() {
 	bool state = false;
 
@@ -61,5 +49,65 @@ bool clProtocolPcS::modifyVersionCom() {
 		buf[maxLen_ - 1] = crc;
 	}
 
-	return state;
+    return state;
+}
+
+//
+bool clProtocolPcS::hdlrComGetUser(eGB_COM com) {
+    uint8_t len = 0;
+
+    if (buf[NUM] == 0) {
+        len = addCom(com, sParam_->security.UserPc.get());
+    } else if (buf[NUM] == 1) {
+        uint8_t array[4];
+        TUser::user_t user = static_cast<TUser::user_t> (buf[B1]);
+        array[0] = user;
+        array[1] = sParam_->security.pwd.isLocked(user);
+        *((uint16_t *) &array[2]) = sParam_->security.pwd.getLockTime(user);
+        len = addCom(com, SIZE_OF(array), array);
+    }
+
+    return len > 0;
+}
+
+//
+bool clProtocolPcS::hdlrComSetUser(eGB_COM com) {
+    uint8_t len = 0;
+    enum state_t {
+        STATE_OK = 0x00,            // ОК
+        STATE_NO_ACCESS = 0x01,     // Нет доступа
+        STATE_WRONG_PWD = 0x02,     // Неверный пароль
+        STATE_WRONG_NEW_PWD = 0x03  // Неверный новый пароль
+    };
+
+    state_t state = STATE_OK;
+    TUser::user_t user = static_cast<TUser::user_t> (buf[B1]);
+
+    switch(buf[NUM]) {
+        case 1: {
+            sParam_->security.UserPc.set(TUser::OPERATOR);
+            len = addCom(com, sParam_->security.UserPc.get());
+        } break;
+        case (1 + PWD_LEN): {
+            if (sParam_->security.pwd.checkPassword(user, &buf[B2])) {
+                sParam_->security.UserPc.set(user);
+            } else {
+                state = STATE_WRONG_PWD;
+            }
+            len = addCom(com, user, state);
+        } break;
+        case (1 + 2*PWD_LEN): {
+            TUser::user_t curuser = sParam_->security.UserPc.get();
+            if (sParam_->security.pwd.checkPassword(curuser, &buf[B2])) {
+                if (!sParam_->security.pwd.setPwd(user, &buf[B10])) {
+                    state = STATE_WRONG_NEW_PWD;
+                }
+            } else {
+                state =  STATE_WRONG_PWD;
+            }
+            len = addCom(com, user, state);
+        } break;
+    }
+
+    return len > 0;
 }

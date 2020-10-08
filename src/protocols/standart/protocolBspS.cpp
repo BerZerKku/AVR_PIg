@@ -75,10 +75,10 @@ bool clProtocolBspS::getData(bool pc) {
 					val = TO_INT16(buf[B3], buf[B4]);
 					break;
                 case GB_PARAM_IS_PWD_ADMIN: {
-                    lp->setValuePwd(sParam_->security.pwdAdmin.get());
+                    lp->setValuePwd(sParam_->security.pwd.getPwd(TUser::ADMIN));
                 } break;
                 case GB_PARAM_IS_PWD_ENGINEER: {
-                    lp->setValuePwd(sParam_->security.pwdEngineer.get());
+                    lp->setValuePwd(sParam_->security.pwd.getPwd(TUser::ENGINEER));
                 } break;
 				default:
 					uint8_t pos = B1;
@@ -620,10 +620,10 @@ void clProtocolBspS::hdlrComGetNetAdr(bool pc) {
         sParam_->Uart.StopBits.set((TStopBits::STOP_BITS) buf[B7]);
     }
     if (buf[NUM] >= 25) {
-        sParam_->security.pwdEngineer.set(&buf[B8]); // bytes = PWD_LEN
-        sParam_->security.pwdAdmin.set(&buf[B16]); // bytes = PWD_LEN
-        sParam_->security.pwdEngineer.setCounter(buf[B24]);
-        sParam_->security.pwdAdmin.setCounter(buf[B25]);
+        sParam_->security.pwd.setPwd(TUser::ENGINEER, &buf[B8]); // bytes = PWD_LEN
+        sParam_->security.pwd.setPwd(TUser::ADMIN, &buf[B16]); // bytes = PWD_LEN
+        sParam_->security.pwd.setCounter(TUser::ENGINEER, buf[B24]);
+        sParam_->security.pwd.setCounter(TUser::ADMIN,buf[B25]);
     }
 }
 
