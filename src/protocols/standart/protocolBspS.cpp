@@ -39,7 +39,7 @@ bool clProtocolBspS::getData(bool pc) {
 				sParam_->DateTimeReq.setTimeBsp_ = true;
 			}
         } else if (com == GB_COM_SET_NET_ADR) {
-            hdlrComGetNetAdr(pc);
+            hdlrComSetNetAdr();
         }
     } else if (mask == GB_COM_MASK_GROUP_WRITE_REGIME) {
         //
@@ -446,35 +446,35 @@ void clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 void clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 	switch (com) {
         case GB_COM_GET_SOST: {
-            hdlrComGetSost(pc);
+            hdlrComGetSost();
         } break;
 
         case GB_COM_GET_FAULT: {
-            hdlrComGetFault(pc);
+            hdlrComGetFault();
         } break;
 
 		case GB_COM_GET_TIME: {
-            hdlrComGetTime(pc);
+            hdlrComGetTime();
         } break;      
 
 		case GB_COM_GET_MEAS: {
-            hdlrComGetMeas(pc);
+            hdlrComGetMeas();
         } break;
 
         case GB_COM_GET_COM_PRD_KEEP: {
-            hdlrComGetComPrdKeep(pc);
+            hdlrComGetComPrdKeep();
         }  break;
 
         case GB_COM_GET_DEVICE_NUM: {
-            hdlrComGetDeviceNum(pc);
+            hdlrComGetDeviceNum();
         } break;
 
 		case GB_COM_GET_VERS: {
-            hdlrComGetVers(pc);
+            hdlrComGetVers();
         } break;
 
 		case GB_COM_GET_NET_ADR: {
-            hdlrComGetNetAdr(pc);
+            hdlrComGetNetAdr();
         } break;
 
 		case GB_COM_GET_TEST: {
@@ -504,7 +504,7 @@ void clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 	}
 }
 
-void clProtocolBspS::hdlrComGetComPrdKeep(bool pc) {
+void clProtocolBspS::hdlrComGetComPrdKeep() {
     uint8_t act = GB_ACT_NO;
 
     if (sParam_->typeDevice == AVANT_R400M) {
@@ -521,11 +521,11 @@ void clProtocolBspS::hdlrComGetComPrdKeep(bool pc) {
     }
 }
 
-void clProtocolBspS::hdlrComGetDeviceNum(bool pc) {
+void clProtocolBspS::hdlrComGetDeviceNum() {
     sParam_->glb.setDeviceNum(buf[B1]);
 }
 
-void clProtocolBspS::hdlrComGetFault(bool pc) {
+void clProtocolBspS::hdlrComGetFault() {
     eGB_TYPE_DEVICE device = sParam_->typeDevice;
 
     sParam_->def.status.setFault(TO_INT16(buf[B1], buf[B2]));
@@ -589,7 +589,7 @@ void clProtocolBspS::hdlrComGetJrnEntry(bool pc) {
     }
 }
 
-void clProtocolBspS::hdlrComGetMeas(bool pc) {
+void clProtocolBspS::hdlrComGetMeas() {
     // обработаем посылку, если стоит флаг опроса всех параметров
     if (buf[B1] == 0) {
         sParam_->measParam.setResistOut(TO_INT16(buf[B2], buf[B3]));
@@ -609,25 +609,27 @@ void clProtocolBspS::hdlrComGetMeas(bool pc) {
     }
 }
 
-void clProtocolBspS::hdlrComGetNetAdr(bool pc) {
-    sParam_->glb.setNetAddress(buf[B1]);
-    if (buf[NUM] >= 7) {
-        sParam_->Uart.Interface.set((TInterface::INTERFACE) buf[B2]);
-        sParam_->Uart.Protocol.set((TProtocol::PROTOCOL) buf[B3]);
-        sParam_->Uart.BaudRate.set((TBaudRate::BAUD_RATE) buf[B4]);
-        sParam_->Uart.DataBits.set((TDataBits::DATA_BITS) buf[B5]);
-        sParam_->Uart.Parity.set((TParity::PARITY) buf[B6]);
-        sParam_->Uart.StopBits.set((TStopBits::STOP_BITS) buf[B7]);
-    }
-    if (buf[NUM] >= 25) {
-        sParam_->security.pwd.setPwd(TUser::ENGINEER, &buf[B8]); // bytes = PWD_LEN
-        sParam_->security.pwd.setPwd(TUser::ADMIN, &buf[B16]); // bytes = PWD_LEN
-        sParam_->security.pwd.setCounter(TUser::ENGINEER, buf[B24]);
-        sParam_->security.pwd.setCounter(TUser::ADMIN,buf[B25]);
+void clProtocolBspS::hdlrComGetNetAdr() {
+    uint8_t index = 1;
+    uint8_t nbytes = 0;
+
+    while(nbytes < buf[NUM]) {
+        nbytes += getComNetAdr(static_cast<posComNetAdr_t> (index),
+                               &buf[B1 + nbytes], buf[NUM] - nbytes);
+        index++;
     }
 }
 
-void clProtocolBspS::hdlrComGetSost(bool pc) {
+void clProtocolBspS::hdlrComSetNetAdr() {
+    qDebug() << "Number of parameter: " << buf[B1] << ", len = " << buf[NUM];
+
+
+    getComNetAdr(static_cast<posComNetAdr_t> (buf[B1]), &buf[B2], buf[NUM]);
+}
+
+
+
+void clProtocolBspS::hdlrComGetSost() {
     sParam_->def.status.setRegime((eGB_REGIME) buf[B1]);
     sParam_->def.status.setState(buf[B2]);
     sParam_->def.status.setDopByte(buf[B3]);
@@ -696,7 +698,7 @@ void clProtocolBspS::hdlrComGetSost(bool pc) {
     sParam_->glb.status.setRegime(reg);
 }
 
-void clProtocolBspS::hdlrComGetTime(bool pc) {
+void clProtocolBspS::hdlrComGetTime() {
     // FIXME –азобратьс€ что делает переменна€. «адержка в работе журнала?!
     static uint8_t cntTimeFrame = 0;
 
@@ -741,7 +743,7 @@ void clProtocolBspS::hdlrComGetTime(bool pc) {
     }
 }
 
-void clProtocolBspS::hdlrComGetVers(bool pc) {
+void clProtocolBspS::hdlrComGetVers() {
     uint8_t act = GB_ACT_NO;
     // данные о типе аппарата
     act |= sParam_->def.status.setEnable(buf[B1] == 1);
@@ -814,6 +816,85 @@ void clProtocolBspS::hdlrComGetVers(bool pc) {
     if (act & GB_ACT_NEW) {
         sParam_->device = false;
     }
+}
+
+uint8_t clProtocolBspS::getComNetAdr(posComNetAdr_t pos, const uint8_t *buf,
+                                     uint8_t len) {
+    uint8_t numbytes = len;
+
+
+    QDEBUG("pos param in com net addr: " << pos << ", len = " << len);
+
+    switch(pos) {
+        case POS_COM_NET_ADR_netAdr: {
+            if (len >= 1) {
+                numbytes = 1;
+                sParam_->glb.setNetAddress(*buf);
+            }
+        } break;
+        case POS_COM_NET_ADR_interface: {
+            if (len >= 1) {
+                numbytes = 1;
+                sParam_->Uart.Interface.set((TInterface::INTERFACE) *buf);
+            }
+        } break;
+        case POS_COM_NET_ADR_protocol: {
+            if (len >= 1) {
+                numbytes = 1;
+                sParam_->Uart.Protocol.set((TProtocol::PROTOCOL) *buf);
+            }
+        } break;
+        case POS_COM_NET_ADR_baudrate: {
+            if (len >= 1) {
+                numbytes = 1;
+                sParam_->Uart.BaudRate.set((TBaudRate::BAUD_RATE) *buf);
+            }
+        } break;
+        case POS_COM_NET_ADR_dataBits: {
+            if (len >= 1) {
+                numbytes = 1;
+                sParam_->Uart.DataBits.set((TDataBits::DATA_BITS) *buf);
+            }
+        } break;
+        case POS_COM_NET_ADR_parity: {
+            if (len >= 1) {
+                numbytes = 1;
+                sParam_->Uart.Parity.set((TParity::PARITY) *buf);
+            }
+        } break;
+        case POS_COM_NET_ADR_stopBits: {
+            if (len >= 1) {
+                numbytes = 1;
+                sParam_->Uart.StopBits.set((TStopBits::STOP_BITS) *buf);
+            }
+        } break;
+        case POS_COM_NET_ADR_pwdEngineer: {
+            if (len >= 8) {
+                numbytes = 8;
+                sParam_->security.pwd.setPwd(TUser::ENGINEER, buf);
+            }
+        } break;
+        case POS_COM_NET_ADR_pwdAdmin: {
+            if (len >= 8) {
+                numbytes = 8;
+                sParam_->security.pwd.setPwd(TUser::ADMIN, buf);
+            }
+        } break;
+        case POS_COM_NET_ADR_cntEngineer: {
+            if (len >= 1) {
+                numbytes = 1;
+                sParam_->security.pwd.setCounter(TUser::ENGINEER, *buf);
+            }
+        } break;
+        case POS_COM_NET_ADR_cntAdmin: {
+            if (len >= 1) {
+                numbytes = 1;
+                sParam_->security.pwd.setCounter(TUser::ADMIN, *buf);
+            }
+        } break;
+    }
+
+    return numbytes;
 }
 
 /**	‘ормирование сообщени€ команды считавани€ кол-ва и самих записей журнала.

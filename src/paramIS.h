@@ -116,7 +116,7 @@ public:
      *  @param[in] pwd Пароль.
      *  @return true если пароль установлен, иначе false.
      */
-    bool setPwd(TUser::user_t user, uint8_t *password);
+    bool setPwd(TUser::user_t user, const uint8_t *password);
 
     /** Устанавливает счетчик ввода неверного пароля.
      *
@@ -215,7 +215,7 @@ private:
      *  @param[in] pwd Пароль.
      *  @return Результат проверки, true если все в порядке.
      */
-    bool checkValue(uint8_t *password) const;
+    bool checkValue(const uint8_t *password) const;
 
     /** Возвращает индекс пользователя в массиве.
      *

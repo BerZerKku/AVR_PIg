@@ -664,7 +664,19 @@ enum eGB_TEST_SIGNAL {
 	GB_SIGNAL_MAX
 };
 
-
+enum posComNetAdr_t {
+    POS_COM_NET_ADR_netAdr = 1,
+    POS_COM_NET_ADR_interface,
+    POS_COM_NET_ADR_protocol,
+    POS_COM_NET_ADR_baudrate,
+    POS_COM_NET_ADR_dataBits,
+    POS_COM_NET_ADR_parity,
+    POS_COM_NET_ADR_stopBits,
+    POS_COM_NET_ADR_pwdEngineer,
+    POS_COM_NET_ADR_pwdAdmin,
+    POS_COM_NET_ADR_cntEngineer,
+    POS_COM_NET_ADR_cntAdmin
+};
 
 /// —осто€ние обработки прин€того значени€ параметра.
 enum eGB_ACT {

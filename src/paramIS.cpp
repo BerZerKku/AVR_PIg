@@ -97,7 +97,7 @@ uint8_t* TPwd::getPwd(TUser::user_t user) {
 }
 
 //
-bool TPwd::setPwd(TUser::user_t user, uint8_t *pwd) {
+bool TPwd::setPwd(TUser::user_t user, const uint8_t *pwd) {
     bool setnew = false;
     int8_t index = getUserIndex(user);
 
@@ -291,7 +291,7 @@ bool TPwd::isInit(int8_t index) const {
 }
 
 //
-bool TPwd::checkValue(uint8_t *pwd) const {
+bool TPwd::checkValue(const uint8_t *pwd) const {
     bool check = true;
 
     for(uint8_t i = 0; i < PWD_LEN; i++) {
