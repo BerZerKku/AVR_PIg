@@ -5060,7 +5060,7 @@ void clMenu::security() {
         }
 
         if (sParam.security.pwd.tick(user)) {
-            qDebug() << "Change wrong pwd counter for " << user;
+//            qDebug() << "Change wrong pwd counter for " << user;
             sParam.save.param = sParam.security.pwd.getCounterParam(user);
             sParam.save.number = 1;
             sParam.save.set(sParam.security.pwd.getCounter(user));
@@ -5068,7 +5068,7 @@ void clMenu::security() {
         }
 
         if (sParam.security.pwd.isChangedPwd(user)) {
-            qDebug() << "Change pwd for " << user;
+//            qDebug() << "Change pwd for " << user;
             sParam.save.param = sParam.security.pwd.getPwdParam(user);
             sParam.save.number = 1;
             sParam.save.set(sParam.security.pwd.getPwd(user));
@@ -5107,7 +5107,7 @@ void clMenu::setupParam() {
                     EnterParam.setDisable();
                 } else {
                     if (getParamType(param) == Param::PARAM_PWD) {
-                        qDebug() << "Enter password" << getParamType(param);
+//                        qDebug() << "Enter password" << getParamType(param);
                         uint8_t *pwd = EnterParam.getValuePwd();
                         sParam.security.pwd.setPwd(param, pwd, false);
                     } else {

@@ -613,11 +613,11 @@ void clProtocolBspS::hdlrComGetNetAdr() {
     uint8_t index = 1;
     uint8_t nbytes = 0;
 
-    QString pkg;
-    for(uint8_t i = 0;  i < buf[3] + 5; i++) {
-        pkg += QString("%1 ").arg(buf[i], 2, 16, QLatin1Char('0'));
-    }
-    qDebug() << pkg;
+//    QString pkg;
+//    for(uint8_t i = 0;  i < buf[3] + 5; i++) {
+//        pkg += QString("%1 ").arg(buf[i], 2, 16, QLatin1Char('0'));
+//    }
+//    qDebug() << pkg;
 
     while(nbytes < buf[NUM]) {
         nbytes += getComNetAdr(static_cast<posComNetAdr_t> (index),
@@ -627,10 +627,10 @@ void clProtocolBspS::hdlrComGetNetAdr() {
 }
 
 void clProtocolBspS::hdlrComSetNetAdr() {    
-    QString pkg;
-    for(uint8_t i = 0;  i < buf[3] + 5; i++) {
-        pkg += QString("%1 ").arg(buf[i], 2, 16, QLatin1Char('0'));
-    }
+//    QString pkg;
+//    for(uint8_t i = 0;  i < buf[3] + 5; i++) {
+//        pkg += QString("%1 ").arg(buf[i], 2, 16, QLatin1Char('0'));
+//    }
 
     getComNetAdr(static_cast<posComNetAdr_t> (buf[B1]), &buf[B2], buf[NUM]);
 }
