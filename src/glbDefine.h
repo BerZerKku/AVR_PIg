@@ -463,6 +463,7 @@ typedef enum {
     GB_PARAM_IS_PWD_ADMIN,      ///< пароль администратора
     GB_PARAM_IS_PWD_ENG_CNT,    ///< счетчик ввода неверного пароля инженера
     GB_PARAM_IS_PWD_ADM_CNT,    ///< счетчик ввода неверного пароля администра
+    GB_PARAM_IS_RESET_PWD,      ///< сброс паролей (только для передачи в БСП)
     //
     GB_PARAM_MAX
 } eGB_PARAM;
@@ -675,7 +676,9 @@ enum posComNetAdr_t {
     POS_COM_NET_ADR_pwdEngineer,
     POS_COM_NET_ADR_pwdAdmin,
     POS_COM_NET_ADR_cntEngineer,
-    POS_COM_NET_ADR_cntAdmin
+    POS_COM_NET_ADR_cntAdmin,
+    // Всегда должен быть в конце
+    POS_COM_NET_ADR_resetPwd        // сброс пароля, нет байт данных
 };
 
 /// Состояние обработки принятого значения параметра.

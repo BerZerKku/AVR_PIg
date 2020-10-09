@@ -92,6 +92,7 @@ bool clProtocolPcS::hdlrComSetUser(eGB_COM com) {
             if (sParam_->security.pwd.checkPassword(user, &buf[B2])) {
                 sParam_->security.UserPc.set(user);
             } else {
+                sParam_->security.pwd.incCounter(user);
                 state = STATE_WRONG_PWD;
             }
             len = addCom(com, user, state);
@@ -99,8 +100,10 @@ bool clProtocolPcS::hdlrComSetUser(eGB_COM com) {
         case (1 + 2*PWD_LEN): {
             TUser::user_t curuser = sParam_->security.UserPc.get();
             if (sParam_->security.pwd.checkPassword(curuser, &buf[B2])) {
-                if (!sParam_->security.pwd.setPwd(user, &buf[B10])) {
+                if (!sParam_->security.pwd.setPwd(user, &buf[B10], false)) {
                     state = STATE_WRONG_NEW_PWD;
+                } else {
+                    sParam_->security.pwd.incCounter(curuser);
                 }
             } else {
                 state =  STATE_WRONG_PWD;

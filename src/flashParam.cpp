@@ -2026,6 +2026,27 @@ static const Param fPwdAdminCnt PROGMEM = {
         Param::CHANGE_USER_NO   // пользователь для изменения
 };
 
+// Сброс паролей до заводских настроек.
+static const Param fPwdClear PROGMEM = {
+        "Сброс паролей",        // название параметра
+        GB_COM_GET_NET_ADR,     // команда стандартного протокола
+        Param::PARAM_LIST,      // тип параметра
+        Param::RANGE_LIST,      // диапазон изменения
+        Param::DIM_NO,			// размерность
+        fcReset[0],             // массив значений
+        1,						// кол-во повторений параметра
+        0,                      // минимальное значение
+        1,                      // максимальное значение
+        1,						// дискретность
+        1,						// множитель для стандартного протокола
+        GB_SEND_DOP_INT8,       // тип параметра для сохранения новго значения
+        POS_COM_NET_ADR_resetPwd, // байт дополнительной информации для сохранения
+        Param::DEPEND_MAX_NO,	// заивимость максимума
+        Param::DEPEND_SAME_NO,	// зависимость повторений
+        Param::CHANGE_REG_NO,   // режим для изменения
+        Param::CHANGE_USER_NO   // пользователь для изменения
+};
+
 
 // Массив параметров (связан с eGB_PARAM)
 const Param* fParams[] PROGMEM  = {
@@ -2131,5 +2152,6 @@ const Param* fParams[] PROGMEM  = {
         &fPwdEngineer,
         &fPwdAdmin,
         &fPwdEngineerCnt,
-        &fPwdAdminCnt
+        &fPwdAdminCnt,
+        &fPwdClear
 };

@@ -190,6 +190,11 @@ static char fcCF[][STRING_LENGHT] PROGMEM = {
 		"КС2"
 };
 
+/// Сброс
+static char fcReset[][STRING_LENGHT] PROGMEM = {
+        "Сброс"
+};
+
 /// Переназначение команд в кольце
 static char fcRingRenumber[][STRING_LENGHT] PROGMEM = {
 		"0",

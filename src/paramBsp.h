@@ -49,6 +49,8 @@ struct stGBparam {
 
 	// локальные параметры
 	LocalParams local;
+    // сохранение параметров
+    save_t save;
 
 	// параметры для работы с последовательным портом
 	TUartData Uart;

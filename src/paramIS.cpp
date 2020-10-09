@@ -97,16 +97,38 @@ uint8_t* TPwd::getPwd(TUser::user_t user) {
 }
 
 //
-bool TPwd::setPwd(TUser::user_t user, const uint8_t *pwd) {
+bool TPwd::setPwd(TUser::user_t user, const uint8_t *pwd, bool bsp) {
     bool setnew = false;
     int8_t index = getUserIndex(user);
 
     if(index >= 0) {
         if (checkValue(pwd)) {
+            bool changed = false;
             for(uint8_t i = 0; i < PWD_LEN; i++) {
-                password[index].pwd[i] = pwd[i];
+                if (password[index].pwd[i] != pwd[i]) {
+                    changed = true;
+                    if (!bsp || !isChangedPwd(user)) {
+                        password[index].pwd[i] = pwd[i];
+
+                    }
+                }                
             }
+            password[index].changed = changed;
             setnew = true;
+        }
+    }
+
+    return setnew;
+}
+
+//
+bool TPwd::setPwd(eGB_PARAM param, const uint8_t *pwd, bool bsp) {
+    bool setnew = false;
+
+    for(uint8_t i = 0; i < TUser::MAX; i++) {
+        TUser::user_t user = static_cast<TUser::user_t> (i);
+        if (getPwdParam(user) == param) {
+            setnew = setPwd(user, pwd, bsp);
         }
     }
 
@@ -208,6 +230,7 @@ void TPwd::reset(TUser::user_t user) {
         password[index].init = false;
         password[index].counter = 2*PWD_CNT_BLOCK;
         password[index].tcounter = password[index].counter;
+        password[index].changed = false;
         setTicks(index, true);
 
         for(uint8_t i = 0; i < PWD_LEN; i++) {
@@ -283,6 +306,56 @@ bool TPwd::isLocked(TUser::user_t user) const {
     }
 
     return lock;
+}
+
+//
+bool TPwd::isChangedPwd(TUser::user_t user) const {
+    bool changed = true;
+    int8_t index = getUserIndex(user);
+
+     if (index >= 0) {
+        changed = password[index].changed;
+    } else {
+        changed = false;
+    }
+
+     return changed;
+}
+
+eGB_PARAM TPwd::getCounterParam(TUser::user_t user) const {
+    eGB_PARAM param = GB_PARAM_MAX;
+
+    switch(user) {
+        case TUser::ENGINEER: {
+            param = GB_PARAM_IS_PWD_ENG_CNT;
+        } break;
+        case TUser::ADMIN: {
+            param = GB_PARAM_IS_PWD_ADM_CNT;
+        } break;
+
+        case TUser::OPERATOR: // DOWN
+        case TUser::MAX: break;
+    }
+
+    return param;
+}
+
+eGB_PARAM TPwd::getPwdParam(TUser::user_t user) const {
+    eGB_PARAM param = GB_PARAM_MAX;
+
+    switch(user) {
+        case TUser::ENGINEER: {
+            param = GB_PARAM_IS_PWD_ENGINEER;
+        } break;
+        case TUser::ADMIN: {
+            param = GB_PARAM_IS_PWD_ADMIN;
+        } break;
+
+        case TUser::OPERATOR: // DOWN
+        case TUser::MAX: break;
+    }
+
+    return param;
 }
 
 //

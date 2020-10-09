@@ -613,6 +613,12 @@ void clProtocolBspS::hdlrComGetNetAdr() {
     uint8_t index = 1;
     uint8_t nbytes = 0;
 
+    QString pkg;
+    for(uint8_t i = 0;  i < buf[3] + 5; i++) {
+        pkg += QString("%1 ").arg(buf[i], 2, 16, QLatin1Char('0'));
+    }
+    qDebug() << pkg;
+
     while(nbytes < buf[NUM]) {
         nbytes += getComNetAdr(static_cast<posComNetAdr_t> (index),
                                &buf[B1 + nbytes], buf[NUM] - nbytes);
@@ -620,9 +626,11 @@ void clProtocolBspS::hdlrComGetNetAdr() {
     }
 }
 
-void clProtocolBspS::hdlrComSetNetAdr() {
-    qDebug() << "Number of parameter: " << buf[B1] << ", len = " << buf[NUM];
-
+void clProtocolBspS::hdlrComSetNetAdr() {    
+    QString pkg;
+    for(uint8_t i = 0;  i < buf[3] + 5; i++) {
+        pkg += QString("%1 ").arg(buf[i], 2, 16, QLatin1Char('0'));
+    }
 
     getComNetAdr(static_cast<posComNetAdr_t> (buf[B1]), &buf[B2], buf[NUM]);
 }
@@ -822,9 +830,6 @@ uint8_t clProtocolBspS::getComNetAdr(posComNetAdr_t pos, const uint8_t *buf,
                                      uint8_t len) {
     uint8_t numbytes = len;
 
-
-    QDEBUG("pos param in com net addr: " << pos << ", len = " << len);
-
     switch(pos) {
         case POS_COM_NET_ADR_netAdr: {
             if (len >= 1) {
@@ -891,6 +896,10 @@ uint8_t clProtocolBspS::getComNetAdr(posComNetAdr_t pos, const uint8_t *buf,
                 numbytes = 1;
                 sParam_->security.pwd.setCounter(TUser::ADMIN, *buf);
             }
+        } break;
+        case POS_COM_NET_ADR_resetPwd: {
+            // номер для сброса до заводских настроек, данных нет
+            numbytes = 0;
         } break;
     }
 

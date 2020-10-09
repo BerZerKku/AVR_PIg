@@ -10,6 +10,37 @@
 
 #include "param.h"
 
+struct save_t {
+    eGB_PARAM param;        /// Параметр.
+    eGB_COM com;            /// Команда для передачи.
+    eGB_SEND_TYPE sendType; /// Тип параметра для передачи.
+    uint8_t number;         /// Дополнительный номер у параметра.
+    uint8_t dopByte;        /// Дополнительный байт.
+    uint8_t value[PWD_LEN]; /// Текущее значение.
+
+    void set(int16_t value) {
+        *((int16_t *) this->value) = value;
+    }
+
+    void set(const uint8_t *value) {
+        for(uint8_t i = 0; i < SIZE_OF(this->value); i++) {
+            this->value[i] = *value++;
+        }
+    }
+
+    int16_t getValue() const {
+        uint8_t disc = getDisc(param);
+        uint8_t fract = getFract(param);
+        int16_t value = *((int16_t *) this->value);
+
+        return ((value / disc) * disc) / fract;
+    }
+
+    uint8_t *getValueArray() {
+        return value;
+    }
+};
+
 class LocalParams {
 	/// Максимальное количество параметров в списке.
 	static const uint8_t MAX_NUM_OF_PARAMS = 25;

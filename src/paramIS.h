@@ -84,6 +84,7 @@ class TPwd {
         uint8_t counter;       ///< Счетчик ввода неверного пароля.
         uint8_t tcounter;      ///< Счетчик ввода неверного пароля из БСП.
         uint16_t ticks;        ///< Счетчик тиков до уменьшения счетчика ошибок.
+        bool changed;           ///< Флаг ввода нового значения.
     };
 
 public:
@@ -114,9 +115,19 @@ public:
      *
      *  @param[in] user Пользователь.
      *  @param[in] pwd Пароль.
+     *  @param[in] bsp Флаг установки значения из BSP.
      *  @return true если пароль установлен, иначе false.
      */
-    bool setPwd(TUser::user_t user, const uint8_t *password);
+    bool setPwd(TUser::user_t user, const uint8_t *pwd, bool bsp=true);
+
+    /** Устанавливает новое значение пароля.
+     *
+     *  @param[in] param Параметр.
+     *  @param[in] password Пароль.
+     *  @param[in] bsp Флаг установки значения из BSP.
+     *  @return true если пароль установлен, иначе false.
+     */
+    bool setPwd(eGB_PARAM param, const uint8_t *pwd, bool bsp=true);
 
     /** Устанавливает счетчик ввода неверного пароля.
      *
@@ -164,7 +175,7 @@ public:
 
     /** Сброс настроек.
      *
-     *  Настройки сбрасываются при обрыве связи с БСП.
+     *  Настройки сбрасываются при обрыве связи с БСП или ПК.
      *
      *  @param[in] user Пользователь
      */
@@ -180,7 +191,7 @@ public:
      */
     bool tick(TUser::user_t user);
 
-    /** Возвращает состояние флага инициализации.
+    /** Проверяет состояние флага инициализации.
      *
      *  Для TUser::OPERATOR всегда возвращается true.
      *  Для TUser::MAX или ошибочном значении возвращается false.
@@ -190,7 +201,7 @@ public:
      */
     bool isInit(TUser::user_t user) const;
 
-    /** Возвращает текущее состояние блокировки выбора роли.
+    /** Проверяет текущее состояние блокировки выбора роли.
      *
      *  Для TUser::OPERATOR всегда возвращается false.
      *  Для TUser::MAX или ошибочном значении возвращается true.
@@ -198,6 +209,29 @@ public:
      *  @param[in] user Пользователь
      */
     bool isLocked(TUser::user_t user) const;
+
+    /** Проверяет флаг изменения пароля.
+     *
+     *  @param[in] user Пользователь.
+     *  @return
+     */
+    bool isChangedPwd(TUser::user_t user) const;
+
+    /** Возвращает параметр для счетчика ошибок
+     *
+     *  @param[in] user Пользователь.
+     *  @return Параметр.
+     *  @retval GB_PARAM_NO если у пользователя нет параметра.
+     */
+    eGB_PARAM getCounterParam(TUser::user_t user) const;
+
+    /** Возвращает параметр для пароля.
+     *
+     *  @param[in] user Пользователь.
+     *  @return Параметр.
+     *  @retval GB_PARAM_NO если у пользователя нет параметра.
+     */
+    eGB_PARAM getPwdParam(TUser::user_t user) const;
 
 private:
     pwd_t password[TUser::MAX-TUser::OPERATOR];
