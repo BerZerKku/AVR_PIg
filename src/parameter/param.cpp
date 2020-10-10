@@ -57,9 +57,9 @@ eGB_COM getCom(eGB_PARAM pn) {
  *  @param[in] pn Параметр.
  *	@return Условие для изменения параметра.
  */
-Param::CHANGE_USER getChangeUser(eGB_PARAM pn) {
+user_t getChangeUser(eGB_PARAM pn) {
     uint8_t value = pgm_read_byte(&getPtrParam(pn)->changeUser);
-    return static_cast<Param::CHANGE_USER> (value) ;
+    return static_cast<user_t> (value) ;
 }
 
 /** Возвращает зависимость максимума для параметра.

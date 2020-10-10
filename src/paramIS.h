@@ -9,6 +9,7 @@
 #define PARAMIS_H_
 
 #include "glbDefine.h"
+#include "param.h"
 
 // TODO Сделать описание работы паролей и по возможности упростить алгоритм/изменение.
 
@@ -20,15 +21,6 @@ class TUser {
 #define kTimeToReset (300000UL / MENU_TIME_CYLCE)
 #endif
 public:
-
-    // пользователь
-    enum user_t {
-        MIN = 0,        //
-        OPERATOR = 0,   // Оператор
-        ENGINEER,       // Инженер
-        ADMIN,          // Адинистратор
-        MAX
-    };
 
     TUser();
 
@@ -63,6 +55,14 @@ public:
 
     /// Сброс роли на оператора.
     void reset();
+
+    /** Проверяет пользователя на возможность изменения параметра.
+     *
+     *  @param[in] Текущий пользователь.
+     *  @param[in] chuser Необходимый пользователь.
+     *  @return True если можно менять.
+     */
+    bool checkChangeUser(user_t chuser) const;
 
 private:
     user_t user_;
@@ -101,7 +101,7 @@ public:
      *  @param[in] pwd Пароль.
      *  @return true если пароль верен, иначе false.
      */
-    bool checkPassword(TUser::user_t user, const uint8_t *pwd);
+    bool checkPassword(user_t user, const uint8_t *pwd);
 
     /** Возвращает значение пароля.
      *
@@ -109,7 +109,7 @@ public:
      *  @return Пароль.
      *  @return NULL в случае отсутствия пароля.
      */
-    uint8_t* getPwd(TUser::user_t user);
+    uint8_t* getPwd(user_t user);
 
     /** Устанавливает новое значение пароля.
      *
@@ -118,7 +118,7 @@ public:
      *  @param[in] bsp Флаг установки значения из BSP.
      *  @return true если пароль установлен, иначе false.
      */
-    bool setPwd(TUser::user_t user, const uint8_t *pwd, bool bsp=true);
+    bool setPwd(user_t user, const uint8_t *pwd, bool bsp=true);
 
     /** Устанавливает новое значение пароля.
      *
@@ -137,13 +137,13 @@ public:
      *  @param[in] user Пользователь.
      *  @param[in] value Значение.
      */
-    void setCounter(TUser::user_t user, uint8_t value);
+    void setCounter(user_t user, uint8_t value);
 
     /** Сброс счетчика.
      *
      *  @param[in] user Пользователь.
      */
-    void clrCounter(TUser::user_t user);
+    void clrCounter(user_t user);
 
     /** Увеличивает счетчик ошибок ввода пароля.
      *
@@ -151,7 +151,7 @@ public:
      *
      *  @param[in] user Пользователь
      */
-    void incCounter(TUser::user_t user);
+    void incCounter(user_t user);
 
     /** Возвращает значение счетчика ввода неверного пароля.
      *
@@ -161,7 +161,7 @@ public:
      *  @param[in] user Пользователь
      *  @return Значение  счетчика.
      */
-    uint8_t getCounter(TUser::user_t user) const;
+    uint8_t getCounter(user_t user) const;
 
     /** Возвращает время до окончания блокировки в секундах.
      *
@@ -171,7 +171,10 @@ public:
      *  @param[in] user Пользователь.
      *  @return Время до блокировки.
      */
-    uint16_t getLockTime(TUser::user_t user) const;
+    uint16_t getLockTime(user_t user) const;
+
+    /// Сброс настроек.
+    void reset();
 
     /** Сброс настроек.
      *
@@ -179,7 +182,7 @@ public:
      *
      *  @param[in] user Пользователь
      */
-    void reset(TUser::user_t user);
+    void reset(user_t user);
 
     /** Тик таймера.
      *
@@ -189,7 +192,7 @@ public:
      *  @param[in] user Пользователь
      *  @return true если значение счетчика было изменено.
      */
-    bool tick(TUser::user_t user);
+    bool tick(user_t user);
 
     /** Проверяет состояние флага инициализации.
      *
@@ -199,7 +202,7 @@ public:
      *  @param[in] index Индекс пользователя в массиве.
      *  @return true если значение было установлено, иначе false.
      */
-    bool isInit(TUser::user_t user) const;
+    bool isInit(user_t user) const;
 
     /** Проверяет текущее состояние блокировки выбора роли.
      *
@@ -208,14 +211,14 @@ public:
      *
      *  @param[in] user Пользователь
      */
-    bool isLocked(TUser::user_t user) const;
+    bool isLocked(user_t user) const;
 
     /** Проверяет флаг изменения пароля.
      *
      *  @param[in] user Пользователь.
      *  @return
      */
-    bool isChangedPwd(TUser::user_t user) const;
+    bool isChangedPwd(user_t user) const;
 
     /** Возвращает параметр для счетчика ошибок
      *
@@ -223,7 +226,7 @@ public:
      *  @return Параметр.
      *  @retval GB_PARAM_NO если у пользователя нет параметра.
      */
-    eGB_PARAM getCounterParam(TUser::user_t user) const;
+    eGB_PARAM getCounterParam(user_t user) const;
 
     /** Возвращает параметр для пароля.
      *
@@ -231,10 +234,10 @@ public:
      *  @return Параметр.
      *  @retval GB_PARAM_NO если у пользователя нет параметра.
      */
-    eGB_PARAM getPwdParam(TUser::user_t user) const;
+    eGB_PARAM getPwdParam(user_t user) const;
 
 private:
-    pwd_t password[TUser::MAX-TUser::OPERATOR];
+    pwd_t password[USER_MAX-USER_operator];
 
     /** Возвращает состояние флага инициализации.
      *
@@ -257,7 +260,7 @@ private:
      *  @return Индекс пользователя в массиве.
      *  @retval -1, если пользователя нет.
      */
-    int8_t getUserIndex(TUser::user_t user) const;
+    int8_t getUserIndex(user_t user) const;
 
     /** Устанавливает количество тиков таймера до сброса блокировки роли.
      *
@@ -320,7 +323,8 @@ private:
 class TInfoSecurity {
 public:
     TInfoSecurity() {
-        UserPi.set(TUser::OPERATOR);
+        UserPi.set(USER_operator);
+        UserPc.set(USER_operator);
     }
 
     TIsEvent EventAdmin;

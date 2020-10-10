@@ -8,6 +8,15 @@
 
 //typedef struct Param Param_t PROGMEM;
 
+/// Минимальный пользователь для изменения параметра.
+typedef enum {
+    USER_operator = 0,  ///< Оператор.
+    USER_engineer,      ///< Инженер.
+    USER_admin,         ///< Администратор.
+    USER_MAX,           ///< Максимальное количество пользователей.
+    USER_factory        ///< Производитель.
+} user_t;
+
 struct Param {
 	/// Размернось параметра (связана с fcDimension)
 	typedef enum {
@@ -69,13 +78,6 @@ struct Param {
         CHANGE_REG_DISABLE	///< Изменить можно только в режиме "Выведен".
     } CHANGE_REG;
 
-    /// Минимальный пользователь для изменения параметра.
-    typedef enum {
-        CHANGE_USER_NO = 0,     ///< Нет условий.
-        CHANGE_USER_ENGINEER,   ///< Необходим пользователь не ниже инженера.
-        CHANGE_USER_ADMIN       ///< Необходим пользователь не ниже админа.
-    } CHANGE_USER;
-
 	char name[NAME_PARAM_LENGHT];	///< Имя параметра.
 	eGB_COM com;		///< Команда считывания для стандартного протокола.
 
@@ -95,7 +97,7 @@ struct Param {
 	DEPEND_MAX dependMax;	///< Зависимость максимума текущего параметра.
 	DEPEND_SAME dependSame;	///< Зависимость повторений текущего параметра.
     CHANGE_REG changeReg;	///< Необходимый режим для изменения параметра.
-    CHANGE_USER changeUser; ///< Минимальный пользователь для изменения параметра.
+    user_t changeUser;      ///< Минимальный пользователь для изменения параметра.
 };
 
 extern const Param *fParams[] PROGMEM;
@@ -110,7 +112,7 @@ extern uint8_t getAbsMaxNumOfSameParams(eGB_PARAM pn);
 // Возвращает требование к режиму для изменения параметра.
 extern Param::CHANGE_REG getChangeReg(eGB_PARAM pn);
 // Возвращает необходимого пользователя для изменения параметра.
-extern Param::CHANGE_USER getChangeUser(eGB_PARAM pn);
+extern user_t getChangeUser(eGB_PARAM pn);
 // Возвращает команду стандартного протокола для параметр.
 extern eGB_COM getCom(eGB_PARAM pn);
 // Возвращает зависимость максимума для параметра.

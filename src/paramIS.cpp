@@ -17,7 +17,7 @@ TUser::TUser() {
 
 //
 bool TUser::set(user_t val) {
-	if ((val >= MIN) && (val < MAX)) {
+    if (val < USER_MAX) {
 		if (user_ != val) {
 			user_ = val;
             resetTimer();
@@ -29,8 +29,10 @@ bool TUser::set(user_t val) {
 
 //
 void TUser::tick() {
-    if ((time_ > 0) && (user_ != OPERATOR)) {
-		time_--;
+    if (time_ > 0) {
+        if ((user_ > USER_operator) && (user_ < USER_MAX)) {
+            time_--;
+        }
 	}
 
 	if (time_ == 0) {
@@ -45,12 +47,36 @@ void TUser::resetTimer() {
 
 //
 void TUser::reset() {
-    user_ = OPERATOR;
+    user_ = USER_operator;
     resetTimer();
 }
 
+
+bool TUser::checkChangeUser(user_t chuser) const {
+    bool check = false;
+
+    switch(chuser) {
+        case USER_operator: {
+            check = true;
+        } break;
+        case USER_engineer: {
+            check = (user_ >= USER_engineer);
+        } break;
+        case USER_admin: {
+            check = (user_ == USER_admin);
+        } break;
+        case USER_factory: {
+            check = (user_ == USER_factory);
+        } break;
+        case USER_MAX: break;
+    }
+
+    return check;
+}
+
+
 //----------------
-//---- TUser -----
+//---- TPWD ------
 //----------------
 
 //
@@ -58,17 +84,15 @@ TPwd::TPwd() {
     COMPILE_TIME_ASSERT(SIZE_OF(pwd_t::pwd) == PWD_LEN);
     COMPILE_TIME_ASSERT(PWD_CNT_BLOCK == 0x03);
 
-    for(uint8_t user = TUser::MIN; user < TUser::MAX; user++) {
-        reset(static_cast<TUser::user_t> (user));
-    }
+    reset();
 }
 
 //
-bool TPwd::checkPassword(TUser::user_t user, const uint8_t *pwd) {
+bool TPwd::checkPassword(user_t user, const uint8_t *pwd) {
     bool check = false;
     int8_t index = getUserIndex(user);
 
-    if (user == TUser::OPERATOR) {
+    if (user == USER_operator) {
         check = true;
     } else if (index >= 0) {
         if (!isLocked(user)) {
@@ -85,7 +109,7 @@ bool TPwd::checkPassword(TUser::user_t user, const uint8_t *pwd) {
 }
 
 //
-uint8_t* TPwd::getPwd(TUser::user_t user) {
+uint8_t* TPwd::getPwd(user_t user) {
     uint8_t *array = NULL;
     int8_t index = getUserIndex(user);
 
@@ -97,7 +121,7 @@ uint8_t* TPwd::getPwd(TUser::user_t user) {
 }
 
 //
-bool TPwd::setPwd(TUser::user_t user, const uint8_t *pwd, bool bsp) {
+bool TPwd::setPwd(user_t user, const uint8_t *pwd, bool bsp) {
     bool setnew = false;
     int8_t index = getUserIndex(user);
 
@@ -125,8 +149,8 @@ bool TPwd::setPwd(TUser::user_t user, const uint8_t *pwd, bool bsp) {
 bool TPwd::setPwd(eGB_PARAM param, const uint8_t *pwd, bool bsp) {
     bool setnew = false;
 
-    for(uint8_t i = 0; i < TUser::MAX; i++) {
-        TUser::user_t user = static_cast<TUser::user_t> (i);
+    for(uint8_t i = 0; i < USER_MAX; i++) {
+        user_t user = static_cast<user_t> (i);
         if (getPwdParam(user) == param) {
             setnew = setPwd(user, pwd, bsp);
         }
@@ -136,7 +160,7 @@ bool TPwd::setPwd(eGB_PARAM param, const uint8_t *pwd, bool bsp) {
 }
 
 //
-void TPwd::setCounter(TUser::user_t user, uint8_t value) {
+void TPwd::setCounter(user_t user, uint8_t value) {
     int8_t index = getUserIndex(user);
 
     if (index >= 0) {
@@ -148,13 +172,12 @@ void TPwd::setCounter(TUser::user_t user, uint8_t value) {
 
             setTicks(user, counter > 0);
         }
-
         password[index].tcounter = value;
     }
 }
 
 //
-void TPwd::clrCounter(TUser::user_t user) {
+void TPwd::clrCounter(user_t user) {
     int8_t index = getUserIndex(user);
 
     if (index >= 0) {
@@ -165,7 +188,7 @@ void TPwd::clrCounter(TUser::user_t user) {
 }
 
 //
-void TPwd::incCounter(TUser::user_t user) {
+void TPwd::incCounter(user_t user) {
     int8_t index = getUserIndex(user);
 
     if (index >= 0) {
@@ -184,16 +207,16 @@ void TPwd::incCounter(TUser::user_t user) {
                 counter = 2*PWD_CNT_BLOCK;
             }
         }
-
+        qDebug() << "user = " << user << ", set counter = " << counter;
         password[index].counter = counter;
     }
 }
 
-uint8_t TPwd::getCounter(TUser::user_t user) const {
+uint8_t TPwd::getCounter(user_t user) const {
     uint8_t counter = 0;
     int8_t index = getUserIndex(user);
 
-    if (user >= TUser::MAX) {
+    if (user >= USER_MAX) {
         counter = 2*PWD_CNT_BLOCK;
     } else if (index >= 0 ) {
         counter = password[index].counter;
@@ -203,7 +226,7 @@ uint8_t TPwd::getCounter(TUser::user_t user) const {
 }
 
 //
-uint16_t TPwd::getLockTime(TUser::user_t user) const {
+uint16_t TPwd::getLockTime(user_t user) const {
     uint16_t time = 0;
     int8_t index = getUserIndex(user);
 
@@ -223,7 +246,15 @@ uint16_t TPwd::getLockTime(TUser::user_t user) const {
     return time;
 }
 
-void TPwd::reset(TUser::user_t user) {
+//
+void TPwd::reset() {
+    for(uint8_t user = USER_operator; user < USER_MAX; user++) {
+        reset(static_cast<user_t> (user));
+    }
+}
+
+//
+void TPwd::reset(user_t user) {
     int8_t index = getUserIndex(user);
 
     if (index >=0) {
@@ -240,7 +271,7 @@ void TPwd::reset(TUser::user_t user) {
 }
 
 //
-bool TPwd::tick(TUser::user_t user) {
+bool TPwd::tick(user_t user) {
     bool change = false;
     int8_t index = getUserIndex(user);
 
@@ -277,11 +308,11 @@ bool TPwd::tick(TUser::user_t user) {
 }
 
 //
-bool TPwd::isInit(TUser::user_t user) const {
+bool TPwd::isInit(user_t user) const {
     bool init = false;
     int8_t index = getUserIndex(user);
 
-    if (user == TUser::OPERATOR) {
+    if (user == USER_operator) {
         init = true;
     } else if (index >= 0) {
         init = password[index].init;
@@ -293,11 +324,11 @@ bool TPwd::isInit(TUser::user_t user) const {
 }
 
 //
-bool TPwd::isLocked(TUser::user_t user) const {
+bool TPwd::isLocked(user_t user) const {
     bool lock = true;
     int8_t index = getUserIndex(user);
 
-    if (user == TUser::OPERATOR) {
+    if (user == USER_operator) {
         lock = false;
     } else if (index >= 0) {
         lock = password[index].counter >= PWD_CNT_BLOCK;
@@ -309,7 +340,7 @@ bool TPwd::isLocked(TUser::user_t user) const {
 }
 
 //
-bool TPwd::isChangedPwd(TUser::user_t user) const {
+bool TPwd::isChangedPwd(user_t user) const {
     bool changed = true;
     int8_t index = getUserIndex(user);
 
@@ -322,37 +353,39 @@ bool TPwd::isChangedPwd(TUser::user_t user) const {
      return changed;
 }
 
-eGB_PARAM TPwd::getCounterParam(TUser::user_t user) const {
+eGB_PARAM TPwd::getCounterParam(user_t user) const {
     eGB_PARAM param = GB_PARAM_MAX;
 
     switch(user) {
-        case TUser::ENGINEER: {
+        case USER_engineer: {
             param = GB_PARAM_IS_PWD_ENG_CNT;
         } break;
-        case TUser::ADMIN: {
+        case USER_admin: {
             param = GB_PARAM_IS_PWD_ADM_CNT;
         } break;
 
-        case TUser::OPERATOR: // DOWN
-        case TUser::MAX: break;
+        case USER_operator: // DOWN
+        case USER_factory:  // DOWN
+        case USER_MAX: break;
     }
 
     return param;
 }
 
-eGB_PARAM TPwd::getPwdParam(TUser::user_t user) const {
+eGB_PARAM TPwd::getPwdParam(user_t user) const {
     eGB_PARAM param = GB_PARAM_MAX;
 
     switch(user) {
-        case TUser::ENGINEER: {
+        case USER_engineer: {
             param = GB_PARAM_IS_PWD_ENGINEER;
         } break;
-        case TUser::ADMIN: {
+        case USER_admin: {
             param = GB_PARAM_IS_PWD_ADMIN;
         } break;
 
-        case TUser::OPERATOR: // DOWN
-        case TUser::MAX: break;
+        case USER_operator: // DOWN
+        case USER_factory:  // DOWN
+        case USER_MAX: break;
     }
 
     return param;
@@ -375,11 +408,11 @@ bool TPwd::checkValue(const uint8_t *pwd) const {
 }
 
 //
-int8_t TPwd::getUserIndex(TUser::user_t user) const {
+int8_t TPwd::getUserIndex(user_t user) const {
     int8_t index = -1;
 
-    if ((user > TUser::OPERATOR) && (user < TUser::MAX)) {
-        index = user - TUser::OPERATOR;
+    if ((user > USER_operator) && (user < USER_MAX)) {
+        index = user - USER_operator;
     }
 
     return index;
@@ -389,3 +422,9 @@ int8_t TPwd::getUserIndex(TUser::user_t user) const {
 void TPwd::setTicks(int8_t index, bool enable) {
     password[index].ticks = enable ? kTickToDecCounter : 0;
 }
+
+//----------------
+//---- TUser -----
+//----------------
+
+

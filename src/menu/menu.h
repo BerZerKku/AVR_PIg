@@ -328,27 +328,21 @@ private:
      */
     bool isLockUser(int16_t value) const;
 
-    /** Проверяет пользователя на возможность изменения параметра.
-     *
-     *  @param[in] chuser Необходимый пользователь.
-     *  @return True если можно менять.
-     */
-    bool checkChangeUser(Param::CHANGE_USER chuser) const;
-
     /** Проверяет соответствие пароля выбранной роли.
      *
      *  @param[in] user Роль пользователя.
      *  @param[in] pwd Пароль для проверки.
      *  @return Результат проверки пароля, true если совпал.
      */
-    bool checkPwd(TUser::user_t user, const uint8_t *pwd);
+    bool checkPwd(user_t user, const uint8_t *pwd);
 
     /** Проверяет введенный пароль.
      *
      *  @param[in] user Роль пользователя для которого вводился пароль.
      *  @param[in] pwd Пароль для проверки.
+     *  @return true если верный пароль, иначе false.
      */
-    void checkPwdInput(TUser::user_t user, const uint8_t *pwd);
+    bool checkPwdInput(user_t user, const uint8_t *pwd);
 
     /** Проверяет необходимость ввода пароля после изменения параметра.
      *

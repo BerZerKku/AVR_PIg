@@ -75,10 +75,10 @@ bool clProtocolBspS::getData(bool pc) {
 					val = TO_INT16(buf[B3], buf[B4]);
 					break;
                 case GB_PARAM_IS_PWD_ADMIN: {
-                    lp->setValuePwd(sParam_->security.pwd.getPwd(TUser::ADMIN));
+                    lp->setValuePwd(sParam_->security.pwd.getPwd(USER_admin));
                 } break;
                 case GB_PARAM_IS_PWD_ENGINEER: {
-                    lp->setValuePwd(sParam_->security.pwd.getPwd(TUser::ENGINEER));
+                    lp->setValuePwd(sParam_->security.pwd.getPwd(USER_engineer));
                 } break;
 				default:
 					uint8_t pos = B1;
@@ -627,10 +627,10 @@ void clProtocolBspS::hdlrComGetNetAdr() {
 }
 
 void clProtocolBspS::hdlrComSetNetAdr() {    
-//    QString pkg;
-//    for(uint8_t i = 0;  i < buf[3] + 5; i++) {
-//        pkg += QString("%1 ").arg(buf[i], 2, 16, QLatin1Char('0'));
-//    }
+    QString pkg;
+    for(uint8_t i = 0;  i < buf[3] + 5; i++) {
+        pkg += QString("%1 ").arg(buf[i], 2, 16, QLatin1Char('0'));
+    }
 
     getComNetAdr(static_cast<posComNetAdr_t> (buf[B1]), &buf[B2], buf[NUM]);
 }
@@ -876,25 +876,25 @@ uint8_t clProtocolBspS::getComNetAdr(posComNetAdr_t pos, const uint8_t *buf,
         case POS_COM_NET_ADR_pwdEngineer: {
             if (len >= 8) {
                 numbytes = 8;
-                sParam_->security.pwd.setPwd(TUser::ENGINEER, buf);
+                sParam_->security.pwd.setPwd(USER_engineer, buf);
             }
         } break;
         case POS_COM_NET_ADR_pwdAdmin: {
             if (len >= 8) {
                 numbytes = 8;
-                sParam_->security.pwd.setPwd(TUser::ADMIN, buf);
+                sParam_->security.pwd.setPwd(USER_admin, buf);
             }
         } break;
         case POS_COM_NET_ADR_cntEngineer: {
             if (len >= 1) {
                 numbytes = 1;
-                sParam_->security.pwd.setCounter(TUser::ENGINEER, *buf);
+                sParam_->security.pwd.setCounter(USER_engineer, *buf);
             }
         } break;
         case POS_COM_NET_ADR_cntAdmin: {
             if (len >= 1) {
                 numbytes = 1;
-                sParam_->security.pwd.setCounter(TUser::ADMIN, *buf);
+                sParam_->security.pwd.setCounter(USER_admin, *buf);
             }
         } break;
         case POS_COM_NET_ADR_resetPwd: {

@@ -60,7 +60,7 @@ bool clProtocolPcS::hdlrComGetUser(eGB_COM com) {
         len = addCom(com, sParam_->security.UserPc.get());
     } else if (buf[NUM] == 1) {
         uint8_t array[4];
-        TUser::user_t user = static_cast<TUser::user_t> (buf[B1]);
+        user_t user = static_cast<user_t> (buf[B1]);
         array[0] = user;
         array[1] = sParam_->security.pwd.isLocked(user);
         *((uint16_t *) &array[2]) = sParam_->security.pwd.getLockTime(user);
@@ -81,16 +81,19 @@ bool clProtocolPcS::hdlrComSetUser(eGB_COM com) {
     };
 
     state_t state = STATE_OK;
-    TUser::user_t user = static_cast<TUser::user_t> (buf[B1]);
+    user_t user = static_cast<user_t> (buf[B1]);
 
     switch(buf[NUM]) {
         case 1: {
-            sParam_->security.UserPc.set(TUser::OPERATOR);
+            sParam_->security.UserPc.set(USER_operator);
             len = addCom(com, sParam_->security.UserPc.get());
         } break;
         case (1 + PWD_LEN): {
-            if (sParam_->security.pwd.checkPassword(user, &buf[B2])) {
+            if (sParam_->security.pwd.isLocked(user)) {
+                state = STATE_NO_ACCESS;
+            } else if (sParam_->security.pwd.checkPassword(user, &buf[B2])) {
                 sParam_->security.UserPc.set(user);
+                sParam_->security.pwd.clrCounter(user);
             } else {
                 sParam_->security.pwd.incCounter(user);
                 state = STATE_WRONG_PWD;
@@ -98,14 +101,20 @@ bool clProtocolPcS::hdlrComSetUser(eGB_COM com) {
             len = addCom(com, user, state);
         } break;
         case (1 + 2*PWD_LEN): {
-            TUser::user_t curuser = sParam_->security.UserPc.get();
-            if (sParam_->security.pwd.checkPassword(curuser, &buf[B2])) {
+            user_t curuser = sParam_->security.UserPc.get();
+            eGB_PARAM param = sParam_->security.pwd.getPwdParam(user);
+            user_t chuser = getChangeUser(param);
+
+            if (sParam_->security.pwd.isLocked(curuser)) {
+                state = STATE_NO_ACCESS;
+            } else if (!sParam_->security.UserPc.checkChangeUser(chuser)) {
+                state = STATE_NO_ACCESS;
+            } else if (sParam_->security.pwd.checkPassword(curuser, &buf[B2])) {
                 if (!sParam_->security.pwd.setPwd(user, &buf[B10], false)) {
                     state = STATE_WRONG_NEW_PWD;
-                } else {
-                    sParam_->security.pwd.incCounter(curuser);
                 }
             } else {
+                sParam_->security.pwd.incCounter(curuser);
                 state =  STATE_WRONG_PWD;
             }
             len = addCom(com, user, state);

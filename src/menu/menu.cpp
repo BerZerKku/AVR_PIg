@@ -2845,7 +2845,7 @@ void clMenu::lvlRegime() {
 			break;
 
 		case KEY_ENTER: {
-            if (!checkChangeUser(Param::CHANGE_USER_ENGINEER)) {
+            if (!sParam.security.UserPi.checkChangeUser(USER_engineer)) {
                     setMessage(MSG_WRONG_USER);
             } else {
                 uint8_t min = GB_REGIME_ENTER_DISABLED;
@@ -3591,7 +3591,7 @@ void clMenu::lvlSetupDT() {
         } break;
 
         case KEY_ENTER: {
-            if (!checkChangeUser(Param::CHANGE_USER_ENGINEER)) {
+            if (!sParam.security.UserPi.checkChangeUser(USER_engineer)) {
                 setMessage(MSG_WRONG_USER);
             } else {
                 enterFunc = &clMenu::inputValue;
@@ -4760,35 +4760,15 @@ bool clMenu::checkChangeReg() const {
 
 // Проверяет введенный пароль.
 bool clMenu::isLockUser(int16_t value) const {
-    return sParam.security.pwd.isLocked(static_cast<TUser::user_t> (value));
+    return sParam.security.pwd.isLocked(static_cast<user_t> (value));
 }
 
-//
-bool clMenu::checkChangeUser(Param::CHANGE_USER chuser) const {
-    bool check = false;
-    TUser::user_t user = sParam.security.UserPi.get();
-
-    switch(chuser) {
-        case Param::CHANGE_USER_NO: {
-            check = true;
-        } break;
-        case Param::CHANGE_USER_ENGINEER: {
-            check = (user >= TUser::ENGINEER);
-        } break;
-        case Param::CHANGE_USER_ADMIN: {
-            check = (user == TUser::ADMIN);
-        } break;
-    }
-
-    return check;
-}
-
-bool clMenu::checkPwd(TUser::user_t user, const uint8_t *pwd) {
+bool clMenu::checkPwd(user_t user, const uint8_t *pwd) {
     sParam.security.pwd.checkPassword(user, pwd);
 }
 
 //
-void clMenu::checkPwdInput(TUser::user_t user, const uint8_t *pwd) {
+bool clMenu::checkPwdInput(user_t user, const uint8_t *pwd) {
     if (checkPwd(user, pwd)) {
         sParam.save.param = EnterParam.last.param;
         sParam.save.number = 1;
@@ -4811,7 +4791,7 @@ bool clMenu::checkPwdReq(eGB_PARAM param, int16_t value) const
 {
     bool check = false;
 
-    if ((param == GB_PARAM_IS_USER) && (value != TUser::OPERATOR)) {
+    if ((param == GB_PARAM_IS_USER) && (value != USER_operator)) {
         if  (value != sParam.security.UserPi.get()) {
             check = true;
         }
@@ -4823,13 +4803,14 @@ bool clMenu::checkPwdReq(eGB_PARAM param, int16_t value) const
 // Настройка параметров для ввода значения с клавиатуры.
 void clMenu::enterParameter() {
 	LocalParams *lp = &sParam.local;
+    eGB_PARAM param = lp->getParam();
 
     if (!checkChangeReg()) {
         setMessage(MSG_WRONG_REGIME);
-    } else if (!checkChangeUser(getChangeUser(sParam.local.getParam()))) {
+    } else if (!sParam.security.UserPi.checkChangeUser(getChangeUser(param))) {
         setMessage(MSG_WRONG_USER);
     } else {
-        switch(getParamType(lp->getParam())) {
+        switch(getParamType(param)) {
 			case Param::PARAM_BITES: // DOWN
             case Param::PARAM_LIST: {
 				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
@@ -4849,7 +4830,7 @@ void clMenu::enterParameter() {
 		}
 
 		if (EnterParam.isEnable()) {
-            int16_t min = getMin(lp->getParam());
+            int16_t min = getMin(param);
 			int16_t val = lp->getValue();
 			int16_t max = lp->getMax();
 
@@ -4861,7 +4842,7 @@ void clMenu::enterParameter() {
 			//
 			// Для остальных параметров в случае ошибки текущего значения,
 			// устанавливается минимум.
-            if (getParamType(lp->getParam()) == Param::PARAM_I_COR) {
+            if (getParamType(param) == Param::PARAM_I_COR) {
 				min = 0;
 				val = sParam.measParam.getCurrentOut();
 				if ((val < min) || (val > max)) {
@@ -4871,7 +4852,7 @@ void clMenu::enterParameter() {
 					val = 0;
 					max = 0;
 				}
-            } else if (getParamType(lp->getParam()) == Param::PARAM_U_COR) {
+            } else if (getParamType(param) == Param::PARAM_U_COR) {
 				min = 0;
 				val = sParam.measParam.getVoltageOut();
 				if ((val < min) || (val > max)) {
@@ -4886,10 +4867,10 @@ void clMenu::enterParameter() {
 			}
 
             enterFunc = &clMenu::inputValue;
-			EnterParam.setParam(lp->getParam());
+            EnterParam.setParam(param);
 			EnterParam.setValueRange(min, max);
 			EnterParam.setValue(val);
-            EnterParam.list = getListOfValues(lp->getParam());
+            EnterParam.list = getListOfValues(param);
 		}
     }
 }
@@ -5032,7 +5013,7 @@ void clMenu::saveParamToRam() {
         int16_t value = sParam.save.getValue();
 
         if (sParam.save.param == GB_PARAM_IS_USER) {
-            sParam.security.UserPi.set((TUser::user_t) (value));
+            sParam.security.UserPi.set((user_t) (value));
         }
     }
 }
@@ -5052,15 +5033,14 @@ void clMenu::security() {
     sParam.security.UserPi.tick();
     sParam.security.UserPc.tick();
 
-    for(uint8_t i = 0; i < TUser::MAX; i++) {
-        TUser::user_t user = static_cast<TUser::user_t> (i);
+    for(uint8_t i = 0; i < USER_MAX; i++) {
+        user_t user = static_cast<user_t> (i);
 
         if (!isConnectionBsp()) {
             sParam.security.pwd.reset(user);
         }
 
         if (sParam.security.pwd.tick(user)) {
-//            qDebug() << "Change wrong pwd counter for " << user;
             sParam.save.param = sParam.security.pwd.getCounterParam(user);
             sParam.save.number = 1;
             sParam.save.set(sParam.security.pwd.getCounter(user));
@@ -5068,7 +5048,6 @@ void clMenu::security() {
         }
 
         if (sParam.security.pwd.isChangedPwd(user)) {
-//            qDebug() << "Change pwd for " << user;
             sParam.save.param = sParam.security.pwd.getPwdParam(user);
             sParam.save.number = 1;
             sParam.save.set(sParam.security.pwd.getPwd(user));
@@ -5101,13 +5080,18 @@ void clMenu::setupParam() {
                 } else if (param == GB_PARAM_IS_PWD) {
                     // FIXME А если параметр не GB_PARAM_IS_USER ?!
                     if (EnterParam.last.param == GB_PARAM_IS_USER) {
-                        checkPwdInput((TUser::user_t) EnterParam.last.val,
-                                      EnterParam.getValuePwd());
+                        user_t user = (user_t) EnterParam.last.val;
+                        checkPwdInput(user, EnterParam.getValuePwd());
+                    } else if (EnterParam.last.param == GB_PARAM_IS_RESET_PWD) {
+                        user_t user = USER_factory;
+                        if (checkPwdInput(user, EnterParam.getValuePwd())) {
+                            sParam.security.pwd.reset();
+                        }
                     }
                     EnterParam.setDisable();
                 } else {
                     if (getParamType(param) == Param::PARAM_PWD) {
-//                        qDebug() << "Enter password" << getParamType(param);
+                        qDebug() << "Enter password" << getParamType(param);
                         uint8_t *pwd = EnterParam.getValuePwd();
                         sParam.security.pwd.setPwd(param, pwd, false);
                     } else {
@@ -5208,11 +5192,11 @@ bool clMenu::checkLedOn() {
         ledOn = true;
     }
 
-    if (sParam.security.UserPi.get() != TUser::OPERATOR) {
+    if (sParam.security.UserPi.get() != USER_operator) {
         ledOn = true;
     }
 
-    if (sParam.security.UserPc.get() != TUser::OPERATOR) {
+    if (sParam.security.UserPc.get() != USER_operator) {
         ledOn = true;
     }
 
