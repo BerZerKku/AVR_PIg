@@ -10,8 +10,7 @@
 
 #include "protocolS.h"
 
-class clProtocolPcS : public clProtocolS
-{
+class clProtocolPcS : public clProtocolS {
 public:
 	clProtocolPcS(uint8_t *buf, uint8_t size, stGBparam *sParam);
 

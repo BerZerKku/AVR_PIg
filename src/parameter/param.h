@@ -8,13 +8,13 @@
 
 //typedef struct Param Param_t PROGMEM;
 
-/// Минимальный пользователь для изменения параметра.
+/// Пользователь (роль).
 typedef enum {
-    USER_operator = 0,  ///< Оператор.
+    USER_operator = 0,  ///< Оператор. Должен быть в начале!
     USER_engineer,      ///< Инженер.
     USER_admin,         ///< Администратор.
     USER_MAX,           ///< Максимальное количество пользователей.
-    USER_factory        ///< Производитель.
+    USER_factory        ///< Производитель. Должен быть больше USER_MAX!
 } user_t;
 
 struct Param {

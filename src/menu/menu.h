@@ -71,6 +71,7 @@ class clMenu {
         MSG_BLOCK_USER,         ///< Выбор роли пользователя заблокирован.
         MSG_DISABLE,            ///< Нужно изменить режим на "Выведен".
         MSG_INIT,               ///< Инициализация.
+        MSG_RESET_PWD,          ///< Сброс паролей до заводских настроек.
         //
         MSG_MAX
     };
@@ -321,21 +322,6 @@ private:
      */
     bool checkChangeReg() const;
 
-    /** Проверяет блокировку пользователя.
-     *
-     *  @param[in] value Знаение параметра.
-     *  @return true если пользователь заблокирован, иначе false.
-     */
-    bool isLockUser(int16_t value) const;
-
-    /** Проверяет соответствие пароля выбранной роли.
-     *
-     *  @param[in] user Роль пользователя.
-     *  @param[in] pwd Пароль для проверки.
-     *  @return Результат проверки пароля, true если совпал.
-     */
-    bool checkPwd(user_t user, const uint8_t *pwd);
-
     /** Проверяет введенный пароль.
      *
      *  @param[in] user Роль пользователя для которого вводился пароль.
@@ -351,9 +337,9 @@ private:
      *
      *  @param[in] param Параметр
      *  @param[in] value Знаение параметра.
-     *  @return
+     *  @return Необходимый пользователь для изменения.
      */
-    bool checkPwdReq(eGB_PARAM param, int16_t value) const;
+    user_t checkPwdReq(eGB_PARAM param, int16_t value) const;
 
 	/**	Настройка параметров для ввода значения с клавиатуры.
 	 *

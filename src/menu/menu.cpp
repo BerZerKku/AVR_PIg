@@ -950,6 +950,10 @@ eGB_COM clMenu::getTxCommand() {
     }
 
 //    dcom.append(com);
+//    if (dcom.size() >= MAX_NUM_COM_SEND_IN_CYLCE) {
+//        qDebug() << "Commands per cycle: " << showbase << hex << dcom;
+//        dcom.clear();
+//    }
 
     return com;
 }
@@ -1066,6 +1070,17 @@ bool clMenu::printMessage() {
             static const char message[][ROW_LEN+1] PROGMEM = {
                 //2345678901234567890
                 "    Инициализация   "
+            };
+            pmsg = (PGM_P) message;
+            nrows = SIZE_OF(message);
+        } break;
+
+        case MSG_RESET_PWD: {
+            static const char message[][ROW_LEN+1] PROGMEM = {
+                //2345678901234567890
+                "   Сброс паролей   ",
+                "    к заводским    ",
+                "    настройкам     "
             };
             pmsg = (PGM_P) message;
             nrows = SIZE_OF(message);
@@ -4758,46 +4773,35 @@ bool clMenu::checkChangeReg() const {
     return check;
 }
 
-// Проверяет введенный пароль.
-bool clMenu::isLockUser(int16_t value) const {
-    return sParam.security.pwd.isLocked(static_cast<user_t> (value));
-}
-
-bool clMenu::checkPwd(user_t user, const uint8_t *pwd) {
-    sParam.security.pwd.checkPassword(user, pwd);
-}
-
 //
 bool clMenu::checkPwdInput(user_t user, const uint8_t *pwd) {
-    if (checkPwd(user, pwd)) {
-        sParam.save.param = EnterParam.last.param;
-        sParam.save.number = 1;
-        sParam.save.set(static_cast<uint8_t> (user));
-        saveParam();
-        sParam.security.pwd.clrCounter(user);
-    } else {
-        sParam.security.pwd.incCounter(user);
+    bool check = false;
 
-        if (isLockUser(user)) {
+    check = sParam.security.pwd.checkPassword(user, pwd);
+    if (!check) {
+        if (sParam.security.pwd.isLocked(user)) {
             setMessage(MSG_BLOCK_USER);
         } else {
             setMessage(MSG_WRONG_PWD);
         }
     }
+
+    return check;
 }
 
 // Проверяет необходимость ввода пароля после изменения параметра.
-bool clMenu::checkPwdReq(eGB_PARAM param, int16_t value) const
-{
-    bool check = false;
+user_t clMenu::checkPwdReq(eGB_PARAM param, int16_t value) const {
+    user_t user = USER_operator;
 
-    if ((param == GB_PARAM_IS_USER) && (value != USER_operator)) {
-        if  (value != sParam.security.UserPi.get()) {
-            check = true;
+    if (param == GB_PARAM_IS_USER) {
+        if ((value != USER_operator) && (value != sParam.security.UserPi.get())) {
+            user = static_cast<user_t> (value);
         }
+    } else if (param == GB_PARAM_IS_RESET_PWD) {
+        user = USER_factory;
     }
 
-    return check;
+    return user;
 }
 
 // Настройка параметров для ввода значения с клавиатуры.
@@ -5020,6 +5024,11 @@ void clMenu::saveParamToRam() {
 
 //
 void clMenu::security() {
+    bool savepwd = false;
+    bool savecnt = false;
+    static user_t user = USER_MAX;
+    eGB_COM com = GB_COM_NO;
+
     // Сброс настроек при потере связи.
     if (!isConnectionBsp()) {
         sParam.security.UserPi.reset();
@@ -5027,32 +5036,67 @@ void clMenu::security() {
     }
 
     if (!isConnectionPc()) {
-//        sParam.security.UserPc.reset();
+#ifdef NDEBUG
+        sParam.security.UserPc.reset();
+#endif
     }
 
     sParam.security.UserPi.tick();
     sParam.security.UserPc.tick();
 
-    for(uint8_t i = 0; i < USER_MAX; i++) {
-        user_t user = static_cast<user_t> (i);
 
-        if (!isConnectionBsp()) {
-            sParam.security.pwd.reset(user);
+    if (user >= USER_MAX) {
+        user = static_cast<user_t> (USER_operator + 1);
+    }
+
+    if (!isConnectionBsp()) {
+        sParam.security.pwd.reset(user);
+    }
+
+    if (sParam.security.pwd.isResetToDefault()) {
+        eGB_REGIME regime = sParam.glb.status.getRegime();
+        sParam.security.pwd.resetPwdToDefaultCycle(regime);
+
+        if (sParam.security.pwd.isWaitDisableDevice()) {
+            com = GB_COM_SET_REG_DISABLED;
+        } else if (sParam.security.pwd.isWaitEnableDevice()) {
+            com = GB_COM_SET_REG_ENABLED;
         }
 
-        if (sParam.security.pwd.tick(user)) {
+        setMessage(MSG_RESET_PWD);
+    }
+
+    for(uint8_t i = USER_operator + 1; i < USER_MAX; i++) {
+        user = static_cast<user_t> (i);
+
+        if (!sParam.security.pwd.isResetToDefault()) {
+            if (sParam.security.pwd.tick(user)) {
+                savecnt = true;
+            }
+
+            if (sParam.security.pwd.isChangedPwd(user)) {
+                savepwd = true;
+            }
+        }
+
+        if (savecnt || sParam.security.pwd.isWaitResetPassword()) {
             sParam.save.param = sParam.security.pwd.getCounterParam(user);
             sParam.save.number = 1;
             sParam.save.set(sParam.security.pwd.getCounter(user));
             saveParam();
         }
 
-        if (sParam.security.pwd.isChangedPwd(user)) {
+        if (savepwd || sParam.security.pwd.isWaitResetPassword()) {
             sParam.save.param = sParam.security.pwd.getPwdParam(user);
             sParam.save.number = 1;
             sParam.save.set(sParam.security.pwd.getPwd(user));
             saveParam();
         }
+    }
+
+
+    if (com != GB_COM_NO) {
+        sParam.txComBuf.addFastCom(com, GB_SEND_NO_DATA);
     }
 }
 
@@ -5067,25 +5111,31 @@ void clMenu::setupParam() {
             if ((this->*enterFunc)() == MENU_ENTER_PARAM_READY) {
                 eGB_PARAM param = EnterParam.getParam();
                 int16_t value = EnterParam.getValue();
-                if (checkPwdReq(param, value)) {
-                    if (!isLockUser(value)) {
+                user_t user = checkPwdReq(param, value);
+                if (user != USER_operator) {
+                    if (!sParam.security.pwd.isLocked(user)) {
                         EnterParam.setEnable(MENU_ENTER_PASSWORD);
                         enterFunc = &clMenu::inputValue;
                         EnterParam.setParam(GB_PARAM_IS_PWD);
                         EnterParam.setValueRange(1, 8);
                     } else {
+                        // FIXME Тут МОЖЕТ когда-то встретится параметр не "Роль".
                         setMessage(MSG_BLOCK_USER);
                         EnterParam.setDisable();
                     }
                 } else if (param == GB_PARAM_IS_PWD) {
-                    // FIXME А если параметр не GB_PARAM_IS_USER ?!
                     if (EnterParam.last.param == GB_PARAM_IS_USER) {
                         user_t user = (user_t) EnterParam.last.val;
-                        checkPwdInput(user, EnterParam.getValuePwd());
+                        if (checkPwdInput(user, EnterParam.getValuePwd())) {
+                            sParam.save.param = EnterParam.last.param;
+                            sParam.save.number = 1;
+                            sParam.save.set(static_cast<uint8_t> (user));
+                            saveParam();
+                        }
                     } else if (EnterParam.last.param == GB_PARAM_IS_RESET_PWD) {
                         user_t user = USER_factory;
                         if (checkPwdInput(user, EnterParam.getValuePwd())) {
-                            sParam.security.pwd.reset();
+                            sParam.security.pwd.resetPwdToDefault();
                         }
                     }
                     EnterParam.setDisable();
@@ -5093,7 +5143,7 @@ void clMenu::setupParam() {
                     if (getParamType(param) == Param::PARAM_PWD) {
                         qDebug() << "Enter password" << getParamType(param);
                         uint8_t *pwd = EnterParam.getValuePwd();
-                        sParam.security.pwd.setPwd(param, pwd, false);
+                        sParam.security.pwd.changePwd(param, pwd);
                     } else {
                         sParam.save.param = param;
                         sParam.save.number = sParam.local.getNumOfCurrSameParam();

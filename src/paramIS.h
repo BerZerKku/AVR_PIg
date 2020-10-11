@@ -10,6 +10,7 @@
 
 #include "glbDefine.h"
 #include "param.h"
+#include "paramIS.h"
 
 // TODO Сделать описание работы паролей и по возможности упростить алгоритм/изменение.
 
@@ -73,10 +74,25 @@ private:
 class TPwd {
     /// время сборса ошибки ввода пароля
 #ifdef NDEBUG
-#define kTickToDecCounter (600000UL / MENU_TIME_CYLCE)
+#define kkTickWaiter (600000UL / MENU_TIME_CYLCE)
 #else
 #define kTickToDecCounter (30000UL / MENU_TIME_CYLCE)
 #endif
+#define kTickWait (1000UL / MENU_TIME_CYLCE)
+#define kTickToRestPwd (5000UL / MENU_TIME_CYLCE)
+    /// Состояния сброса паролей в значение по умолчанию.
+    enum resetState_t {
+        RESET_STATE_no = 0,         ///< Нет.
+        RESET_STATE_waitDisable,    ///< Ожидание перехода в Выведен.
+        RESET_STATE_disable,        ///< Смена режима на Выведен.
+        RESET_STATE_waitDisableTime,///< Ожидание времени в режиме Выведен.
+        RESET_STATE_resetPassword,  ///< Сброс паролей и счетчиков.
+        RESET_STATE_waitReset,      ///< Ожидание сброса паролей и счетчиков.
+        RESET_STATE_enable,         ///< Смена режима на Введен.
+        RESET_STATE_waitEnable,     ///< Ожидание режима Введен.
+        //
+        RESET_STATE_MAX
+    };
 
     struct pwd_t {
         bool init;             ///< Инициализация (первое считывание).
@@ -84,7 +100,7 @@ class TPwd {
         uint8_t counter;       ///< Счетчик ввода неверного пароля.
         uint8_t tcounter;      ///< Счетчик ввода неверного пароля из БСП.
         uint16_t ticks;        ///< Счетчик тиков до уменьшения счетчика ошибок.
-        bool changed;           ///< Флаг ввода нового значения.
+        bool changed;          ///< Флаг ввода нового значения.
     };
 
 public:
@@ -96,6 +112,9 @@ public:
      *  Для TUser::OPERATOR всегда возвращается true.
      *  Для TUser::MAX или ошибочном значении возвращается false.
      *  Для заблокированного пользователя возвращается false.
+     *
+     *  Если пароль верен, счетчик ошибок неверных вводов сбрасывается.
+     *  Если пароль не верен, счетчик ошибок неверных вводов увеличивается.
      *
      *  @param[in] user Пользователь.
      *  @param[in] pwd Пароль.
@@ -111,23 +130,29 @@ public:
      */
     uint8_t* getPwd(user_t user);
 
-    /** Устанавливает новое значение пароля.
+    /** Устанавливает значение пароля считанное из БСП.
      *
      *  @param[in] user Пользователь.
      *  @param[in] pwd Пароль.
-     *  @param[in] bsp Флаг установки значения из BSP.
      *  @return true если пароль установлен, иначе false.
      */
-    bool setPwd(user_t user, const uint8_t *pwd, bool bsp=true);
+    bool setPwd(user_t user, const uint8_t *pwd);
 
-    /** Устанавливает новое значение пароля.
+    /** Изменяет пароль пользователя.
      *
-     *  @param[in] param Параметр.
-     *  @param[in] password Пароль.
-     *  @param[in] bsp Флаг установки значения из BSP.
-     *  @return true если пароль установлен, иначе false.
+     *  @param[in] user Пользователь.
+     *  @param[in] pwd Пароль.
+     *  @return true если пароль изменен, иначе false.
      */
-    bool setPwd(eGB_PARAM param, const uint8_t *pwd, bool bsp=true);
+    bool changePwd(user_t user, const uint8_t *pwd);
+
+    /** Изменяет пароль пользователя.
+     *
+     *  @param[in] param Параметр пароля пользователя.
+     *  @param[in] pwd Пароль.
+     *  @return true если пароль изменен, иначе false.
+     */
+    bool changePwd(eGB_PARAM param, const uint8_t *pwd);
 
     /** Устанавливает счетчик ввода неверного пароля.
      *
@@ -138,20 +163,6 @@ public:
      *  @param[in] value Значение.
      */
     void setCounter(user_t user, uint8_t value);
-
-    /** Сброс счетчика.
-     *
-     *  @param[in] user Пользователь.
-     */
-    void clrCounter(user_t user);
-
-    /** Увеличивает счетчик ошибок ввода пароля.
-     *
-     *  Если это первый ошибочный ввод таймер будет сброшен.
-     *
-     *  @param[in] user Пользователь
-     */
-    void incCounter(user_t user);
 
     /** Возвращает значение счетчика ввода неверного пароля.
      *
@@ -236,8 +247,39 @@ public:
      */
     eGB_PARAM getPwdParam(user_t user) const;
 
+    /// Сбросить пароли в значение по умолчанию.
+    void resetPwdToDefault();
+
+    /** Сбрасывает пароли в значение по умолчанию.
+     *
+     *  @param regime Текущий режим работы устройства.
+     */
+    void resetPwdToDefaultCycle(eGB_REGIME regime);
+
+    /// Проверяет необходимость сбросить пароли в значение по умолчанию.
+    bool isResetToDefault();
+
+    /// Проверка необходимости вывести аппарат из работы.
+    bool isWaitDisableDevice();
+
+    /// Проверка необходимости сбросить пароли в значение по умолчанию.
+    bool isWaitResetPassword();
+
+    /// Проверка необходимости ввести аппарат в работу.
+    bool isWaitEnableDevice();
+
 private:
-    pwd_t password[USER_MAX-USER_operator];
+    /// Состояние сброса паролей к значению по умолчанию.
+    resetState_t resetState;
+
+    pwd_t password[USER_MAX-USER_operator-1];
+
+    /** Проверяет флаг изменения пароля.
+     *
+     *  @param[in] index Индекс пользователя в массиве.
+     *  @return
+     */
+    bool isChangedPwd(int8_t index) const;
 
     /** Возвращает состояние флага инициализации.
      *
@@ -246,6 +288,14 @@ private:
      */
     bool isInit(int8_t index) const;
 
+    /** Изменяет пароль пользователя.
+     *
+     *  @param index Индекс пользователя в массиве.
+     *  @param[in] pwd Пароль.
+     *  @return true если пароль изменен, иначе false.
+     */
+    bool changePwd(int8_t index, const uint8_t *pwd);
+
     /** Проверяет корректность символов пароля.
      *
      *  @param[in] user Пользователь.
@@ -253,6 +303,20 @@ private:
      *  @return Результат проверки, true если все в порядке.
      */
     bool checkValue(const uint8_t *password) const;
+
+    /** Увеличивает счетчик ввода неверного пароля.
+     *
+     *  Если это первый ошибочный ввод таймер будет сброшен.
+     *
+     *  @param[in] Индекс пользователя в массиве.
+     */
+    void incCounter(int8_t index);
+
+    /** Сбрасывает счетчик ввода неверного пароля.
+     *
+     *  @param[in] Индекс пользователя в массиве.
+     */
+    void clrCounter(int8_t index);
 
     /** Возвращает индекс пользователя в массиве.
      *
@@ -265,7 +329,7 @@ private:
     /** Устанавливает количество тиков таймера до сброса блокировки роли.
      *
      *  @param[in] index Индекс пользователя в массиве.
-     *  @param[in] cnt Количество интервалов времени до сброса блокировки.
+     *  @param[in] enable true установить счетчик тиков, иначе обнулить.
      */
     void setTicks(int8_t index, bool enable);
 };
@@ -322,6 +386,15 @@ private:
 /// структура параметров работы с информационной безопасностью
 class TInfoSecurity {
 public:
+    enum state_t {
+        STATE_OK = 0x00,            // ОК
+        STATE_NO_ACCESS = 0x01,     // Нет доступа
+        STATE_WRONG_PWD = 0x02,     // Неверный пароль
+        STATE_WRONG_NEW_PWD = 0x03, // Неверный новый пароль
+        //
+        STATE_MAX
+    };
+
     TInfoSecurity() {
         UserPi.set(USER_operator);
         UserPc.set(USER_operator);
@@ -334,6 +407,26 @@ public:
     TUser UserPc;
 
     TPwd pwd;
+
+    /** Устанавливает пользователя для работы с ПК.
+     *
+     *  @param[in] user Пользователь.
+     *  @param[in] p Пароль
+     *  @return Результат установки.
+     *  @retval STATE_NO_ACCESS
+     *  @retval STATE_WRONG_PWD
+     */
+    state_t setUserPc(user_t user, const uint8_t *p=NULL);
+
+    /** Изменяет пароль пользвоателя с ПК.
+     *
+     *  @param[in] user Пользователь для которого меняется пароль.
+     *  @param[in] cp Пароль текущего пользователя.
+     *  @param[in] np Новый пароль пользователя.
+     *  @return
+     */
+    state_t changeUserPcPwd(user_t user, const uint8_t *cp, const uint8_t *np);
+
 };
 
 #endif /* PARAMIS_H_ */

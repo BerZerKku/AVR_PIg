@@ -51,7 +51,7 @@ void TUser::reset() {
     resetTimer();
 }
 
-
+//
 bool TUser::checkChangeUser(user_t chuser) const {
     bool check = false;
 
@@ -60,7 +60,7 @@ bool TUser::checkChangeUser(user_t chuser) const {
             check = true;
         } break;
         case USER_engineer: {
-            check = (user_ >= USER_engineer);
+            check = (user_ == USER_engineer) || (user_ == USER_admin);
         } break;
         case USER_admin: {
             check = (user_ == USER_admin);
@@ -83,6 +83,8 @@ bool TUser::checkChangeUser(user_t chuser) const {
 TPwd::TPwd() {
     COMPILE_TIME_ASSERT(SIZE_OF(pwd_t::pwd) == PWD_LEN);
     COMPILE_TIME_ASSERT(PWD_CNT_BLOCK == 0x03);
+    COMPILE_TIME_ASSERT(SIZE_OF(PWD_DEFAULT) == (PWD_LEN + 1));
+    COMPILE_TIME_ASSERT(SIZE_OF(password) == (USER_MAX - USER_operator - 1));
 
     reset();
 }
@@ -90,19 +92,32 @@ TPwd::TPwd() {
 //
 bool TPwd::checkPassword(user_t user, const uint8_t *pwd) {
     bool check = false;
-    int8_t index = getUserIndex(user);
 
     if (user == USER_operator) {
         check = true;
-    } else if (index >= 0) {
-        if (!isLocked(user)) {
-            check = true;
-            for(uint8_t i = 0; i < PWD_LEN; i++) {
-                check &= (password[index].pwd[i] == pwd[i]);
-            }
+    } else if (user == USER_factory) {
+        check = true;
+        for(uint8_t i = 0; i < PWD_LEN; i++) {
+            check &= (pwd[i] == PWD_RESET[i]);
         }
-    } else {
-        check = false;
+    } else  {
+        int8_t index = getUserIndex(user);
+        if (index >= 0) {
+            if (!isLocked(user)) {
+                check = true;
+                for(uint8_t i = 0; i < PWD_LEN; i++) {
+                    check &= (password[index].pwd[i] == pwd[i]);
+                }
+
+                if (check) {
+                    clrCounter(index);
+                } else {
+                    incCounter(index);
+                }
+            }
+        } else {
+            check = false;
+        }
     }
 
     return check;
@@ -121,23 +136,26 @@ uint8_t* TPwd::getPwd(user_t user) {
 }
 
 //
-bool TPwd::setPwd(user_t user, const uint8_t *pwd, bool bsp) {
+bool TPwd::setPwd(user_t user, const uint8_t *pwd) {
     bool setnew = false;
     int8_t index = getUserIndex(user);
 
-    if(index >= 0) {
+    if (index >= 0) {
+        bool changed = false;
         if (checkValue(pwd)) {
-            bool changed = false;
             for(uint8_t i = 0; i < PWD_LEN; i++) {
                 if (password[index].pwd[i] != pwd[i]) {
                     changed = true;
-                    if (!bsp || !isChangedPwd(user)) {
-                        password[index].pwd[i] = pwd[i];
-
-                    }
-                }                
+                    if (!isChangedPwd(index)) {
+                        password[index].pwd[i] = pwd[i];                        
+                    }                    
+                }
             }
-            password[index].changed = changed;
+
+            if (!changed) {
+                password[index].changed = changed;
+            }
+
             setnew = true;
         }
     }
@@ -146,17 +164,29 @@ bool TPwd::setPwd(user_t user, const uint8_t *pwd, bool bsp) {
 }
 
 //
-bool TPwd::setPwd(eGB_PARAM param, const uint8_t *pwd, bool bsp) {
-    bool setnew = false;
+bool TPwd::changePwd(user_t user, const uint8_t *pwd) {
+    bool changed  = false;
+    int8_t index = getUserIndex(user);
+
+    if(index >= 0) {
+        changed = changePwd(index, pwd);
+    }
+
+    return changed;
+}
+
+//
+bool TPwd::changePwd(eGB_PARAM param, const uint8_t *pwd) {
+    bool changed = false;
 
     for(uint8_t i = 0; i < USER_MAX; i++) {
         user_t user = static_cast<user_t> (i);
         if (getPwdParam(user) == param) {
-            setnew = setPwd(user, pwd, bsp);
+            changed = changePwd(user, pwd);
         }
     }
 
-    return setnew;
+    return changed;
 }
 
 //
@@ -173,42 +203,6 @@ void TPwd::setCounter(user_t user, uint8_t value) {
             setTicks(user, counter > 0);
         }
         password[index].tcounter = value;
-    }
-}
-
-//
-void TPwd::clrCounter(user_t user) {
-    int8_t index = getUserIndex(user);
-
-    if (index >= 0) {
-        if (isInit(index)) {
-            password[index].counter = 0;
-        }
-    }
-}
-
-//
-void TPwd::incCounter(user_t user) {
-    int8_t index = getUserIndex(user);
-
-    if (index >= 0) {
-        uint8_t counter = password[index].counter;
-
-        if (counter == 0) {
-            setTicks(index, true);
-        }
-
-        if (isInit(index)) {
-            if (counter < PWD_CNT_BLOCK) {
-                counter++;
-            }
-
-            if (counter >= PWD_CNT_BLOCK) {
-                counter = 2*PWD_CNT_BLOCK;
-            }
-        }
-        qDebug() << "user = " << user << ", set counter = " << counter;
-        password[index].counter = counter;
     }
 }
 
@@ -248,6 +242,7 @@ uint16_t TPwd::getLockTime(user_t user) const {
 
 //
 void TPwd::reset() {
+    resetState = RESET_STATE_no;
     for(uint8_t user = USER_operator; user < USER_MAX; user++) {
         reset(static_cast<user_t> (user));
     }
@@ -256,6 +251,8 @@ void TPwd::reset() {
 //
 void TPwd::reset(user_t user) {
     int8_t index = getUserIndex(user);
+
+    resetState = RESET_STATE_no;
 
     if (index >=0) {
         password[index].init = false;
@@ -315,7 +312,7 @@ bool TPwd::isInit(user_t user) const {
     if (user == USER_operator) {
         init = true;
     } else if (index >= 0) {
-        init = password[index].init;
+        init = isInit(index);
     } else {
         init = false;
     }
@@ -326,14 +323,18 @@ bool TPwd::isInit(user_t user) const {
 //
 bool TPwd::isLocked(user_t user) const {
     bool lock = true;
-    int8_t index = getUserIndex(user);
 
     if (user == USER_operator) {
         lock = false;
-    } else if (index >= 0) {
-        lock = password[index].counter >= PWD_CNT_BLOCK;
+    } else if (user == USER_factory) {
+        lock = false;
     } else {
-        lock = true;
+        int8_t index = getUserIndex(user);
+        if (index >= 0) {
+            lock = password[index].counter >= PWD_CNT_BLOCK;
+        } else {
+            lock = true;
+        }
     }
 
     return lock;
@@ -345,7 +346,7 @@ bool TPwd::isChangedPwd(user_t user) const {
     int8_t index = getUserIndex(user);
 
      if (index >= 0) {
-        changed = password[index].changed;
+         changed = isChangedPwd(index);
     } else {
         changed = false;
     }
@@ -392,8 +393,132 @@ eGB_PARAM TPwd::getPwdParam(user_t user) const {
 }
 
 //
+void TPwd::resetPwdToDefault() {
+    resetState = RESET_STATE_waitDisable;
+    setTicks(0, false);
+}
+
+//
+void TPwd::resetPwdToDefaultCycle(eGB_REGIME regime) {
+    static const uint8_t pwdDefault[] = PWD_DEFAULT;
+    int8_t index = 0;
+
+    if (resetState >= RESET_STATE_MAX) {
+        resetState = RESET_STATE_no;
+    }
+
+    if (password[index].ticks > 0) {
+        password[index].ticks--;
+    }
+
+    switch(resetState) {
+        case RESET_STATE_waitDisable: {
+            qDebug() << "RESET_STATE_waitDisable";
+            if (regime == GB_REGIME_DISABLED) {
+                resetState = RESET_STATE_waitDisableTime;
+                setTicks(index, true);
+            } else if (password[index].ticks == 0)  {
+                resetState = RESET_STATE_disable;
+                setTicks(index, false);
+            }
+        } break;
+        case RESET_STATE_disable: {
+            resetState = RESET_STATE_waitDisable;
+            setTicks(index, true);
+        } break;
+        case RESET_STATE_waitDisableTime: {
+            if (regime != GB_REGIME_DISABLED) {
+                resetState = RESET_STATE_waitDisable;
+                setTicks(index, false);
+            } else if (password[index].ticks == 0) {
+                resetState = RESET_STATE_resetPassword;
+                for(uint8_t i = 0; i < SIZE_OF(password); i++) {
+                    changePwd(i, pwdDefault);
+                }
+            }
+            if (resetState != RESET_STATE_waitDisableTime) {
+                setTicks(index, false);
+            }
+        } break;
+        case RESET_STATE_resetPassword: {
+            resetState = RESET_STATE_waitReset;
+            setTicks(index, true);
+        } break;
+        case RESET_STATE_waitReset: {
+            if (password[index].ticks == 0) {
+                bool changed = false;
+                for(uint8_t i = 0; i < SIZE_OF(password); i++) {
+                    changed |= password[i].changed;
+                }
+                if (!changed) {
+                    resetState = RESET_STATE_enable;
+                }
+                setTicks(index, true);
+            }
+        } break;
+        case RESET_STATE_enable: {
+            resetState = RESET_STATE_waitEnable;
+            setTicks(index, true);
+        } break;
+        case RESET_STATE_waitEnable: {
+            if (regime == GB_REGIME_ENABLED) {
+                reset();
+            } else if (password[index].ticks == 0) {
+                resetState = RESET_STATE_enable;
+                setTicks(index, false);
+            }
+        } break;
+        case RESET_STATE_no: break;
+        case RESET_STATE_MAX: break;
+    }
+}
+
+//
+bool TPwd::isResetToDefault() {
+    return resetState != RESET_STATE_no;
+}
+
+bool TPwd::isWaitDisableDevice() {
+    return resetState == RESET_STATE_disable;
+}
+
+//
+bool TPwd::isWaitResetPassword() {
+    return resetState == RESET_STATE_resetPassword;
+}
+
+//
+bool TPwd::isWaitEnableDevice() {
+    return resetState == RESET_STATE_enable;
+}
+
+//
+bool TPwd::isChangedPwd(int8_t index) const {
+    return password[index].changed;
+}
+
+//
 bool TPwd::isInit(int8_t index) const {
     return password[index].init;
+}
+
+//
+bool TPwd::changePwd(int8_t index, const uint8_t *pwd) {
+    bool changed =false;
+
+    if (checkValue(pwd)) {
+        changed = true;
+        for(uint8_t i = 0; i < PWD_LEN; i++) {
+            if (password[index].pwd[i] != pwd[i]) {
+                changed = true;
+                password[index].pwd[i] = pwd[i];
+            }
+        }
+        clrCounter(index);
+        password[index].changed = changed;
+    }
+
+    return changed;
 }
 
 //
@@ -408,11 +533,39 @@ bool TPwd::checkValue(const uint8_t *pwd) const {
 }
 
 //
+void TPwd::incCounter(int8_t index) {
+    uint8_t counter = password[index].counter;
+
+    if (counter == 0) {
+        setTicks(index, true);
+    }
+
+    if (isInit(index)) {
+        if (counter < PWD_CNT_BLOCK) {
+            counter++;
+        }
+
+        if (counter >= PWD_CNT_BLOCK) {
+            counter = 2*PWD_CNT_BLOCK;
+        }
+    }
+
+    password[index].counter = counter;
+}
+
+//
+void TPwd::clrCounter(int8_t index) {
+    if (isInit(index)) {
+        password[index].counter = 0;
+    }
+}
+
+//
 int8_t TPwd::getUserIndex(user_t user) const {
     int8_t index = -1;
 
     if ((user > USER_operator) && (user < USER_MAX)) {
-        index = user - USER_operator;
+        index = user - 1;
     }
 
     return index;
@@ -420,11 +573,71 @@ int8_t TPwd::getUserIndex(user_t user) const {
 
 //
 void TPwd::setTicks(int8_t index, bool enable) {
-    password[index].ticks = enable ? kTickToDecCounter : 0;
+    uint16_t ticks = 0;
+
+    if (enable) {
+        if (resetState == RESET_STATE_waitDisableTime) {
+            ticks = kTickToRestPwd;
+        } else if (resetState != RESET_STATE_no) {
+            ticks = kTickWait;
+        } else {
+            ticks = kTickToDecCounter;
+        }
+    }
+
+    password[index].ticks = ticks;
 }
 
 //----------------
 //---- TUser -----
 //----------------
 
+//
+TInfoSecurity::state_t TInfoSecurity::setUserPc(user_t user, const uint8_t *p) {
+    state_t state;
 
+    if (user == USER_operator) {
+        state = STATE_OK;
+        UserPc.set(user);
+    } else  if (user >= USER_MAX) {
+        state = STATE_NO_ACCESS;
+    } else if (pwd.isLocked(user)) {
+        state = STATE_NO_ACCESS;
+    } else if ((p != NULL) && pwd.checkPassword(user, p)) {
+        state = STATE_OK;
+        UserPc.set(user);
+    } else {
+        state = STATE_WRONG_PWD;
+    }
+
+    return state;
+}
+
+TInfoSecurity::state_t TInfoSecurity::changeUserPcPwd(
+    user_t user, const uint8_t *cp, const uint8_t *np) {
+
+    state_t state;
+    user_t cuser = UserPc.get();
+
+    if (pwd.isResetToDefault()) {
+        qDebug() << "pwd.isResetToDefault()";
+        state = STATE_NO_ACCESS;
+    } else if (user >= USER_MAX) {
+        qDebug() << "user >= USER_MAX";
+        state = STATE_NO_ACCESS;
+    } else  if (pwd.isLocked(cuser)) {
+        qDebug() << "pwd.isLocked(cuser)";
+        state = STATE_NO_ACCESS;
+    } else if (!UserPc.checkChangeUser(user)) {
+        qDebug() << "UserPc.checkChangeUser(user)";
+        state = STATE_NO_ACCESS;
+    } else if (pwd.checkPassword(cuser, cp)) {
+        qDebug() << "pwd.checkPassword(cuser, cp)";
+        if (pwd.changePwd(user, np)) {
+            state = STATE_WRONG_NEW_PWD;
+        }
+    } else {
+        state =  STATE_WRONG_PWD;
+    }
+
+}

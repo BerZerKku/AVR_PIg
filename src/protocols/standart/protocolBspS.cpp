@@ -24,6 +24,14 @@ bool clProtocolBspS::getData(bool pc) {
 	// сообщение обработано, выставим флаг на чтение
 	setCurrentStatus(PRTS_STATUS_NO);
 
+//    QString pkg;
+//    for(uint8_t i = 0; i < buf[NUM] + 5; i++) {
+//        pkg += QString("%1 ").arg(buf[i], 2, 16, QLatin1Char('0'));
+//    }
+//    if ((buf[COM] & 0x70) == 0x70) {
+//        qDebug() << "rx pkg: " << pkg;
+//    }
+
 	mask = com & GB_COM_MASK_GROUP;
 	// ответ на команду изменения параметра/режима не требуется
     if (mask == GB_COM_MASK_GROUP_WRITE_PARAM) {
