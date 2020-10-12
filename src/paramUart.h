@@ -22,17 +22,6 @@ public:
 		MAX			//
 	};
 
-	/**	Конструктор.
-	 * 	По умолчанию устанваливает связь по USB.
-	 */
-	TInterface() {
-
-		interface_ = USB;
-#ifdef  DEBUG
-		interface_ = RS485;
-#endif
-	}
-
 	/**	Запись.
 	 * 	@param val Интерфейс связи.
 	 * 	@return False в случае ошибочного значения.
@@ -40,6 +29,10 @@ public:
 	bool set(TInterface::INTERFACE val) {
 		bool stat = false;
 		if ((val >= MIN) && (val < MAX)) {
+            if (val != interface_) {
+                changed = true;
+                interface_ = val;
+            }
 			interface_ = val;
 			stat = true;
 		}
@@ -53,9 +46,23 @@ public:
 		return interface_;
 	}
 
+    /** Проверяет изменение параметра.
+     *
+     *  После проверки флаг изменения сбрасывается.
+     *
+     *  @return true если параметр был изменен, иначе false.
+     */
+    bool isChanged() {
+        bool tchanged = changed;
+        changed = false;
+        return tchanged;
+    }
+
 private:
+    // флаг изменения параметра
+    bool changed = false;
 	// Кол-во битов данных
-	INTERFACE interface_;
+    INTERFACE interface_ =  MAX;
 };
 
 /// Протокол связи.
@@ -69,17 +76,6 @@ public:
 		MAX				//
 	};
 
-	/** Контруктор.
-	 * 	По умолчанию устанавливает MODBUS.
-	 */
-	TProtocol() {
-		protocol_ = STANDART;
-
-#ifdef  DEBUG
-		protocol_ = IEC_101;
-#endif
-	}
-
 	/**	Запись.
 	 * 	@param val Протокол связи.
 	 * 	@return False в случае ошибочного значения.
@@ -87,7 +83,10 @@ public:
 	bool set(PROTOCOL val) {
 		bool stat = false;
 		if ((val >= MIN) && (val < MAX)) {
-			protocol_ = val;
+            if (protocol_ != val) {
+                protocol_ = val;
+                changed = true;
+            }
 			stat = true;
 		}
 		return stat;
@@ -100,9 +99,23 @@ public:
 		return protocol_;
 	}
 
+    /** Проверяет изменение параметра.
+     *
+     *  После проверки флаг изменения сбрасывается.
+     *
+     *  @return true если параметр был изменен, иначе false.
+     */
+    bool isChanged() {
+        bool tchanged = changed;
+        changed = false;
+        return tchanged;
+    }
+
 private:
+    // флаг изменения параметра
+    bool changed = false;
 	// Протокол связи
-	PROTOCOL protocol_;
+    PROTOCOL protocol_ = MAX;
 };
 
 /// Скорость передачи.
@@ -120,13 +133,6 @@ public:
 		MAX			//
 	};
 
-	/**	Конструктор.
-	 * 	По умолчанию устанавливает скорость 19200 бит/с.
-	 */
-	TBaudRate() {
-		baudRate_ = _19200;
-	}
-
 	/**	Запись.
 	 * 	@param val Скорость передачи.
 	 * 	@return
@@ -135,7 +141,10 @@ public:
 	bool set(TBaudRate::BAUD_RATE val) {
 		bool stat = false;
 		if ((val >= MIN) && (val < MAX)) {
-			baudRate_ = val;
+            if (baudRate_ != val) {
+                baudRate_ = val;
+                changed = true;
+            }
 			stat = true;
 		}
 		return stat;
@@ -179,9 +188,23 @@ public:
 		return ibaud;
 	}
 
+    /** Проверяет изменение параметра.
+     *
+     *  После проверки флаг изменения сбрасывается.
+     *
+     *  @return true если параметр был изменен, иначе false.
+     */
+    bool isChanged() {
+        bool tchanged = changed;
+        changed = false;
+        return tchanged;
+    }
+
 private:
+    // флаг изменения параметра
+    bool changed = false;
 	// Скорость передачи
-	BAUD_RATE baudRate_;
+    BAUD_RATE baudRate_ = MAX;
 };
 
 
@@ -195,13 +218,6 @@ public:
 		MAX				//
 	};
 
-	/**	Конструктор.
-	 * 	По умолчанию устанваливает 8 бит данных.
-	 */
-	TDataBits() {
-		dataBits_ = _8;
-	}
-
 	/**	Запись
 	 * 	@param val Кол-во битов данных.
 	 * 	@return False в случае ошибочного значения.
@@ -209,7 +225,10 @@ public:
 	bool set(DATA_BITS val) {
 		bool stat = false;
 		if ((val >= MIN) && (val < MAX)) {
-			dataBits_ = val;
+            if (dataBits_ != val) {
+                dataBits_ = val;
+                changed = true;
+            }
 			stat = true;
 		}
 		return stat;
@@ -223,9 +242,23 @@ public:
 		return dataBits_;
 	}
 
+    /** Проверяет изменение параметра.
+     *
+     *  После проверки флаг изменения сбрасывается.
+     *
+     *  @return true если параметр был изменен, иначе false.
+     */
+    bool isChanged() {
+        bool tchanged = changed;
+        changed = false;
+        return tchanged;
+    }
+
 private:
+    // флаг изменения параметра
+    bool changed = false;
 	// Кол-во битов данных
-	DATA_BITS dataBits_;
+    DATA_BITS dataBits_ = MAX;
 };
 
 ///	Протокол контроля четности
@@ -240,13 +273,6 @@ public:
 		MAX
 	};
 
-	/**	Конструктор.
-	 * 	По умолчанию проверка четности отключена.
-	 */
-	TParity() {
-		parity_ = NONE;
-	}
-
 	/**	Запись
 	 * 	@param val Контроль четности
 	 * 	@return False в случае ошибочного значения
@@ -254,7 +280,10 @@ public:
 	bool set(TParity::PARITY val) {
 		bool stat = false;
 		if ((val >= MIN) && (val < MAX)) {
-			parity_ = val;
+            if (parity_ != val) {
+                parity_ = val;
+                changed = true;
+            }
 			stat = true;
 		}
 		return stat;
@@ -268,9 +297,23 @@ public:
 		return parity_;
 	}
 
+    /** Проверяет изменение параметра.
+     *
+     *  После проверки флаг изменения сбрасывается.
+     *
+     *  @return true если параметр был изменен, иначе false.
+     */
+    bool isChanged() {
+        bool tchanged = changed;
+        changed = false;
+        return tchanged;
+    }
+
 private:
+    // флаг изменения параметра
+    bool changed = false;
 	// Контроль четности
-	PARITY parity_;
+    PARITY parity_ = MAX;
 };
 
 ///	Число стоповых битов
@@ -284,13 +327,6 @@ public:
 		MAX				//
 	};
 
-	/**	Конструктор.
-	 * 	По умолчанию 2 стоп бита.
-	 */
-	TStopBits() {
-		stopBits_ = TWO;
-	}
-
 	/**	Запись
 	 * 	@param val Число стоповых битов
 	 * 	@return False в случае ошибочного значения
@@ -298,7 +334,10 @@ public:
 	bool set(STOP_BITS val) {
 		bool stat = false;
 		if ((val >= MIN) && (val < MAX)) {
-			stopBits_ = val;
+            if (stopBits_ != val) {
+                stopBits_ = val;
+                changed = true;
+            }
 			stat = true;
 		}
 		return stat;
@@ -312,29 +351,94 @@ public:
 		return stopBits_;
 	}
 
+    /** Проверяет изменение параметра.
+     *
+     *  После проверки флаг изменения сбрасывается.
+     *
+     *  @return true если параметр был изменен, иначе false.
+     */
+    bool isChanged() {
+        bool tchanged = changed;
+        changed = false;
+        return tchanged;
+    }
+
 private:
+    // флаг изменения параметра
+    bool changed = false;
 	// Число стоповых битов
-	STOP_BITS stopBits_;
+    STOP_BITS stopBits_ = MAX;
+};
+
+/// Сетевой адрес.
+class TNetAddress {
+public:
+    /// Диапазон сетевых адресов.
+    enum NET_ADDRESS {
+        MIN = 1,
+        MAX = 247
+    };
+
+    /**	Устанавливает сетевой адрес.
+     *
+     * 	@param[in] val Сетевой адрес.
+     * 	@return true если сетевой адрес установлен, иначе false.
+     */
+    bool set(uint8_t val) {
+        bool stat = false;
+        if ((val >= MIN) && (val <= MAX)) {
+            if (netAddress_ != val) {
+                netAddress_ = val;
+                changed = true;
+            }
+            stat = true;
+        }
+        return stat;
+    }
+
+    /**	Возвращает сетевой адрес.
+     *
+     * 	@return Сетевой адрес.
+     */
+    uint8_t get() const {
+        return netAddress_;
+    }
+
+    /** Проверяет изменение параметра.
+     *
+     *  После проверки флаг изменения сбрасывается.
+     *
+     *  @return true если параметр был изменен, иначе false.
+     */
+    bool isChanged() {
+        bool tchanged = changed;
+        changed = false;
+        return tchanged;
+    }
+
+private:
+    // флаг изменения параметра
+    bool changed = false;
+    // Сетевой адрес.
+    uint8_t netAddress_ = MIN;
 };
 
 
 /// структура параметров работы с последовательным портом
 class TUartData {
 public:
-	TUartData() {
-		Interface.set(TInterface::USB);
-		Protocol.set(TProtocol::MODBUS);
-		BaudRate.set(TBaudRate::_19200);
-		DataBits.set(TDataBits::_8);
-		Parity.set(TParity::EVEN);
-		StopBits.set(TStopBits::ONE);
-#ifdef IEC101
-		Interface.set(TInterface::RS485);
-		Protocol.set(TProtocol::IEC_101);
-#endif
-	}
+    TUartData() {
+        Interface.set(TInterface::USB);
+        Protocol.set(TProtocol::STANDART);
+        BaudRate.set(TBaudRate::_9600);
+        DataBits.set(TDataBits::_8);
+        Parity.set(TParity::EVEN);
+        StopBits.set(TStopBits::ONE);
+        NetAddress.set(1);
 
-	/// Интерфейс связи
+    };
+
+    /// Интерфейс связи
 	TInterface Interface;
 	/// Протокол связи
 	TProtocol Protocol;
@@ -346,6 +450,8 @@ public:
 	TParity Parity;
 	/// Количество стоп битов
 	TStopBits StopBits;
+    /// Сетевой адрес.
+    TNetAddress NetAddress;
 };
 
 #endif /* PARAMUART_H_ */

@@ -95,7 +95,6 @@ public:
 		compK400_ = GB_COMP_K400_MAX;
 
 		deviceNum_ = GLB_DEV_NUM_MIN_F;
-		netAdr_ = 0;
 		ledOn = false;
 
 		for(uint_fast8_t i = 0; i < GB_IC_MAX; i++) {
@@ -356,25 +355,6 @@ public:
 		return (deviceNum_ * GLB_DEV_NUM_FRACT);
 	}
 
-	// сетевой адрес
-	bool setNetAddress(uint8_t val) {
-		bool stat = false;
-		val = (val / GLB_NET_ADR_DISC_F) * GLB_NET_ADR_DISC_F;
-
-		// записано в таком виде т.к. иначе портится автоформат в Eclipse
-		if (val >= GLB_NET_ADR_MIN_F) {
-			if (val <= GLB_NET_ADR_MAX_F) {
-				netAdr_ = val;
-				stat = true;
-			}
-
-		}
-		return stat;
-	}
-	uint8_t getNetAddress() const {
-		return (netAdr_ * GLB_NET_ADR_FRACT);
-	}
-
 	// проверка флага включения подсветки
 	bool isLedOn() const {
 		return ledOn;
@@ -429,15 +409,11 @@ private:
 	// номер аппарата
 	uint8_t deviceNum_;
 
-	// сетевой адрес
-	uint8_t netAdr_;
-
 	// флаг включения подсветки
 	bool ledOn;
 
 	// состояние дискретных входов (побитно, выкл(0)/вкл(1)).
 	uint8_t dInputState;
-
 };
 
 

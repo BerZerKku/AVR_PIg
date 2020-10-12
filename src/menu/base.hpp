@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "menu.h"
+#include "paramUart.h"
 
 /// Размер буфера для общения с БСП
 #define BUFF_SIZE_BSP 128
@@ -26,6 +27,9 @@ extern void bspPushByteFrom(uint8_t byte, bool error);
 extern void bspTxEnd();
 
 extern void timer50us();
+extern void setupUart(TInterface::INTERFACE intf, uint16_t baudrate,
+                      TDataBits::DATA_BITS dbits, TParity::PARITY parity,
+                      TStopBits::STOP_BITS sbits);
 
 /// Буфер для связи с ПК по последовательному порту
 extern uint8_t uBufUartPc[BUFF_SIZE_PC];

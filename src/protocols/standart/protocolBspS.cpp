@@ -834,6 +834,7 @@ void clProtocolBspS::hdlrComGetVers() {
     }
 }
 
+//
 uint8_t clProtocolBspS::getComNetAdr(posComNetAdr_t pos, const uint8_t *buf,
                                      uint8_t len) {
     uint8_t numbytes = len;
@@ -842,7 +843,7 @@ uint8_t clProtocolBspS::getComNetAdr(posComNetAdr_t pos, const uint8_t *buf,
         case POS_COM_NET_ADR_netAdr: {
             if (len >= 1) {
                 numbytes = 1;
-                sParam_->glb.setNetAddress(*buf);
+                sParam_->Uart.NetAddress.set(*buf);
             }
         } break;
         case POS_COM_NET_ADR_interface: {

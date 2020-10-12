@@ -37,8 +37,8 @@ static TProtocolPcI protPCi(&menu.sParam, uBufUartPc, BUFF_SIZE_PC);
 /// Класс стандартного протокола работающего с БСП
 static clProtocolBspS protBSPs(uBufUartBsp, BUFF_SIZE_BSP, &menu.sParam);
 
-static void setInterface(TUartData *uart);
-static bool isUartPcReinit(TUartData *newparam);
+static void checkInterface();
+static void checkNetAddress();
 static void setProtocol(TProtocol::PROTOCOL protocol, uint16_t baud);
 
 void bspRead() {
@@ -167,26 +167,50 @@ uint8_t bspWrite() {
     return num;
 }
 
-void setInterface(TUartData *uart) {
-    TInterface::INTERFACE val = uart->Interface.get();
+void checkInterface() {
+    bool changed = false;
+    TInterface::INTERFACE intf = menu.sParam.Uart.Interface.get();
 
-    switch (val) {
-        case TInterface::USB:
+    if (menu.sParam.Uart.Interface.isChanged()) {
+        changed = true;
+    }
+
+    if (intf != TInterface::USB) {
+        changed |= menu.sParam.Uart.Protocol.isChanged();
+        changed |= menu.sParam.Uart.BaudRate.isChanged();
+        changed |= menu.sParam.Uart.DataBits.isChanged();
+        changed |= menu.sParam.Uart.Parity.isChanged();
+        changed |= menu.sParam.Uart.StopBits.isChanged();
+    }
+
+    if (changed) {
+        if (intf == TInterface::USB) {
+            setupUart(intf, 19200, TDataBits::_8, TParity::NONE, TStopBits::TWO);
             setProtocol(TProtocol::STANDART, 19200);
-            break;
-        case TInterface::RS485:
-            setProtocol(uart->Protocol.get(), uart->BaudRate.getValue());
-            break;
-        case TInterface::MAX:		// заглушка
-            break;
+        } else {
+            TProtocol::PROTOCOL protocol = menu.sParam.Uart.Protocol.get();
+            uint16_t baudrate = menu.sParam.Uart.BaudRate.getValue();
+            TDataBits::DATA_BITS dbits = menu.sParam.Uart.DataBits.get();
+            TParity::PARITY parity = menu.sParam.Uart.Parity.get();
+            TStopBits::STOP_BITS sbits = menu.sParam.Uart.StopBits.get();
+
+            setupUart(intf, baudrate, dbits, parity, sbits);
+            setProtocol(protocol, baudrate);
+        }
     }
 }
 
-bool isUartPcReinit(TUartData *newparam) {
-
-	return false;
+void checkNetAddress() {
+    if (menu.sParam.Uart.NetAddress.isChanged()) {
+        uint8_t nadr = menu.sParam.Uart.NetAddress.get();
+        if (protPCm.getAddressLan() != nadr) {
+            protPCm.setAddressLan(nadr);
+        }
+        if (protPCi.getAddressLan() != nadr) {
+            protPCi.setAddressLan(nadr);
+        }
+    }
 }
-
 
 void setProtocol(TProtocol::PROTOCOL protocol, uint16_t baud) {
     protPCs.setDisable();
@@ -208,14 +232,12 @@ void setProtocol(TProtocol::PROTOCOL protocol, uint16_t baud) {
             protPCi.setEnable();
             menu.sParam.jrnScada.setReadyToRead();
             break;
-        case TProtocol::MAX:		// заглушка
-            break;
+        case TProtocol::MAX: break;
     }
 }
 
 void mainInit() {
     protBSPs.setEnable(PRTS_STATUS_NO);
-    setInterface(&menu.sParam.Uart);
     vLCDinit();
     vLCDclear();
 }
@@ -224,22 +246,11 @@ void mainCycle(void) {
     static uint8_t cnt_lcd = 0;
     static uint8_t cnt_1s = 0;
 
+    checkInterface();
+    checkNetAddress();
+
     if (++cnt_1s >= 10) {
         cnt_1s = 0;
-
-
-        // TODO Добавить смену интерфейса и протокола на железе
-        if (isUartPcReinit(&menu.sParam.Uart)) {
-            setInterface(&menu.sParam.Uart);
-        }
-
-        // TODO Перенести установку сетевого адреса в другое место
-        uint8_t nadr = menu.sParam.glb.getNetAddress();
-        if (protPCm.getAddressLan() != nadr) {
-            protPCm.setAddressLan(nadr);
-        } else if (protPCi.getAddressLan() != nadr) {
-            protPCi.setAddressLan(nadr);
-        }
     }
 
     if (++cnt_lcd >= (MENU_TIME_CYLCE / TIME_CYLCE)) {
