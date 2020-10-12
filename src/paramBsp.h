@@ -18,8 +18,8 @@
 #include "paramDef.h"
 #include "paramGlb.h"
 #include "paramUart.h"
-#include "paramIS.h"
 #include "txCom.hpp"
+#include "infosecurity.h"
 
 /// Структура параметров БСП
 struct stGBparam {

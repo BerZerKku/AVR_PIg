@@ -1,74 +1,8 @@
-/*
- * paramUart.h
- *
- *  Created on: 11.06.2014
- *      Author: Shcheblykin
- */
-
-#ifndef PARAMIS_H_
-#define PARAMIS_H_
+#ifndef TPWD_H
+#define TPWD_H
 
 #include "glbDefine.h"
-#include "param.h"
-#include "paramIS.h"
-
-// TODO Сделать описание работы паролей и по возможности упростить алгоритм/изменение.
-
-class TUser {
-
-#ifdef NDEBUG
-#define kTimeToReset (900000UL / MENU_TIME_CYLCE)
-#else
-#define kTimeToReset (300000UL / MENU_TIME_CYLCE)
-#endif
-public:
-
-    TUser();
-
-    /**	Запись.
-     *
-     * 	@param val Пользователь.
-     * 	@return False в случае ошибочного значения.
-     */
-    bool set(user_t val);
-
-    /**	Чтение.
-     *
-     * 	@return Пользователь.
-     */
-    user_t get() const {
-        return user_;
-    }
-
-    /** Тик таймера.
-     *
-     *  Проверяется время до сброса текущей роли.
-     */
-    void tick();
-
-    /// Сброс таймера.
-    void resetTimer();
-
-    /// Возвращает текущее значение таймера.
-    uint16_t getTimer() {
-        return time_;
-    }
-
-    /// Сброс роли на оператора.
-    void reset();
-
-    /** Проверяет пользователя на возможность изменения параметра.
-     *
-     *  @param[in] Текущий пользователь.
-     *  @param[in] chuser Необходимый пользователь.
-     *  @return True если можно менять.
-     */
-    bool checkChangeUser(user_t chuser) const;
-
-private:
-    user_t user_;
-    uint16_t time_;
-};
+#include "user.h"
 
 /// Пароль.
 class TPwd {
@@ -78,8 +12,10 @@ class TPwd {
 #else
 #define kTickToDecCounter (30000UL / MENU_TIME_CYLCE)
 #endif
+
 #define kTickWait (1000UL / MENU_TIME_CYLCE)
 #define kTickToRestPwd (5000UL / MENU_TIME_CYLCE)
+
     /// Состояния сброса паролей в значение по умолчанию.
     enum resetState_t {
         RESET_STATE_no = 0,         ///< Нет.
@@ -334,99 +270,4 @@ private:
     void setTicks(int8_t index, bool enable);
 };
 
-class TIsEvent {
-public:
-    // события для журнала ИБ
-    enum IS_EVENT_BIT {
-        PWD_CHANGE = 0, // пароль изменен
-        PWD_IN_ERROR,   // пароль введен неверно
-        PWD_BLOCK,      // блокировка ввода пароля
-        USR_IN,         // вход пользователя
-        USR_OUT,        // выход пользователя
-        USR_OUT_AUTO,   // выход пользователя автоматический
-        //
-        IS_EVENT_BIT_MAX
-    };
-
-    TIsEvent() {
-        COMPILE_TIME_ASSERT((sizeof(event_) * CHAR_BIT) >= IS_EVENT_BIT_MAX);
-        event_ = 0;
-    }
-
-    /** Установка флага события.
-     *
-     *  Флаг добавляется к текущему значению событий.
-     *
-     * @param event Событие.
-     * @return Флаги событий.
-     */
-    uint8_t set(IS_EVENT_BIT event) {
-        if (event < IS_EVENT_BIT_MAX) {
-            event_ |= (1 << event);
-        }
-        return event_;
-    }
-
-    /** Возвращает текущее состояние флагов событий.
-     *
-     *  После считывания флаги очищаются.
-     *
-     *  @return Флаги событий.
-     */
-    uint8_t get() {
-        uint8_t tevent = event_;
-        event_ = 0;
-        return tevent;
-    }
-
-private:
-    uint8_t event_;
-};
-
-/// структура параметров работы с информационной безопасностью
-class TInfoSecurity {
-public:
-    enum state_t {
-        STATE_OK = 0x00,            // ОК
-        STATE_NO_ACCESS = 0x01,     // Нет доступа
-        STATE_WRONG_PWD = 0x02,     // Неверный пароль
-        STATE_WRONG_NEW_PWD = 0x03, // Неверный новый пароль
-        //
-        STATE_MAX
-    };
-
-    TInfoSecurity() {
-        UserPi.set(USER_operator);
-        UserPc.set(USER_operator);
-    }
-
-    TIsEvent EventAdmin;
-    TIsEvent EventEngineer;
-
-    TUser UserPi;
-    TUser UserPc;
-
-    TPwd pwd;
-
-    /** Устанавливает пользователя для работы с ПК.
-     *
-     *  @param[in] user Пользователь.
-     *  @param[in] p Пароль
-     *  @return Результат установки.
-     *  @retval STATE_NO_ACCESS
-     *  @retval STATE_WRONG_PWD
-     */
-    state_t setUserPc(user_t user, const uint8_t *p=NULL);
-
-    /** Изменяет пароль пользвоателя с ПК.
-     *
-     *  @param[in] user Пользователь для которого меняется пароль.
-     *  @param[in] cp Пароль текущего пользователя.
-     *  @param[in] np Новый пароль пользователя.
-     *  @return
-     */
-    state_t changeUserPcPwd(user_t user, const uint8_t *cp, const uint8_t *np);
-
-};
-
-#endif /* PARAMIS_H_ */
+#endif // TPWD_H

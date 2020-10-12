@@ -9,7 +9,7 @@
 #define FLASHPARAMS_H_
 
 #include "glbDefine.h"
-#include "paramIS.h"
+#include "user.h"
 #include "paramUart.h"
 #include "param.h"
 

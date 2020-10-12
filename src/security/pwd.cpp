@@ -1,85 +1,5 @@
-/*
- * paramIs.cpp
- *
- *  Created on: 07.10.2020
- *      Author: Shcheblykin
- */
+#include "pwd.h"
 
-#include "paramIS.h"
-
-//----------------
-//---- TUser -----
-//----------------
-
-TUser::TUser() {
-	reset();
-}
-
-//
-bool TUser::set(user_t val) {
-    if (val < USER_MAX) {
-		if (user_ != val) {
-			user_ = val;
-            resetTimer();
-		}
-	}
-
-	return (user_ == val);
-}
-
-//
-void TUser::tick() {
-    if (time_ > 0) {
-        if ((user_ > USER_operator) && (user_ < USER_MAX)) {
-            time_--;
-        }
-	}
-
-	if (time_ == 0) {
-		reset();
-	}
-}
-
-//
-void TUser::resetTimer() {
-    time_ = kTimeToReset;
-}
-
-//
-void TUser::reset() {
-    user_ = USER_operator;
-    resetTimer();
-}
-
-//
-bool TUser::checkChangeUser(user_t chuser) const {
-    bool check = false;
-
-    switch(chuser) {
-        case USER_operator: {
-            check = true;
-        } break;
-        case USER_engineer: {
-            check = (user_ == USER_engineer) || (user_ == USER_admin);
-        } break;
-        case USER_admin: {
-            check = (user_ == USER_admin);
-        } break;
-        case USER_factory: {
-            check = (user_ == USER_factory);
-        } break;
-        case USER_MAX: break;
-    }
-
-    return check;
-}
-
-
-//----------------
-//---- TPWD ------
-//----------------
-
-//
 TPwd::TPwd() {
     COMPILE_TIME_ASSERT(SIZE_OF(pwd_t::pwd) == PWD_LEN);
     COMPILE_TIME_ASSERT(PWD_CNT_BLOCK == 0x03);
@@ -147,8 +67,8 @@ bool TPwd::setPwd(user_t user, const uint8_t *pwd) {
                 if (password[index].pwd[i] != pwd[i]) {
                     changed = true;
                     if (!isChangedPwd(index)) {
-                        password[index].pwd[i] = pwd[i];                        
-                    }                    
+                        password[index].pwd[i] = pwd[i];
+                    }
                 }
             }
 
@@ -226,12 +146,12 @@ uint16_t TPwd::getLockTime(user_t user) const {
 
     if (isLocked(user)) {
         if (index >= 0) {
-           time = password[index].ticks;
-           uint8_t counter = password[index].counter;
-           if(counter > (PWD_CNT_BLOCK + 1)) {
-               time += (counter - PWD_CNT_BLOCK -1 ) * kTickToDecCounter;
-           }
-           time /= (1000 / MENU_TIME_CYLCE);
+            time = password[index].ticks;
+            uint8_t counter = password[index].counter;
+            if(counter > (PWD_CNT_BLOCK + 1)) {
+                time += (counter - PWD_CNT_BLOCK -1 ) * kTickToDecCounter;
+            }
+            time /= (1000 / MENU_TIME_CYLCE);
         } else {
             time = 9999;
         }
@@ -345,29 +265,29 @@ bool TPwd::isChangedPwd(user_t user) const {
     bool changed = true;
     int8_t index = getUserIndex(user);
 
-     if (index >= 0) {
-         changed = isChangedPwd(index);
+    if (index >= 0) {
+        changed = isChangedPwd(index);
     } else {
         changed = false;
     }
 
-     return changed;
+    return changed;
 }
 
 eGB_PARAM TPwd::getCounterParam(user_t user) const {
     eGB_PARAM param = GB_PARAM_MAX;
 
     switch(user) {
-        case USER_engineer: {
-            param = GB_PARAM_IS_PWD_ENG_CNT;
-        } break;
-        case USER_admin: {
-            param = GB_PARAM_IS_PWD_ADM_CNT;
-        } break;
+    case USER_engineer: {
+        param = GB_PARAM_IS_PWD_ENG_CNT;
+    } break;
+    case USER_admin: {
+        param = GB_PARAM_IS_PWD_ADM_CNT;
+    } break;
 
-        case USER_operator: // DOWN
-        case USER_factory:  // DOWN
-        case USER_MAX: break;
+    case USER_operator: // DOWN
+    case USER_factory:  // DOWN
+    case USER_MAX: break;
     }
 
     return param;
@@ -377,16 +297,16 @@ eGB_PARAM TPwd::getPwdParam(user_t user) const {
     eGB_PARAM param = GB_PARAM_MAX;
 
     switch(user) {
-        case USER_engineer: {
-            param = GB_PARAM_IS_PWD_ENGINEER;
-        } break;
-        case USER_admin: {
-            param = GB_PARAM_IS_PWD_ADMIN;
-        } break;
+    case USER_engineer: {
+        param = GB_PARAM_IS_PWD_ENGINEER;
+    } break;
+    case USER_admin: {
+        param = GB_PARAM_IS_PWD_ADMIN;
+    } break;
 
-        case USER_operator: // DOWN
-        case USER_factory:  // DOWN
-        case USER_MAX: break;
+    case USER_operator: // DOWN
+    case USER_factory:  // DOWN
+    case USER_MAX: break;
     }
 
     return param;
@@ -412,64 +332,64 @@ void TPwd::resetPwdToDefaultCycle(eGB_REGIME regime) {
     }
 
     switch(resetState) {
-        case RESET_STATE_waitDisable: {
-            qDebug() << "RESET_STATE_waitDisable";
-            if (regime == GB_REGIME_DISABLED) {
-                resetState = RESET_STATE_waitDisableTime;
-                setTicks(index, true);
-            } else if (password[index].ticks == 0)  {
-                resetState = RESET_STATE_disable;
-                setTicks(index, false);
-            }
-        } break;
-        case RESET_STATE_disable: {
+    case RESET_STATE_waitDisable: {
+        qDebug() << "RESET_STATE_waitDisable";
+        if (regime == GB_REGIME_DISABLED) {
+            resetState = RESET_STATE_waitDisableTime;
+            setTicks(index, true);
+        } else if (password[index].ticks == 0)  {
+            resetState = RESET_STATE_disable;
+            setTicks(index, false);
+        }
+    } break;
+    case RESET_STATE_disable: {
+        resetState = RESET_STATE_waitDisable;
+        setTicks(index, true);
+    } break;
+    case RESET_STATE_waitDisableTime: {
+        if (regime != GB_REGIME_DISABLED) {
             resetState = RESET_STATE_waitDisable;
-            setTicks(index, true);
-        } break;
-        case RESET_STATE_waitDisableTime: {
-            if (regime != GB_REGIME_DISABLED) {
-                resetState = RESET_STATE_waitDisable;
-                setTicks(index, false);
-            } else if (password[index].ticks == 0) {
-                resetState = RESET_STATE_resetPassword;
-                for(uint8_t i = 0; i < SIZE_OF(password); i++) {
-                    changePwd(i, pwdDefault);
-                }
+            setTicks(index, false);
+        } else if (password[index].ticks == 0) {
+            resetState = RESET_STATE_resetPassword;
+            for(uint8_t i = 0; i < SIZE_OF(password); i++) {
+                changePwd(i, pwdDefault);
             }
-            if (resetState != RESET_STATE_waitDisableTime) {
-                setTicks(index, false);
+        }
+        if (resetState != RESET_STATE_waitDisableTime) {
+            setTicks(index, false);
+        }
+    } break;
+    case RESET_STATE_resetPassword: {
+        resetState = RESET_STATE_waitReset;
+        setTicks(index, true);
+    } break;
+    case RESET_STATE_waitReset: {
+        if (password[index].ticks == 0) {
+            bool changed = false;
+            for(uint8_t i = 0; i < SIZE_OF(password); i++) {
+                changed |= password[i].changed;
             }
-        } break;
-        case RESET_STATE_resetPassword: {
-            resetState = RESET_STATE_waitReset;
-            setTicks(index, true);
-        } break;
-        case RESET_STATE_waitReset: {
-            if (password[index].ticks == 0) {
-                bool changed = false;
-                for(uint8_t i = 0; i < SIZE_OF(password); i++) {
-                    changed |= password[i].changed;
-                }
-                if (!changed) {
-                    resetState = RESET_STATE_enable;
-                }
-                setTicks(index, true);
-            }
-        } break;
-        case RESET_STATE_enable: {
-            resetState = RESET_STATE_waitEnable;
-            setTicks(index, true);
-        } break;
-        case RESET_STATE_waitEnable: {
-            if (regime == GB_REGIME_ENABLED) {
-                reset();
-            } else if (password[index].ticks == 0) {
+            if (!changed) {
                 resetState = RESET_STATE_enable;
-                setTicks(index, false);
             }
-        } break;
-        case RESET_STATE_no: break;
-        case RESET_STATE_MAX: break;
+            setTicks(index, true);
+        }
+    } break;
+    case RESET_STATE_enable: {
+        resetState = RESET_STATE_waitEnable;
+        setTicks(index, true);
+    } break;
+    case RESET_STATE_waitEnable: {
+        if (regime == GB_REGIME_ENABLED) {
+            reset();
+        } else if (password[index].ticks == 0) {
+            resetState = RESET_STATE_enable;
+            setTicks(index, false);
+        }
+    } break;
+    case RESET_STATE_no: break;
+    case RESET_STATE_MAX: break;
     }
 }
 
@@ -586,58 +506,4 @@ void TPwd::setTicks(int8_t index, bool enable) {
     }
 
     password[index].ticks = ticks;
-}
-
-//----------------
-//---- TUser -----
-//----------------
-
-//
-TInfoSecurity::state_t TInfoSecurity::setUserPc(user_t user, const uint8_t *p) {
-    state_t state;
-
-    if (user == USER_operator) {
-        state = STATE_OK;
-        UserPc.set(user);
-    } else  if (user >= USER_MAX) {
-        state = STATE_NO_ACCESS;
-    } else if (pwd.isLocked(user)) {
-        state = STATE_NO_ACCESS;
-    } else if ((p != NULL) && pwd.checkPassword(user, p)) {
-        state = STATE_OK;
-        UserPc.set(user);
-    } else {
-        state = STATE_WRONG_PWD;
-    }
-
-    return state;
-}
-
-TInfoSecurity::state_t TInfoSecurity::changeUserPcPwd(
-    user_t user, const uint8_t *cp, const uint8_t *np) {
-
-    state_t state;
-    user_t cuser = UserPc.get();
-
-    if (pwd.isResetToDefault()) {
-        qDebug() << "pwd.isResetToDefault()";
-        state = STATE_NO_ACCESS;
-    } else if (user >= USER_MAX) {
-        qDebug() << "user >= USER_MAX";
-        state = STATE_NO_ACCESS;
-    } else  if (pwd.isLocked(cuser)) {
-        qDebug() << "pwd.isLocked(cuser)";
-        state = STATE_NO_ACCESS;
-    } else if (!UserPc.checkChangeUser(user)) {
-        qDebug() << "UserPc.checkChangeUser(user)";
-        state = STATE_NO_ACCESS;
-    } else if (pwd.checkPassword(cuser, cp)) {
-        qDebug() << "pwd.checkPassword(cuser, cp)";
-        if (pwd.changePwd(user, np)) {
-            state = STATE_WRONG_NEW_PWD;
-        }
-    } else {
-        state =  STATE_WRONG_PWD;
-    }
-
 }

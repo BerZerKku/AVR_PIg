@@ -13,9 +13,6 @@
 #include "paramBsp.h"
 #include "debug.hpp"
 
-//#define MAX_CYCLE_TO_REST_SOST 10
-
-
 // состояния протокола
 enum ePRTS_STATUS {
 	PRTS_STATUS_OFF = 0,	///< выключен

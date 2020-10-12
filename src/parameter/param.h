@@ -4,18 +4,7 @@
 #include <stdint.h>
 #include "avr.h"
 #include "glbDefine.h"
-
-
-//typedef struct Param Param_t PROGMEM;
-
-/// Пользователь (роль).
-typedef enum {
-    USER_operator = 0,  ///< Оператор. Должен быть в начале!
-    USER_engineer,      ///< Инженер.
-    USER_admin,         ///< Администратор.
-    USER_MAX,           ///< Максимальное количество пользователей.
-    USER_factory        ///< Производитель. Должен быть больше USER_MAX!
-} user_t;
+#include "user.h"
 
 struct Param {
 	/// Размернось параметра (связана с fcDimension)

@@ -6,7 +6,6 @@
  *      Author: Shcheblykin
  */
 #include "protocolPcS.h"
-#include "paramIS.h"
 
 clProtocolPcS::clProtocolPcS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
 clProtocolS(buf, size, sParam) {
