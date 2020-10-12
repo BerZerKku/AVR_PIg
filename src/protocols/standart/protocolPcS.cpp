@@ -13,24 +13,32 @@ clProtocolS(buf, size, sParam) {
 }
 
 bool clProtocolPcS::getData() {
-
-	bool stat = false;
+    bool send = false;
+    TInfoSecurity::state_t state;
 	eGB_COM com = (eGB_COM) buf[2];
 
-    if (com == GB_COM_GET_USER)	{
-        stat = hdlrComGetUser(com);
-    } else if (com == GB_COM_SET_USER) {
-        stat = hdlrComSetUser(com);
-	}
+    state = sParam_->security.isComAccess(com);
+    if (state == TInfoSecurity::STATE_OK) {
+        if (com == GB_COM_GET_USER)	{
+            send = hdlrComGetUser(com);
+        } else if (com == GB_COM_SET_USER) {
+            send = hdlrComSetUser(com);
+        }
+    } else {
+        // FIXME Разобраться с командой ошибки!
+        addCom(0xFF, state);
+        send = true;
+    }
 
-	return stat;
+    return send;
 }
 
 //
 bool clProtocolPcS::modifyVersionCom() {
 	bool state = false;
+    eGB_COM com = static_cast<eGB_COM> (getCurrentCom());
 
-	if (getCurrentCom() == GB_COM_GET_VERS) {
+    if (com == GB_COM_GET_VERS) {
 		uint8_t crc = buf[maxLen_ - 1];
 		uint8_t len = buf[3];
 		if ( len < 19) {
@@ -47,8 +55,8 @@ bool clProtocolPcS::modifyVersionCom() {
 		uint16_t vers = sParam_->glb.getVersProgIC(GB_IC_PI_MCU);
 		crc += (buf[B18] = (vers >> 8));
 		crc += (buf[B19] = (vers & 0xFF));
-		buf[maxLen_ - 1] = crc;
-	}
+        buf[maxLen_ - 1] = crc;
+    }
 
     return state;
 }

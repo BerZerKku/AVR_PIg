@@ -36,19 +36,32 @@ public:
      *  @param[in] user Пользователь.
      *  @param[in] p Пароль
      *  @return Результат установки.
+     *  @retval STATE_OK
      *  @retval STATE_NO_ACCESS
      *  @retval STATE_WRONG_PWD
      */
     state_t setUserPc(user_t user, const uint8_t *p=NULL);
 
-    /** Изменяет пароль пользвоателя с ПК.
+    /** Изменяет пароль пользователя с ПК.
      *
      *  @param[in] user Пользователь для которого меняется пароль.
      *  @param[in] cp Пароль текущего пользователя.
      *  @param[in] np Новый пароль пользователя.
-     *  @return
+     *  @return Результат изменения пароля.
      */
     state_t changeUserPcPwd(user_t user, const uint8_t *cp, const uint8_t *np);
+
+    /** Проверяет разрешения передачи команды в БСП.
+     *
+     *  Дополнительно проверяется флаг активности команды и при необходимости
+     *  происходит сброс таймера до блокировки текущего пользователя.
+     *
+     *  @param[in] com Команда.
+     *  @return Результат проверки.
+     *  @retval STATE_OK
+     *  @retval STATE_NO_ACCESS
+     */
+    state_t isComAccess(eGB_COM com);
 
 };
 

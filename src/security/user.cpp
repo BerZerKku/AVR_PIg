@@ -45,19 +45,17 @@ bool TUser::checkChangeUser(user_t chuser) const {
     bool check = false;
 
     switch(chuser) {
-    case USER_operator: {
-        check = true;
-    } break;
-    case USER_engineer: {
-        check = (user_ == USER_engineer) || (user_ == USER_admin);
-    } break;
-    case USER_admin: {
-        check = (user_ == USER_admin);
-    } break;
-    case USER_factory: {
-        check = (user_ == USER_factory);
-    } break;
-    case USER_MAX: break;
+        case USER_operator: {
+            check = true;
+        } break;
+        case USER_engineer: {
+            check = (user_ == USER_engineer) || (user_ == USER_admin);
+        } break;
+        case USER_admin: {
+            check = (user_ == USER_admin);
+        } break;
+        case USER_factory: break;
+        case USER_MAX: break;
     }
 
     return check;

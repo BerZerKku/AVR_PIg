@@ -2002,7 +2002,7 @@ static const Param fPwdEngineerCnt PROGMEM = {
         Param::DEPEND_MAX_NO,	// заивимость максимума
         Param::DEPEND_SAME_NO,	// зависимость повторений
         Param::CHANGE_REG_NO,   // режим для изменения
-        USER_factory            // пользователь для изменения
+        USER_MAX                // пользователь для изменения
 };
 
 // Счетчик ввода неверного пароля администра
@@ -2023,7 +2023,7 @@ static const Param fPwdAdminCnt PROGMEM = {
         Param::DEPEND_MAX_NO,	// заивимость максимума
         Param::DEPEND_SAME_NO,	// зависимость повторений
         Param::CHANGE_REG_NO,   // режим для изменения
-        USER_factory            // пользователь для изменения
+        USER_MAX            // пользователь для изменения
 };
 
 // Сброс паролей до заводских настроек.

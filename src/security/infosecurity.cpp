@@ -1,5 +1,24 @@
 #include "infosecurity.h"
 
+// Поля команды
+typedef struct __attribute__ ((__packed__)) {
+    eGB_COM com;    ///< Команда.
+    user_t user;    ///< Необходимый пользователь для прохождения команды.
+    bool activity;  ///< Флаг активности команды.
+} field_t;
+
+static const field_t commands[] PROGMEM = {
+    {GB_COM_GET_USER,           USER_operator,  false},
+    {GB_COM_GET_SOST,           USER_operator,  false},
+    {GB_COM_GET_FAULT,          USER_operator,  false},
+    {GB_COM_GET_TIME,           USER_operator,  false},
+    {GB_COM_SET_USER,           USER_operator,  true},
+    {GB_COM_SET_REG_DISABLED,   USER_engineer,  true},
+    {GB_COM_SET_REG_ENABLED,    USER_engineer,  true},
+    {GB_COM_SET_TIME,           USER_engineer,  true},
+    {GB_COM_GET_VERS,           USER_operator,  true}
+};
+
 TInfoSecurity::state_t TInfoSecurity::setUserPc(user_t user, const uint8_t *p) {
     state_t state;
 
@@ -27,23 +46,42 @@ TInfoSecurity::state_t TInfoSecurity::changeUserPcPwd(
     user_t cuser = UserPc.get();
 
     if (pwd.isResetToDefault()) {
-        qDebug() << "pwd.isResetToDefault()";
         state = STATE_NO_ACCESS;
     } else if (user >= USER_MAX) {
-        qDebug() << "user >= USER_MAX";
         state = STATE_NO_ACCESS;
     } else  if (pwd.isLocked(cuser)) {
-        qDebug() << "pwd.isLocked(cuser)";
         state = STATE_NO_ACCESS;
     } else if (!UserPc.checkChangeUser(user)) {
-        qDebug() << "UserPc.checkChangeUser(user)";
         state = STATE_NO_ACCESS;
     } else if (pwd.checkPassword(cuser, cp)) {
-        qDebug() << "pwd.checkPassword(cuser, cp)";
         if (pwd.changePwd(user, np)) {
+            state = STATE_OK;
+        } else {
             state = STATE_WRONG_NEW_PWD;
         }
     } else {
         state =  STATE_WRONG_PWD;
     }
+
+    return state;
+}
+
+//
+TInfoSecurity::state_t TInfoSecurity::isComAccess(eGB_COM com) {
+    state_t state = STATE_NO_ACCESS;
+
+    for(uint8_t i = 0; i < SIZE_OF(commands); i++) {
+        if (pgm_read_byte(&commands[i].com) == com) {
+            user_t user = static_cast<user_t> (pgm_read_byte(&commands[i].user));
+            if (UserPc.checkChangeUser(user)) {
+                state = STATE_OK;
+                if (pgm_read_byte(&commands[i].activity)) {
+                    UserPc.resetTimer();
+                }
+            }
+            break;
+        }
+    }
+
+    return state;
 }
