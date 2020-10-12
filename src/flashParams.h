@@ -211,9 +211,18 @@ static char fcRingRenumber[][STRING_LENGHT] PROGMEM = {
 
 /// Пользователь.
 static char fcUser[][STRING_LENGHT] PROGMEM = {
-    "Оператор",
-    "Инженер",
-    "Админ."
+        //234567890
+        "Оператор",
+        "Инженер",
+        "Админ."
+};
+
+// Синхронизация времени
+static char fcTymeSynch[][STRING_LENGHT] PROGMEM = {
+        //234567890
+        "выкл.",
+        "канал св.",
+        "АСУ ТП"
 };
 
 #endif /* FLASHPARAMS_H_ */
