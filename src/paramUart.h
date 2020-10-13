@@ -22,6 +22,11 @@ public:
 		MAX			//
 	};
 
+	TInterface () {
+		interface_ =  MAX;
+		changed = false;
+	}
+
 	/**	Запись.
 	 * 	@param val Интерфейс связи.
 	 * 	@return False в случае ошибочного значения.
@@ -60,9 +65,9 @@ public:
 
 private:
     // флаг изменения параметра
-    bool changed = false;
+    bool changed;
 	// Кол-во битов данных
-    INTERFACE interface_ =  MAX;
+    INTERFACE interface_;
 };
 
 /// Протокол связи.
@@ -75,6 +80,12 @@ public:
 		IEC_101,		// МЭК-101
 		MAX				//
 	};
+
+	//
+	TProtocol() {
+		protocol_ = MAX;
+		changed = false;
+	}
 
 	/**	Запись.
 	 * 	@param val Протокол связи.
@@ -113,9 +124,9 @@ public:
 
 private:
     // флаг изменения параметра
-    bool changed = false;
+    bool changed;
 	// Протокол связи
-    PROTOCOL protocol_ = MAX;
+    PROTOCOL protocol_;
 };
 
 /// Скорость передачи.
@@ -132,6 +143,11 @@ public:
 		_19200,		//
 		MAX			//
 	};
+
+	TBaudRate() {
+		baudRate_ = MAX;
+		changed = false;
+	}
 
 	/**	Запись.
 	 * 	@param val Скорость передачи.
@@ -202,9 +218,9 @@ public:
 
 private:
     // флаг изменения параметра
-    bool changed = false;
+    bool changed;
 	// Скорость передачи
-    BAUD_RATE baudRate_ = MAX;
+    BAUD_RATE baudRate_;
 };
 
 
@@ -217,6 +233,11 @@ public:
 		_8 = 0,			// 8 бит данных
 		MAX				//
 	};
+
+	TDataBits() {
+		dataBits_ = MAX;
+		changed = false;
+	}
 
 	/**	Запись
 	 * 	@param val Кол-во битов данных.
@@ -256,9 +277,9 @@ public:
 
 private:
     // флаг изменения параметра
-    bool changed = false;
+    bool changed;
 	// Кол-во битов данных
-    DATA_BITS dataBits_ = MAX;
+    DATA_BITS dataBits_;
 };
 
 ///	Протокол контроля четности
@@ -272,6 +293,11 @@ public:
 		ODD,			// число установленных битов всегда нечетно
 		MAX
 	};
+
+	TParity() {
+		parity_ = MAX;
+		changed = false;
+	}
 
 	/**	Запись
 	 * 	@param val Контроль четности
@@ -311,9 +337,9 @@ public:
 
 private:
     // флаг изменения параметра
-    bool changed = false;
+    bool changed;
 	// Контроль четности
-    PARITY parity_ = MAX;
+    PARITY parity_;
 };
 
 ///	Число стоповых битов
@@ -326,6 +352,11 @@ public:
 		TWO,			// два стоп-бита
 		MAX				//
 	};
+
+	TStopBits() {
+		stopBits_ = MAX;
+		changed = false;
+	}
 
 	/**	Запись
 	 * 	@param val Число стоповых битов
@@ -365,9 +396,9 @@ public:
 
 private:
     // флаг изменения параметра
-    bool changed = false;
+    bool changed;
 	// Число стоповых битов
-    STOP_BITS stopBits_ = MAX;
+    STOP_BITS stopBits_;
 };
 
 /// Сетевой адрес.
@@ -378,6 +409,11 @@ public:
         MIN = 1,
         MAX = 247
     };
+
+    TNetAddress() {
+    	netAddress_ = MIN;
+    	changed = false;
+    }
 
     /**	Устанавливает сетевой адрес.
      *
@@ -418,9 +454,9 @@ public:
 
 private:
     // флаг изменения параметра
-    bool changed = false;
+    bool changed;
     // Сетевой адрес.
-    uint8_t netAddress_ = MIN;
+    uint8_t netAddress_;
 };
 
 

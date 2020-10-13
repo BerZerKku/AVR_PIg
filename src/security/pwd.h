@@ -8,7 +8,7 @@
 class TPwd {
     /// время сборса ошибки ввода пароля
 #ifdef NDEBUG
-#define kkTickWaiter (600000UL / MENU_TIME_CYLCE)
+#define kTickToDecCounter (600000UL / MENU_TIME_CYLCE)
 #else
 #define kTickToDecCounter (30000UL / MENU_TIME_CYLCE)
 #endif

@@ -5141,7 +5141,6 @@ void clMenu::setupParam() {
                     EnterParam.setDisable();
                 } else {
                     if (getParamType(param) == Param::PARAM_PWD) {
-                        qDebug() << "Enter password" << getParamType(param);
                         uint8_t *pwd = EnterParam.getValuePwd();
                         sParam.security.pwd.changePwd(param, pwd);
                     } else {

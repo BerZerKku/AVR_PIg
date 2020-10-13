@@ -37,6 +37,19 @@ TUart uartPC(TUart::PORT_UART1, uBufUartPc, BUFF_SIZE_PC);
 /// Класc последовательного порта работающего с БСП
 TUart uartBSP(TUart::PORT_UART0, uBufUartBsp, BUFF_SIZE_BSP);
 
+void setupUart(TInterface::INTERFACE intf, uint16_t baudrate,
+                      TDataBits::DATA_BITS dbits, TParity::PARITY parity,
+                      TStopBits::STOP_BITS sbits) {
+
+	uartPC.open(baudrate, dbits, parity, sbits);
+
+	if (intf != TInterface::USB) {
+		PORTD |= (1 << PD4);
+	} else {
+		PORTD &= ~(1 << PD4);
+	}
+}
+
 /**	main.c
  *
  * 	@param Нет

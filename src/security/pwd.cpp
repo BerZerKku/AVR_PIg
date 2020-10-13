@@ -1,7 +1,7 @@
 #include "pwd.h"
 
 TPwd::TPwd() {
-    COMPILE_TIME_ASSERT(SIZE_OF(pwd_t::pwd) == PWD_LEN);
+//    COMPILE_TIME_ASSERT(SIZE_OF(password[0].pwd) == PWD_LEN);
     COMPILE_TIME_ASSERT(PWD_CNT_BLOCK == 0x03);
     COMPILE_TIME_ASSERT(SIZE_OF(PWD_DEFAULT) == (PWD_LEN + 1));
     COMPILE_TIME_ASSERT(SIZE_OF(password) == (USER_MAX - USER_operator - 1));
@@ -333,7 +333,6 @@ void TPwd::resetPwdToDefaultCycle(eGB_REGIME regime) {
 
     switch(resetState) {
     case RESET_STATE_waitDisable: {
-        qDebug() << "RESET_STATE_waitDisable";
         if (regime == GB_REGIME_DISABLED) {
             resetState = RESET_STATE_waitDisableTime;
             setTicks(index, true);
