@@ -2,9 +2,8 @@
 #define TINFOSECURITY_H
 
 #include "glbDefine.h"
-#include "user.h"
 #include "pwd.h"
-#include "isevent.h"
+#include "securityevent.h"
 
 /// структура параметров работы с информационной безопасностью
 class TInfoSecurity {
@@ -18,18 +17,12 @@ public:
         STATE_MAX
     };
 
-    TInfoSecurity() {
-        UserPi.set(USER_operator);
-        UserPc.set(USER_operator);
-    }
-
-    TIsEvent EventAdmin;
-    TIsEvent EventEngineer;
-
-    TUser UserPi;
-    TUser UserPc;
+    /// Конструктор.
+    TInfoSecurity();
 
     TPwd pwd;
+    TUser usr;
+    TSecurityEvent sevent;
 
     /** Устанавливает пользователя для работы с ПК.
      *
@@ -62,7 +55,6 @@ public:
      *  @retval STATE_NO_ACCESS
      */
     state_t isComAccess(eGB_COM com);
-
 };
 
 #endif // TINFOSECURITY_H

@@ -2029,7 +2029,7 @@ static const Param fPwdAdminCnt PROGMEM = {
 // Сброс паролей до заводских настроек.
 static const Param fPwdClear PROGMEM = {
         "Сброс паролей",        // название параметра
-        GB_COM_GET_NET_ADR,     // команда стандартного протокола
+        GB_COM_NO,              // команда стандартного протокола
         Param::PARAM_LIST,      // тип параметра
         Param::RANGE_LIST,      // диапазон изменения
         Param::DIM_NO,			// размерность

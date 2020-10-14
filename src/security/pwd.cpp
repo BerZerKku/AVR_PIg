@@ -120,7 +120,7 @@ void TPwd::setCounter(user_t user, uint8_t value) {
             password[index].counter = counter;
             password[index].init = true;
 
-            setTicks(user, counter > 0);
+            setTicks(index, counter > 0);
         }
         password[index].tcounter = value;
     }
@@ -140,6 +140,18 @@ uint8_t TPwd::getCounter(user_t user) const {
 }
 
 //
+uint8_t TPwd::isCounterChanged(user_t user) const {
+    bool ischange = false;
+    int8_t index = getUserIndex(user);
+
+    if (index >= 0) {
+        ischange = (password[index].counter != password[index].tcounter);
+    }
+
+    return ischange;
+}
+
+//
 uint16_t TPwd::getLockTime(user_t user) const {
     uint16_t time = 0;
     int8_t index = getUserIndex(user);
@@ -151,7 +163,6 @@ uint16_t TPwd::getLockTime(user_t user) const {
             if(counter > (PWD_CNT_BLOCK + 1)) {
                 time += (counter - PWD_CNT_BLOCK -1 ) * kTickToDecCounter;
             }
-            time /= (1000 / MENU_TIME_CYLCE);
         } else {
             time = 9999;
         }
@@ -188,40 +199,10 @@ void TPwd::reset(user_t user) {
 }
 
 //
-bool TPwd::tick(user_t user) {
-    bool change = false;
-    int8_t index = getUserIndex(user);
-
-    if (index >= 0) {
-        if (isInit(index)) {
-            uint8_t counter = password[index].counter;
-
-            if (counter == PWD_CNT_BLOCK) {
-                counter = 2*PWD_CNT_BLOCK;
-            }
-
-            if (counter > 0) {
-                if (password[index].ticks > 0) {
-                    password[index].ticks--;
-                }
-
-                if (password[index].ticks == 0) {
-                    counter--;
-
-                    if (counter == PWD_CNT_BLOCK) {
-                        counter = 0;
-                    }
-
-                    setTicks(index, counter > 0);
-                }
-            }
-
-            password[index].counter = counter;
-            change = (counter != password[index].tcounter);
-        }
+void TPwd::tick() {
+    for(uint8_t index = 0; index < SIZE_OF(password); index++) {
+        tick(index);
     }
-
-    return change;
 }
 
 //
@@ -371,6 +352,8 @@ void TPwd::resetPwdToDefaultCycle(eGB_REGIME regime) {
             }
             if (!changed) {
                 resetState = RESET_STATE_enable;
+            } else {
+                resetState = RESET_STATE_resetPassword;
             }
             setTicks(index, true);
         }
@@ -413,17 +396,23 @@ bool TPwd::isWaitEnableDevice() {
 
 //
 bool TPwd::isChangedPwd(int8_t index) const {
+    Q_ASSERT(index < SIZE_OF(password));
+
     return password[index].changed;
 }
 
 //
 bool TPwd::isInit(int8_t index) const {
+    Q_ASSERT(index < SIZE_OF(password));
+
     return password[index].init;
 }
 
 //
 bool TPwd::changePwd(int8_t index, const uint8_t *pwd) {
     bool changed =false;
+
+    Q_ASSERT(index < SIZE_OF(password));
 
     if (checkValue(pwd)) {
         changed = true;
@@ -455,6 +444,8 @@ bool TPwd::checkValue(const uint8_t *pwd) const {
 void TPwd::incCounter(int8_t index) {
     uint8_t counter = password[index].counter;
 
+    Q_ASSERT(index < SIZE_OF(password));
+
     if (counter == 0) {
         setTicks(index, true);
     }
@@ -474,6 +465,8 @@ void TPwd::incCounter(int8_t index) {
 
 //
 void TPwd::clrCounter(int8_t index) {
+    Q_ASSERT(index < SIZE_OF(password));
+
     if (isInit(index)) {
         password[index].counter = 0;
     }
@@ -494,6 +487,8 @@ int8_t TPwd::getUserIndex(user_t user) const {
 void TPwd::setTicks(int8_t index, bool enable) {
     uint16_t ticks = 0;
 
+    Q_ASSERT(index < SIZE_OF(password));
+
     if (enable) {
         if (resetState == RESET_STATE_waitDisableTime) {
             ticks = kTickToRestPwd;
@@ -505,4 +500,35 @@ void TPwd::setTicks(int8_t index, bool enable) {
     }
 
     password[index].ticks = ticks;
+}
+
+//
+void TPwd::tick(int8_t index) {
+    Q_ASSERT(index < SIZE_OF(password));
+
+    if (isInit(index)) {
+        uint8_t counter = password[index].counter;
+
+        if (counter == PWD_CNT_BLOCK) {
+            counter = 2*PWD_CNT_BLOCK;
+        }
+
+        if (counter > 0) {
+            if (password[index].ticks > 0) {
+                password[index].ticks--;
+            }
+
+            if (password[index].ticks == 0) {
+                counter--;
+
+                if (counter == PWD_CNT_BLOCK) {
+                    counter = 0;
+                }
+
+                setTicks(index, counter > 0);
+            }
+        }
+
+        password[index].counter = counter;
+    }
 }

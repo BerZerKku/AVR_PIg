@@ -3,18 +3,19 @@
 
 #include "glbDefine.h"
 #include "user.h"
+#include "securityevent.h"
 
 /// Пароль.
 class TPwd {
-    /// время сборса ошибки ввода пароля
+    /// время сборса ошибки ввода пароля, в секундах
 #ifdef NDEBUG
-#define kTickToDecCounter (600000UL / MENU_TIME_CYLCE)
+#define kTickToDecCounter 600
 #else
-#define kTickToDecCounter (30000UL / MENU_TIME_CYLCE)
+#define kTickToDecCounter 60
 #endif
 
-#define kTickWait (1000UL / MENU_TIME_CYLCE)
-#define kTickToRestPwd (5000UL / MENU_TIME_CYLCE)
+#define kTickWait 1
+#define kTickToRestPwd 5
 
     /// Состояния сброса паролей в значение по умолчанию.
     enum resetState_t {
@@ -105,10 +106,17 @@ public:
      *  Для TUser::OPERATOR всегда возвращается 0.
      *  Для TUser::MAX или ошибочном значении возвращается 0xFF.
      *
-     *  @param[in] user Пользователь
+     *  @param[in] user Пользователь.
      *  @return Значение  счетчика.
      */
     uint8_t getCounter(user_t user) const;
+
+    /** Сравнивает текущий счетчик ввода неверного пароля с полученным из БСП.
+     *
+     *  @param[in] user Пользователь.
+     *  @return true если значения отличаются, иначе false.
+     */
+    uint8_t isCounterChanged(user_t user) const;
 
     /** Возвращает время до окончания блокировки в секундах.
      *
@@ -131,15 +139,8 @@ public:
      */
     void reset(user_t user);
 
-    /** Тик таймера.
-     *
-     *  Считает время до сброса ошибки счетчика.
-     *  Проверяет изменение счетчика.
-     *
-     *  @param[in] user Пользователь
-     *  @return true если значение счетчика было изменено.
-     */
-    bool tick(user_t user);
+    /// Тик таймера.
+    void tick();
 
     /** Проверяет состояние флага инициализации.
      *
@@ -208,6 +209,7 @@ private:
     /// Состояние сброса паролей к значению по умолчанию.
     resetState_t resetState;
 
+    /// Список структур паролей.
     pwd_t password[USER_MAX-USER_operator-1];
 
     /** Проверяет флаг изменения пароля.
@@ -268,6 +270,14 @@ private:
      *  @param[in] enable true установить счетчик тиков, иначе обнулить.
      */
     void setTicks(int8_t index, bool enable);
+
+    /** Тик таймера.
+     *
+     *  Считает время до сброса ошибки счетчика.
+     *
+     *  @param index Индекс пользователя в массиве.
+     */
+    void tick(int8_t index);
 };
 
 #endif // TPWD_H

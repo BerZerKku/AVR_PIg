@@ -19,7 +19,7 @@
 #define TIME_TO_INIT_LCD (200 / MENU_TIME_CYLCE)
 
 /// врем€ до переинициализации диспле€, мс
-#define TIME_TO_REINIT_LCD (10000 / MENU_TIME_CYLCE)
+#define TIME_TO_REINIT_LCD (10000UL / MENU_TIME_CYLCE)
 
 /// максимальное кол-во отображаемых на экране параметров
 #define MAX_NUM_MEAS_PARAM 6
@@ -28,13 +28,16 @@
 #define MAX_NUM_MEAS_PARAM_LVL 10
 
 /// врем€ вывода измер€емого параметра на экран, мс
-#define TIME_MEAS_PARAM (3000 / MENU_TIME_CYLCE)
+#define TIME_MEAS_PARAM (3000UL / MENU_TIME_CYLCE)
 
 /// врем€ вывода текста на экран, мс (например авари€/код аварии)
-#define TIME_TEXT (1000 / MENU_TIME_CYLCE)
+#define TIME_TEXT (1000UL / MENU_TIME_CYLCE)
 
 /// врем€ до выхода из “ест 1 / “ест 2 и т.д. если режим != данному тесту, мс
-#define TIME_TEST_EXIT (1000 / MENU_TIME_CYLCE)
+#define TIME_TEST_EXIT (1000UL / MENU_TIME_CYLCE)
+
+/// период проверки необходимости сохранени€ параметров защиты, мс
+#define TIME_SECURITY (1000UL / MENU_TIME_CYLCE)
 
 /// »змер€емые параметры
 enum eMENU_MEAS_PARAM {

@@ -6,6 +6,7 @@
  *      Author: Shcheblykin
  */
 #include "protocolPcS.h"
+#include "securityevent.h"
 
 clProtocolPcS::clProtocolPcS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
 clProtocolS(buf, size, sParam) {
@@ -66,7 +67,7 @@ bool clProtocolPcS::hdlrComGetUser(eGB_COM com) {
     uint8_t len = 0;
 
     if (buf[NUM] == 0) {
-        len = addCom(com, sParam_->security.UserPc.get());
+        len = addCom(com, sParam_->security.usr.get(USER_SOURCE_pc));
     } else if (buf[NUM] == 1) {
         uint8_t array[4];
         user_t user = static_cast<user_t> (buf[B1]);
@@ -83,6 +84,7 @@ bool clProtocolPcS::hdlrComGetUser(eGB_COM com) {
 bool clProtocolPcS::hdlrComSetUser(eGB_COM com) {
     uint8_t len = 0;
     user_t user = static_cast<user_t> (buf[B1]);
+    user_t cuser = sParam_->security.usr.get(USER_SOURCE_pc);
     TInfoSecurity::state_t state = TInfoSecurity::STATE_MAX;
 
     switch(buf[NUM]) {

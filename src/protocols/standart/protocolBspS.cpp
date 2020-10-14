@@ -195,6 +195,7 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
                         num = addCom(com);
                     } break;
 
+                    case GB_SEND_IS_ENTRY:
                     case GB_SEND_NO:
                     case GB_SEND_MAX: {
                     } break;
@@ -212,11 +213,18 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 			num = addCom(com, sParam_->jrnScada.getState());
 		} else {
 			num = addCom(com);
-		}
-	} else if (mask == GB_COM_MASK_GROUP_READ_JOURNAL) {
-		// команды считывания журналов, в том числе и кол-ва записей
-		num = sendReadJrnCommand(com);
-	}
+        }
+    } else if (mask == GB_COM_MASK_GROUP_READ_JOURNAL) {
+        // команды считывания журналов, в том числе и кол-ва записей
+        if (sParam_->txComBuf.getFastComType() == GB_SEND_IS_ENTRY) {
+            // FIXME Избаиться от числа 3, сделать define или enum.
+            num = 3;
+            uint8_t *array = sParam_->txComBuf.getBuferAddress();            
+            num = addCom(com, num, array);
+        } else {
+            num = sendReadJrnCommand(com);
+        }
+    }
 
 	// установка статуса, в зависимости от необходимости передачи сообщения
 	if (num != 0) {

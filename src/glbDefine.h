@@ -30,6 +30,8 @@
 #define PWD_RESET   "00000001"
 /// количество неверных вводов пароля для блокировки
 #define PWD_CNT_BLOCK 3
+/// Размер очереди сообщений для журнала безопасности
+#define IS_MSG_FIFO_SIZE 10
 
 /// версия текущей прошивки
 #define VERS 0x0300
@@ -181,6 +183,7 @@ enum eGB_SEND_TYPE {
     GB_SEND_COR_I,		///< Передается коррекция тока.
     GB_SEND_DOP_PWD,    ///< Передается пароль.
     GB_SEND_TIME,       ///< Передать время.
+    GB_SEND_IS_ENTRY,   ///< Передать запись в журнал безопасности.
     //
     GB_SEND_MAX
 };
@@ -341,6 +344,10 @@ enum eGB_COM {
 	GB_COM_PRD_JRN_CLR 			= 0xEA,	// ! стирание журнала ПРД, только с ПК
 	GB_COM_GET_JRN_CNT 			= 0xF1,	// +
 	GB_COM_GET_JRN_ENTRY 		= 0xF2,	// +
+    GB_COM_GET_JRN_IS_CNT       = 0xF3,
+    GB_COM_GET_JRN_IS_ENTRY     = 0xF4,
+    GB_COM_JRN_IS_CLR           = 0xF5,
+    GB_COM_JRN_IS_SET_ENTRY     = 0xF6,
 	GB_COM_JRN_CLR 				= 0xFA	// ! стирание журнала событий, только с ПК
 };
 
@@ -705,6 +712,25 @@ enum eGB_K400_NUM_COM {
 	GB_K400_NUM_COM_32	= 6,	///<
 	GB_K400_NUM_COM_MAX			///< кол-во пунктов в списке
 };
+
+/// Пользователь (роль).
+typedef enum {
+    USER_operator = 0,  ///< Оператор. Должен быть в начале!
+    USER_engineer,      ///< Инженер.
+    USER_admin,         ///< Администратор.
+    //
+    USER_MAX,           ///< Максимальное количество пользователей.
+    USER_factory        ///< Производитель. Должен быть больше USER_MAX!
+} user_t;
+
+/// Источник доступа для пользователя.
+typedef enum {
+    USER_SOURCE_pi = 0, ///< Доступ с ПИ.
+    USER_SOURCE_pc,     ///< Доступ с ПК.
+    //
+    USER_SOURCE_MAX
+
+} userSrc_t;
 
 /// класс для измеряемых параметров
 class TMeasuredParameters {

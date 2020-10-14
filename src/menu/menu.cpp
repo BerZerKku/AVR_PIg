@@ -153,7 +153,7 @@ void clMenu::proc(void) {
 			tmp = KEY_NO;
 		key_ = tmp;
 
-        sParam.security.UserPi.resetTimer();
+        sParam.security.usr.resetTimer(USER_SOURCE_pi);
 		vLCDsetLed(LED_SWITCH);
 	}
 
@@ -2860,7 +2860,7 @@ void clMenu::lvlRegime() {
 			break;
 
 		case KEY_ENTER: {
-            if (!sParam.security.UserPi.checkChangeUser(USER_engineer)) {
+            if (!sParam.security.usr.checkAccess(USER_SOURCE_pi, USER_engineer)) {
                     setMessage(MSG_WRONG_USER);
             } else {
                 uint8_t min = GB_REGIME_ENTER_DISABLED;
@@ -3606,7 +3606,7 @@ void clMenu::lvlSetupDT() {
         } break;
 
         case KEY_ENTER: {
-            if (!sParam.security.UserPi.checkChangeUser(USER_engineer)) {
+            if (!sParam.security.usr.checkAccess(USER_SOURCE_pi, USER_engineer)) {
                 setMessage(MSG_WRONG_USER);
             } else {
                 enterFunc = &clMenu::inputValue;
@@ -4135,18 +4135,13 @@ void clMenu::lvlUser() {
 
     LocalParams *lp = &sParam.local;
     if (getCom(lp->getParam()) == GB_COM_NO) {
-        // Для считывания текущего значения параметра хранящегося в ЕЕПРОМ
         eGB_PARAM param = lp->getParam();
         if (param == GB_PARAM_IS_USER) {
-            lp->setValue(sParam.security.UserPi.get());
+            lp->setValue(sParam.security.usr.get(USER_SOURCE_pi));
+        } else if (param == GB_PARAM_IS_RESET_PWD) {
+            lp->setValue(0);
         }
     }
-
-    // Для параметра сброса значение всегда "Сброс".
-    if (sParam.local.getParam() == GB_PARAM_IS_RESET_PWD) {
-        sParam.local.setValue(0);
-    }
-
 
     setupParam();
 
@@ -4794,7 +4789,8 @@ user_t clMenu::checkPwdReq(eGB_PARAM param, int16_t value) const {
     user_t user = USER_operator;
 
     if (param == GB_PARAM_IS_USER) {
-        if ((value != USER_operator) && (value != sParam.security.UserPi.get())) {
+        user_t userpi = sParam.security.usr.get(USER_SOURCE_pi);
+        if ((value != USER_operator) && (value != userpi)) {
             user = static_cast<user_t> (value);
         }
     } else if (param == GB_PARAM_IS_RESET_PWD) {
@@ -4811,7 +4807,7 @@ void clMenu::enterParameter() {
 
     if (!checkChangeReg()) {
         setMessage(MSG_WRONG_REGIME);
-    } else if (!sParam.security.UserPi.checkChangeUser(getChangeUser(param))) {
+    } else if (!sParam.security.usr.checkAccess(USER_SOURCE_pi, getChangeUser(param))) {
         setMessage(MSG_WRONG_USER);
     } else {
         switch(getParamType(param)) {
@@ -5017,86 +5013,85 @@ void clMenu::saveParamToRam() {
         int16_t value = sParam.save.getValue();
 
         if (sParam.save.param == GB_PARAM_IS_USER) {
-            sParam.security.UserPi.set((user_t) (value));
+            sParam.security.usr.set(USER_SOURCE_pi, (user_t) (value));
         }
     }
 }
 
 //
 void clMenu::security() {
-    bool savepwd = false;
-    bool savecnt = false;
-    static user_t user = USER_MAX;
-    eGB_COM com = GB_COM_NO;
+    static uint8_t cntSecurity = TIME_SECURITY;
 
-    // Сброс настроек при потере связи.
-    if (!isConnectionBsp()) {
-        sParam.security.UserPi.reset();
-        sParam.security.UserPc.reset();
+    if (cntSecurity < TIME_SECURITY) {
+        cntSecurity++;
     }
 
-    if (!isConnectionPc()) {
+    if (!isConnectionBsp()) {
+        sParam.security.pwd.reset();
+        sParam.security.usr.reset();
+    } else if (!isConnectionPc()) {
 #ifdef NDEBUG
-        sParam.security.UserPc.reset();
+        sParam.security.usr.reset(USER_SOURCE_pc);
 #endif
     }
 
-    sParam.security.UserPi.tick();
-    sParam.security.UserPc.tick();
-
-
-    if (user >= USER_MAX) {
-        user = static_cast<user_t> (USER_operator + 1);
-    }
-
-    if (!isConnectionBsp()) {
-        sParam.security.pwd.reset(user);
-    }
-
     if (sParam.security.pwd.isResetToDefault()) {
-        eGB_REGIME regime = sParam.glb.status.getRegime();
-        sParam.security.pwd.resetPwdToDefaultCycle(regime);
-
-        if (sParam.security.pwd.isWaitDisableDevice()) {
-            com = GB_COM_SET_REG_DISABLED;
-        } else if (sParam.security.pwd.isWaitEnableDevice()) {
-            com = GB_COM_SET_REG_ENABLED;
-        }
-
         setMessage(MSG_RESET_PWD);
     }
 
-    for(uint8_t i = USER_operator + 1; i < USER_MAX; i++) {
-        user = static_cast<user_t> (i);
+    if (cntSecurity == TIME_SECURITY) {
+        sParam.security.usr.tick();
 
-        if (!sParam.security.pwd.isResetToDefault()) {
-            if (sParam.security.pwd.tick(user)) {
-                savecnt = true;
+        if (sParam.security.pwd.isResetToDefault()) {
+            eGB_REGIME regime = sParam.glb.status.getRegime();
+            sParam.security.pwd.resetPwdToDefaultCycle(regime);
+
+            eGB_COM com;
+            if (sParam.security.pwd.isWaitDisableDevice()) {
+                com = GB_COM_SET_REG_DISABLED;
+            } else if (sParam.security.pwd.isWaitEnableDevice()) {
+                com = GB_COM_SET_REG_ENABLED;
+            } else {
+                com = GB_COM_NO;
+            }
+
+            if (com != GB_COM_NO) {
+                sParam.txComBuf.addFastCom(com, GB_SEND_NO_DATA);
+            }
+        } else {
+            sParam.security.pwd.tick();
+        }
+
+        for(uint8_t i = USER_operator + 1; i < USER_MAX; i++) {
+            user_t user = static_cast<user_t> (i);
+            if (sParam.security.pwd.isCounterChanged(user)) {
+                sParam.save.param = sParam.security.pwd.getCounterParam(user);
+                sParam.save.number = 1;
+                sParam.save.set(sParam.security.pwd.getCounter(user));
+                saveParam();
             }
 
             if (sParam.security.pwd.isChangedPwd(user)) {
-                savepwd = true;
+                sParam.save.param = sParam.security.pwd.getPwdParam(user);
+                sParam.save.number = 1;
+                sParam.save.set(sParam.security.pwd.getPwd(user));
+                saveParam();
             }
         }
 
-        if (savecnt || sParam.security.pwd.isWaitResetPassword()) {
-            sParam.save.param = sParam.security.pwd.getCounterParam(user);
-            sParam.save.number = 1;
-            sParam.save.set(sParam.security.pwd.getCounter(user));
-            saveParam();
-        }
-
-        if (savepwd || sParam.security.pwd.isWaitResetPassword()) {
-            sParam.save.param = sParam.security.pwd.getPwdParam(user);
-            sParam.save.number = 1;
-            sParam.save.set(sParam.security.pwd.getPwd(user));
-            saveParam();
-        }
+        cntSecurity = 0;
     }
 
-
-    if (com != GB_COM_NO) {
-        sParam.txComBuf.addFastCom(com, GB_SEND_NO_DATA);
+    if (!sParam.security.sevent.isEmpty()) {
+        user_t user = USER_MAX;
+        userSrc_t source = USER_SOURCE_MAX;
+        TSecurityEvent::event_t event = TSecurityEvent::EVENT_MAX;
+        sParam.security.sevent.pop(user, source, event);
+        if (sParam.txComBuf.addFastCom(GB_COM_JRN_IS_SET_ENTRY, GB_SEND_IS_ENTRY)) {
+            sParam.txComBuf.setInt8(user, 0);
+            sParam.txComBuf.setInt8(source, 1);
+            sParam.txComBuf.setInt8(event, 2);
+        }
     }
 }
 
@@ -5133,8 +5128,10 @@ void clMenu::setupParam() {
                             saveParam();
                         }
                     } else if (EnterParam.last.param == GB_PARAM_IS_RESET_PWD) {
-                        user_t user = USER_factory;
-                        if (checkPwdInput(user, EnterParam.getValuePwd())) {
+                        if (checkPwdInput(USER_factory, EnterParam.getValuePwd())) {
+                            userSrc_t src = USER_SOURCE_pi;
+                            user_t user = sParam.security.usr.get(src);
+                            sParam.security.sevent.pushPwdReset(user, src);
                             sParam.security.pwd.resetPwdToDefault();
                         }
                     }
@@ -5241,11 +5238,11 @@ bool clMenu::checkLedOn() {
         ledOn = true;
     }
 
-    if (sParam.security.UserPi.get() != USER_operator) {
+    if (sParam.security.usr.get(USER_SOURCE_pc) != USER_operator) {
         ledOn = true;
     }
 
-    if (sParam.security.UserPc.get() != USER_operator) {
+    if (sParam.security.usr.get(USER_SOURCE_pi) != USER_operator) {
         ledOn = true;
     }
 

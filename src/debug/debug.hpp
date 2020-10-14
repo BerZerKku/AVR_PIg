@@ -34,6 +34,7 @@
 #define CLR_TP2 PORT_DBG &= ~PIN_TP2
 #define TOG_TP2 PORT_DBG ^= PIN_TP2
 
+#define Q_ASSERT(x) (void(0))
 #endif
 
 //

@@ -2,70 +2,98 @@
 #define USER_H
 
 #include "glbDefine.h"
-
-/// Пользователь (роль).
-typedef enum {
-    USER_operator = 0,  ///< Оператор. Должен быть в начале!
-    USER_engineer,      ///< Инженер.
-    USER_admin,         ///< Администратор.
-    USER_MAX,           ///< Максимальное количество пользователей.
-    USER_factory        ///< Производитель. Должен быть больше USER_MAX!
-} user_t;
+#include "securityevent.h"
 
 class TUser {
 
+// Время до сброса пользователя в секундах
 #ifdef NDEBUG
-#define kTimeToReset (900000UL / MENU_TIME_CYLCE)
+#define kTimeToResetPi 1800
+#define kTimeToResetPc 900
 #else
-#define kTimeToReset (300000UL / MENU_TIME_CYLCE)
+#define kTimeToResetPi 300
+#define kTimeToResetPc 150
 #endif
+
+    /// Структура пользователя для источника доступа.
+    typedef struct {
+        user_t user;    ///< Пользователь.
+        uint16_t time;  ///< Таймер.
+    } stUser_t;
+
 public:
 
     TUser();
 
-    /**	Запись.
+    /**	Устанавливает пользователя.
      *
+     *  @param[in] src Источник доступа.
      * 	@param val Пользователь.
-     * 	@return False в случае ошибочного значения.
+     * 	@return true если значение установлено, иначе false.
      */
-    bool set(user_t val);
+    bool set(userSrc_t src, user_t val);
 
     /**	Чтение.
      *
+     *  @param[in] src Источник доступа.
      * 	@return Пользователь.
      */
-    user_t get() const {
-        return user_;
-    }
+    user_t get(userSrc_t src) const;
 
-    /** Тик таймера.
-     *
-     *  Проверяется время до сброса текущей роли.
-     */
+    /// Тик таймера.
     void tick();
 
-    /// Сброс таймера.
-    void resetTimer();
+    /** Сброс таймера.
+     *
+     *  @param[in] src Источник доступа.
+     */
+    void resetTimer(userSrc_t src);
 
-    /// Возвращает текущее значение таймера.
-    uint16_t getTimer() {
-        return time_;
-    }
+    /** Возвращает текущее значение таймера.
+     *
+     *  @param[in] src Источник доступа.
+     */
+    uint16_t getTimer(userSrc_t src) const;
 
-    /// Сброс роли на оператора.
+    /// Сброс всех пользователей.
     void reset();
 
-    /** Проверяет пользователя на возможность изменения параметра.
+    /** Сброс роли на оператора.
      *
-     *  @param[in] Текущий пользователь.
+     *  @param[in] src Источник доступа.
+     */
+    void reset(userSrc_t src);
+
+    /** Проверяет возможность доступа текущей роли к указанной.
+     *
+     *  @param[in] src Источник доступа.
      *  @param[in] chuser Необходимый пользователь.
      *  @return True если можно менять.
      */
-    bool checkChangeUser(user_t chuser) const;
+    bool checkAccess(userSrc_t src, user_t chuser) const;
+
+    /** Устанавливает указатель на очередь событий.
+     *
+     *  @param[in] sevent Очередь событий.
+     */
+    void setInfoSecurity(TSecurityEvent *sevent) {
+        this->sevent = sevent;
+    }
 
 private:
-    user_t user_;
-    uint16_t time_;
+    /** Тик таймера.
+     *
+     *  Проверяется время до сброса текущей роли.
+     *
+     *  @param[in] src Источник доступа.
+     */
+    void tick(userSrc_t src);
+
+    /// Структуры пользователей.
+    stUser_t stuser[USER_SOURCE_MAX];
+
+    /// Очередь событий.
+    TSecurityEvent *sevent;
 };
 
 #endif // USER_H
