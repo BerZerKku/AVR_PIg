@@ -4997,6 +4997,7 @@ void clMenu::saveParamToBsp() {
                 sParam.txComBuf.setArray(sParam.save.getValueArray(), PWD_LEN, 1);
             } break;
 
+            case GB_SEND_IS_ENTRY:
             case GB_SEND_TIME:
             case GB_SEND_NO:
             case GB_SEND_NO_DATA:
