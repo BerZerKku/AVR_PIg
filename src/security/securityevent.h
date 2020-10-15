@@ -4,6 +4,8 @@
 #include "glbDefine.h"
 #include "fifo.h"
 
+#define SIZE_OF_SECURITY_JRN 8
+
 class TSecurityEvent {
 public:
     /// Cобытия для журнала ИБ.
@@ -28,6 +30,23 @@ public:
 
     /// Конструктор.
     TSecurityEvent();
+
+    /** Возвращает текстовую строку события.
+     *
+     *  В случае выхода за диапазон, будет строка:
+     *  "Событие - %d"
+     *
+     *  @param[in] event Событие.
+     *  @return Текстовая строка.
+     */
+    static PGM_P getEventString(event_t event);
+
+    /** Возвращает текстовую строку источника доступа пользователя.
+     *
+     *  @param[in] src Источник доступа пользователя.
+     *  @return Текстовая строка.
+     */
+    static PGM_P getUserSourceString(userSrc_t src);
 
     /** Возвращает записанное событие из очереди.
      *

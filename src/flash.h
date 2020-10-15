@@ -9,6 +9,7 @@
 #include "paramDef.h"
 #include "paramGlb.h"
 #include "flashParams.h"
+#include "securityevent.h"
 
 /// Пустая строка.
 static const char fcNull[] PROGMEM = "";

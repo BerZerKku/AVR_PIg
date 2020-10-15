@@ -6,6 +6,56 @@ TSecurityEvent::TSecurityEvent() {
 }
 
 //
+PGM_P
+TSecurityEvent::getEventString(TSecurityEvent::event_t event) {
+    static const char fcEventString[][21] PROGMEM = {
+        //2345678901234567890
+        "Авто. заверш. сеанса", // 0
+        "Изменение настроек",   // 1
+        "Изменение даты/врем",  // 2
+        "Изменение режима",     // 3
+        "Изменен. на Оператор", // 4
+        "Изменен. на Инженер",  // 5
+        "Изменен. на Админ.",   // 6
+        "Блокировка Инженера",  // 7
+        "Блокировка Админ.",    // 8
+        "Изм. пароля Инженера", // 9
+        "Изм. пароля Админ.",   // 10
+        "Ош. пароль Инженера",  // 11
+        "Ош. пароль Админ.",    // 12
+        "Сброс паролей",        // 13
+        "Событие - %d",         // EVENT_MAX
+    };
+
+    COMPILE_TIME_ASSERT(SIZE_OF(fcEventString) == (EVENT_MAX + 1));
+
+    if (event > EVENT_MAX) {
+        event = EVENT_MAX;
+    }
+
+    return fcEventString[event];
+}
+
+//
+PGM_P
+TSecurityEvent::getUserSourceString(userSrc_t src) {
+    static const char fcUserSourceString[][3] PROGMEM = {
+        //23
+        "ПИ",
+        "ПК",
+        "ОШ"
+    };
+
+    COMPILE_TIME_ASSERT(SIZE_OF(fcUserSourceString) == (USER_SOURCE_MAX + 1));
+
+    if (src > USER_SOURCE_MAX) {
+        src = USER_SOURCE_MAX;
+    }
+
+    return fcUserSourceString[src];
+}
+
+//
 bool TSecurityEvent::pop(user_t &user, userSrc_t &source, event_t &event) {
 
     eventMsg_t msg;

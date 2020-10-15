@@ -344,10 +344,10 @@ enum eGB_COM {
 	GB_COM_PRD_JRN_CLR 			= 0xEA,	// ! стирание журнала ПРД, только с ПК
 	GB_COM_GET_JRN_CNT 			= 0xF1,	// +
 	GB_COM_GET_JRN_ENTRY 		= 0xF2,	// +
-    GB_COM_GET_JRN_IS_CNT       = 0xF3,
-    GB_COM_GET_JRN_IS_ENTRY     = 0xF4,
-    GB_COM_JRN_IS_CLR           = 0xF5,
-    GB_COM_JRN_IS_SET_ENTRY     = 0xF6,
+    GB_COM_GET_JRN_IS_CNT       = 0xF3, //
+    GB_COM_GET_JRN_IS_ENTRY     = 0xF4, //
+    GB_COM_JRN_IS_CLR           = 0xF5, //
+    GB_COM_JRN_IS_SET_ENTRY     = 0xF6, //
 	GB_COM_JRN_CLR 				= 0xFA	// ! стирание журнала событий, только с ПК
 };
 
