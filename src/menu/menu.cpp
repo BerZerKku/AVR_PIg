@@ -153,7 +153,7 @@ void clMenu::proc(void) {
 			tmp = KEY_NO;
 		key_ = tmp;
 
-        sParam.security.usr.resetTimer(USER_SOURCE_pi);
+        sParam.security.rstUserTimer(USER_SOURCE_pi);
 		vLCDsetLed(LED_SWITCH);
 	}
 
@@ -2860,7 +2860,7 @@ void clMenu::lvlRegime() {
 			break;
 
 		case KEY_ENTER: {
-            if (!sParam.security.usr.checkAccess(USER_SOURCE_pi, USER_engineer)) {
+            if (!sParam.security.checkUserAccess(USER_engineer, USER_SOURCE_pi)) {
                     setMessage(MSG_WRONG_USER);
             } else {
                 uint8_t min = GB_REGIME_ENTER_DISABLED;
@@ -3606,7 +3606,7 @@ void clMenu::lvlSetupDT() {
         } break;
 
         case KEY_ENTER: {
-            if (!sParam.security.usr.checkAccess(USER_SOURCE_pi, USER_engineer)) {
+            if (!sParam.security.checkUserAccess(USER_engineer, USER_SOURCE_pi)) {
                 setMessage(MSG_WRONG_USER);
             } else {
                 enterFunc = &clMenu::inputValue;
@@ -4137,7 +4137,7 @@ void clMenu::lvlUser() {
     if (getCom(lp->getParam()) == GB_COM_NO) {
         eGB_PARAM param = lp->getParam();
         if (param == GB_PARAM_IS_USER) {
-            lp->setValue(sParam.security.usr.get(USER_SOURCE_pi));
+            lp->setValue(sParam.security.getUser(USER_SOURCE_pi));
         } else if (param == GB_PARAM_IS_RESET_PWD) {
             lp->setValue(0);
         }
@@ -4789,7 +4789,7 @@ user_t clMenu::checkPwdReq(eGB_PARAM param, int16_t value) const {
     user_t user = USER_operator;
 
     if (param == GB_PARAM_IS_USER) {
-        user_t userpi = sParam.security.usr.get(USER_SOURCE_pi);
+        user_t userpi = sParam.security.getUser(USER_SOURCE_pi);
         if ((value != USER_operator) && (value != userpi)) {
             user = static_cast<user_t> (value);
         }
@@ -4807,7 +4807,7 @@ void clMenu::enterParameter() {
 
     if (!checkChangeReg()) {
         setMessage(MSG_WRONG_REGIME);
-    } else if (!sParam.security.usr.checkAccess(USER_SOURCE_pi, getChangeUser(param))) {
+    } else if (!sParam.security.checkUserAccess(getChangeUser(param), USER_SOURCE_pi)) {
         setMessage(MSG_WRONG_USER);
     } else {
         switch(getParamType(param)) {
@@ -5014,7 +5014,7 @@ void clMenu::saveParamToRam() {
         int16_t value = sParam.save.getValue();
 
         if (sParam.save.param == GB_PARAM_IS_USER) {
-            sParam.security.usr.set(USER_SOURCE_pi, (user_t) (value));
+            sParam.security.setUser((user_t) (value), USER_SOURCE_pi);
         }
     }
 }
@@ -5029,10 +5029,11 @@ void clMenu::security() {
 
     if (!isConnectionBsp()) {
         sParam.security.pwd.reset();
-        sParam.security.usr.reset();
+        sParam.security.rstUser(USER_SOURCE_pc);
+        sParam.security.rstUser(USER_SOURCE_pi);
     } else if (!isConnectionPc()) {
 #ifdef NDEBUG
-        sParam.security.usr.reset(USER_SOURCE_pc);
+        sParam.security.rstUser(USER_SOURCE_pc);
 #endif
     }
 
@@ -5041,26 +5042,11 @@ void clMenu::security() {
     }
 
     if (cntSecurity == TIME_SECURITY) {
-        sParam.security.usr.tick();
+        eGB_COM com = GB_COM_NO;
+        sParam.security.tick(sParam.glb.status.getRegime(), com);
 
-        if (sParam.security.pwd.isResetToDefault()) {
-            eGB_REGIME regime = sParam.glb.status.getRegime();
-            sParam.security.pwd.resetPwdToDefaultCycle(regime);
-
-            eGB_COM com;
-            if (sParam.security.pwd.isWaitDisableDevice()) {
-                com = GB_COM_SET_REG_DISABLED;
-            } else if (sParam.security.pwd.isWaitEnableDevice()) {
-                com = GB_COM_SET_REG_ENABLED;
-            } else {
-                com = GB_COM_NO;
-            }
-
-            if (com != GB_COM_NO) {
-                sParam.txComBuf.addFastCom(com, GB_SEND_NO_DATA);
-            }
-        } else {
-            sParam.security.pwd.tick();
+        if (com != GB_COM_NO) {
+            sParam.txComBuf.addFastCom(com, GB_SEND_NO_DATA);
         }
 
         for(uint8_t i = USER_operator + 1; i < USER_MAX; i++) {
@@ -5073,7 +5059,7 @@ void clMenu::security() {
             }
 
             if (sParam.security.pwd.isChangedPwd(user)) {
-                sParam.save.param = sParam.security.pwd.getPwdParam(user);
+                sParam.save.param = sParam.security.getPwdParam(user);
                 sParam.save.number = 1;
                 sParam.save.set(sParam.security.pwd.getPwd(user));
                 saveParam();
@@ -5131,7 +5117,7 @@ void clMenu::setupParam() {
                     } else if (EnterParam.last.param == GB_PARAM_IS_RESET_PWD) {
                         if (checkPwdInput(USER_factory, EnterParam.getValuePwd())) {
                             userSrc_t src = USER_SOURCE_pi;
-                            user_t user = sParam.security.usr.get(src);
+                            user_t user = sParam.security.getUser(src);
                             sParam.security.sevent.pushPwdReset(user, src);
                             sParam.security.pwd.resetPwdToDefault();
                         }
@@ -5140,7 +5126,7 @@ void clMenu::setupParam() {
                 } else {
                     if (getParamType(param) == Param::PARAM_PWD) {
                         uint8_t *pwd = EnterParam.getValuePwd();
-                        sParam.security.pwd.changePwd(param, pwd);
+                        sParam.security.changeUserPiPwd(param, pwd);
                     } else {
                         sParam.save.param = param;
                         sParam.save.number = sParam.local.getNumOfCurrSameParam();
@@ -5239,11 +5225,11 @@ bool clMenu::checkLedOn() {
         ledOn = true;
     }
 
-    if (sParam.security.usr.get(USER_SOURCE_pc) != USER_operator) {
+    if (sParam.security.getUser(USER_SOURCE_pc) != USER_operator) {
         ledOn = true;
     }
 
-    if (sParam.security.usr.get(USER_SOURCE_pi) != USER_operator) {
+    if (sParam.security.getUser(USER_SOURCE_pi) != USER_operator) {
         ledOn = true;
     }
 

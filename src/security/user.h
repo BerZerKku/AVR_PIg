@@ -2,10 +2,8 @@
 #define USER_H
 
 #include "glbDefine.h"
-#include "securityevent.h"
 
 class TUser {
-
 // Время до сброса пользователя в секундах
 #ifdef NDEBUG
 #define kTimeToResetPi 1800
@@ -19,6 +17,7 @@ class TUser {
     typedef struct {
         user_t user;    ///< Пользователь.
         uint16_t time;  ///< Таймер.
+        user_t olduser; ///< Предыдущее значение пользователя.
     } stUser_t;
 
 public:
@@ -35,13 +34,21 @@ public:
 
     /**	Чтение.
      *
-     *  @param[in] src Источник доступа.
+     *  @param[in] src Источник доступа пользователя.
      * 	@return Пользователь.
      */
     user_t get(userSrc_t src) const;
 
     /// Тик таймера.
     void tick();
+
+    /** Проверяет наличие автоматического завершения сеанса работы.
+     *
+     *  @param[in] src Источник доступа пользователя.
+     *  @param[out] olduser Предыдущее значение пользователя.
+     *  @return true если пользователь был сброшен, иначе false.
+     */
+    bool isAutoReset(userSrc_t src, user_t &olduser);
 
     /** Сброс таймера.
      *
@@ -64,22 +71,6 @@ public:
      */
     void reset(userSrc_t src);
 
-    /** Проверяет возможность доступа текущей роли к указанной.
-     *
-     *  @param[in] src Источник доступа.
-     *  @param[in] chuser Необходимый пользователь.
-     *  @return True если можно менять.
-     */
-    bool checkAccess(userSrc_t src, user_t chuser) const;
-
-    /** Устанавливает указатель на очередь событий.
-     *
-     *  @param[in] sevent Очередь событий.
-     */
-    void setInfoSecurity(TSecurityEvent *sevent) {
-        this->sevent = sevent;
-    }
-
 private:
     /** Тик таймера.
      *
@@ -91,9 +82,6 @@ private:
 
     /// Структуры пользователей.
     stUser_t stuser[USER_SOURCE_MAX];
-
-    /// Очередь событий.
-    TSecurityEvent *sevent;
 };
 
 #endif // USER_H

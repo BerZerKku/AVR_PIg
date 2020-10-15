@@ -15,28 +15,30 @@ bool TPwd::checkPassword(user_t user, const uint8_t *pwd) {
 
     if (user == USER_operator) {
         check = true;
-    } else if (user == USER_factory) {
-        check = true;
-        for(uint8_t i = 0; i < PWD_LEN; i++) {
-            check &= (pwd[i] == PWD_RESET[i]);
-        }
-    } else  {
-        int8_t index = getUserIndex(user);
-        if (index >= 0) {
-            if (!isLocked(user)) {
-                check = true;
-                for(uint8_t i = 0; i < PWD_LEN; i++) {
-                    check &= (password[index].pwd[i] == pwd[i]);
-                }
-
-                if (check) {
-                    clrCounter(index);
-                } else {
-                    incCounter(index);
-                }
+    } else if (pwd != NULL) {
+         if (user == USER_factory) {
+            check = true;
+            for(uint8_t i = 0; i < PWD_LEN; i++) {
+                check &= (pwd[i] == PWD_RESET[i]);
             }
-        } else {
-            check = false;
+        } else  {
+            int8_t index = getUserIndex(user);
+            if (index >= 0) {
+                if (!isLocked(user)) {
+                    check = true;
+                    for(uint8_t i = 0; i < PWD_LEN; i++) {
+                        check &= (password[index].pwd[i] == pwd[i]);
+                    }
+
+                    if (check) {
+                        clrCounter(index);
+                    } else {
+                        incCounter(index);
+                    }
+                }
+            } else {
+                check = false;
+            }
         }
     }
 
@@ -90,20 +92,6 @@ bool TPwd::changePwd(user_t user, const uint8_t *pwd) {
 
     if(index >= 0) {
         changed = changePwd(index, pwd);
-    }
-
-    return changed;
-}
-
-//
-bool TPwd::changePwd(eGB_PARAM param, const uint8_t *pwd) {
-    bool changed = false;
-
-    for(uint8_t i = 0; i < USER_MAX; i++) {
-        user_t user = static_cast<user_t> (i);
-        if (getPwdParam(user) == param) {
-            changed = changePwd(user, pwd);
-        }
     }
 
     return changed;
@@ -264,25 +252,6 @@ eGB_PARAM TPwd::getCounterParam(user_t user) const {
     } break;
     case USER_admin: {
         param = GB_PARAM_IS_PWD_ADM_CNT;
-    } break;
-
-    case USER_operator: // DOWN
-    case USER_factory:  // DOWN
-    case USER_MAX: break;
-    }
-
-    return param;
-}
-
-eGB_PARAM TPwd::getPwdParam(user_t user) const {
-    eGB_PARAM param = GB_PARAM_MAX;
-
-    switch(user) {
-    case USER_engineer: {
-        param = GB_PARAM_IS_PWD_ENGINEER;
-    } break;
-    case USER_admin: {
-        param = GB_PARAM_IS_PWD_ADMIN;
     } break;
 
     case USER_operator: // DOWN

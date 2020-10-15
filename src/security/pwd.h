@@ -3,7 +3,6 @@
 
 #include "glbDefine.h"
 #include "user.h"
-#include "securityevent.h"
 
 /// Пароль.
 class TPwd {
@@ -82,14 +81,6 @@ public:
      *  @return true если пароль изменен, иначе false.
      */
     bool changePwd(user_t user, const uint8_t *pwd);
-
-    /** Изменяет пароль пользователя.
-     *
-     *  @param[in] param Параметр пароля пользователя.
-     *  @param[in] pwd Пароль.
-     *  @return true если пароль изменен, иначе false.
-     */
-    bool changePwd(eGB_PARAM param, const uint8_t *pwd);
 
     /** Устанавливает счетчик ввода неверного пароля.
      *
@@ -175,14 +166,6 @@ public:
      *  @retval GB_PARAM_NO если у пользователя нет параметра.
      */
     eGB_PARAM getCounterParam(user_t user) const;
-
-    /** Возвращает параметр для пароля.
-     *
-     *  @param[in] user Пользователь.
-     *  @return Параметр.
-     *  @retval GB_PARAM_NO если у пользователя нет параметра.
-     */
-    eGB_PARAM getPwdParam(user_t user) const;
 
     /// Сбросить пароли в значение по умолчанию.
     void resetPwdToDefault();
