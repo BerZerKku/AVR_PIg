@@ -71,9 +71,11 @@ bool clProtocolPcS::hdlrComGetUser(eGB_COM com) {
     } else if (buf[NUM] == 1) {
         uint8_t array[4];
         user_t user = static_cast<user_t> (buf[B1]);
+        uint16_t sec = sParam_->security.pwd.getLockTime(user);
         array[0] = user;
         array[1] = sParam_->security.pwd.isLocked(user);
-        *((uint16_t *) &array[2]) = sParam_->security.pwd.getLockTime(user);
+        array[2] = static_cast<uint8_t> (sec >> 8);
+        array[3] = static_cast<uint8_t> (sec);
         len = addCom(com, SIZE_OF(array), array);
     }
 
@@ -84,7 +86,6 @@ bool clProtocolPcS::hdlrComGetUser(eGB_COM com) {
 bool clProtocolPcS::hdlrComSetUser(eGB_COM com) {
     uint8_t len = 0;
     user_t user = static_cast<user_t> (buf[B1]);
-    user_t cuser = sParam_->security.getUser(USER_SOURCE_pc);
     TInfoSecurity::state_t state = TInfoSecurity::STATE_MAX;
 
     switch(buf[NUM]) {

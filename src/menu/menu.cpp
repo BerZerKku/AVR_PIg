@@ -903,6 +903,7 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
     if (sParam.prm.status.isEnable()) {
         sParam.txComBuf.addCom1(GB_COM_PRM_GET_JRN_CNT);
     }
+    sParam.txComBuf.addCom1(GB_COM_GET_JRN_IS_CNT);
 
 	// "сброс" флага необходимости проверки типа аппарата
 	sParam.device = true;
@@ -1548,6 +1549,7 @@ void clMenu::lvlJournal() {
 	static char punkt2[] PROGMEM = "%d. Защита";
 	static char punkt3[] PROGMEM = "%d. Приемник";
 	static char punkt4[] PROGMEM = "%d. Передатчик";
+    static char punkt5[] PROGMEM = "%d. Безопасность";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -1580,6 +1582,9 @@ void clMenu::lvlJournal() {
 			Punkts_.add(punkt4);
             sParam.txComBuf.addCom2(GB_COM_PRD_GET_JRN_CNT);
 		}
+
+        Punkts_.add(punkt5);
+        sParam.txComBuf.setLocalCom(GB_COM_GET_JRN_IS_CNT);
 	}
 
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
@@ -1604,7 +1609,7 @@ void clMenu::lvlJournal() {
 			lvlCreate_ = true;
 			break;
 
-		case KEY_ENTER:
+        case KEY_ENTER: {
 			if (name == punkt1) {
 				lvlMenu = &clMenu::lvlJournalEvent;
 				lvlCreate_ = true;
@@ -1616,9 +1621,12 @@ void clMenu::lvlJournal() {
 				lvlCreate_ = true;
 			} else if (name == punkt4) {
 				lvlMenu = &clMenu::lvlJournalPrd;
-				lvlCreate_ = true;
-			}
-			break;
+                lvlCreate_ = true;
+            } else if (name == punkt5) {
+                lvlMenu = &clMenu::lvlJournalSecurity;
+                lvlCreate_ = true;
+            }
+        } break;
 
 		default:
 			break;
@@ -2272,10 +2280,112 @@ void clMenu::lvlJournalPrd() {
 			break;
 	}
 
+    // FIXME ПРоверить формирование команды для считывания журналов!!!
 	// поместим в сообщение для БСП адрес необходимой записи
 	// размещен в конце, чтобы не терять время до следующего обращения к
 	// данному пункту меню
 	sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
+}
+
+
+/** Уровень меню. Журнал безопасности.
+ * 	@param Нет
+ * 	@return Нет
+ */
+void clMenu::lvlJournalSecurity() {
+    static char title[] PROGMEM = "Журнал\\Безопасность";
+    const eGB_COM comEntry = GB_COM_GET_JRN_IS_ENTRY;
+
+    if (lvlCreate_) {
+        lvlCreate_ = false;
+        cursorEnable_ = false;
+        lineParam_ = 1;
+        curCom_ = 1;
+
+        vLCDclear();
+        vLCDdrawBoard(lineParam_);
+
+        // установка текущего журнала и максимального кол-во записей в нем
+        sParam.jrnEntry.clear();
+        sParam.jrnEntry.setCurrentDevice(GB_DEVICE_SEC);
+        sParam.jrnEntry.setMaxNumJrnEntries(SIZE_OF_SECURITY_JRN);
+
+        // доплнительные команды
+        sParam.txComBuf.clear();
+        sParam.txComBuf.setLocalCom(GB_COM_GET_JRN_IS_CNT);
+        sParam.txComBuf.addCom2(comEntry);
+    }
+
+    // номер текущей записи в архиве и максимальное кол-во записей
+    uint16_t cur_entry = sParam.jrnEntry.getCurrentEntry();
+    uint16_t num_entries = sParam.jrnEntry.getNumJrnEntries();
+
+    uint8_t poz = 0;
+    // вывод названия текущего пункта меню
+    snprintf_P(&vLCDbuf[poz], 21, title);
+    poz += 20;
+
+    // вывод номер текущей записи и их кол-ва
+    if (num_entries != 0) {
+        snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
+    }
+    poz += 20;
+
+    if (num_entries == 0) {
+        // вывод сообщения об отсутствии записей в журнале
+        snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
+    } else if (!sParam.jrnEntry.isReady()) {
+        // ифнорация о текущей записи еще не получена
+        snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
+    } else {
+        // вывод режима
+
+
+        poz += 20;
+        // вывод даты
+        snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
+                   sParam.jrnEntry.dateTime.getDay(),
+                   sParam.jrnEntry.dateTime.getMonth(),
+                   sParam.jrnEntry.dateTime.getYear());
+        poz += 20;
+
+        // вывод времени
+        snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
+                   sParam.jrnEntry.dateTime.getHour(),
+                   sParam.jrnEntry.dateTime.getMinute(),
+                   sParam.jrnEntry.dateTime.getSecond(),
+                   sParam.jrnEntry.dateTime.getMsSecond());
+        poz += 20;
+
+        // вывод события
+    }
+
+    switch(key_) {
+        case KEY_UP: {
+            if (sParam.jrnEntry.setPreviousEntry()) {
+                sParam.txComBuf.addFastCom(comEntry , GB_SEND_GET_ENTRY);
+                curCom_ = 1;
+            }
+        } break;
+        case KEY_DOWN: {
+            if (sParam.jrnEntry.setNextEntry()) {
+                sParam.txComBuf.addFastCom(comEntry , GB_SEND_GET_ENTRY);
+                curCom_ = 1;
+            }
+        } break;
+
+        case KEY_CANCEL:
+            lvlMenu = &clMenu::lvlJournal;
+            lvlCreate_ = true;
+            break;
+        case KEY_MENU:
+            lvlMenu = &clMenu::lvlStart;
+            lvlCreate_ = true;
+            break;
+
+        default:
+            break;
+    }
 }
 
 /**	Уровень меню. Управление.

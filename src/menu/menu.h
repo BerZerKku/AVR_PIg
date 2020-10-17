@@ -253,6 +253,7 @@ private:
 	void lvlJournalDef();
 	void lvlJournalPrm();
 	void lvlJournalPrd();
+    void lvlJournalSecurity();
 	void lvlControl();
 	void lvlSetup();
 	void lvlRegime();

@@ -266,10 +266,7 @@ void clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
 		//				t += buf[B5];
 		sParam_->def.setTimeToAC(*((uint32_t *) &buf[B2]));
 	} else if (com == GB_COM_DEF_GET_JRN_CNT) {
-		uint16_t t = *((uint16_t *) &buf[B1]);
-		if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_DEF) {
-			sParam_->jrnEntry.setNumJrnEntry(t);
-		}
+        setJrnSize(GB_DEVICE_DEF);
 	} else if (com == GB_COM_DEF_GET_JRN_ENTRY) {
 		if ((sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_DEF) && (!pc)){
 			if (sParam_->typeDevice == AVANT_OPTO) {
@@ -327,16 +324,11 @@ void clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
 			// в случае записи нового значения, сбросим флаг конфигурации
 			if (act & GB_ACT_NEW)
 				sParam_->device = false;
-		}
-		break;
+        } break;
 
 		case GB_COM_PRM_GET_JRN_CNT: {
-			uint16_t t = *((uint16_t *) &buf[B1]);
-			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRM) {
-				sParam_->jrnEntry.setNumJrnEntry(t);
-			}
-		}
-		break;
+            setJrnSize(GB_DEVICE_PRM);
+        } break;
 
 		case GB_COM_PRM_GET_JRN_ENTRY: {
 			if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_PRM)&& (!pc)){
@@ -396,16 +388,11 @@ void clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 			// в случае записи нового значения, сбросим флаг конфигурации
 			if (act & GB_ACT_NEW)
 				sParam_->device = false;
-		}
-		break;
+        } break;
 
 		case GB_COM_PRD_GET_JRN_CNT: {
-			uint16_t t = *((uint16_t *) &buf[B1]);
-			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_PRD) {
-				sParam_->jrnEntry.setNumJrnEntry(t);
-			}
-		}
-		break;
+            setJrnSize(GB_DEVICE_PRD);
+        } break;
 
 		case GB_COM_PRD_GET_JRN_ENTRY: {
 			if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_PRD)&& (!pc)) {
@@ -460,7 +447,7 @@ void clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
  * 	@return True - в случае успешной обработки, False - в случае ошибки.
  */
 void clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
-	switch (com) {
+    switch(com) {
         case GB_COM_GET_SOST: {
             hdlrComGetSost();
         } break;
@@ -498,21 +485,19 @@ void clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			eGB_TYPE_OPTO opto = sParam_->glb.getTypeOpto();
 			// определеим макимальное кол-во
 			sParam_->test.setCurrentSignal(&buf[B1], type, opto);
-		}
-		break;
+        } break;
 
 		case GB_COM_GET_JRN_CNT: {
-			uint16_t t = *((uint16_t *) &buf[B1]);
-			if (sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_GLB) {
-				sParam_->jrnEntry.setNumJrnEntry(t);
-			}
-		}
-		break;
+            setJrnSize(GB_DEVICE_GLB);
+        } break;
+
+        case GB_COM_GET_JRN_IS_CNT: {
+            setJrnSize(GB_DEVICE_SEC);
+        } break;
 
         case GB_COM_GET_JRN_ENTRY: {
             hdlrComGetJrnEntry(pc);
-		}
-		break;
+        } break;
 
 		default:
 			break;
@@ -842,6 +827,14 @@ void clProtocolBspS::hdlrComGetVers() {
 }
 
 //
+void clProtocolBspS::setJrnSize(eGB_DEVICE device) {
+    if (sParam_->jrnEntry.getCurrentDevice() == device) {
+        uint16_t size = *((uint16_t *) &buf[B1]);
+        sParam_->jrnEntry.setNumJrnEntry(size);
+    }
+}
+
+//
 uint8_t clProtocolBspS::getComNetAdr(posComNetAdr_t pos, const uint8_t *buf,
                                      uint8_t len) {
     uint8_t numbytes = len;
@@ -930,45 +923,43 @@ uint8_t clProtocolBspS::getComNetAdr(posComNetAdr_t pos, const uint8_t *buf,
 uint8_t clProtocolBspS::sendReadJrnCommand(eGB_COM com) {
 	uint8_t num = 0;
 	uint8_t mask = 0;
+    uint16_t t = sParam_->jrnEntry.getCurrentEntry();
+
+    if (sParam_->typeDevice != AVANT_R400M) {
+        t = (t >> 8) + ((t & 0x00FF) << 8);
+    }
 
 	// команды работы с журналом
 	mask = com & GB_COM_MASK_DEVICE;
 	if (mask == GB_COM_MASK_DEVICE_DEF) {
 		if (com == GB_COM_DEF_GET_JRN_CNT) {
 			num = addCom(com);
-		} else if (com == GB_COM_DEF_GET_JRN_ENTRY) {
-			uint16_t t = sParam_->txComBuf.getInt16();
-			if (sParam_->typeDevice == AVANT_R400M)
-				num = addCom(com, t, t >> 8);
-			else
-				num = addCom(com, t >> 8, t);
+        } else if (com == GB_COM_DEF_GET_JRN_ENTRY) {
+            num = addCom(com, t, t >> 8);
 		}
 	} else if (mask == GB_COM_MASK_DEVICE_PRM) {
 		if (com == GB_COM_PRM_GET_JRN_CNT) {
 			num = addCom(com);
 		} else if (com == GB_COM_PRM_GET_JRN_ENTRY) {
-			uint16_t t = sParam_->txComBuf.getInt16();
-			num = addCom(com, t >> 8, t);
+            num = addCom(com, t, t >> 8);
 		}
 	} else if (mask == GB_COM_MASK_DEVICE_PRD) {
 		if (com == GB_COM_PRD_GET_JRN_CNT) {
 			num = addCom(com);
-		} else if (com == GB_COM_PRD_GET_JRN_ENTRY) {
-			uint16_t t = sParam_->txComBuf.getInt16();
-			num = addCom(com, t >> 8, t);
-		}
-	} else {
+        } else if (com == GB_COM_PRD_GET_JRN_ENTRY) {
+            num = addCom(com, t, t >> 8);
+        }
+    } else {
 		if (com == GB_COM_GET_JRN_CNT) {
 			num = addCom(com);
-		} else if (com == GB_COM_GET_JRN_ENTRY) {
-			uint16_t t = sParam_->txComBuf.getInt16();
-
-			if (sParam_->typeDevice == AVANT_R400M)
-				num = addCom(com, t, t >> 8);
-			else
-				num = addCom(com, t >> 8, t);
-		}
-	}
+        } else if (com == GB_COM_GET_JRN_ENTRY) {
+            num = addCom(com, t, t >> 8);
+        } else if (com == GB_COM_GET_JRN_IS_CNT) {
+            num = addCom(com);
+        } else if (com == GB_COM_GET_JRN_IS_ENTRY) {
+            num = addCom(com, t, t >> 8);
+        }
+    }
 
 	return num;
 }

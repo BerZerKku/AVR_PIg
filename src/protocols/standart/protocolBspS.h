@@ -37,6 +37,12 @@ private:
     void hdlrComGetTime();
     void hdlrComGetVers();
 
+    /** Устанавливает размер журнала.
+     *
+     *  @param[in] device Устройство для которого получен размрер журнала.
+     */
+    void setJrnSize(eGB_DEVICE device);
+
     /** Считывание параметров для команд GB_COM_GET_NET_ADR и SET.
      *
      *  @param pos Номер параметра.

@@ -11,7 +11,7 @@
 #include "glbDefine.h"
 
 /// максимальное кол-во команд в первом буфере
-#define MAX_NUM_COM_BUF1 8
+#define MAX_NUM_COM_BUF1 10
 
 ///	максимальное кол-во быстрых команд
 #define MAX_NUM_FAST_COM 8
@@ -209,7 +209,7 @@ private:
 
     eGB_COM localCom;
     buf<eGB_COM, MAX_NUM_COM_BUF1, GB_COM_NO, false> bufCom1;
-    buf<eGB_COM, MAX_NUM_COM_BUF1, GB_COM_NO, true> bufCom2;
+    buf<eGB_COM, MAX_NUM_COM_BUF2, GB_COM_NO, true> bufCom2;
 
     /** Очищает содержимое в буфере быстрой команды для указанной позиции.
      *
