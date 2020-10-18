@@ -12,10 +12,25 @@
 #include "glbDefine.h"
 
 class TJournalEntry {
+#define MAX_LOG_SIZE 16
+
+    /// Структура записи для журнала безопасности.
+    typedef struct __attribute__ ((__packed__)) {
+        bool ready;         ///< Флаг наличия записи (получена из БСП).
+        uint8_t user;
+        uint8_t userSrc;
+        uint8_t event;
+        uint8_t year;
+        uint8_t month;
+        uint8_t day;
+        uint8_t hour;
+        uint8_t minute;
+        uint8_t second;
+        uint16_t msecond;
+    } log_t;
+
 public:
-	TJournalEntry() {
-		clear();
-	}
+    TJournalEntry() { clear(); }
 
 	void clear() {
 		currentDevice_ = GB_DEVICE_MAX;
@@ -38,14 +53,12 @@ public:
 		overflow_ = false;
 		addressFirstEntry_ = 0;
 
-		currentEntry_ = 1;
-		ready_ = false;
+        currentEntry_ = 1;
+
+        log.ready = false;
 
 		val = false;
 	}
-
-	// время для записи журнала
-	TDateTime dateTime;
 
 	// время для передачи по протоколам
 	TDateTime dateTimeTr;
@@ -436,7 +449,7 @@ public:
         tmp = (tmp < numJrnEntries_) ? currentEntry_ + 1 : 1;
         if (tmp != currentEntry_) {
 			currentEntry_ = tmp;
-			ready_ = false;
+            log.ready = false;
 			stat = true;
 		}
 		return stat;
@@ -453,7 +466,7 @@ public:
 		tmp = (tmp > 1) ? tmp - 1 : numJrnEntries_;
 		if (tmp != currentEntry_) {
 			currentEntry_ = tmp;
-			ready_ = false;
+            log.ready = false;
 			stat = true;
 		}
 
@@ -470,7 +483,7 @@ public:
 
 		if (num <= numJrnEntries_) {
 			currentEntry_ = num;
-			ready_ = false;
+            log.ready = false;
 			stat = true;
 		}
 
@@ -478,16 +491,67 @@ public:
 	}
 
     /// Устанавливает флаг наличия записи (запись получена).
-	bool setReady() {
-		return (ready_ = true);
-	}
-
+    void setReady() { log.ready = true; }
     /// Проверяет флаг наличия записи.
-	bool isReady() const {
-		return ready_;
-	}
+    bool isReady() const { return log.ready; }
+
+    /// Устанавливает год (BCD формат).
+    void setYear(uint8_t year) { log.year = year; }
+    /// Возвращает год в BCD формате.
+    uint8_t getYear() const { return log.year; }
+
+    /// Устанавливает месяц (BCD формат).
+    void setMonth(uint8_t month) { log.month = month; }
+    /// Возвращает месяц в BCD формате.
+    uint8_t getMonth() const { return log.month; }
+
+    /// Устанавливает день (BCD формат).
+    void setDay(uint8_t day) { log.day = day; }
+    /// Вовзращает день в BCD формате.
+    uint8_t getDay() const { return log.day; }
+
+    /// Устанавливает часы (BCD формат).
+    void setHour(uint8_t hour) { log.hour = hour; }
+    /// Возвращает час в BCD формате.
+    uint8_t getHour() const { return log.hour; }
+
+    /// Устанавливает минуты (BCD формат).
+    void setMinute(uint8_t minute) { log.minute = minute; }
+    /// Возвращает минуты в BCD формате.
+    uint8_t getMinute() const { return log.minute; }
+
+    /// Устанавливает секунды (BCD формат).
+    void setSecond(uint8_t second) { log.second = second; }
+    /// Возвращает секунды в BCD формате.
+    uint8_t getSecond() const { return log.second; }
+
+    /// Устанавливает миллисекунды.
+    void setMSecond(uint16_t msecond) { log.msecond = msecond; }
+    /// Возвращает миллисекунды.
+    uint16_t getMSecond() const { return log.msecond; }
+
+    /// Устанавливает пользовтеля.
+    void setUser(uint8_t user) {
+        log.user = user < USER_MAX ? user : USER_MAX;
+    }
+    /// Возвращает пользовтеля.
+    user_t getUser() const { return static_cast<user_t> (log.user); }
+
+    /// Установить источник доступа пользователя.
+    void setUserSrc(uint8_t usersrc) {
+        log.userSrc = usersrc < USER_SOURCE_MAX ? usersrc : USER_SOURCE_MAX;
+    }
+    /// Возвращает источник доступа пользователя.
+    userSrc_t getUserSrc() const { return static_cast<userSrc_t> (log.userSrc); }
+
+    /// Устанавливает событие.
+    void setEvent(uint8_t event) { log.event = event; }
+    /// Вовзращает событие.
+    uint8_t getEvent() const { return log.event; }
 
 private:
+    log_t log;
+
 	// текущий журнал
 	eGB_DEVICE currentDevice_;
 
@@ -500,8 +564,8 @@ private:
 	// источник команды (номер аппарата с которого пришла команда)
 	uint8_t srcCom_;
 
-	// режим
-	eGB_REGIME regime_;
+    // режим
+    eGB_REGIME regime_;
 
 	// сигналы для журнала защиты
 	bool signalPusk_;
@@ -544,9 +608,6 @@ private:
 
 	// источник передаваемой команды
 	eGB_SOURCE_COM sourceCom_;
-
-	// флаг получения информации о текущей записи
-	bool ready_;
 };
 
 #endif /* JOURNAL_ENTRY_HPP_ */

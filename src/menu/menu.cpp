@@ -2,7 +2,7 @@
  * menu.cpp
  *
  *  Created on: 01.05.2012
- *      Author: Хозяин
+ *      Author: пїЅпїЅпїЅпїЅпїЅпїЅ
  */
 #include <stdio.h>
 #include "debug.hpp"
@@ -11,18 +11,18 @@
 #include "ks0108.h"
 #include "flash.h"
 
-/// режим подсветки по умолчанию
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 #define LED_REGIME LED_SWITCH
 
-/// буфер текста выводимого на ЖКИ
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ
 static char vLCDbuf[SIZE_BUF_STRING + 1];
 
-/// кол-во строк данных отображаемых на экране
+/// пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 #define NUM_TEXT_LINES (SIZE_BUF_STRING / 20)
 
 
 clMenu::clMenu() {
-    // Сравнение размера массива команд переназначения и максимального кол-ва транзитных команд
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     COMPILE_TIME_ASSERT(SIZE_OF(fcRingRenumber) == (MAX_NUM_COM_RING + 1));
 
 	lvlMenu = &clMenu::lvlStart;
@@ -33,22 +33,22 @@ clMenu::clMenu() {
 	curCom_ = 0;
     clrMessages();
 
-	// курсор неактивен
+	// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	cursorEnable_ = false;
 	cursorLine_ = 0;
 
-	// нажатой кнопки еще нет
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ
 	key_ = KEY_NO;
 
-	// тип устройства еще не известен
+	// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	setDevice(AVANT_NO);
 
-	// связи с БСП еще нет
+	// пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ
 	connectionBsp_ = false;
 
-	// заполним массивы состояний работы для всех устройств
-	// массив должен быть заполнен полностью и последним всегда должно
-	// быть fcUnknownSost
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅ fcUnknownSost
 	sParam.def.status.stateText[0] = fcDefSost00;
 	sParam.def.status.stateText[1] = fcDefSost01;
 	sParam.def.status.stateText[2] = fcDefSost02;
@@ -97,16 +97,16 @@ clMenu::clMenu() {
 	sParam.prd.status.stateText[13] = fcPrdSost13;
 	sParam.prd.status.stateText[MAX_NUM_DEVICE_STATE] = fcUnknownSost;
 
-	// назначим имена устройствам
-	sParam.def.status.name = PSTR("ЗАЩ"); 	// fcDeviceName00;
-    sParam.prm.status.name = PSTR("ПРМ");	// fcDeviceName01;
-    sParam.prd.status.name = PSTR("ПРД");	// fcDeviceName02;
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	sParam.def.status.name = PSTR("пїЅпїЅпїЅ"); 	// fcDeviceName00;
+    sParam.prm.status.name = PSTR("пїЅпїЅпїЅ");	// fcDeviceName01;
+    sParam.prd.status.name = PSTR("пїЅпїЅпїЅ");	// fcDeviceName02;
 
 #ifdef DEBUG
-	// в режиме отладки включена постоянная подсветка
+	// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	vLCDsetLed(LED_ON);
 #else
-	// установка режима работы подсветки
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	vLCDsetLed(LED_REGIME);
 #endif
 }
@@ -114,13 +114,13 @@ clMenu::clMenu() {
 //
 void clMenu::proc(void) {
 
-	static const char fcNoConnectBsp[] PROGMEM = " Нет связи с БСП!!! ";
+	static const char fcNoConnectBsp[] PROGMEM = " пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ!!! ";
 
-	// Счетчик времени до переинициализации ЖКИ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
 	static uint8_t cntInitLcd = 0;
 	static uint8_t cntBlinkMeas = 0;
 	static uint8_t cntBlinkText = 0;
-	// предыдущее состояние флага наличия связи с БСП
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ
 	static bool lastConnection = false;
 
 	if (++cntBlinkMeas >= TIME_MEAS_PARAM) {
@@ -138,15 +138,15 @@ void clMenu::proc(void) {
 		cntInitLcd = 0;
 	}
 
-	// настройка аппарата, если произошла смена:
-	// кол-ва аппаратов в линии
-	// типа совместимости (Р400м)
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ:
+	// пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅ400пїЅ)
 	if (!sParam.device) {
 		setDevice(sParam.typeDevice);
 	}
 
-	// Считаем код с клавиатуры
-	// Если нажата любая кнопка - включится кратковременная подсветка
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	eKEY tmp = eKEYget();
 	if (tmp != KEY_NO) {
 		if (tmp == KEY_EMPTY)
@@ -161,7 +161,7 @@ void clMenu::proc(void) {
 		vLCDsetLed(LED_SWITCH);
 	}
 
-    // счетчик вывода сообщения
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     if (delay_ > 0) {
         delay_--;
         if (delay_ == 0) {
@@ -179,14 +179,14 @@ void clMenu::proc(void) {
 
     security();
 
-	// вывод в буфер содержимого текущего меню
-	// либо сообщения что тип аппарата не определен
+	// пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	clearTextBuf();
 	(this->*lvlMenu)();
 	key_ = KEY_NO;
 
 #ifdef VIEW_DEBUG_PARAM
-	// вывод отладочной информации
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	if (this->lvlMenu == &clMenu::lvlStart) {
 		snprintf(&vLCDbuf[20], 5, "1*%02X", sDebug.byte1);
 		snprintf(&vLCDbuf[25], 5, "2*%02X", sDebug.byte2);
@@ -202,36 +202,36 @@ void clMenu::proc(void) {
 	}
 #endif
 
-	// вывод сообщения в случае отсутствия связи с БСП
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ
 	bool connection = isConnectionBsp();
 	if (!connection) {
 		if (blink_) {
-			// если связи нет, периодически вместо измеряемых параметров
-			// выводится предупреждающая надпись
+			// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 			snprintf_P(&vLCDbuf[0], 20, fcNoConnectBsp);
 		}
 	} else if (!lastConnection) {
-		// если связь с БСП только восстановилась
-		// дважды пошлем команду опроса версии
+		// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+		// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         sParam.txComBuf.addFastCom(GB_COM_GET_VERS, GB_SEND_NO_DATA);
 	}
 	lastConnection = connection;
 
-	// преобразование строки символов в данные для вывода на экран
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 	vLCDputchar(vLCDbuf, lineParam_);
-	// запуск обновления инф-ии на ЖКИ
+	// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ
 	vLCDrefresh();
 }
 
-/**	Выполнение настроек для К400.
- * 	@retval True - всегда.
+/**	пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅ400.
+ * 	@retval True - пїЅпїЅпїЅпїЅпїЅпїЅ.
  */
 bool clMenu::setDeviceK400() {
 	sParam.typeDevice = AVANT_K400;
 	sParam.glb.setTypeDevice(AVANT_K400);
 	vKEYset(AVANT_K400);
 
-	// включение/отключение параметров в зависимости от текущей совместимости
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	eGB_COMP_K400 comp = sParam.glb.getCompK400();
 	bool prm = false;
 	bool prd = false;
@@ -276,13 +276,13 @@ bool clMenu::setDeviceK400() {
 		case GB_COMP_K400_ANKA_PRM:
 			prm = true;
 			break;
-		case GB_COMP_K400_MAX:	// заглушка !!!
+		case GB_COMP_K400_MAX:	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ !!!
 			break;
 	}
 	sParam.prd.status.setEnable(prd);
 	sParam.prm.status.setEnable(prm);
 
-	// состояния
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.def.status.stateText[9] = fcDefSost09;
 
 	sParam.prd.status.stateText[1] = fcPrdSost01;
@@ -291,15 +291,15 @@ bool clMenu::setDeviceK400() {
 	sParam.prm.status.stateText[1] = fcPrmSost01;
 	sParam.prm.status.stateText[3] = fcPrmSost03;
 
-	// дата и время выводятся во всех вариантах
+	// пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	measParam[0] = MENU_MEAS_PARAM_TIME;
 	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TIME;
 	measParam[1] = MENU_MEAS_PARAM_DATE;
 	measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
 
 	if (!sParam.prd.status.isEnable()) {
-		// Если чистый приемник, не нужны U и I
-		// а в трех концевой при этом надо выводить Uк1, Uk2, Uш1, Uш2
+		// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ U пїЅ I
+		// пїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ UпїЅ1, Uk2, UпїЅ1, UпїЅ2
 		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
 			measParam[2] = MENU_MEAS_PARAM_UC1;
 			measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC1;
@@ -316,14 +316,14 @@ bool clMenu::setDeviceK400() {
 			measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_D;
 		}
 	} else if (!sParam.prm.status.isEnable()) {
-		// Если чистый передатчик, не нужны Uk/Uш
+		// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ Uk/UпїЅ
 		measParam[2] = MENU_MEAS_PARAM_UOUT;
 		measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UOUT;
 		measParam[4] = MENU_MEAS_PARAM_IOUT;
 		measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_IOUT;
 	} else {
-		// Если есть приемник и передатчик выводим U,I,Uk,Uш
-		// в 3-х концевой при этом выводятся Uк1/2, Uш1/2
+		// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ U,I,Uk,UпїЅ
+		// пїЅ 3-пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ UпїЅ1/2, UпїЅ1/2
 		measParam[2] = MENU_MEAS_PARAM_UOUT;
 		measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UOUT;
 		measParam[4] = MENU_MEAS_PARAM_IOUT;
@@ -342,7 +342,7 @@ bool clMenu::setDeviceK400() {
 	}
 
 
-	// заполнение массива параметров для меню "Измерение"
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ"
 	uint8_t cnt = 0;
 	if (sParam.prd.status.isEnable()) {
 		measParamLvl[cnt++] = MENU_MEAS_PARAM_UOUT;	// 1
@@ -358,75 +358,75 @@ bool clMenu::setDeviceK400() {
 			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC;	// 3
 			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN;	// 4
 			measParamLvl[cnt++] = MENU_MEAS_PARAM_D;	// 5
-			measParamLvl[cnt++] = MENU_MEAS_PARAM_DF;	// 6 TODO (для 3-х концевой
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_DF;	// 6 TODO (пїЅпїЅпїЅ 3-пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		}
 	}
 	measParamLvl[cnt++] = MENU_MEAS_PARAM_TEMPERATURE;	// 7
 
-	// заполнение массива общих неисправностей
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
 	sParam.glb.status.faultText[1] = fcGlbFault0002;
 	sParam.glb.status.faultText[2] = fcGlbFault0004;
 	sParam.glb.status.faultText[3] = fcGlbFault0008;
 	sParam.glb.status.faultText[4] = fcGlbFault0010;
-	// 5-7 нет
+	// 5-7 пїЅпїЅпїЅ
 	sParam.glb.status.faultText[8] = fcGlbFault0100;
 	sParam.glb.status.faultText[9] = fcGlbFault0200;
-	// 10 нет
+	// 10 пїЅпїЅпїЅ
 	sParam.glb.status.faultText[11] = fcGlbFault0800;
 	sParam.glb.status.faultText[12] = fcGlbFault1000;
-	// 13-15 нет
-	// заполнение массива общих предупреждений
+	// 13-15 пїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.glb.status.warningText[0] = fcGlbWarning01;
-	// 1 - нет
+	// 1 - пїЅпїЅпїЅ
 	sParam.glb.status.warningText[2] = fcGlbWarning04k400;
 	sParam.glb.status.warningText[3] = fcGlbWarning08k400;
 	sParam.glb.status.warningText[4] = fcGlbWarning10k400;
-	// 5-15 нет
+	// 5-15 пїЅпїЅпїЅ
 
-	// отключение ЗАЩИТЫ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.def.status.setEnable(false);
 
-	// ПРИЕМНИК
-	// заполнение массива неисправностей приемника
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.prm.status.faultText[0] = fcPrmFault0001rzsk;
 	sParam.prm.status.faultText[1] = fcPrmFault0002rzsk;
 	sParam.prm.status.faultText[2] = fcPrmFault0004rzsk;
 	sParam.prm.status.faultText[3] = fcPrmFault0008k400;
-	// 4-7 нет
+	// 4-7 пїЅпїЅпїЅ
 	sParam.prm.status.faultText[8] = fcPrmFault0100rzsk;
 	sParam.prm.status.faultText[9] = fcPrmFault0200rzsk;
 	sParam.prm.status.faultText[10] = fcPrmFault0400rzsk;
 	sParam.prm.status.faultText[11] = fcPrmFault0800rzsk;
-	// 12-15 нет
-	// заполнение массива предупреждений приемника
+	// 12-15 пїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.prm.status.warningText[0] = fcPrmWarning01rzsk;
 	sParam.prm.status.warningText[1] = fcPrmWarning02k400;
 	sParam.prm.status.warningText[2] = fcPrmWarning04k400;
 	sParam.prm.status.warningText[3] = fcPrmWarning08k400;
-	// 4-15 нет
+	// 4-15 пїЅпїЅпїЅ
 
-	// ПЕРЕДАТЧИК
-	// заполнение массива неисправностей передатчика
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.prd.status.faultText[0] = fcPrdFault0001rzsk;
 	sParam.prd.status.faultText[1] = fcPrdFault0002rzsk;
-	// 2-7 нет
+	// 2-7 пїЅпїЅпїЅ
 	sParam.prd.status.faultText[8] = fcPrdFault0100rzsk;
 	sParam.prd.status.faultText[9] = fcPrdFault0200rzsk;
 	sParam.prd.status.faultText[10] = fcPrdFault0400rzsk;
 	sParam.prd.status.faultText[11] = fcPrdFault0800rzsk;
-	// 12-15 нет
-	// заполнение массива предупреждений передатчика
-	// 0 нет
+	// 12-15 пїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	// 0 пїЅпїЅпїЅ
 	sParam.prd.status.warningText[1] = fcPrdWarning02k400;
 	sParam.prd.status.warningText[2] = fcPrdWarning04k400;
-	// 3-15 нет
+	// 3-15 пїЅпїЅпїЅ
 
 	return true;
 }
 
-/**	Выполнение настроек для РЗСК.
- * 	@retval True - всегда.
+/**	пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ.
+ * 	@retval True - пїЅпїЅпїЅпїЅпїЅпїЅ.
  */
 bool clMenu::setDeviceRZSK() {
 
@@ -437,7 +437,7 @@ bool clMenu::setDeviceRZSK() {
 	sParam.prm.status.setEnable(sParam.prm.getNumCom() != 0);
 	sParam.prd.status.setEnable(sParam.prd.getNumCom() != 0);
 
-	// состояния
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.def.status.stateText[9] = fcDefSost09;
 
 	sParam.prd.status.stateText[1] = fcPrdSost01;
@@ -446,13 +446,13 @@ bool clMenu::setDeviceRZSK() {
 	sParam.prm.status.stateText[1] = fcPrmSost01;
 	sParam.prm.status.stateText[3] = fcPrmSost03;
 
-	// первый столбец параметров
-	measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
+	// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	measParam[0] = MENU_MEAS_PARAM_TIME;	// пїЅпїЅпїЅпїЅ <-> пїЅпїЅпїЅпїЅпїЅ
 	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
 	measParam[2] = measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UOUT;
 	measParam[4] = measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_IOUT;
 
-	// второй столбец параметров
+	// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
 		measParam[1] = MENU_MEAS_PARAM_UZ1;
 		measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UZ2;
@@ -466,7 +466,7 @@ bool clMenu::setDeviceRZSK() {
 		measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
 	}
 
-	// заполнение массива параметров для меню "Измерение"
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ"
 	uint8_t cnt = 0;
 	measParamLvl[cnt++] = MENU_MEAS_PARAM_UOUT;	// 1
 	measParamLvl[cnt++] = MENU_MEAS_PARAM_IOUT;	// 2
@@ -482,81 +482,81 @@ bool clMenu::setDeviceRZSK() {
 		measParamLvl[cnt++] = MENU_MEAS_PARAM_UC;	// 4
 		measParamLvl[cnt++] = MENU_MEAS_PARAM_UN;	// 5
 	}
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_TEMPERATURE;	// 9 или 6
+	measParamLvl[cnt++] = MENU_MEAS_PARAM_TEMPERATURE;	// 9 пїЅпїЅпїЅ 6
 
-	// заполнение массива общих неисправностей
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
 	sParam.glb.status.faultText[1] = fcGlbFault0002;
 	sParam.glb.status.faultText[2] = fcGlbFault0004;
 	sParam.glb.status.faultText[3] = fcGlbFault0008;
 	sParam.glb.status.faultText[4] = fcGlbFault0010;
-	// 5-7 нет
+	// 5-7 пїЅпїЅпїЅ
 	sParam.glb.status.faultText[8] = fcGlbFault0100;
 	sParam.glb.status.faultText[9] = fcGlbFault0200;
-	// 10 нет
+	// 10 пїЅпїЅпїЅ
 	sParam.glb.status.faultText[11] = fcGlbFault0800;
 	sParam.glb.status.faultText[12] = fcGlbFault1000;
-	// 13-15 нет
-	// заполнение массива общих предупреждений
-	// 0-9 нет
+	// 13-15 пїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	// 0-9 пїЅпїЅпїЅ
 	sParam.glb.status.warningText[10] = fcGlbWarning01;
-	// 11-15 нет
+	// 11-15 пїЅпїЅпїЅ
 
-	// ЗАЩИТА
-	// заполнение массива неисправностей защиты
+	// пїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.def.status.faultText[0] = fcDefFault0001;
 	sParam.def.status.faultText[1] = fcDefFault0002;
 	sParam.def.status.faultText[2] = fcDefFault0004;
-	// 3-7 нет
+	// 3-7 пїЅпїЅпїЅ
 	sParam.def.status.faultText[8] = fcDefFault0100;
 	sParam.def.status.faultText[9] = fcDefFault0200;
-	// 10 нет
+	// 10 пїЅпїЅпїЅ
 	sParam.def.status.faultText[11] = fcDefFault0800;
-	// 12 нет
+	// 12 пїЅпїЅпїЅ
 	sParam.def.status.faultText[13] = fcDefFault2000;
 	sParam.def.status.faultText[14] = fcDefFault4000rzsk;
 	sParam.def.status.faultText[15] = fcDefFault8000rzsk;
-	// заполнение массива предупреждений защиты
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.def.status.warningText[0] = fcDefWarning01rzsk;
 	sParam.def.status.warningText[1] = fcDefWarning02;
-	// 2-15 нет
+	// 2-15 пїЅпїЅпїЅ
 
-	// ПРИЕМНИК
-	// заполнение массива неисправностей приемника
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.prm.status.faultText[0] = fcPrmFault0001rzsk;
 	sParam.prm.status.faultText[1] = fcPrmFault0002rzsk;
 	sParam.prm.status.faultText[2] = fcPrmFault0004rzsk;
-	// 3-7 нет
+	// 3-7 пїЅпїЅпїЅ
 	sParam.prm.status.faultText[8] = fcPrmFault0100rzsk;
 	sParam.prm.status.faultText[9] = fcPrmFault0200rzsk;
 	sParam.prm.status.faultText[10] = fcPrmFault0400rzsk;
 	sParam.prm.status.faultText[11] = fcPrmFault0800rzsk;
-	// 12-15 нет
-	// заполнение массива предупреждений приемника
+	// 12-15 пїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.prm.status.warningText[0] = fcPrmWarning01rzsk;
-	// 1-15 нет
+	// 1-15 пїЅпїЅпїЅ
 
-	// ПЕРЕДАТЧИК
-	// заполнение массива неисправностей передатчика
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.prd.status.faultText[0] = fcPrdFault0001rzsk;
 	sParam.prd.status.faultText[1] = fcPrdFault0002rzsk;
-	// 2-7 нет
+	// 2-7 пїЅпїЅпїЅ
 	sParam.prd.status.faultText[8] = fcPrdFault0100rzsk;
 	sParam.prd.status.faultText[9] = fcPrdFault0200rzsk;
 	sParam.prd.status.faultText[10] = fcPrdFault0400rzsk;
 	sParam.prd.status.faultText[11] = fcPrdFault0800rzsk;
-	// 12-15 нет
-	// заполнение массива предупреждений передатчика
-	// 0 нет
+	// 12-15 пїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	// 0 пїЅпїЅпїЅ
 	sParam.prd.status.warningText[1] = fcPrdWarning02k400;
 	sParam.prd.status.warningText[2] = fcPrdWarning04k400;
-	// 3-15 нет
+	// 3-15 пїЅпїЅпїЅ
 
 	return true;
 }
 
-/**	Выполнение настроек для Р400м.
- * 	@retval True - всегда.
+/**	пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅ400пїЅ.
+ * 	@retval True - пїЅпїЅпїЅпїЅпїЅпїЅ.
  */
 bool clMenu::setDeviceR400M() {
 
@@ -564,7 +564,7 @@ bool clMenu::setDeviceR400M() {
 	sParam.glb.setTypeDevice(AVANT_R400M);
 	vKEYset(AVANT_R400M);
 
-	// состояния
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.def.status.stateText[9] = fcDefSost09;
 
 	sParam.prd.status.stateText[1] = fcPrdSost01;
@@ -573,13 +573,13 @@ bool clMenu::setDeviceR400M() {
 	sParam.prm.status.stateText[1] = fcPrmSost01;
 	sParam.prm.status.stateText[3] = fcPrmSost03;
 
-	// первый столбец параметров
-	measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
+	// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	measParam[0] = MENU_MEAS_PARAM_TIME;	// пїЅпїЅпїЅпїЅ <-> пїЅпїЅпїЅпїЅпїЅ
 	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
 	measParam[2] = measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UOUT;
 	measParam[4] = measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_IOUT;
 
-	// второй столбец параметров
+	// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UZ;
 	if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
 		measParam[3] = MENU_MEAS_PARAM_UC1;
@@ -590,7 +590,7 @@ bool clMenu::setDeviceR400M() {
 	measParam[5] = MENU_MEAS_PARAM_SD;
 	measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
 
-	// заполнение массива параметров для меню "Измерение"
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ"
 	uint8_t cnt = 0;
 	measParamLvl[cnt++] = MENU_MEAS_PARAM_UOUT;	// 1
 	measParamLvl[cnt++] = MENU_MEAS_PARAM_IOUT;	// 2
@@ -601,12 +601,12 @@ bool clMenu::setDeviceR400M() {
 	} else {
 		measParamLvl[cnt++] = MENU_MEAS_PARAM_UC;	// 4
 	}
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_SD;	// 6 или 5
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_UN;	// 7 или 6
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_TEMPERATURE;	// 8 или 7
+	measParamLvl[cnt++] = MENU_MEAS_PARAM_SD;	// 6 пїЅпїЅпїЅ 5
+	measParamLvl[cnt++] = MENU_MEAS_PARAM_UN;	// 7 пїЅпїЅпїЅ 6
+	measParamLvl[cnt++] = MENU_MEAS_PARAM_TEMPERATURE;	// 8 пїЅпїЅпїЅ 7
 
 
-	// заполнение массива общих неисправностей
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
 	sParam.glb.status.faultText[1] = fcGlbFault0002;
 	sParam.glb.status.faultText[2] = fcGlbFault0004;
@@ -622,19 +622,19 @@ bool clMenu::setDeviceR400M() {
 	sParam.glb.status.faultText[12] = fcGlbFault1000;
 	sParam.glb.status.faultText[13] = fcGlbFault2000;
 	sParam.glb.status.faultText[14] = fcGlbFault4000;
-	// 15 нет
-	// заполнение массива общих предупреждений
+	// 15 пїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.glb.status.warningText[0] = fcGlbWarning01;
-	// 1-15 - нет
+	// 1-15 - пїЅпїЅпїЅ
 
-	// ЗАЩИТА
-	// заполнение массива неисправностей защиты
+	// пїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.def.status.faultText[0] = fcDefFault0001;
 	sParam.def.status.faultText[1] = fcDefFault0002;
 	sParam.def.status.faultText[2] = fcDefFault0004;
-	// 3 нет
+	// 3 пїЅпїЅпїЅ
 	sParam.def.status.faultText[4] = fcDefFault0010;
-	// 5 нет
+	// 5 пїЅпїЅпїЅ
 	sParam.def.status.faultText[6] = fcDefFault0040;
 	sParam.def.status.faultText[7] = fcDefFault0080;
 	sParam.def.status.faultText[8] = fcDefFault0100;
@@ -645,23 +645,23 @@ bool clMenu::setDeviceR400M() {
 	sParam.def.status.faultText[13] = fcDefFault2000;
 	sParam.def.status.faultText[14] = fcDefFault4000;
 	sParam.def.status.faultText[15] = fcDefFault8000;
-	// заполнение массива предупреждений защиты
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.def.status.warningText[0] = fcDefWarning01;
 	sParam.def.status.warningText[1] = fcDefWarning02;
 	sParam.def.status.warningText[2] = fcDefWarning04;
 	sParam.def.status.warningText[3] = fcDefWarning08;
-	// 4-15 нет
+	// 4-15 пїЅпїЅпїЅ
 
-	// отключение приемника
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.prm.status.setEnable(false);
-	// отключение передатчика
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.prd.status.setEnable(false);
 
 	return true;
 }
 
-/**	Выполнение настроек для ОПТИКИ.
- * 	@retval True - всегда.
+/**	пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@retval True - пїЅпїЅпїЅпїЅпїЅпїЅ.
  */
 bool clMenu::setDeviceOPTO() {
 
@@ -672,7 +672,7 @@ bool clMenu::setDeviceOPTO() {
 	sParam.prd.status.setEnable(sParam.prd.getNumCom() != 0);
 
 	if (sParam.def.status.isEnable()) {
-		// в РЗСК будет клавиатура от РЗСК, иначе от Р400м
+		// пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅ400пїЅ
 		if (sParam.prm.status.isEnable() || sParam.prd.status.isEnable()) {
 			vKEYset(AVANT_RZSK);
 		} else {
@@ -682,7 +682,7 @@ bool clMenu::setDeviceOPTO() {
 		vKEYset(AVANT_K400);
 	}
 
-	// состояния
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.def.status.stateText[9] = fcDefSost09opto;
 
 	sParam.prd.status.stateText[1] = fcPrdSost01opto;
@@ -694,21 +694,21 @@ bool clMenu::setDeviceOPTO() {
 	measParam[0] = measParam[0 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TIME;
 	measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
 
-	// заполнение массива общих неисправностей
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
 	sParam.glb.status.faultText[1] = fcGlbFault0002;
 	sParam.glb.status.faultText[2] = fcGlbFault0004;
 	sParam.glb.status.faultText[3] = fcGlbFault0008;
 	sParam.glb.status.faultText[4] = fcGlbFault0010;
-	// 5-8 нет
+	// 5-8 пїЅпїЅпїЅ
 	sParam.glb.status.faultText[9] = fcGlbFault0200;
-	// 10-15 нет
-	// заполнение массива общих предупреждений
+	// 10-15 пїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.glb.status.warningText[0] = fcGlbWarning01;
 	sParam.glb.status.warningText[1] = fcGlbWarning02;
-	if (sParam.glb.getTypeOpto() == TYPE_OPTO_RING_UNI) {	// к400 кольцо
-		sParam.glb.status.warningText[2] = fcGlbWarning04ring1;	// кольцо однонапр
-		sParam.glb.status.warningText[3] = fcGlbWarning08ring1;	// кольцо однонапр
+	if (sParam.glb.getTypeOpto() == TYPE_OPTO_RING_UNI) {	// пїЅ400 пїЅпїЅпїЅпїЅпїЅпїЅ
+		sParam.glb.status.warningText[2] = fcGlbWarning04ring1;	// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+		sParam.glb.status.warningText[3] = fcGlbWarning08ring1;	// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	} else {
 		sParam.glb.status.warningText[2] = fcGlbWarning04;
 		sParam.glb.status.warningText[3] = fcGlbWarning08;
@@ -716,78 +716,78 @@ bool clMenu::setDeviceOPTO() {
 	sParam.glb.status.warningText[4] = fcGlbWarning10;
 	sParam.glb.status.warningText[5] = fcGlbWarning20;
 	sParam.glb.status.warningText[6] = fcGlbWarning40;
-	// 7 нет
+	// 7 пїЅпїЅпїЅ
 	if (sParam.glb.getTypeOpto() == TYPE_OPTO_RING_UNI) {
 		sParam.glb.status.warningText[8] = fcGlbWarning100ring1;
 		sParam.glb.status.warningText[9] = fcGlbWarning200ring1;
-		// 10-15 нет
+		// 10-15 пїЅпїЅпїЅ
 	} else {
 		sParam.glb.status.warningText[8] = fcGlbWarning100;
-		// 9-15 нет
+		// 9-15 пїЅпїЅпїЅ
 	}
 
 
-	// ЗАЩИТА
-	// заполнение массива неисправностей защиты
+	// пїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.def.status.faultText[0] = fcDefFault0001;
 	sParam.def.status.faultText[1] = fcDefFault0002;
 	sParam.def.status.faultText[2] = fcDefFault0004;
 	// 3
 	sParam.def.status.faultText[4] = fcDefFault0010opto;
-	// 5-7 нет
+	// 5-7 пїЅпїЅпїЅ
 	sParam.def.status.faultText[8] = fcDefFault0100;
 	sParam.def.status.faultText[9] = fcDefFault0200;
-	// 10 нет
+	// 10 пїЅпїЅпїЅ
 	sParam.def.status.faultText[11] = fcDefFault0800;
-	// 12 нет
+	// 12 пїЅпїЅпїЅ
 	sParam.def.status.faultText[13] = fcDefFault2000;
-	// 14-15 нет
-	// заполнение массива предупреждений защиты
+	// 14-15 пїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.def.status.warningText[0] = fcDefWarning01opto;
 	sParam.def.status.warningText[1] = fcDefWarning02;
-	// 2-15 нет
+	// 2-15 пїЅпїЅпїЅ
 
-	// ПРИЕМНИК
-	// заполнение массива неисправностей приемника
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.prm.status.faultText[0] = fcPrmFault0001rzsk;
 	sParam.prm.status.faultText[1] = fcPrmFault0002rzsk;
 	sParam.prm.status.faultText[2] = fcPrmFault0004opto;
-	// 3-7 нет
+	// 3-7 пїЅпїЅпїЅ
 	sParam.prm.status.faultText[8] = fcPrmFault0100rzsk;
 	sParam.prm.status.faultText[9] = fcPrmFault0200rzsk;
 	sParam.prm.status.faultText[10] = fcPrmFault0400rzsk;
 	sParam.prm.status.faultText[11] = fcPrmFault0800rzsk;
-	// 12-15 нет
-	// заполнение массива предупреждений защиты
+	// 12-15 пїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.prm.status.warningText[0] = fcPrmWarning01opto;
-	// 1-15 нет
+	// 1-15 пїЅпїЅпїЅ
 
-	// ПЕРЕДАТЧИК
-	// заполнение массива неисправностей передатчика
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.prd.status.faultText[0] = fcPrdFault0001rzsk;
 	sParam.prd.status.faultText[1] = fcPrdFault0002rzsk;
-	// 2-7 нет
+	// 2-7 пїЅпїЅпїЅ
 	sParam.prd.status.faultText[8] = fcPrdFault0100rzsk;
 	sParam.prd.status.faultText[9] = fcPrdFault0200rzsk;
 	sParam.prd.status.faultText[10] = fcPrdFault0400rzsk;
 	sParam.prd.status.faultText[11] = fcPrdFault0800rzsk;
-	// 12-15 нет
-	// заполнение массива предупреждений передатчика
-	// 0-15 нет
+	// 12-15 пїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	// 0-15 пїЅпїЅпїЅ
 
 	return true;
 }
 
 bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
-	static const char fcUnknownFault[]	 PROGMEM = "Неисправность";
-	static const char fcUnknownWarning[] PROGMEM = "Предупреждение";
+	static const char fcUnknownFault[]	 PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static const char fcUnknownWarning[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
 
 	bool status = false;
 
 	sParam.glb.status.setEnable(true);
 
-	// если необходимый тип аппарата небыл передан, сделаем вывод исходя
-	// из текущих настроек.
+	// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
 	//	if (device == AVANT_NO) {
 	device = sParam.glb.getTypeDevice();
 	if (device == AVANT_NO) {
@@ -795,10 +795,10 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 		bool isPrd = sParam.prd.status.isEnable();
 
 		if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM) {
-			// ВЧ вариант
-			// если есть защита + команды (прм и/или прд) - РЗСК
-			// если есть только команды (прм и/или прд) - К400
-			// если есть защита и (версия прошивки & 0xF000) = 0xF000 - Р400М
+			// пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+			// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅ пїЅ/пїЅпїЅпїЅ пїЅпїЅпїЅ) - пїЅпїЅпїЅпїЅ
+			// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅ пїЅ/пїЅпїЅпїЅ пїЅпїЅпїЅ) - пїЅ400
+			// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ (пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ & 0xF000) = 0xF000 - пїЅ400пїЅ
 
 			if (sParam.def.status.isEnable()) {
 				if (isPrm || isPrd) {
@@ -819,8 +819,8 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 		}
 	}
 
-	// если текущее устройство совпадает с новым, то ничего не делаем
-	// иначе прыгаем на начальный уровень
+	// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	if (device == sParam.typeDevice) {
 		status = true;
 	} else {
@@ -830,7 +830,7 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 	}
 
 	//	if (!status) {
-	// предварительная "очистка" массивов неисправностей
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ" пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	for (uint_fast8_t i = 0; i < MAX_NUM_FAULTS; i++)
 		sParam.glb.status.faultText[i] = fcUnknownFault;
 	for (uint_fast8_t i = 0; i < MAX_NUM_FAULTS; i++)
@@ -840,7 +840,7 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 	for (uint_fast8_t i = 0; i < MAX_NUM_FAULTS; i++)
 		sParam.prd.status.faultText[i] = fcUnknownFault;
 
-	// предварительная "очистка" массивов предупреждений
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ" пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	for (uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
 		sParam.glb.status.warningText[i] = fcUnknownWarning;
 	for (uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
@@ -850,11 +850,11 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 	for (uint_fast8_t i = 0; i < MAX_NUM_WARNINGS; i++)
 		sParam.prd.status.warningText[i] = fcUnknownWarning;
 
-	// предварительная очистка массива отображаемых параметров
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	for (uint_fast8_t i = 0; i < (MAX_NUM_MEAS_PARAM * 2); i++)
 		measParam[i] = MENU_MEAS_PARAM_NO;
 
-	// предварительная очистка массива отображаемых параметров в "Измерение"
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ"
 	for (uint_fast8_t i = 0; i < MAX_NUM_MEAS_PARAM_LVL; i++)
 		measParamLvl[i] = MENU_MEAS_PARAM_NO;
 
@@ -868,10 +868,10 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 		status = setDeviceOPTO();
 	} else {
 		//	if ((!status) || (device == AVANT_NO)) {
-		// если полученные данные не подходят ни под один имеющийся тип
-		// на экране отображается ошибка
+		// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
+		// пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 		sParam.typeDevice = AVANT_NO;
-		// в случае неизвестного типа устройства, отключим все
+		// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
 		for (uint_fast8_t i = 0; i < (MAX_NUM_MEAS_PARAM * 2); i++)
 			measParam[i] = MENU_MEAS_PARAM_NO;
 		measParam[0] = measParam[0 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TIME;
@@ -905,24 +905,24 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
     }
     sParam.txComBuf.addCom1(GB_COM_GET_JRN_IS_CNT);
 
-	// "сброс" флага необходимости проверки типа аппарата
+	// "пїЅпїЅпїЅпїЅпїЅ" пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.device = true;
-	// обнавление текущего уровня меню
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 	lvlCreate_ = true;
 
 	return status;
 }
 
-// Возвращает имеющуюся команду на исполнение.
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
 eGB_COM clMenu::getTxCommand() {
     static uint8_t cnt = MAX_NUM_COM_SEND_IN_CYLCE;
 
 //    static QVector<eGB_COM> dcom;
 
-	// быстрая команда идет с самым высоким приоритетом
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	eGB_COM com = sParam.txComBuf.getFastCom();
 
-    // двойной проход, для нахождения команды на передачу
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     for(uint8_t i = 0; (com == GB_COM_NO) && (i < 2); i++) {
         cnt = cnt < MAX_NUM_COM_SEND_IN_CYLCE ? cnt + 1 : 0;
 
@@ -959,18 +959,18 @@ eGB_COM clMenu::getTxCommand() {
     return com;
 }
 
-/** Очистка текстового буфера
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::clearTextBuf() {
 	for (uint_fast8_t i = 0; i < sizeof(vLCDbuf); i++)
 		vLCDbuf[i] = ' ';
 }
 
-/** Очистка строки
- * 	@param line Номер строки 1..NUM_TEXT_LINES
- * 	@retrun Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+ * 	@param line пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 1..NUM_TEXT_LINES
+ * 	@retrun пїЅпїЅпїЅ
  */
 void clMenu::clearLine(uint8_t line) {
 	if ((line > 0) && (line <= NUM_TEXT_LINES)) {
@@ -1007,8 +1007,8 @@ bool clMenu::printMessage() {
         case MSG_WRONG_USER: {
             static const char message[][ROW_LEN+1] PROGMEM = {
                 //2345678901234567890
-                " Недостаточно прав  ",
-                "   для изменения    "
+                " пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ  ",
+                "   пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ    "
             };
             pmsg = (PGM_P) message;
             nrows = SIZE_OF(message);
@@ -1017,9 +1017,9 @@ bool clMenu::printMessage() {
         case MSG_WRONG_REGIME: {
             static const char message[][ROW_LEN+1] PROGMEM = {
                 //2345678901234567890
-                " Изменить параметр  ",
-                "  можно только в    ",
-                "  режиме ВЫВЕДЕН    "
+                " пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ  ",
+                "  пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ    ",
+                "  пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ    "
             };
             pmsg = (PGM_P) message;
             nrows = SIZE_OF(message);
@@ -1028,9 +1028,9 @@ bool clMenu::printMessage() {
         case MSG_WRONG_PWD: {
             static const char message[][ROW_LEN+1] PROGMEM = {
                 //02345678901234567890
-                "       Введен       ",
-                "    неправильный    ",
-                "       пароль       "
+                "       пїЅпїЅпїЅпїЅпїЅпїЅ       ",
+                "    пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ    ",
+                "       пїЅпїЅпїЅпїЅпїЅпїЅ       "
             };
             pmsg = (PGM_P) message;
             nrows = SIZE_OF(message);
@@ -1039,8 +1039,8 @@ bool clMenu::printMessage() {
         case MSG_WRONG_DEVICE: {
             static const char message[][ROW_LEN+1] PROGMEM = {
                 //02345678901234567890
-                "    Тип аппарата    ",
-                "   не определен!!!  "
+                "    пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ    ",
+                "   пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!!!  "
             };
             pmsg = (PGM_P) message;
             nrows = SIZE_OF(message);
@@ -1049,10 +1049,10 @@ bool clMenu::printMessage() {
         case MSG_BLOCK_USER: {
             static const char message[][ROW_LEN+1] PROGMEM = {
                 //02345678901234567890
-                "     Выбор роли     ",
-                "    заблокирован    "
+                "     пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ     ",
+                "    пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ    "
             };
-            // TODO Добавить отображение времени до окончания блокировки!
+            // TODO пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!
             pmsg = (PGM_P) message;
             nrows = SIZE_OF(message);
         } break;
@@ -1060,8 +1060,8 @@ bool clMenu::printMessage() {
         case MSG_DISABLE: {
             static const char message[][ROW_LEN+1] PROGMEM = {
                 //2345678901234567890
-                "    Перейдите в     ",
-                "   режим ВЫВЕДЕН    "
+                "    пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ     ",
+                "   пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ    "
             };
             pmsg = (PGM_P) message;
             nrows = SIZE_OF(message);
@@ -1070,7 +1070,7 @@ bool clMenu::printMessage() {
         case MSG_INIT: {
             static const char message[][ROW_LEN+1] PROGMEM = {
                 //2345678901234567890
-                "    Инициализация   "
+                "    пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ   "
             };
             pmsg = (PGM_P) message;
             nrows = SIZE_OF(message);
@@ -1079,9 +1079,9 @@ bool clMenu::printMessage() {
         case MSG_RESET_PWD: {
             static const char message[][ROW_LEN+1] PROGMEM = {
                 //2345678901234567890
-                "   Сброс паролей   ",
-                "    к заводским    ",
-                "    настройкам     "
+                "   пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ   ",
+                "    пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ    ",
+                "    пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ     "
             };
             pmsg = (PGM_P) message;
             nrows = SIZE_OF(message);
@@ -1107,12 +1107,12 @@ bool clMenu::isMessage() const {
     return (delay_ > 0) && (msg_ != MSG_NO) && (msg_ < MSG_MAX);
 }
 
-/** Уровень "Ошибочный тип аппарата"
- * 	Изначально на экран выводится надпись "Инициализация". Но если тип аппарата
- * 	не будет определен n-ое кол-во времени, то надпись сменится на
- * 	"Тип аппарата не определен!!!"
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ"
+ * 	пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ". пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+ * 	пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ n-пїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ
+ * 	"пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!!!"
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlError() {
 	static uint8_t time = 0;
@@ -1121,7 +1121,7 @@ void clMenu::lvlError() {
 		lvlCreate_ = false;
 		cursorEnable_ = false;
 		vLCDclear();
-		// только одна строка отводится под вывод параметров
+		// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		lineParam_ = 1;
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
@@ -1129,11 +1129,11 @@ void clMenu::lvlError() {
 		sParam.txComBuf.addCom2(GB_COM_GET_VERS);
 	}
 
-	// вывод на экран измеряемых параметров
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	printMeasParam(0, measParam[0]);
 	printMeasParam(1, measParam[1]);
 
-	// Проверка времени нахождения в неизвестном состоянии типа аппарата
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	if (time >= 25) {
         setMessage(MSG_WRONG_DEVICE);
 	} else {
@@ -1152,16 +1152,16 @@ void clMenu::lvlError() {
 	}
 }
 
-/** Уровень начальный
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlStart() {
 	static const char fcTimeToAc[] PROGMEM = "%02d:%02d:%02d";
 #ifdef AVR
-	static const char fcCompType[] PROGMEM = "Совместим. %S";
+	static const char fcCompType[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. %S";
 #else
-    static const char fcCompType[] PROGMEM = "Совместим. %s";
+    static const char fcCompType[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. %s";
 #endif
 
 	if (lvlCreate_) {
@@ -1182,7 +1182,7 @@ void clMenu::lvlStart() {
 		}        
 	}
 
-	// вывод на экран измеряемых параметров
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	for (uint_fast8_t i = 0; i < (lineParam_ * 2); i++) {
 		if (i >= MAX_NUM_MEAS_PARAM)
 			continue;
@@ -1200,27 +1200,27 @@ void clMenu::lvlStart() {
 		printDevicesStatus(poz, &sParam.def.status);
 		poz += 20;
 
-		// в Р400м выводится АК и время до АК, а также тип совместимости
+		// пїЅ пїЅ400пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ, пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		if (sParam.typeDevice == AVANT_R400M) {
 			uint16_t time = sParam.def.getTimeToAC();
 			eGB_TYPE_AC ac = sParam.def.getTypeAC();
 			eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
 
-			// если работает в совместимости, выведем это на экран
+			// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 			if (comp != GB_COMPATIBILITY_AVANT) {
 				snprintf_P(&vLCDbuf[poz], 21, fcCompType,
 						fcCompatibility[static_cast<uint8_t>(comp)]);
 			}
 
 			if (comp == GB_COMPATIBILITY_LINER) {
-				// в Р400м совместимость ЛинияР подменяем название ""АК-норм"
-				// на "АК-авто"
+				// пїЅ пїЅ400пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ""пїЅпїЅ-пїЅпїЅпїЅпїЅ"
+				// пїЅпїЅ "пїЅпїЅ-пїЅпїЅпїЅпїЅ"
 				if  (ac == GB_TYPE_AC_AUTO_NORM) {
 					ac = GB_TYPE_AC_AUTO;
 				}
 			} else if (comp == GB_COMPATIBILITY_AVZK80) {
-				// в Р400м совместимость АВЗК-80 подменяем название ""АК-бегл"
-				// на "АК-пров"
+				// пїЅ пїЅ400пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ-80 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ""пїЅпїЅ-пїЅпїЅпїЅпїЅ"
+				// пїЅпїЅ "пїЅпїЅ-пїЅпїЅпїЅпїЅ"
 				if (ac == GB_TYPE_AC_CHECK) {
 					ac = GB_TYPE_AC_CHECK_1;
 				}
@@ -1233,11 +1233,11 @@ void clMenu::lvlStart() {
 			t += snprintf_P(&vLCDbuf[t], 11,
                             fcAcType[static_cast<uint8_t>(ac)]);
 
-			// время до АК
-			// выводится если соблюдаются условия:
-			// 1. АК не выключен
-			// 2. Режим = введен
-			// 3. Состояние = Контроль
+			// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ:
+			// 1. пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+			// 2. пїЅпїЅпїЅпїЅпїЅ = пїЅпїЅпїЅпїЅпїЅпїЅ
+			// 3. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ = пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 			if (ac != GB_TYPE_AC_OFF) {
 				if (sParam.def.status.getRegime() == GB_REGIME_ENABLED) {
 					if (sParam.def.status.getState() == 1) {
@@ -1353,18 +1353,18 @@ void clMenu::lvlStart() {
 	}
 }
 
-/** Уровень меню первый
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlFirst() {
-	static char title[] PROGMEM = "Меню";
-	static char punkt1[] PROGMEM = "%d. Журнал";
-	static char punkt2[] PROGMEM = "%d. Управление";
-	static char punkt3[] PROGMEM = "%d. Настройка";
-	static char punkt4[] PROGMEM = "%d. Тесты";
-	static char punkt5[] PROGMEM = "%d. Информация";
-	static char punkt6[] PROGMEM = "%d. Измерения";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅ";
+	static char punkt1[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt2[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt3[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt4[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅ";
+	static char punkt5[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt6[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -1386,7 +1386,7 @@ void clMenu::lvlFirst() {
 			Punkts_.add(punkt6);
 		}
 
-		// доплнительные команды
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		sParam.txComBuf.clear();
 	}
 
@@ -1445,12 +1445,12 @@ void clMenu::lvlFirst() {
 	}
 }
 
-/** Уровень меню. Информация об аппарате.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlInfo() {
-	static char title[] PROGMEM = "Меню\\Информация";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
 #ifdef AVR
 	static char versProg[] PROGMEM = "%S: %02X.%02X";
 #else
@@ -1468,9 +1468,9 @@ void clMenu::lvlInfo() {
 		Punkts_.clear();
 		Punkts_.add(GB_IC_BSP_MCU);
 		if (sParam.typeDevice != AVANT_OPTO) {
-			Punkts_.add(GB_IC_BSP_DSP);				// только в оптике нет DSP
+			Punkts_.add(GB_IC_BSP_DSP);				// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ DSP
 
-			if (sParam.typeDevice == AVANT_K400) {	// в К400 отдельно прошивка DSP
+			if (sParam.typeDevice == AVANT_K400) {	// пїЅ пїЅ400 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ DSP
 				Punkts_.add(GB_IC_BSP_DSP_PLIS);
 			}
 		}
@@ -1491,8 +1491,8 @@ void clMenu::lvlInfo() {
 			Punkts_.add(GB_IC_BSZ_PLIS);
 		}
 
-		// доплнительные команды
-		// обновляется версия прошивок (на случай перепрошивки)
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 		sParam.txComBuf.clear();
 		sParam.txComBuf.addCom2(GB_COM_GET_VERS);
 	}
@@ -1539,17 +1539,17 @@ void clMenu::lvlInfo() {
 	}
 }
 
-/** Уровень меню. Журналы.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlJournal() {
-	static char title[] PROGMEM = "Меню\\Журнал";
-	static char punkt1[] PROGMEM = "%d. События";
-	static char punkt2[] PROGMEM = "%d. Защита";
-	static char punkt3[] PROGMEM = "%d. Приемник";
-	static char punkt4[] PROGMEM = "%d. Передатчик";
-    static char punkt5[] PROGMEM = "%d. Безопасность";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt1[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt2[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt3[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt4[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+    static char punkt5[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -1562,7 +1562,7 @@ void clMenu::lvlJournal() {
 
 		sParam.txComBuf.clear();
 
-		// активация необходимых пунктов меню и соответствующих им команд
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 		Punkts_.clear();
 		Punkts_.add(punkt1);
 
@@ -1633,15 +1633,15 @@ void clMenu::lvlJournal() {
 	}
 }
 
-/** Уровень меню. Журнал событий.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlJournalEvent() {
-	static char title[] PROGMEM = "Журнал\\События";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
 
-	static char opto_ring1_13[] PROGMEM = "Кольцо восстановлено";
-	static char opto_ring1_14[] PROGMEM = "Дистанционный сброс";
+	static char opto_ring1_13[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char opto_ring1_14[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -1652,7 +1652,7 @@ void clMenu::lvlJournalEvent() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// установка текущего журнала и максимального кол-во записей в нем
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ
 		sParam.jrnEntry.clear();
 		sParam.jrnEntry.setCurrentDevice(GB_DEVICE_GLB);
 		uint16_t t = 0;
@@ -1668,7 +1668,7 @@ void clMenu::lvlJournalEvent() {
 		}
 		sParam.jrnEntry.setMaxNumJrnEntries(t);
 
-		// доплнительные команды
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		sParam.txComBuf.clear();
         sParam.txComBuf.setLocalCom(GB_COM_GET_JRN_CNT);
 		sParam.txComBuf.addCom2(GB_COM_GET_JRN_ENTRY);
@@ -1677,19 +1677,19 @@ void clMenu::lvlJournalEvent() {
 
     eGB_TYPE_DEVICE device = sParam.typeDevice;
 
-    // номер текущей записи в архиве и максимальное кол-во записей
+    // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     uint16_t cur_entry = sParam.jrnEntry.getCurrentEntry();
     uint16_t num_entries = sParam.jrnEntry.getNumJrnEntries();
 
     uint8_t poz = 0;
-    // вывод названия текущего пункта меню
+    // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
     snprintf_P(&vLCDbuf[poz], 21, title);
     poz += 20;
 
-    // вывод номер текущей записи и их кол-ва
+    // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ
     if (num_entries != 0) {
         if (device == AVANT_OPTO) {
-            // в оптике дополнительно выводится кол-во событий в одной записи
+            // пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
             snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntriesOpto, cur_entry,
                        num_entries, sParam.jrnEntry.getNumOpticsEntries());
         } else {
@@ -1699,38 +1699,26 @@ void clMenu::lvlJournalEvent() {
     poz += 20;
 
     if (num_entries == 0) {
-        // вывод сообщения об отсутствии записей в журнале
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
     } else if (!sParam.jrnEntry.isReady()) {
-        // ифнорация о текущей записи еще не получена
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
     } else {
-        // вывод режима
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         snprintf_P(&vLCDbuf[poz], 21, fcRegimeJrn);
         snprintf_P(&vLCDbuf[poz + 7], 13,
                    fcRegime[sParam.jrnEntry.getRegime()]);
         poz += 20;
-        // вывод даты
-        snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
-                   sParam.jrnEntry.dateTime.getDay(),
-                   sParam.jrnEntry.dateTime.getMonth(),
-                   sParam.jrnEntry.dateTime.getYear());
-        poz += 20;
-        //	    snprintf_P(&vLCDbuf[poz],4,fcDevices[sParam.journalEntry.getDevice()]);
-        // вывод времени
-        snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
-                   sParam.jrnEntry.dateTime.getHour(),
-                   sParam.jrnEntry.dateTime.getMinute(),
-                   sParam.jrnEntry.dateTime.getSecond(),
-                   sParam.jrnEntry.dateTime.getMsSecond());
-        poz += 20;
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+        poz += printDateAdnTimeInJournal(poz);
 
-        // вывод события
-        // в оптике в одной записи может быть много событий, поэтому
-        // считывается код события в записи
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        // пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         uint8_t event = 0;
         if (device == AVANT_OPTO) {
-            // проверка текущего номера событий с кол-вом событий в записи
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ-пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
             if (curCom_ > sParam.jrnEntry.getNumOpticsEntries())
                 curCom_ = 1;
             event = sParam.jrnEntry.getOpticEntry(curCom_);
@@ -1814,18 +1802,18 @@ void clMenu::lvlJournalEvent() {
 			break;
 	}
 
-	// поместим в сообщение для БСП адрес необходимой записи
-	// размещен в конце, чтобы не терять время до следующего обращения к
-	// данному пункту меню
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
     sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 }
 
-/** Уровень меню. Журнал защиты.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlJournalDef() {
-	static char title[] PROGMEM = "Журнал\\Защита";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅ";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -1835,7 +1823,7 @@ void clMenu::lvlJournalDef() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// установка текущего журнала и максимального кол-во записей в нем
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ
 		sParam.jrnEntry.clear();
 		sParam.jrnEntry.setCurrentDevice(GB_DEVICE_DEF);
 		uint16_t t = 0;
@@ -1849,56 +1837,44 @@ void clMenu::lvlJournalDef() {
 		}
 		sParam.jrnEntry.setMaxNumJrnEntries(t);
 
-		// доплнительные команды
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		sParam.txComBuf.clear();
         sParam.txComBuf.setLocalCom(GB_COM_DEF_GET_JRN_CNT);
 		sParam.txComBuf.addCom2(GB_COM_DEF_GET_JRN_ENTRY);
 		sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 	}
 
-	// номер текущей записи в архиве и максимальное кол-во записей
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	uint16_t cur_entry = sParam.jrnEntry.getCurrentEntry();
 	uint16_t num_entries = sParam.jrnEntry.getNumJrnEntries();
 
 	uint8_t poz = 0;
-	// вывод названия текущего пункта меню
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 	snprintf_P(&vLCDbuf[poz], 21, title);
 	poz += 20;
-	// вывод номер текущей записи и их кол-ва
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ
 	if (num_entries != 0) {
 		snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
 	}
 	poz += 20;
 
 	if (num_entries == 0) {
-		// вывод сообщения об отсутствии записей в журнале
+		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
 	} else if (!sParam.jrnEntry.isReady()) {
-		// ифнорация о текущей записи еще не получена
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
 	} else {
-		// вывод состояния
+		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		snprintf_P(&vLCDbuf[poz], 21, fcStateJrn);
 		if (sParam.glb.getTypeLine() != GB_TYPE_LINE_OPTO) {
 			snprintf_P(&vLCDbuf[poz + 11], 10,
 					sParam.def.status.stateText[sParam.jrnEntry.getEventType()]);
 		}
 		poz += 20;
-		// вывод даты
-		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
-				sParam.jrnEntry.dateTime.getDay(),
-				sParam.jrnEntry.dateTime.getMonth(),
-				sParam.jrnEntry.dateTime.getYear());
-		poz += 20;
-		//	    snprintf_P(&vLCDbuf[poz],4,fcDevices[sParam.journalEntry.getDevice()]);
-		// вывод времени
-		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
-				sParam.jrnEntry.dateTime.getHour(),
-				sParam.jrnEntry.dateTime.getMinute(),
-				sParam.jrnEntry.dateTime.getSecond(),
-				sParam.jrnEntry.dateTime.getMsSecond());
+		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+        poz += printDateAdnTimeInJournal(poz);
 
-		poz += 20;
 		//		uint8_t signals = sParam.jrnEntry.getSignalDef();
 		//		snprintf(&vLCDbuf[poz], 21, "%x",signals);
 		snprintf_P(&vLCDbuf[poz], 21, fcSignalDefJrn,
@@ -1932,18 +1908,18 @@ void clMenu::lvlJournalDef() {
 			break;
 	}
 
-	// поместим в сообщение для БСП адрес необходимой записи
-	// размещен в конце, чтобы не терять время до следующего обращения к
-	// данному пункту меню
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 	sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 }
 
-/** Уровень меню. Журнал приемника.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlJournalPrm() {
-	static char title[] PROGMEM = "Журнал\\Приемник";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 		cursorEnable_ = false;
@@ -1953,7 +1929,7 @@ void clMenu::lvlJournalPrm() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// установка текущего журнала и максимального кол-во записей в нем
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ
 		sParam.jrnEntry.clear();
 		sParam.jrnEntry.setCurrentDevice(GB_DEVICE_PRM);
 		uint16_t t = 0;
@@ -1967,7 +1943,7 @@ void clMenu::lvlJournalPrm() {
 		}
 		sParam.jrnEntry.setMaxNumJrnEntries(t);
 
-		// доплнительные команды
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		sParam.txComBuf.clear();
         sParam.txComBuf.setLocalCom(GB_COM_PRM_GET_JRN_CNT);
 		sParam.txComBuf.addCom2(GB_COM_PRM_GET_JRN_ENTRY);
@@ -1977,18 +1953,18 @@ void clMenu::lvlJournalPrm() {
 
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
-	// номер текущей записи в архиве и максимальное кол-во записей
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	uint16_t cur_entry = sParam.jrnEntry.getCurrentEntry();
 	uint16_t num_entries = sParam.jrnEntry.getNumJrnEntries();
 
 	uint8_t poz = 0;
-	// вывод названия текущего пункта меню
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 	snprintf_P(&vLCDbuf[poz], 21, title);
 	poz += 20;
-	// вывод номер текущей записи и их кол-ва
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ
 	if (num_entries != 0) {
 		if (device == AVANT_OPTO) {
-			// в оптике дополнительно выводится кол-во событий в одной записи
+			// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 			snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntriesOpto, cur_entry,
 					num_entries, sParam.jrnEntry.getNumOpticsEntries());
 		} else {
@@ -1998,17 +1974,17 @@ void clMenu::lvlJournalPrm() {
 	poz += 20;
 
 	if (num_entries == 0) {
-		// вывод сообщения об отсутствии записей в журнале
+		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
 	} else if (!sParam.jrnEntry.isReady()) {
-		// ифнорация о текущей записи еще не получена
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
 	} else {
-		// вывод номера команды
+		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		uint8_t com = 0;
 		if (device == AVANT_OPTO) {
-			// в оптике в каждой записи каждый бит отвечает за свою команду
-			// если 1 - передается, 0 - нет.
+			// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+			// пїЅпїЅпїЅпїЅ 1 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, 0 - пїЅпїЅпїЅ.
 			if (curCom_ > sParam.jrnEntry.getNumOpticsEntries())
 				curCom_ = 1;
 			com = sParam.jrnEntry.getOpticEntry(curCom_);
@@ -2033,23 +2009,13 @@ void clMenu::lvlJournalPrm() {
 		}
 
 		poz += 20;
-		// вывод даты
-		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
-				sParam.jrnEntry.dateTime.getDay(),
-				sParam.jrnEntry.dateTime.getMonth(),
-				sParam.jrnEntry.dateTime.getYear());
-		poz += 20;
-		// вывод времени
-		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
-				sParam.jrnEntry.dateTime.getHour(),
-				sParam.jrnEntry.dateTime.getMinute(),
-				sParam.jrnEntry.dateTime.getSecond(),
-				sParam.jrnEntry.dateTime.getMsSecond());
-		poz += 20;
-		// вывод события
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+        poz += printDateAdnTimeInJournal(poz);
+
+		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		if (device == AVANT_OPTO) {
-			// в оптике если есть записи - то это наличие команды
-			// иначе - команд на передачу нет
+			// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+			// пїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
 			if (com != 0) {
 				snprintf_P(&vLCDbuf[poz], 21, fcJrnPrmOptoComYes);
 			} else {
@@ -2107,18 +2073,18 @@ void clMenu::lvlJournalPrm() {
 			break;
 	}
 
-	// поместим в сообщение для БСП адрес необходимой записи
-	// размещен в конце, чтобы не терять время до следующего обращения к
-	// данному пункту меню
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 	sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 }
 
-/** Уровень меню. Журнал передатчика.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlJournalPrd() {
-	static char title[] PROGMEM = "Журнал\\Передатчик";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -2129,7 +2095,7 @@ void clMenu::lvlJournalPrd() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// установка текущего журнала и максимального кол-во записей в нем
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ
 		sParam.jrnEntry.clear();
 		sParam.jrnEntry.setCurrentDevice(GB_DEVICE_PRD);
 		uint16_t t = 0;
@@ -2143,7 +2109,7 @@ void clMenu::lvlJournalPrd() {
 		}
 		sParam.jrnEntry.setMaxNumJrnEntries(t);
 
-		// доплнительные команды
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		sParam.txComBuf.clear();
         sParam.txComBuf.setLocalCom(GB_COM_PRD_GET_JRN_CNT);
 		sParam.txComBuf.addCom2(GB_COM_PRD_GET_JRN_ENTRY);
@@ -2152,21 +2118,21 @@ void clMenu::lvlJournalPrd() {
 
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
-	// номер текущей записи в архиве и максимальное кол-во записей
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	uint16_t cur_entry = sParam.jrnEntry.getCurrentEntry();
 	uint16_t num_entries = sParam.jrnEntry.getNumJrnEntries();
 
 	uint8_t poz = 0;
-	// вывод названия текущего пункта меню
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 	snprintf_P(&vLCDbuf[poz], 21, title);
 	poz += 20;
 
 	uint8_t numSubEntries = sParam.jrnEntry.getNumOpticsEntries();
 
-	// вывод номер текущей записи и их кол-ва
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ
 	if (num_entries != 0) {
 		if (device == AVANT_OPTO) {
-			// в оптике дополнительно выводится кол-во событий в одной записи
+			// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 			snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntriesOpto, cur_entry,
 					num_entries, numSubEntries);
 		} else {
@@ -2176,16 +2142,16 @@ void clMenu::lvlJournalPrd() {
 
 	poz += 20;
 	if (num_entries == 0) {
-		// вывод сообщения об отсутствии записей в журнале
+		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
 	} else if (!sParam.jrnEntry.isReady()) {
-		// ифнорация о текущей записи еще не получена
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
 	} else {
-		// вывод номера команды
+		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		uint8_t com = 0;
 		if (device == AVANT_OPTO) {
-			// в оптике в одной записи может быть много команд
+			// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 			if (curCom_ > numSubEntries) {
 				curCom_ = 1;
 			}
@@ -2196,7 +2162,7 @@ void clMenu::lvlJournalPrd() {
 		}
 		uint8_t t = snprintf_P(&vLCDbuf[poz], 21, fcNumComJrn, com);
 
-		// для команднеой ВЧ-аппаратуры, выведем источник формирования команды
+		// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		if ((device == AVANT_K400) || (device == AVANT_RZSK)) {
 			uint8_t s = sParam.jrnEntry.getSourceCom();
 			snprintf_P(&vLCDbuf[poz + t + 1], 5, fcJrnSourcePrd[s]);
@@ -2206,23 +2172,13 @@ void clMenu::lvlJournalPrd() {
 		}
 
 		poz += 20;
-		// вывод даты
-		snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
-				sParam.jrnEntry.dateTime.getDay(),
-				sParam.jrnEntry.dateTime.getMonth(),
-				sParam.jrnEntry.dateTime.getYear());
-		poz += 20;
-		// вывод времени
-		snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
-				sParam.jrnEntry.dateTime.getHour(),
-				sParam.jrnEntry.dateTime.getMinute(),
-				sParam.jrnEntry.dateTime.getSecond(),
-				sParam.jrnEntry.dateTime.getMsSecond());
-		poz += 20;
-		// вывод события
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+        poz += printDateAdnTimeInJournal(poz);
+
+		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		if (device == AVANT_OPTO) {
-			// в оптике если есть записи - то это наличие команды
-			// иначе - команд на передачу нет
+			// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+			// пїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
 			if (com != 0) {
 				snprintf_P(&vLCDbuf[poz], 21, fcJrnPrdOptoComYes);
 			} else {
@@ -2280,20 +2236,25 @@ void clMenu::lvlJournalPrd() {
 			break;
 	}
 
-    // FIXME ПРоверить формирование команды для считывания журналов!!!
-	// поместим в сообщение для БСП адрес необходимой записи
-	// размещен в конце, чтобы не терять время до следующего обращения к
-	// данному пункту меню
+    // FIXME пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!!!
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 	sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 }
 
 
-/** Уровень меню. Журнал безопасности.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlJournalSecurity() {
-    static char title[] PROGMEM = "Журнал\\Безопасность";
+    static const char title[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+#ifdef AVR
+    static const char fcUserAndSource[] PROGMEM = "%S (%S)";
+#else
+    static const char fcUserAndSource[] PROGMEM = "%s (%s)";
+#endif
     const eGB_COM comEntry = GB_COM_GET_JRN_IS_ENTRY;
 
     if (lvlCreate_) {
@@ -2305,59 +2266,53 @@ void clMenu::lvlJournalSecurity() {
         vLCDclear();
         vLCDdrawBoard(lineParam_);
 
-        // установка текущего журнала и максимального кол-во записей в нем
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ
         sParam.jrnEntry.clear();
         sParam.jrnEntry.setCurrentDevice(GB_DEVICE_SEC);
         sParam.jrnEntry.setMaxNumJrnEntries(SIZE_OF_SECURITY_JRN);
 
-        // доплнительные команды
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         sParam.txComBuf.clear();
         sParam.txComBuf.setLocalCom(GB_COM_GET_JRN_IS_CNT);
         sParam.txComBuf.addCom2(comEntry);
     }
 
-    // номер текущей записи в архиве и максимальное кол-во записей
+    // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     uint16_t cur_entry = sParam.jrnEntry.getCurrentEntry();
     uint16_t num_entries = sParam.jrnEntry.getNumJrnEntries();
 
     uint8_t poz = 0;
-    // вывод названия текущего пункта меню
+    // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
     snprintf_P(&vLCDbuf[poz], 21, title);
     poz += 20;
 
-    // вывод номер текущей записи и их кол-ва
+    // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ
     if (num_entries != 0) {
         snprintf_P(&vLCDbuf[poz], 21, fcJrnNumEntries, cur_entry, num_entries);
     }
     poz += 20;
 
     if (num_entries == 0) {
-        // вывод сообщения об отсутствии записей в журнале
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         snprintf_P(&vLCDbuf[poz + 24], 12, fcJrnEmpty);
     } else if (!sParam.jrnEntry.isReady()) {
-        // ифнорация о текущей записи еще не получена
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         snprintf_P(&vLCDbuf[poz + 21], 20, fcJrnNotReady);
     } else {
-        // вывод режима
-
-
-        poz += 20;
-        // вывод даты
-        snprintf_P(&vLCDbuf[poz], 21, fcDateJrn,
-                   sParam.jrnEntry.dateTime.getDay(),
-                   sParam.jrnEntry.dateTime.getMonth(),
-                   sParam.jrnEntry.dateTime.getYear());
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
+        user_t user = sParam.jrnEntry.getUser();
+        userSrc_t usersrc = sParam.jrnEntry.getUserSrc();
+        snprintf_P(&vLCDbuf[poz], ROW_LEN+1, fcUserAndSource, fcUser[user],
+                   sParam.security.sevent.getUserSourceString(usersrc));
         poz += 20;
 
-        // вывод времени
-        snprintf_P(&vLCDbuf[poz], 21, fcTimeJrn,
-                   sParam.jrnEntry.dateTime.getHour(),
-                   sParam.jrnEntry.dateTime.getMinute(),
-                   sParam.jrnEntry.dateTime.getSecond(),
-                   sParam.jrnEntry.dateTime.getMsSecond());
-        poz += 20;
+        poz += printDateAdnTimeInJournal(poz);
 
-        // вывод события
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        TSecurityEvent::event_t uevent;
+        uevent = static_cast<TSecurityEvent::event_t> (sParam.jrnEntry.getEvent());
+        PGM_P event = sParam.security.sevent.getEventString(uevent);
+        snprintf_P(&vLCDbuf[poz], ROW_LEN+1, event, uevent);
     }
 
     switch(key_) {
@@ -2388,50 +2343,50 @@ void clMenu::lvlJournalSecurity() {
     }
 }
 
-/**	Уровень меню. Управление.
- * 	@param Нет
- * 	@return Нет
+/**	пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlControl() {
 
-	static char title[] PROGMEM = "Меню\\Управление";
-	// %d - может быть двухзначным, учесть для макс. кол-ва символов !
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	// %d - пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ !
 	//							   	"01234567890123456789"
-	static char punkt02[] PROGMEM = "%d. Пуск удаленного";
-	static char punkt03[] PROGMEM = "%d. Сброс своего";
-	static char punkt04[] PROGMEM = "%d. Сброс удаленного";
-	static char punkt05[] PROGMEM = "%d. Вызов";
-	static char punkt06[] PROGMEM = "%d. Пуск налад. вкл.";
-	static char punkt07[] PROGMEM = "%d. Пуск налад. выкл";
-	static char punkt08[] PROGMEM = "%d. АК пуск";
-	static char punkt09[] PROGMEM = "%d. Пуск удален. МАН";
-	static char punkt10[] PROGMEM = "%d. АК контр.провер.";
-	static char punkt11[] PROGMEM = "%d. Сброс АК";
-	static char punkt12[] PROGMEM = "%d. Пуск АК свой";
-	static char punkt13[] PROGMEM = "%d. Пуск АК удаленн.";
-	static char punkt14[] PROGMEM = "%d. Пуск ПРД";
-	static char punkt15[] PROGMEM = "%d. АК автоматическ.";
-	static char punkt16[] PROGMEM = "%d. АК ускоренный";
-	static char punkt17[] PROGMEM = "%d. АК выключен";
-	static char punkt18[] PROGMEM = "%d. АК испытания";
-	static char punkt19[] PROGMEM = "%d. АК нормальный";
-	static char punkt20[] PROGMEM = "%d. АК беглый";
-	//	static char punkt21[] PROGMEM = "%d. АК односторонний";
-	static char punkt22[] PROGMEM = "%d. Сброс удаленных";
-	static char punkt23[] PROGMEM = "%d. Пуск удаленн. 1";
-	static char punkt24[] PROGMEM = "%d. Пуск удаленн. 2";
-	static char punkt25[] PROGMEM = "%d. Пуск удаленн. 3";
-	static char punkt26[] PROGMEM = "%d. Пуск удаленных";
-	static char punkt27[] PROGMEM = "%d. Пуск удал. МАН 1";
-	static char punkt28[] PROGMEM = "%d. Пуск удал. МАН 2";
-	static char punkt29[] PROGMEM = "%d. Пуск удал. МАН 3";
-	static char punkt30[] PROGMEM = "%d. Пуск удал-ых МАН";
-	static char punkt31[] PROGMEM = "%d. АК включен";
-	static char punkt32[] PROGMEM = "%d. Сброс удален. 1";
-	static char punkt33[] PROGMEM = "%d. Сброс удален. 2";
-	static char punkt34[] PROGMEM = "%d. Сброс удален. 3";
-	static char punkt35[] PROGMEM = "%d. Сброс индикации";
-	static char punkt36[] PROGMEM = "%d. Сброс всех";
+	static char punkt02[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt03[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt04[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt05[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅ";
+	static char punkt06[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅ.";
+	static char punkt07[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅ";
+	static char punkt08[] PROGMEM = "%d. пїЅпїЅ пїЅпїЅпїЅпїЅ";
+	static char punkt09[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅ";
+	static char punkt10[] PROGMEM = "%d. пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ.пїЅпїЅпїЅпїЅпїЅпїЅ.";
+	static char punkt11[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ";
+	static char punkt12[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ";
+	static char punkt13[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.";
+	static char punkt14[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ";
+	static char punkt15[] PROGMEM = "%d. пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.";
+	static char punkt16[] PROGMEM = "%d. пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt17[] PROGMEM = "%d. пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt18[] PROGMEM = "%d. пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt19[] PROGMEM = "%d. пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt20[] PROGMEM = "%d. пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ";
+	//	static char punkt21[] PROGMEM = "%d. пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt22[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt23[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ. 1";
+	static char punkt24[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ. 2";
+	static char punkt25[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ. 3";
+	static char punkt26[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt27[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅ 1";
+	static char punkt28[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅ 2";
+	static char punkt29[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅ 3";
+	static char punkt30[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅ";
+	static char punkt31[] PROGMEM = "%d. пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt32[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ. 1";
+	static char punkt33[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ. 2";
+	static char punkt34[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ. 3";
+	static char punkt35[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt36[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ";
 
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
@@ -2448,11 +2403,11 @@ void clMenu::lvlControl() {
 		if (device == AVANT_R400M) {
 			eGB_NUM_DEVICES numDevices = sParam.def.getNumDevices();
 			eGB_COMPATIBILITY compatibility = sParam.glb.getCompatibility();
-			// первым всегда идет пуск наладочный
-			Punkts_.add(punkt07);// далее выбирается в зависимости от текущего
-			// сброс своего есть во всех аппаратах и совместимостях
+			// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+			Punkts_.add(punkt07);// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+			// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 			Punkts_.add(punkt03);
-			// TODO для ПВЗК
+			// TODO пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 			if (compatibility == GB_COMPATIBILITY_AVANT) {
 				if (numDevices == GB_NUM_DEVICES_2) {
 					Punkts_.add(punkt04);
@@ -2525,10 +2480,10 @@ void clMenu::lvlControl() {
 					Punkts_.add(punkt04);
 					Punkts_.add(punkt02);
 				} else if (numDevices == GB_NUM_DEVICES_3) {
-					Punkts_.add(punkt33);// далее выбирается в зависимости от номера
-					Punkts_.add(punkt34);// далее выбирается в зависимости от номера
-					Punkts_.add(punkt23);// далее выбирается в зависимости от номера
-					Punkts_.add(punkt24);// далее выбирается в зависимости от номера
+					Punkts_.add(punkt33);// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+					Punkts_.add(punkt34);// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+					Punkts_.add(punkt23);// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+					Punkts_.add(punkt24);// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 					Punkts_.add(punkt26);
 				}
 				Punkts_.add(punkt15);
@@ -2539,21 +2494,21 @@ void clMenu::lvlControl() {
 		} else if (device == AVANT_RZSK) {
 			eGB_NUM_DEVICES numDevices = sParam.def.getNumDevices();
 			if (sParam.def.status.isEnable()) {
-				Punkts_.add(punkt07);// далее выбирается в зависимости от текущего
+				Punkts_.add(punkt07);// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 				Punkts_.add(punkt03);
 				if (numDevices == GB_NUM_DEVICES_2) {
 					Punkts_.add(punkt04);
 					Punkts_.add(punkt02);
 				} else if (numDevices == GB_NUM_DEVICES_3) {
 					Punkts_.add(punkt22);
-					Punkts_.add(punkt23);// далее выбирается в зависимости от номера
-					Punkts_.add(punkt24);// далее выбирается в зависимости от номера
+					Punkts_.add(punkt23);// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+					Punkts_.add(punkt24);// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 					Punkts_.add(punkt26);
 				}
 				Punkts_.add(punkt35);
 				Punkts_.add(punkt05);
 			} else {
-				// РЗСК без поста
+				// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 				Punkts_.add(punkt03);
 				if (numDevices == GB_NUM_DEVICES_2) {
 					Punkts_.add(punkt04);
@@ -2568,7 +2523,7 @@ void clMenu::lvlControl() {
 			Punkts_.add(punkt35);
 		} else if (device == AVANT_OPTO) {
 			if (sParam.def.status.isEnable()) {
-				Punkts_.add(punkt07);// далее выбирается в зависимости от текущего
+				Punkts_.add(punkt07);// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 			}
 			Punkts_.add(punkt03);
 			if (sParam.glb.getTypeOpto() == TYPE_OPTO_STANDART) {
@@ -2582,23 +2537,23 @@ void clMenu::lvlControl() {
 			if (sParam.def.status.isEnable()) {
 				Punkts_.add(punkt02);
 				if (!sParam.prd.status.isEnable() && !sParam.prm.status.isEnable()) {
-					// "Сброс АК" есть в Р400 и нет в РЗСК
+					// "пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ" пїЅпїЅпїЅпїЅ пїЅ пїЅ400 пїЅ пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ
 					Punkts_.add(punkt11);
 				}
 			}
 		}
 
-		// доплнительные команды
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		sParam.txComBuf.clear();
 		if (sParam.typeDevice == AVANT_R400M) {
-			// кол-во аппаратов в линии
+			// пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
 			sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
-			// номер текущего аппарата
+			// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 			sParam.txComBuf.addCom2(GB_COM_GET_DEVICE_NUM);
 		} else if (sParam.typeDevice == AVANT_RZSK) {
-			// кол-во аппаратов в линии
+			// пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
 			sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
-			// номер текущего аппарата
+			// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 			sParam.txComBuf.addCom2(GB_COM_GET_DEVICE_NUM);
 		}
 	}
@@ -2606,13 +2561,13 @@ void clMenu::lvlControl() {
 	snprintf_P(&vLCDbuf[0], 21, title);
 
 	if (sParam.def.status.isEnable()) {
-		// выбор вкл./выкл. наладочного пуска
+		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ./пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 		if (sParam.def.status.getState() != 7)
 			Punkts_.change(punkt06, GB_COM_NO, 0);
 		else
 			Punkts_.change(punkt07, GB_COM_NO, 0);
 
-		// выбор пуск удаленного
+		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		if (device == AVANT_RZSK) {
 			if (sParam.def.status.isEnable()) {
 				if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
@@ -2824,17 +2779,17 @@ void clMenu::lvlControl() {
 
 }
 
-/** Уровень меню. Настройка.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlSetup() {
-	static char title[] PROGMEM = "Меню\\Настройка";
-	static char punkt1[] PROGMEM = "%d. Режим";
-	static char punkt2[] PROGMEM = "%d. Время и дата";
-	static char punkt3[] PROGMEM = "%d. Параметры";
-    static char punkt4[] PROGMEM = "%d. Пользователь";
-	static char punkt5[] PROGMEM = "%d. Интерфейс";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt1[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅ";
+	static char punkt2[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ";
+	static char punkt3[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+    static char punkt4[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt5[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -2852,7 +2807,7 @@ void clMenu::lvlSetup() {
 		Punkts_.add(punkt4);
 		Punkts_.add(punkt5);
 
-		// доплнительные команды
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		sParam.txComBuf.clear();
 	}
 
@@ -2904,7 +2859,7 @@ void clMenu::lvlSetup() {
 }
 
 void clMenu::lvlRegime() {
-	static char title[] PROGMEM = "Настройка\\Режим";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅ";
 	eGB_REGIME reg = sParam.glb.status.getRegime();
 
 	if (lvlCreate_) {
@@ -2916,9 +2871,9 @@ void clMenu::lvlRegime() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// доплнительные команды
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		sParam.txComBuf.clear();
-		// кол-во аппаратов в линии
+		// пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
 		sParam.txComBuf.addCom2(GB_COM_GET_DEVICE_NUM);
 	}
 
@@ -2940,10 +2895,10 @@ void clMenu::lvlRegime() {
             printDevicesRegime(poz, &sParam.prd.status);
         }
 
-        // Ввод нового значения параметра.
-        // Сначала выбирается требуемый режим работы.
-        // При попытке перейти в режим "Выведен" из "Введен" или "Готов",
-        // происходит запрос пароля. При ошибочном пароле выводится сообщение.
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
+        // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ" пїЅпїЅ "пїЅпїЅпїЅпїЅпїЅпїЅ" пїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅ",
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
         if (EnterParam.isEnable()) {
             if ((this->*enterFunc)() == MENU_ENTER_PARAM_READY) {
                 eGB_COM com = GB_COM_NO;
@@ -2977,10 +2932,10 @@ void clMenu::lvlRegime() {
                 uint8_t max = GB_REGIME_ENTER_DISABLED;
                 uint8_t val = GB_REGIME_ENTER_DISABLED;
 
-                // "Введен" 	-> "Выведен"
-                // "Выведен" 	-> "Введен"
-                // "Готов" 		-> "Введен"	 / "Выведен"
-                // остальные 	-> "Выведен" / "Введен"
+                // "пїЅпїЅпїЅпїЅпїЅпїЅ" 	-> "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ"
+                // "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ" 	-> "пїЅпїЅпїЅпїЅпїЅпїЅ"
+                // "пїЅпїЅпїЅпїЅпїЅ" 		-> "пїЅпїЅпїЅпїЅпїЅпїЅ"	 / "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ"
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 	-> "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ" / "пїЅпїЅпїЅпїЅпїЅпїЅ"
                 enterFunc = &clMenu::inputValue;
                 EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
                 switch(reg) {
@@ -3019,17 +2974,17 @@ void clMenu::lvlRegime() {
 	}
 }
 
-/** Уровень меню. Настройка параметров.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlSetupParam() {
-	static char title[] PROGMEM = "Настройка\\Параметры";
-	static char punkt1[] PROGMEM = "%d. Защита";
-	static char punkt2[] PROGMEM = "%d. Приемник";
-	static char punkt3[] PROGMEM = "%d. Передатчик";
-	static char punkt4[] PROGMEM = "%d. Общие";
-	static char punkt5[] PROGMEM = "%d. Кольцо";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt1[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt2[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt3[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt4[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅ";
+	static char punkt5[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅ";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3040,7 +2995,7 @@ void clMenu::lvlSetupParam() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// настройка меню, в зависимости от текущего устройства
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		Punkts_.clear();
 		if (sParam.def.status.isEnable()) {
 			Punkts_.add(punkt1);
@@ -3053,14 +3008,14 @@ void clMenu::lvlSetupParam() {
 		}
 		Punkts_.add(punkt4);
 
-		// в оптике для кольца добавляются новые параметры
+		// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		if (sParam.glb.getTypeDevice() == AVANT_OPTO) {
 			if (sParam.glb.getTypeOpto() != TYPE_OPTO_STANDART) {
 				Punkts_.add(punkt5);
 			}
 		}
 
-		// доплнительные команды
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		sParam.txComBuf.clear();
 	}
 
@@ -3110,12 +3065,12 @@ void clMenu::lvlSetupParam() {
 	}
 }
 
-/** Уровень меню. Настройка параметров защиты.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlSetupParamDef() {
-	static char title[] PROGMEM = "Параметры\\Защита";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅ";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3124,12 +3079,12 @@ void clMenu::lvlSetupParamDef() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// заполнение массивов параметров и команд
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 		eGB_TYPE_DEVICE device = sParam.typeDevice;
 		sParam.txComBuf.clear();
 
-		// для переформирования меню добавляется команда опроса:
-		// кол-ва аппаратов в линии
+		// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ:
+		// пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
 		sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
 
 		sParam.local.clearParams();
@@ -3143,8 +3098,8 @@ void clMenu::lvlSetupParamDef() {
 			sParam.local.addParam(GB_PARAM_PRM_TYPE);
 		} else if (device == AVANT_R400M) {
 			eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
-			// для переформирования меню добавляется команда опроса:
-			// совместимости
+			// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ:
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
 
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES);
@@ -3156,7 +3111,7 @@ void clMenu::lvlSetupParamDef() {
 			sParam.local.addParam(GB_PARAM_SHIFT_PRD);
 			sParam.local.addParam(GB_PARAM_SENS_DEC);
 			if (comp == GB_COMPATIBILITY_AVANT) {
-				// Снижение уровня АК есть только в совместимости АВАНТ
+				// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 				sParam.local.addParam(GB_PARAM_AC_IN_DEC);
 			}
 			sParam.local.addParam(GB_PARAM_FREQ_PRD);
@@ -3189,12 +3144,12 @@ void clMenu::lvlSetupParamDef() {
 	}
 }
 
-/** Уровень меню. Настройка параметров приемника.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlSetupParamPrm() {
-	static char title[] PROGMEM = "Параметры\\Приемник";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3203,7 +3158,7 @@ void clMenu::lvlSetupParamPrm() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// заполнение массивов параметров и команд
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 		eGB_TYPE_DEVICE device = sParam.typeDevice;
 		sParam.txComBuf.clear();
 
@@ -3211,7 +3166,7 @@ void clMenu::lvlSetupParamPrm() {
 
 		uint8_t numcom = sParam.prm.getNumCom();
 		if (device == AVANT_K400) {
-			// для переформирования меню добавим опрос кол-ва команд
+			// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 			sParam.txComBuf.addCom2(GB_COM_PRM_GET_COM);
 
 			sParam.local.addParam(GB_PARAM_PRM_COM_NUMS);
@@ -3272,12 +3227,12 @@ void clMenu::lvlSetupParamPrm() {
 	}
 }
 
-/** Уровень меню. Настройка параметров передатчика.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlSetupParamPrd() {
-	static char title[] PROGMEM = "Параметры\\Передатчик";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3286,16 +3241,16 @@ void clMenu::lvlSetupParamPrd() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// заполнение массивов параметров и команд
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 		eGB_TYPE_DEVICE device = sParam.typeDevice;
 		sParam.txComBuf.clear();
 
 		sParam.local.clearParams();
 		uint8_t numcom = sParam.prd.getNumCom();
 		if (device == AVANT_K400) {
-			// для переформирования меню добавим опрос кол-ва команд
+			// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 			sParam.txComBuf.addCom2(GB_COM_PRD_GET_COM);
-			// совместимость
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
 
 			sParam.local.addParam(GB_PARAM_PRD_COM_NUMS);
@@ -3356,12 +3311,12 @@ void clMenu::lvlSetupParamPrd() {
 	}
 }
 
-/** Уровень меню. Настройка параметров общих.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlSetupParamGlb() {
-	static char title[] PROGMEM = "Параметры\\Общие";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅ";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3370,7 +3325,7 @@ void clMenu::lvlSetupParamGlb() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// заполнение массивов параметров и команд
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 		eGB_TYPE_DEVICE device = sParam.typeDevice;
 		sParam.txComBuf.clear();
 
@@ -3382,7 +3337,7 @@ void clMenu::lvlSetupParamGlb() {
 			sParam.local.addParam(GB_PARAM_COMP_K400);
 			sParam.local.addParam(GB_PARAM_TIME_SYNCH);
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE);
-//			TODO На данный момент в ПО БСП проверка выходного сигнала не отключается в ПРД. Поэтому параметр есть всегда!
+//			TODO пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ!
 //			if (sParam.prd.status.isEnable()) {
 				sParam.local.addParam(GB_PARAM_OUT_CHECK);
 //			}
@@ -3434,9 +3389,9 @@ void clMenu::lvlSetupParamGlb() {
 		} else if (device == AVANT_R400M) {
 			eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
 
-			// для переформирования меню добавляются команды опроса:
-			// совместимости и кол-ва аппаратов в линии
-			// измеряемые параметры для коррекции
+			// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ:
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 			sParam.local.addParam(GB_PARAM_COMP_P400);
 			if (comp == GB_COMPATIBILITY_AVANT) {
@@ -3503,12 +3458,12 @@ void clMenu::lvlSetupParamGlb() {
 	}
 }
 
-/** Уровень меню. Настройка параметров кольца.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlSetupParamRing() {
-	static char title[] PROGMEM = "Параметры\\Кольцо";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅ";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3517,7 +3472,7 @@ void clMenu::lvlSetupParamRing() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// заполнение массивов параметров и команд
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 		eGB_TYPE_DEVICE device = sParam.typeDevice;
 		eGB_TYPE_OPTO topto = sParam.glb.getTypeOpto();
 		sParam.txComBuf.clear();
@@ -3537,7 +3492,7 @@ void clMenu::lvlSetupParamRing() {
 
 	setupParam();
 
-	// выход из данного пункта меню, если это не оптика кольцо
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	if (sParam.glb.getTypeDevice() != AVANT_OPTO) {
 			key_ = KEY_CANCEL;
 	} else if (sParam.glb.getTypeOpto() == TYPE_OPTO_STANDART) {
@@ -3559,12 +3514,12 @@ void clMenu::lvlSetupParamRing() {
 	}
 }
 
-/** Уровень меню. Интерфейс
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlSetupInterface() {
-	static char title[] PROGMEM = "Настройка\\Интерфейс";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
     static TInterface::INTERFACE interface = TInterface::MAX;
 
 	if (lvlCreate_) {
@@ -3576,17 +3531,17 @@ void clMenu::lvlSetupInterface() {
 
         sParam.txComBuf.clear();
 
-		// если установлена связь по Локальной сети
-		// появляются настройки портов
-		// в USB всегда: 19200 бит/с, 8 бит, 2 стоп-бита, четность-нет
+		// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+		// пїЅ USB пїЅпїЅпїЅпїЅпїЅпїЅ: 19200 пїЅпїЅпїЅ/пїЅ, 8 пїЅпїЅпїЅ, 2 пїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅ
         sParam.local.clearParams();
 		sParam.local.addParam(GB_PARAM_INTF_INTERFACE);
 
         interface = sParam.Uart.Interface.get();
         if (interface == TInterface::RS485) {
 			sParam.local.addParam(GB_PARAM_INTF_PROTOCOL);
-			// в оптике Сетевой адрес меняется в любом режиме,
-			// иначе только в Ввыведен
+			// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ,
+			// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 			sParam.local.addParam(GB_PARAM_NET_ADDRESS);
 			sParam.local.addParam(GB_PARAM_INTF_BAUDRATE);
 			sParam.local.addParam(GB_PARAM_INTF_DATA_BITS);
@@ -3599,7 +3554,7 @@ void clMenu::lvlSetupInterface() {
 
 	setupParam();
 
-    // FIXME При смене интерфейса на экране появляется "чтение..."
+    // FIXME пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅпїЅ..."
 
     if (interface != sParam.Uart.Interface.get()) {
         lvlCreate_ = true;
@@ -3620,18 +3575,18 @@ void clMenu::lvlSetupInterface() {
 	}
 }
 
-/** Уровень меню. Настройка дата/время.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlSetupDT() {
-	static char title[] PROGMEM = "Настройка\\Время&дата";
-	static char punkt1[] PROGMEM = "%d. Год";
-	static char punkt2[] PROGMEM = "%d. Месяц";
-	static char punkt3[] PROGMEM = "%d. День";
-	static char punkt4[] PROGMEM = "%d. Часы";
-	static char punkt5[] PROGMEM = "%d. Минуты";
-	static char punkt6[] PROGMEM = "%d. Секунды";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅ&пїЅпїЅпїЅпїЅ";
+	static char punkt1[] PROGMEM = "%d. пїЅпїЅпїЅ";
+	static char punkt2[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅ";
+	static char punkt3[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ";
+	static char punkt4[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ";
+	static char punkt5[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt6[] PROGMEM = "%d. пїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3650,7 +3605,7 @@ void clMenu::lvlSetupDT() {
 		Punkts_.add(punkt5);
 		Punkts_.add(punkt6);
 
-		// доплнительные команды
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		sParam.txComBuf.clear();
 	}
 
@@ -3664,7 +3619,7 @@ void clMenu::lvlSetupDT() {
     if (isMessage()) {
         printMessage();
     } else if (EnterParam.isEnable()) {
-		// вывод текущего пункта
+		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 		snprintf_P(&vLCDbuf[20 * lineParam_], 21, name, cursorLine_);
         eMENU_ENTER_PARAM stat = inputValue();
 
@@ -3677,23 +3632,23 @@ void clMenu::lvlSetupDT() {
             sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getHour()), 3);
             sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMinute()), 4);
             sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getSecond()), 5);
-            sParam.txComBuf.setInt8(0, 6);	// мс всегда 0
+            sParam.txComBuf.setInt8(0, 6);	// пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 0
             sParam.txComBuf.setInt8(0, 7);	//
-            sParam.txComBuf.setInt8(0, 8);    // 0 - установка с меню, 1 - с асутп
+            sParam.txComBuf.setInt8(0, 8);    // 0 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ, 1 - пїЅ пїЅпїЅпїЅпїЅпїЅ
 
             uint8_t val = static_cast<uint8_t> (EnterParam.getValue());
             uint8_t pos = static_cast<uint8_t> (EnterParam.getDopValue());
             sParam.txComBuf.setInt8(BIN_TO_BCD(val), pos);
 
             if (pos == 0) {
-                // ввод года, проверим дату, т.к. может быть високосный
+                // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅ.пїЅ. пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 uint8_t month = BCD_TO_BIN(sParam.txComBuf.getUInt8(1));
                 uint8_t day = BCD_TO_BIN(sParam.txComBuf.getUInt8(2));
                 if (day > sParam.DateTime.getNumDaysInMonth(month, val)) {
                     sParam.txComBuf.setInt8(BIN_TO_BCD(1), 2);
                 }
             } else if (pos == 1) {
-                // ввод месяца, проверим кол-во установленных дней
+                // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
                 uint8_t day = BCD_TO_BIN(sParam.txComBuf.getUInt8(2));
                 if (day > sParam.DateTime.getNumDaysInMonth(val)) {
                     sParam.txComBuf.setInt8(BIN_TO_BCD(1), 2);
@@ -3770,13 +3725,13 @@ void clMenu::lvlSetupDT() {
 	}
 }
 
-/**	Уровень меню. Измерения.
+/**	пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
  *
- * 	@param Нет
- * 	@return Нет
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlMeasure() {
-	static char title[] PROGMEM = "Меню\\Измерения";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3786,11 +3741,11 @@ void clMenu::lvlMeasure() {
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 
-		// доплнительные команды
-		// обновляется версия прошивок (на случай перепрошивки)
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 		sParam.txComBuf.clear();
 		sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
-		// 2 команды добавлены для уменьшения частоты опроса измеряемых параметров
+		// 2 пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		sParam.txComBuf.addCom2(GB_COM_GET_FAULT);
 	}
 
@@ -3816,18 +3771,18 @@ void clMenu::lvlMeasure() {
 	}
 }
 
-/** Уровень меню. Тест 1.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅ 1.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlTest() {
-	static char title[] PROGMEM = "Настройка\\Тесты";
-	static char punkt1[] PROGMEM = "%d. Тест передатчика";
-	static char punkt2[] PROGMEM = "%d. Тест приемника";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅ";
+	static char punkt1[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt2[] PROGMEM = "%d. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
 //	static char message[][21] PROGMEM = {
 //	//12345678901234567890
-//			"    Перейдите в     ",//
-//			"   режим ВЫВЕДЕН    " 		//
+//			"    пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ     ",//
+//			"   пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ    " 		//
 //			};
 
 	if (lvlCreate_) {
@@ -3840,16 +3795,16 @@ void clMenu::lvlTest() {
 		vLCDdrawBoard(lineParam_);
 
 		Punkts_.clear();
-		// тест передатчика при наличии передатчика или защиты
+		// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 		if ((sParam.prd.status.isEnable()) || (sParam.def.status.isEnable())) {
 			Punkts_.add(punkt1);
 		}
-		// тест приемника при наличии приемника или защиты
+		// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 		if ((sParam.prm.status.isEnable()) || (sParam.def.status.isEnable())) {
 			Punkts_.add(punkt2);
 		}
 
-		// доплнительные команды
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		sParam.txComBuf.clear();
         sParam.txComBuf.setLocalCom(GB_COM_GET_COM_PRD_KEEP);
 	}
@@ -3917,16 +3872,16 @@ void clMenu::lvlTest() {
 
 }
 
-/** Уровень меню. Тест 1.
- *  Если в течении 1 секунды небыл получен режим совпадающий с данным тестом
- * 	происходи выход в предыдущий пункт меню.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅ 1.
+ *  пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ 1 пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+ * 	пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlTest1() {
-	static char title[] PROGMEM = "Тесты\\Передатчик";
-	static char punkt1[] PROGMEM = "Сигналы передатчика";
-	static uint8_t cnt = 0;		// счетчик до выхода при ошибочном режиме
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt1[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static uint8_t cnt = 0;		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
 	if (lvlCreate_) {
@@ -3934,21 +3889,21 @@ void clMenu::lvlTest1() {
 		lvlCreate_ = false;
 		cursorLine_ = 1;
 		cursorEnable_ = true;
-		// в оптике не надо выводить доп.параметры
+		// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ.пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		lineParam_ = (device == AVANT_OPTO) ? 1 : 2;
 
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 		cnt = 0;
 
-		// дополнительные команды
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		sParam.txComBuf.clear();
         if (device != AVANT_OPTO) {
-            sParam.txComBuf.addCom2(GB_COM_GET_MEAS);	// измерения
+            sParam.txComBuf.addCom2(GB_COM_GET_MEAS);	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         }
-		sParam.txComBuf.addCom2(GB_COM_GET_TEST);	// сигналы
+		sParam.txComBuf.addCom2(GB_COM_GET_TEST);	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
-		// сигналы для тестов
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 		sParam.test.clear();
 		if (device == AVANT_R400M) {
 			sParam.test.addSignalToList(GB_SIGNAL_RZ);
@@ -4015,7 +3970,7 @@ void clMenu::lvlTest1() {
 		}
 	}
 
-	// вывод на экран измеряемых параметров, если это не оптика
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	if (device != AVANT_OPTO) {
 		printMeasParam(2, MENU_MEAS_PARAM_UOUT);
 		printMeasParam(3, MENU_MEAS_PARAM_IOUT);
@@ -4024,31 +3979,31 @@ void clMenu::lvlTest1() {
 	snprintf_P(&vLCDbuf[0], 21, title);
 	snprintf_P(&vLCDbuf[lineParam_ * 20], 21, punkt1);
 
-	// сброс нулевого байта, для выбора отправки команды запроса
-	// далее он может быть изменен для команды установки
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	sParam.txComBuf.setInt8(0, 0);
 	if (EnterParam.isEnable()) {
-		// ввод нового значения параметра
+		// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         eMENU_ENTER_PARAM stat = inputValue();
 
 		if (stat == MENU_ENTER_PARAM_READY) {
-			// текущий сигнал(ы)
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ(пїЅ)
 			uint8_t sig = EnterParam.listValue[EnterParam.getValue()];
 			uint8_t rz = 0;
 			uint8_t cf = 0;
 
 			sParam.test.getBytes(cf, rz, (eGB_TEST_SIGNAL) sig);
-			// т.к. у нас для установки сигналов есть две разные группы
-			// для каждой из которых требуется отправка своей команды
-			// добавим в буфере команду для каждой из групп
-			// !!! при передаче команды надо проверять данные в буфере
-			// РЗ
-			sParam.txComBuf.setInt8(2, 0);				// группа РЗ
-			sParam.txComBuf.setInt8(rz, 1);				// текущий сигнал РЗ
+			// пїЅ.пїЅ. пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+			// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+			// !!! пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+			// пїЅпїЅ
+			sParam.txComBuf.setInt8(2, 0);				// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ
+			sParam.txComBuf.setInt8(rz, 1);				// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ
             sParam.txComBuf.addFastCom(EnterParam.com, GB_SEND_MAX);
-			// КЧ
-			sParam.txComBuf.setInt8(1, 0);				// группа КЧ
-			sParam.txComBuf.setInt8(cf, 1);				// текущий сигнал КЧ
+			// пїЅпїЅ
+			sParam.txComBuf.setInt8(1, 0);				// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ
+			sParam.txComBuf.setInt8(cf, 1);				// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ
             sParam.txComBuf.addFastCom(EnterParam.com, GB_SEND_MAX);
 
 			EnterParam.setDisable();
@@ -4060,7 +4015,7 @@ void clMenu::lvlTest1() {
 				fcTest1K400[sParam.test.getCurrentSignal()]);
 	}
 
-	// выход из теста при несоответствии режима
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	if (sParam.glb.status.getRegime() != GB_REGIME_TEST_1) {
 		if (++cnt >= TIME_TEST_EXIT) {
 			key_ = KEY_CANCEL;
@@ -4094,19 +4049,19 @@ void clMenu::lvlTest1() {
 	}
 }
 
-/** Уровень меню. Тест 2.
- * 	Если в течении 1 секунды небыл получен режим совпадающий с данным тестом
- * 	происходи выход в предыдущий пункт меню.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅ 2.
+ * 	пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ 1 пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+ * 	пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlTest2() {
-	static char title[] PROGMEM = "Тесты\\Приемник";
-	static char punkt1[] PROGMEM = "Сигналы приемника";
-	static char prm1[] PROGMEM = "ПРМ1: ";
-	static char prm2[] PROGMEM = "ПРМ2: ";
+	static char title[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char punkt1[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
+	static char prm1[] PROGMEM = "пїЅпїЅпїЅ1: ";
+	static char prm2[] PROGMEM = "пїЅпїЅпїЅ2: ";
 
-	static uint8_t cnt = 0;		// счетчик до выхода при ошибочном режиме
+	static uint8_t cnt = 0;		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
 	if (lvlCreate_) {
@@ -4116,28 +4071,28 @@ void clMenu::lvlTest2() {
 		cursorEnable_ = true;
 
 		if (device == AVANT_OPTO) {
-			// В оптике измеряемые параметры выводить не надо
+			// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ
 			lineParam_ = 1;
 		} else if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-			// В трех концевой линии 2 строки параметров
+			// пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ 2 пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 			lineParam_ = 3;
 		} else {
-			// Иначе одна строка параметров
+			// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 			lineParam_ = 2;
 		}
 		vLCDclear();
 		vLCDdrawBoard(lineParam_);
 		cnt = 0;
 
-		// дополнительные команды
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		sParam.txComBuf.clear();
 		if (device != AVANT_OPTO) {
-            sParam.txComBuf.addCom2(GB_COM_GET_MEAS);	// измерения
+            sParam.txComBuf.addCom2(GB_COM_GET_MEAS);	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		}
-		sParam.txComBuf.addCom2(GB_COM_GET_TEST);	// сигналы
+		sParam.txComBuf.addCom2(GB_COM_GET_TEST);	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	}
 
-	// вывод на экран измеряемых параметров, если это не оптика
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	if (device != AVANT_OPTO) {
 		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
 			if (sParam.typeDevice == AVANT_R400M) {
@@ -4169,7 +4124,7 @@ void clMenu::lvlTest2() {
 	snprintf_P(&vLCDbuf[lineParam_ * 20], 21, punkt1);
 
 	uint8_t poz = 100;
-	// В Р400м всегда один приемник, не зависимо от кол-ва окончаний в линии
+	// пїЅ пїЅ400пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
 	if ((sParam.def.getNumDevices() == GB_NUM_DEVICES_3)
 			&& (sParam.typeDevice != AVANT_R400M)) {
 		poz = 80;
@@ -4188,7 +4143,7 @@ void clMenu::lvlTest2() {
 				fcTest1K400[sParam.test.getCurrentSignal()]);
 	}
 
-	// выход из теста при несооответствии режима
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	if (sParam.glb.status.getRegime() != GB_REGIME_TEST_2) {
 		if (++cnt >= TIME_TEST_EXIT) {
 			key_ = KEY_CANCEL;
@@ -4213,12 +4168,12 @@ void clMenu::lvlTest2() {
 	}
 }
 
-/** Уровень меню. Пользователь.
- * 	@param Нет
- * 	@return Нет
+/** пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@param пїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::lvlUser() {
-    static char title[] PROGMEM = "Меню\\Пользователь";
+    static char title[] PROGMEM = "пїЅпїЅпїЅпїЅ\\пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
 
     if (lvlCreate_) {
         lvlCreate_ = false;
@@ -4229,7 +4184,7 @@ void clMenu::lvlUser() {
         vLCDclear();
         vLCDdrawBoard(lineParam_);
 
-        // Добавить команду!
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ!
         sParam.txComBuf.clear();
 
         sParam.local.clearParams();
@@ -4279,8 +4234,8 @@ void clMenu::lvlUser() {
 
 //
 eMENU_ENTER_PARAM clMenu::inputValue() {
-    static char strInput[] PROGMEM = "Ввод: ";
-    static char strInputPwd[] PROGMEM = "Пароль: ";
+    static char strInput[] PROGMEM = "пїЅпїЅпїЅпїЅ: ";
+    static char strInputPwd[] PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅ: ";
 #ifdef AVR
     static char strListValue_P[] PROGMEM = "%S";
 #else
@@ -4306,7 +4261,7 @@ eMENU_ENTER_PARAM clMenu::inputValue() {
     }
     posstop = posstart;
 
-    // FIXME Исправить проверку выхода за пределы строки!
+    // FIXME пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ!
 	if (status == MENU_ENTER_PARAM_INT) {
         PGM_P vstr = NULL;
         switch(EnterParam.getDigitMax()) {
@@ -4386,20 +4341,20 @@ eMENU_ENTER_PARAM clMenu::inputValue() {
 	return EnterParam.getStatus();
 }
 
-/**	Вывод на экран текущих пунктов меню и курсора
- *	@param Нет
- *	@return Нет
+/**	пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+ *	@param пїЅпїЅпїЅ
+ *	@return пїЅпїЅпїЅ
  */
 void clMenu::printPunkts() {
-	// вывод на экран пунктов текущего меню
-	// вывод заканчивается на последней строчке экрана,
-	// либо последнем пункте
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ,
+	// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 
-	// кол-во отображаемых строк на экране
+	// пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	uint8_t numLines = NUM_TEXT_LINES - lineParam_;
-	// если номер текущей строки больше, чем вмещается строк на экране
-	// то выводить на экран начинаем с (текущий пункт - кол.во строк)
-	// иначе с первой
+	// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅ.пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ)
+	// пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	uint8_t cntPunkts = (cursorLine_ > numLines) ? cursorLine_ - numLines : 0;
 
 	for (uint_fast8_t line = lineParam_; line < NUM_TEXT_LINES; line++) {
@@ -4410,7 +4365,7 @@ void clMenu::printPunkts() {
 			break;
 	}
 
-	// при необходиомости, вывод курсора на экран
+	// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 	if (cursorEnable_) {
 		if (cursorLine_ > numLines)
             vLCDbuf[ROW_LEN * (NUM_TEXT_LINES - 1) + 2] = '*';
@@ -4420,35 +4375,35 @@ void clMenu::printPunkts() {
 	}
 }
 
-/**	Вывод в указанном месте отображаемого параметра.
- * 	В одной строке выводятся два параметра.
- * 	@param poz Текущая позиция
- * 	@arg [0, 12), 0 первая строка слева, 11 - седьмая справа
- * 	@param par Отображаемый параметр
- * 	@return Нет
+/**	пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@param poz пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+ * 	@arg [0, 12), 0 пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, 11 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+ * 	@param par пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+ * 	@return пїЅпїЅпїЅ
  */
 void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
-	static const char fcUout[] 	PROGMEM = "U=%02u.%01uВ";	// Напряжение выхода.
-	static const char fcIout[] 	PROGMEM = "I=%03uмА";		// Ток выхода.
-	static const char fcRout[] 	PROGMEM = "R=%03uОм";		// Сопротивление линии.
-	static const char fcUz[] 	PROGMEM = "Uз=%02dдБ";		// Запас по защите.
-	static const char fcUz1[] 	PROGMEM = "Uз1=%02dдБ";		// Запас по защите 1.
-	static const char fcUz2[] 	PROGMEM = "Uз2=%02dдБ";		// Запас по защите 2.
-	static const char fcUcf[] 	PROGMEM = "Uк=%02dдБ";		// Запас по КC.
-	static const char fcUcf1[] 	PROGMEM = "Uк1=%02dдБ";		// Запас по КC 1.
-	static const char fcUcf2[] 	PROGMEM = "Uк2=%02dдБ";		// Запас по КC 2.
-	static const char fcUn[] 	PROGMEM = "Uш=%02dдБ";		// Уровень шумов.
-	static const char fcUn1[] 	PROGMEM = "Uш1=%02dдБ";		// Уровень шумов 1.
-	static const char fcUn2[] 	PROGMEM = "Uш2=%02dдБ";		// Уровень шумов 2.
-	static const char fcSd[] 	PROGMEM = "Sд=%02u°";		// Просечки в сигнале.
-	static const char fcDate[] 	PROGMEM = "%02u.%02u.%02u";	// Дата.
-	static const char fcTime[] 	PROGMEM = "%02u:%02u:%02u";	// Время.
-	static const char fcD[]		PROGMEM = "D=%02dдБ";		// Запас по тест.команде (двухчаст) или Отношение сигнал/помеха (одночаст)
-	static const char fcTemper[] PROGMEM= "T=%02d°C";		// Температура
-	static const char fcFreqDev[] PROGMEM = "dF=%02dГц";		// Отклонение часоты КС на ПРМ
+	static const char fcUout[] 	PROGMEM = "U=%02u.%01uпїЅ";	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
+	static const char fcIout[] 	PROGMEM = "I=%03uпїЅпїЅ";		// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
+	static const char fcRout[] 	PROGMEM = "R=%03uпїЅпїЅ";		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ.
+	static const char fcUz[] 	PROGMEM = "UпїЅ=%02dпїЅпїЅ";		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
+	static const char fcUz1[] 	PROGMEM = "UпїЅ1=%02dпїЅпїЅ";		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 1.
+	static const char fcUz2[] 	PROGMEM = "UпїЅ2=%02dпїЅпїЅ";		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 2.
+	static const char fcUcf[] 	PROGMEM = "UпїЅ=%02dпїЅпїЅ";		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅC.
+	static const char fcUcf1[] 	PROGMEM = "UпїЅ1=%02dпїЅпїЅ";		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅC 1.
+	static const char fcUcf2[] 	PROGMEM = "UпїЅ2=%02dпїЅпїЅ";		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅC 2.
+	static const char fcUn[] 	PROGMEM = "UпїЅ=%02dпїЅпїЅ";		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ.
+	static const char fcUn1[] 	PROGMEM = "UпїЅ1=%02dпїЅпїЅ";		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ 1.
+	static const char fcUn2[] 	PROGMEM = "UпїЅ2=%02dпїЅпїЅ";		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ 2.
+	static const char fcSd[] 	PROGMEM = "SпїЅ=%02uпїЅ";		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+	static const char fcDate[] 	PROGMEM = "%02u.%02u.%02u";	// пїЅпїЅпїЅпїЅ.
+	static const char fcTime[] 	PROGMEM = "%02u:%02u:%02u";	// пїЅпїЅпїЅпїЅпїЅ.
+	static const char fcD[]		PROGMEM = "D=%02dпїЅпїЅ";		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ.пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ) пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
+	static const char fcTemper[] PROGMEM= "T=%02dпїЅC";		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	static const char fcFreqDev[] PROGMEM = "dF=%02dпїЅпїЅ";		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ
 
-	// проверка на максимальную позицию
-		// 10 - кол-во символов отведенное на экране под 1 параметр
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+		// 10 - пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ 1 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	if (poz < 12) {
 		poz = (poz * 10) + 1;
 
@@ -4467,7 +4422,7 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 						sParam.measParam.getVoltageDef());
 				break;
 
-				// в 3-х концевой может быть Uz1 == Uz, Uz2
+				// пїЅ 3-пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ Uz1 == Uz, Uz2
 			case MENU_MEAS_PARAM_UZ1:
 				snprintf_P(&vLCDbuf[poz], 11, fcUz1,
 						sParam.measParam.getVoltageDef());
@@ -4482,7 +4437,7 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 						sParam.measParam.getVoltageCf());
 				break;
 
-				// в 3-х концевой может быть Uk1 == Uk, Uk2
+				// пїЅ 3-пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ Uk1 == Uk, Uk2
 			case MENU_MEAS_PARAM_UC1:
 				snprintf_P(&vLCDbuf[poz], 11, fcUcf1,
 						sParam.measParam.getVoltageCf());
@@ -4512,7 +4467,7 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 				snprintf_P(&vLCDbuf[poz], 11, fcUn,
 						sParam.measParam.getVoltageNoise());
 				break;
-				// в 3-х концевой может быть Uш1 == Uш, Uш2
+				// пїЅ 3-пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ UпїЅ1 == UпїЅ, UпїЅ2
 			case MENU_MEAS_PARAM_UN1:
 				snprintf_P(&vLCDbuf[poz], 11, fcUn1,
 						sParam.measParam.getVoltageNoise());
@@ -4542,30 +4497,30 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 				break;
 
 			case MENU_MEAS_PARAM_NO:
-				// ничего не делаем
+				// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 				break;
 		}
 	}
 }
 
-/**	Вывод на экран текущего состояния устройства.
- * 	Если есть общие неисправности - выводится поочередно расшифровка самой
- * 	приоритетной и код (даже если одна).
- * 	Далее проверяется наличие неисправности устройства и если есть, выводится
- * 	по тому же алгоритму.
- * 	Если есть общее предупреждение - выводится почередно состояние и расшифровка
- * 	данного предупреждения. Если предупреждений несколько, выводится только код.
- * 	Далее проверяется наличие предупреждения для устройства и если есть,
- * 	выодится по тому же алгоритму.
- * 	Если небыло никаких неисправностей/предупреждений, то выводится текущее
- * 	состояние и режим работы устройства.
- * 	@param poz Начальная позиция в буфере данных ЖКИ
- * 	@param device Данные для текущего устройства
- *	@return Нет
+/**	пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+ * 	пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ (пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ).
+ * 	пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+ * 	пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+ * 	пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ.
+ * 	пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ,
+ * 	пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+ * 	пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+ * 	@param poz пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
+ * 	@param device пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+ *	@return пїЅпїЅпїЅ
  */
 void clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device) {
-	static const char fcFaults[] 	PROGMEM = "Неиспр. %c-%04X";
-	static const char fcWarnings[] 	PROGMEM = "Предупр. %c-%04X";
+	static const char fcFaults[] 	PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅ. %c-%04X";
+	static const char fcWarnings[] 	PROGMEM = "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ. %c-%04X";
 
 	PGM_P *text;
 	uint_fast8_t x = 0;
@@ -4643,10 +4598,10 @@ void clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device) {
 	}
 }
 
-/**	Вывод в пунтке меню "Режим" текущего режима устройств
- * 	@param poz Начальная позиция в буфере данных ЖКИ
- * 	@param device Данные для текущего устройства
- *	@return Нет
+/**	пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅ" пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+ * 	@param poz пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
+ * 	@param device пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+ *	@return пїЅпїЅпїЅ
  */
 void clMenu::printDevicesRegime(uint8_t poz, TDeviceStatus *device) {
 	snprintf_P(&vLCDbuf[poz], 4, device->name);
@@ -4656,9 +4611,9 @@ void clMenu::printDevicesRegime(uint8_t poz, TDeviceStatus *device) {
 	snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
 }
 
-// Вывод на экран текущего номера и их колчиество для однотипных пар-ов.
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ.
 void clMenu::printParam() {
-    snprintf_P(&vLCDbuf[20], ROW_LEN + 1, PSTR("Параметр:%u Всего:%u"),
+    snprintf_P(&vLCDbuf[20], ROW_LEN + 1, PSTR("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ:%u пїЅпїЅпїЅпїЅпїЅ:%u"),
 			sParam.local.getNumOfCurrParam(), sParam.local.getNumOfParams());
 
     snprintf_P(&vLCDbuf[40], ROW_LEN + 1,
@@ -4669,7 +4624,7 @@ void clMenu::printParam() {
 	printValue(100);
 }
 
-// Вывод на экран текущего номера и их колчиество для однотипных пар-ов.
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ.
 void clMenu::printSameNumber(uint8_t pos) {
 	if (sParam.local.getNumOfSameParams() > 1) {
 		eGB_PARAM p = sParam.local.getParam();
@@ -4677,23 +4632,23 @@ void clMenu::printSameNumber(uint8_t pos) {
 		uint8_t max = sParam.local.getNumOfSameParams();
 
 		if (p == GB_PARAM_RING_COM_TRANSIT) {
-			// для транзитных команд вместо номера выводится значение типа 16A/32C
-			// доступ к массиву значений осуществляется через параметр GB_PARAM_RING_COM_REC
+			// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ 16A/32C
+			// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ GB_PARAM_RING_COM_REC
 			Param* param = (Param*) pgm_read_word(&fParams[GB_PARAM_RING_COM_REC]);
 			PGM_P pval =  (PGM_P) pgm_read_word(&param->listValues) + (val * STRING_LENGHT);
 			PGM_P pmax =  (PGM_P) pgm_read_word(&param->listValues) + (max * STRING_LENGHT);
 #ifdef AVR
-            snprintf_P(&vLCDbuf[pos], ROW_LEN + 1, PSTR("Номер: %S/%S"), pval, pmax);
+            snprintf_P(&vLCDbuf[pos], ROW_LEN + 1, PSTR("пїЅпїЅпїЅпїЅпїЅ: %S/%S"), pval, pmax);
 #else
-            snprintf_P(&vLCDbuf[pos], ROW_LEN + 1, PSTR("Номер: %s/%s"), pval, pmax);
+            snprintf_P(&vLCDbuf[pos], ROW_LEN + 1, PSTR("пїЅпїЅпїЅпїЅпїЅ: %s/%s"), pval, pmax);
 #endif
         } else {
-            snprintf_P(&vLCDbuf[pos], ROW_LEN + 1, PSTR("Номер: %u/%u"), val, max);
+            snprintf_P(&vLCDbuf[pos], ROW_LEN + 1, PSTR("пїЅпїЅпїЅпїЅпїЅ: %u/%u"), val, max);
 		}
 	}
 }
 
-//	Вывод на экран диапазона значений параметра.
+//	пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
 void clMenu::printRange(uint8_t pos) {
     static prog_uint8_t MAX_CHARS = 11 ;
 
@@ -4702,15 +4657,15 @@ void clMenu::printRange(uint8_t pos) {
 	int16_t max = lp->getMax();
 	PGM_P str = fcNullBuf;
 
-	pos += snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Диапазон: "));
+	pos += snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: "));
 
     switch(getRangeType(lp->getParam())) {
         case Param::RANGE_LIST: {
-			str = PSTR("список");
+			str = PSTR("пїЅпїЅпїЅпїЅпїЅпїЅ");
         } break;
 
         case Param::RANGE_ON_OFF: {
-			str = PSTR("вкл./выкл.");
+			str = PSTR("пїЅпїЅпїЅ./пїЅпїЅпїЅпїЅ.");
         } break;
 
         case Param::RANGE_INT: {
@@ -4729,18 +4684,18 @@ void clMenu::printRange(uint8_t pos) {
 			min = 0;
 			max /= 10;
 #ifdef AVR
-			str = PSTR("%d..±%d%S");
+			str = PSTR("%d..пїЅ%d%S");
 #else
-            str = PSTR("%d..±%d%s");
+            str = PSTR("%d..пїЅ%d%s");
 #endif
         } break;
 
         case Param::RANGE_I_COR: {
 			min = 0;
 #ifdef AVR
-			str= PSTR("%d..±%d%S");
+			str= PSTR("%d..пїЅ%d%S");
 #else
-            str= PSTR("%d..±%d%s");
+            str= PSTR("%d..пїЅ%d%s");
 #endif
         } break;
 
@@ -4782,7 +4737,7 @@ void clMenu::printCursor(uint8_t start, uint8_t stop) {
 
 }
 
-// Вывод на экран текущего значения параметра.
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
 void clMenu::printValue(uint8_t pos) {
 	static prog_uint8_t MAX_CHARS = 11;
 
@@ -4790,14 +4745,14 @@ void clMenu::printValue(uint8_t pos) {
     PGM_P dim = fcDimension[getDim(sParam.local.getParam())];
 	PGM_P str = fcNullBuf;
 
-	pos += snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Значение: "));
+	pos += snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: "));
 
 	LocalParams::STATE state = sParam.local.getState();
 
 	if (state == LocalParams::STATE_ERROR) {
-		// вывод ошибочного значения
+		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		if (blink_) {
-			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("ошибка!!!"));
+			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("пїЅпїЅпїЅпїЅпїЅпїЅ!!!"));
 		} else {
 			if (getParamType(sParam.local.getParam()) == Param::PARAM_PWD) {
 				for(uint8_t i = 0; i < sParam.local.getMax(); i++) {
@@ -4809,12 +4764,12 @@ void clMenu::printValue(uint8_t pos) {
 		}
 	} else if (state == LocalParams::STATE_READ_PARAM) {
 		if (blink_) {
-			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("чтение."));
+			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("пїЅпїЅпїЅпїЅпїЅпїЅ."));
 		} else {
-			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("чтение.."));
+			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("пїЅпїЅпїЅпїЅпїЅпїЅ.."));
 		}
 	} else {
-		// вывод корректного значения
+		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         switch(getParamType(sParam.local.getParam())) {
 			case Param::PARAM_BITES: // DOWN
             case Param::PARAM_LIST: {
@@ -4861,6 +4816,31 @@ void clMenu::printValue(uint8_t pos) {
 }
 
 //
+uint8_t
+clMenu::printDateAdnTimeInJournal(uint8_t pos) {
+    uint8_t startpos = pos;
+
+    // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+    snprintf_P(&vLCDbuf[pos], ROW_LEN + 1, fcDateJrnBCD,
+               sParam.jrnEntry.getDay(),
+               sParam.jrnEntry.getMonth(),
+               sParam.jrnEntry.getYear());
+    pos += 20;
+
+    // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    snprintf_P(&vLCDbuf[pos], ROW_LEN + 1, fcTimeJrnBCD,
+               sParam.jrnEntry.getHour(),
+               sParam.jrnEntry.getMinute(),
+               sParam.jrnEntry.getSecond(),
+               sParam.jrnEntry.getMSecond());
+    pos += 20;
+
+    return pos - startpos;
+}
+
+
+
+//
 bool clMenu::checkChangeReg() const {
     bool check = false;
     eGB_REGIME regime = sParam.glb.status.getRegime();
@@ -4894,7 +4874,7 @@ bool clMenu::checkPwdInput(user_t user, const uint8_t *pwd) {
     return check;
 }
 
-// Проверяет необходимость ввода пароля после изменения параметра.
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
 user_t clMenu::checkPwdReq(eGB_PARAM param, int16_t value) const {
     user_t user = USER_operator;
 
@@ -4910,7 +4890,7 @@ user_t clMenu::checkPwdReq(eGB_PARAM param, int16_t value) const {
     return user;
 }
 
-// Настройка параметров для ввода значения с клавиатуры.
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
 void clMenu::enterParameter() {
 	LocalParams *lp = &sParam.local;
     eGB_PARAM param = lp->getParam();
@@ -4944,14 +4924,14 @@ void clMenu::enterParameter() {
 			int16_t val = lp->getValue();
 			int16_t max = lp->getMax();
 
-			// Для ввода значений коррекции тока и напряжения
-			// минимальное значение делаем 0 , а начальное значение
-			// устанвливаем равным текущему напряжению/тока, а не коррекции.
-			// Если при этом коррекция ошибочна, то максимум тоже делаем 0.
-			// Чтобы был только один путь - сброить текущую коррекцию.
+			// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 0 , пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+			// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 0.
+			// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
 			//
-			// Для остальных параметров в случае ошибки текущего значения,
-			// устанавливается минимум.
+			// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ,
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
             if (getParamType(param) == Param::PARAM_I_COR) {
 				min = 0;
 				val = sParam.measParam.getCurrentOut();
@@ -5042,7 +5022,7 @@ void clMenu::saveParamToBsp() {
             } break;
 
             case GB_SEND_BITES_DOP:	{
-                // FIXME Убрать привязку к локальному параметру!
+                // FIXME пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!
                 uint8_t val = sParam.local.getValueB();
                 if (sParam.save.getValue() > 0) {
                     val |= (1 << (pos % 8));
@@ -5054,7 +5034,7 @@ void clMenu::saveParamToBsp() {
             } break;
 
             case GB_SEND_DOP_BITES: {
-                // FIXME Убрать привязку к локальному параметру!
+                // FIXME пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!
                 uint8_t val = sParam.local.getValueB();
                 if (sParam.save.getValue() > 0) {
                     val |= (1 << (pos % 8));
@@ -5066,16 +5046,16 @@ void clMenu::saveParamToBsp() {
             } break;
 
             case GB_SEND_COR_U: {
-                // FIXME Убрать привязку к локальному параметру!
-                // если текущее значение коррекции тока равно 0
-                // то передается сообщение с под.байтом равным 4
-                // означающим сброс коррекции
+                // FIXME пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!
+                // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ 0
+                // пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ.пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 4
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 int16_t t = sParam.save.getValue();
                 if (t == 0)
                     sParam.save.dopByte = 4;
                 else {
-                    // новая коррекция =
-                    // напряжение прибора - (напряжение с БСП - коррекция)
+                    // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ =
+                    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ - (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
                     t -= (int16_t) (sParam.measParam.getVoltageOut());
                     t += sParam.local.getValue();
                 }
@@ -5085,15 +5065,15 @@ void clMenu::saveParamToBsp() {
             } break;
 
             case GB_SEND_COR_I: {
-                // FIXME Убрать привязку к локальному параметру!
-                // если текущее значение коррекции тока равно 0
-                // то передается сообщение с под.байтом равным 5
-                // означающим сброс коррекции
+                // FIXME пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!
+                // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ 0
+                // пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ.пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 5
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 int16_t t = sParam.save.getValue();
                 if (t == 0)
                     sParam.save.dopByte = 5;
                 else {
-                    // новая коррекция = ток прибора - (ток с БСП - коррекция)
+                    // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ = пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ - (пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
                     t -= static_cast<int16_t>(sParam.measParam.getCurrentOut());
                     t += sParam.local.getValue();
                 }
@@ -5192,7 +5172,7 @@ void clMenu::security() {
     }
 }
 
-// Работа в меню настройки параметров.
+// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
 void clMenu::setupParam() {
     if (isMessage()) {
         printMessage();
@@ -5211,7 +5191,7 @@ void clMenu::setupParam() {
                         EnterParam.setParam(GB_PARAM_IS_PWD);
                         EnterParam.setValueRange(1, 8);
                     } else {
-                        // FIXME Тут МОЖЕТ когда-то встретится параметр не "Роль".
+                        // FIXME пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ "пїЅпїЅпїЅпїЅ".
                         setMessage(MSG_BLOCK_USER);
                         EnterParam.setDisable();
                     }
@@ -5272,14 +5252,14 @@ void clMenu::setupParam() {
 			break;
 	}
 
-    // Замена команды для опроса текущего параметра
+    // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     eGB_COM com = getCom(sParam.local.getParam());
     if (sParam.txComBuf.getLocalCom() != com) {
         sParam.txComBuf.addFastCom(com, getSendType(sParam.local.getParam()));
         sParam.txComBuf.setLocalCom(com);
     }
 
-	// выход из текущего уровня меню, если кол-во параметров равно 0
+	// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ 0
 	if (sParam.local.getNumOfParams() == 0) {
 		key_ = KEY_CANCEL;
 	}

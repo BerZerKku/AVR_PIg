@@ -572,21 +572,22 @@ uint16_t TProtocolPcM::readJournalEvent(uint16_t adr) {
 				} else if (adr == ADR_JRN_EVT_REG) {
 					val = jrn->getRegime();
 				} else if (adr == ADR_JRN_EVT_MSECOND) {
-					val = jrn->dateTime.getMsSecond();
+                    val = jrn->getMSecond();
 				} else if (adr == ADR_JRN_EVT_SECOND) {
-					val = jrn->dateTime.getSecond();
+                    val = jrn->getSecond();
 				} else if (adr == ADR_JRN_EVT_MINUTE) {
-					val = jrn->dateTime.getMinute();
+                    val = jrn->getMinute();
 				} else if (adr == ADR_JRN_EVT_HOUR) {
-					val = jrn->dateTime.getHour();
+                    val = jrn->getHour();
 				} else if (adr == ADR_JRN_EVT_WDAY) {
-					val = jrn->dateTime.getDayOfWeek();
+//					val = jrn->getDayOfWeek();
+                    val = 0;
 				} else if (adr == ADR_JRN_EVT_DAY) {
-					val = jrn->dateTime.getDay();
+                    val = jrn->getDay();
 				} else if (adr == ADR_JRN_EVT_MONTH) {
-					val = jrn->dateTime.getMonth();
+                    val = jrn->getMonth();
 				} else if (adr == ADR_JRN_EVT_YEAR) {
-					val = jrn->dateTime.getYear();
+                    val = jrn->getYear();
 				}
 			}
 		}
@@ -637,21 +638,22 @@ uint16_t TProtocolPcM::readJournalPrm(uint16_t adr) {
 				} else if (adr == ADR_JRN_PRM_EVENT) {
 					val = jrn->getEventType();
 				} else if (adr == ADR_JRN_PRM_MSECOND) {
-					val = jrn->dateTime.getMsSecond();
+                    val = jrn->getMSecond();
 				} else if (adr == ADR_JRN_PRM_SECOND) {
-					val = jrn->dateTime.getSecond();
+                    val = jrn->getSecond();
 				} else if (adr == ADR_JRN_PRM_MINUTE) {
-					val = jrn->dateTime.getMinute();
+                    val = jrn->getMinute();
 				} else if (adr == ADR_JRN_PRM_HOUR) {
-					val = jrn->dateTime.getHour();
+                    val = jrn->getHour();
 				} else if (adr == ADR_JRN_PRM_WDAY) {
-					val = jrn->dateTime.getDayOfWeek();
+                    // val = jrn->getDayOfWeek();
+                    val = 0;
 				} else if (adr == ADR_JRN_PRM_DAY) {
-					val = jrn->dateTime.getDay();
+                    val = jrn->getDay();
 				} else if (adr == ADR_JRN_PRM_MONTH) {
-					val = jrn->dateTime.getMonth();
+                    val = jrn->getMonth();
 				} else if (adr == ADR_JRN_PRM_YEAR) {
-					val = jrn->dateTime.getYear();
+                    val = jrn->getYear();
 				}
 			}
 		}
@@ -704,21 +706,22 @@ uint16_t TProtocolPcM::readJournalPrd(uint16_t adr) {
 				} else if (adr == ADR_JRN_PRD_SOURCE) {
 					val = jrn->getSourceCom();
 				} else if (adr == ADR_JRN_PRD_MSECOND) {
-					val = jrn->dateTime.getMsSecond();
+                    val = jrn->getMSecond();
 				} else if (adr == ADR_JRN_PRD_SECOND) {
-					val = jrn->dateTime.getSecond();
+                    val = jrn->getSecond();
 				} else if (adr == ADR_JRN_PRD_MINUTE) {
-					val = jrn->dateTime.getMinute();
+                    val = jrn->getMinute();
 				} else if (adr == ADR_JRN_PRD_HOUR) {
-					val = jrn->dateTime.getHour();
+                    val = jrn->getHour();
 				} else if (adr == ADR_JRN_PRD_WDAY) {
-					val = jrn->dateTime.getDayOfWeek();
+                    // val = jrn->getDayOfWeek();
+                    val = 0;
 				} else if (adr == ADR_JRN_PRD_DAY) {
-					val = jrn->dateTime.getDay();
+                    val = jrn->getDay();
 				} else if (adr == ADR_JRN_PRD_MONTH) {
-					val = jrn->dateTime.getMonth();
+                    val = jrn->getMonth();
 				} else if (adr == ADR_JRN_PRD_YEAR) {
-					val = jrn->dateTime.getYear();
+                    val = jrn->getYear();
 				}
 			}
 		}
@@ -769,21 +772,22 @@ uint16_t TProtocolPcM::readJournalDef(uint16_t adr) {
 				} else if (adr == ADR_JRN_DEF_STATE) {
 					val = jrn->getEventType();
 				} else if (adr == ADR_JRN_DEF_MSECOND) {
-					val = jrn->dateTime.getMsSecond();
+                    val = jrn->getMSecond();
 				} else if (adr == ADR_JRN_DEF_SECOND) {
-					val = jrn->dateTime.getSecond();
+                    val = jrn->getSecond();
 				} else if (adr == ADR_JRN_DEF_MINUTE) {
-					val = jrn->dateTime.getMinute();
+                    val = jrn->getMinute();
 				} else if (adr == ADR_JRN_DEF_HOUR) {
-					val = jrn->dateTime.getHour();
+                    val = jrn->getHour();
 				} else if (adr == ADR_JRN_DEF_WDAY) {
-					val = jrn->dateTime.getDayOfWeek();
+                    // val = jrn->dateTime.getDayOfWeek();
+                    val = 0;
 				} else if (adr == ADR_JRN_DEF_DAY) {
-					val = jrn->dateTime.getDay();
+                    val = jrn->getDay();
 				} else if (adr == ADR_JRN_DEF_MONTH) {
-					val = jrn->dateTime.getMonth();
+                    val = jrn->getMonth();
 				} else if (adr == ADR_JRN_DEF_YEAR) {
-					val = jrn->dateTime.getYear();
+                    val = jrn->getYear();
 				}
 			}
 		}

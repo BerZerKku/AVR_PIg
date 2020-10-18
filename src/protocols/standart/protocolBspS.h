@@ -37,6 +37,24 @@ private:
     void hdlrComGetTime();
     void hdlrComGetVers();
 
+
+    /** Устанавливает дату и время для записи журнала.
+     *
+     *  !!! Если год находится в конце, то в записи есть еще день недели.
+     *
+     *  @param[in] pos Начальная позиция в буфере.
+     *  @param[in] yearfirst true если год идет первым, иначе false.
+     *  @return Позиция в буфере после установки.
+     */
+    uint8_t setJrnDateTime(uint8_t pos, bool yearfirst);
+
+    /** Устанавливает запись журнала.
+     *
+     *  @param[in] device Устройство для которого получена запись.
+     *  @param[in] pc Флаг запроса с ПК.
+     */
+    void setJrnEntry(eGB_DEVICE device, bool pc);
+
     /** Устанавливает размер журнала.
      *
      *  @param[in] device Устройство для которого получен размрер журнала.

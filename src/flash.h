@@ -310,8 +310,10 @@ static const char fcNumComJrn[] PROGMEM = "Команда: %u";
 static const char fcNumComJrnPrm[] PROGMEM = "Команда: %u %S";
 /// Дата, когда была сделана запись.
 static const char fcDateJrn[] PROGMEM = "Дата: %02u.%02u.%02u";
+static const char fcDateJrnBCD[] PROGMEM = "Дата: %02X.%02X.%02X";
 /// Время, когда была сделана запись.
 static const char fcTimeJrn[] PROGMEM = "Время: %02u:%02u:%02u.%03u";
+static const char fcTimeJrnBCD[] PROGMEM = "Время: %02X:%02X:%02X.%03u";
 /// Сообщение о том. что идет считывание выбранной записи журнала.
 static const char fcJrnNotReady[] PROGMEM = "СЧИТЫВАНИЕ ЗАПИСИ";
 /// Вывод состояний входов/выходов защиты в момент записи журнала.

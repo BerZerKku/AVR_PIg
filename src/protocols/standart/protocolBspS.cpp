@@ -271,15 +271,15 @@ void clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
 		if ((sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_DEF) && (!pc)){
 			if (sParam_->typeDevice == AVANT_OPTO) {
 				// дата
-				sParam_->jrnEntry.dateTime.setYear(buf[B3]);
-				sParam_->jrnEntry.dateTime.setMonth(buf[B4]);
-				sParam_->jrnEntry.dateTime.setDay(buf[B5]);
+                sParam_->jrnEntry.setYear(buf[B3]);
+                sParam_->jrnEntry.setMonth(buf[B4]);
+                sParam_->jrnEntry.setDay(buf[B5]);
 				// время
-				sParam_->jrnEntry.dateTime.setHour(buf[B6]);
-				sParam_->jrnEntry.dateTime.setMinute(buf[B7]);
-				sParam_->jrnEntry.dateTime.setSecond(buf[B8]);
+                sParam_->jrnEntry.setHour(buf[B6]);
+                sParam_->jrnEntry.setMinute(buf[B7]);
+                sParam_->jrnEntry.setSecond(buf[B8]);
 				uint16_t t = TO_INT16(buf[B9], buf[B10]);
-				sParam_->jrnEntry.dateTime.setMsSecond(t);
+                sParam_->jrnEntry.setMSecond(t);
 				//
 //				sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
 				// sParam_->jrnEntry.setNumCom(buf[B2]);
@@ -287,15 +287,15 @@ void clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
 //				sParam_->jrnEntry.setEventType(buf[B3]);
 				sParam_->jrnEntry.setReady();
 			} else {
-				sParam_->jrnEntry.dateTime.setYear(buf[B16]);
-				sParam_->jrnEntry.dateTime.setMonth(buf[B15]);
-				sParam_->jrnEntry.dateTime.setDay(buf[B14]);
+                sParam_->jrnEntry.setYear(buf[B16]);
+                sParam_->jrnEntry.setMonth(buf[B15]);
+                sParam_->jrnEntry.setDay(buf[B14]);
 				// B13 - день недели
-				sParam_->jrnEntry.dateTime.setHour(buf[B12]);
-				sParam_->jrnEntry.dateTime.setMinute(buf[B11]);
-				sParam_->jrnEntry.dateTime.setSecond(buf[B10]);
+                sParam_->jrnEntry.setHour(buf[B12]);
+                sParam_->jrnEntry.setMinute(buf[B11]);
+                sParam_->jrnEntry.setSecond(buf[B10]);
 				uint16_t t = TO_INT16(buf[B9], buf[B8]);
-				sParam_->jrnEntry.dateTime.setMsSecond(t);
+                sParam_->jrnEntry.setMSecond(t);
 				sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
 				// sParam_->jrnEntry.setNumCom(buf[B2]);
 				sParam_->jrnEntry.setSignalDef((buf[B2] << 4) + (buf[B4] & 0x0F));
@@ -334,28 +334,28 @@ void clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
 			if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_PRM)&& (!pc)){
 				if (sParam_->typeDevice == AVANT_OPTO) {
 					// дата
-					sParam_->jrnEntry.dateTime.setYear(buf[B5]);
-					sParam_->jrnEntry.dateTime.setMonth(buf[B6]);
-					sParam_->jrnEntry.dateTime.setDay(buf[B7]);
+                    sParam_->jrnEntry.setYear(buf[B5]);
+                    sParam_->jrnEntry.setMonth(buf[B6]);
+                    sParam_->jrnEntry.setDay(buf[B7]);
 					// время
-					sParam_->jrnEntry.dateTime.setHour(buf[B8]);
-					sParam_->jrnEntry.dateTime.setMinute(buf[B9]);
-					sParam_->jrnEntry.dateTime.setSecond(buf[B10]);
+                    sParam_->jrnEntry.setHour(buf[B8]);
+                    sParam_->jrnEntry.setMinute(buf[B9]);
+                    sParam_->jrnEntry.setSecond(buf[B10]);
 					uint16_t t = TO_INT16(buf[B11], buf[B12]);
-					sParam_->jrnEntry.dateTime.setMsSecond(t);
+                    sParam_->jrnEntry.setMSecond(t);
 					//
 					sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B1]);
 					sParam_->jrnEntry.setReady();
 				} else {
-					sParam_->jrnEntry.dateTime.setYear(buf[B16]);
-					sParam_->jrnEntry.dateTime.setMonth(buf[B15]);
-					sParam_->jrnEntry.dateTime.setDay(buf[B14]);
+                    sParam_->jrnEntry.setYear(buf[B16]);
+                    sParam_->jrnEntry.setMonth(buf[B15]);
+                    sParam_->jrnEntry.setDay(buf[B14]);
 					// B13 - день недели
-					sParam_->jrnEntry.dateTime.setHour(buf[B12]);
-					sParam_->jrnEntry.dateTime.setMinute(buf[B11]);
-					sParam_->jrnEntry.dateTime.setSecond(buf[B10]);
+                    sParam_->jrnEntry.setHour(buf[B12]);
+                    sParam_->jrnEntry.setMinute(buf[B11]);
+                    sParam_->jrnEntry.setSecond(buf[B10]);
 					uint16_t t = TO_INT16(buf[B9], buf[B8]);
-					sParam_->jrnEntry.dateTime.setMsSecond(t);
+                    sParam_->jrnEntry.setMSecond(t);
 					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
 					sParam_->jrnEntry.setNumCom(buf[B2]);
 					sParam_->jrnEntry.setEventType(buf[B3]);
@@ -398,15 +398,15 @@ void clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 			if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_PRD)&& (!pc)) {
 				if (sParam_->typeDevice == AVANT_OPTO) {
 					// дата
-					sParam_->jrnEntry.dateTime.setYear(buf[B5]);
-					sParam_->jrnEntry.dateTime.setMonth(buf[B6]);
-					sParam_->jrnEntry.dateTime.setDay(buf[B7]);
+                    sParam_->jrnEntry.setYear(buf[B5]);
+                    sParam_->jrnEntry.setMonth(buf[B6]);
+                    sParam_->jrnEntry.setDay(buf[B7]);
 					// время
-					sParam_->jrnEntry.dateTime.setHour(buf[B8]);
-					sParam_->jrnEntry.dateTime.setMinute(buf[B9]);
-					sParam_->jrnEntry.dateTime.setSecond(buf[B10]);
+                    sParam_->jrnEntry.setHour(buf[B8]);
+                    sParam_->jrnEntry.setMinute(buf[B9]);
+                    sParam_->jrnEntry.setSecond(buf[B10]);
 					uint16_t t = TO_INT16(buf[B11], buf[B12]);
-					sParam_->jrnEntry.dateTime.setMsSecond(t);
+                    sParam_->jrnEntry.setMSecond(t);
 					//
 					sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B1]);
 
@@ -416,15 +416,15 @@ void clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
 					}
 					sParam_->jrnEntry.setReady();
 				} else {
-					sParam_->jrnEntry.dateTime.setYear(buf[B16]);
-					sParam_->jrnEntry.dateTime.setMonth(buf[B15]);
-					sParam_->jrnEntry.dateTime.setDay(buf[B14]);
+                    sParam_->jrnEntry.setYear(buf[B16]);
+                    sParam_->jrnEntry.setMonth(buf[B15]);
+                    sParam_->jrnEntry.setDay(buf[B14]);
 					// B13 - день недели
-					sParam_->jrnEntry.dateTime.setHour(buf[B12]);
-					sParam_->jrnEntry.dateTime.setMinute(buf[B11]);
-					sParam_->jrnEntry.dateTime.setSecond(buf[B10]);
+                    sParam_->jrnEntry.setHour(buf[B12]);
+                    sParam_->jrnEntry.setMinute(buf[B11]);
+                    sParam_->jrnEntry.setSecond(buf[B10]);
 					uint16_t t = TO_INT16(buf[B9], buf[B8]);
-					sParam_->jrnEntry.dateTime.setMsSecond(t);
+                    sParam_->jrnEntry.setMSecond(t);
 					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
 					sParam_->jrnEntry.setNumCom(buf[B2]);
 					sParam_->jrnEntry.setEventType(buf[B3]);
@@ -491,12 +491,16 @@ void clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
             setJrnSize(GB_DEVICE_GLB);
         } break;
 
+        case GB_COM_GET_JRN_ENTRY: {
+            hdlrComGetJrnEntry(pc);
+        } break;
+
         case GB_COM_GET_JRN_IS_CNT: {
             setJrnSize(GB_DEVICE_SEC);
         } break;
 
-        case GB_COM_GET_JRN_ENTRY: {
-            hdlrComGetJrnEntry(pc);
+        case GB_COM_GET_JRN_IS_ENTRY: {
+            setJrnEntry(GB_DEVICE_SEC, pc);
         } break;
 
 		default:
@@ -556,31 +560,31 @@ void clProtocolBspS::hdlrComGetJrnEntry(bool pc) {
         sParam_->jrnEntry.val = true;
         if (sParam_->typeDevice == AVANT_OPTO) {
             // дата
-            sParam_->jrnEntry.dateTime.setYear(buf[B6]);
-            sParam_->jrnEntry.dateTime.setMonth(buf[B7]);
-            sParam_->jrnEntry.dateTime.setDay(buf[B8]);
+            sParam_->jrnEntry.setYear(buf[B6]);
+            sParam_->jrnEntry.setMonth(buf[B7]);
+            sParam_->jrnEntry.setDay(buf[B8]);
             // время
-            sParam_->jrnEntry.dateTime.setHour(buf[B9]);
-            sParam_->jrnEntry.dateTime.setMinute(buf[B10]);
-            sParam_->jrnEntry.dateTime.setSecond(buf[B11]);
+            sParam_->jrnEntry.setHour(buf[B9]);
+            sParam_->jrnEntry.setMinute(buf[B10]);
+            sParam_->jrnEntry.setSecond(buf[B11]);
             uint16_t t = TO_INT16(buf[B12], buf[B13]);
-            sParam_->jrnEntry.dateTime.setMsSecond(t);
+            sParam_->jrnEntry.setMSecond(t);
             //
             sParam_->jrnEntry.setRegime((eGB_REGIME) buf[B1]);
             sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B2]);
             sParam_->jrnEntry.setReady();
         } else {
             // дата
-            sParam_->jrnEntry.dateTime.setYear(buf[B16]);
-            sParam_->jrnEntry.dateTime.setMonth(buf[B15]);
-            sParam_->jrnEntry.dateTime.setDay(buf[B14]);
-            sParam_->jrnEntry.dateTime.setDayWeek(buf[B13]);
+            sParam_->jrnEntry.setYear(buf[B16]);
+            sParam_->jrnEntry.setMonth(buf[B15]);
+            sParam_->jrnEntry.setDay(buf[B14]);
+//            sParam_->jrnEntry.setDayWeek(buf[B13]);
             // время
-            sParam_->jrnEntry.dateTime.setHour(buf[B12]);
-            sParam_->jrnEntry.dateTime.setMinute(buf[B11]);
-            sParam_->jrnEntry.dateTime.setSecond(buf[B10]);
+            sParam_->jrnEntry.setHour(buf[B12]);
+            sParam_->jrnEntry.setMinute(buf[B11]);
+            sParam_->jrnEntry.setSecond(buf[B10]);
             uint16_t t = TO_INT16(buf[B9], buf[B8]);
-            sParam_->jrnEntry.dateTime.setMsSecond(t);
+            sParam_->jrnEntry.setMSecond(t);
             // ! B1 - тип устройства, на данный момент игнорируется
             sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
             sParam_->jrnEntry.setEventType(buf[B2]);
@@ -827,6 +831,53 @@ void clProtocolBspS::hdlrComGetVers() {
 }
 
 //
+uint8_t
+clProtocolBspS::setJrnDateTime(uint8_t pos, bool yearfirst) {
+    TJournalEntry *entry = &sParam_->jrnEntry;
+
+    if (yearfirst) {
+        entry->setYear(buf[pos++]);
+        entry->setMonth(buf[pos++]);
+        entry->setDay(buf[pos++]);
+        entry->setHour(buf[pos++]);
+        entry->setMinute(buf[pos++]);
+        entry->setSecond(buf[pos++]);
+        entry->setMSecond(*((uint16_t *) &buf[pos]));
+        pos += 2;
+    } else {
+        entry->setMSecond(*((uint16_t *) &buf[pos]));
+        pos += 2;
+        entry->setSecond(buf[pos++]);
+        entry->setMinute(buf[pos++]);
+        entry->setHour(buf[pos++]);
+        pos++; // день недели
+        entry->setDay(buf[pos++]);
+        entry->setMonth(buf[pos++]);
+        entry->setYear(buf[pos++]);
+    }
+
+    return pos;
+}
+
+//
+void clProtocolBspS::setJrnEntry(eGB_DEVICE device, bool pc) {
+    if (!pc && (sParam_->jrnEntry.getCurrentDevice() == device)) {
+        uint8_t pos = B1;
+        TJournalEntry *entry = &sParam_->jrnEntry;
+
+        switch(device) {
+            case GB_DEVICE_SEC: {
+                entry->setUser(buf[pos++]);
+                entry->setUserSrc(buf[pos++]);
+                entry->setEvent(buf[pos++]);
+                setJrnDateTime(pos, true);
+                entry->setReady();
+            } break;
+        }
+    }
+}
+
+//
 void clProtocolBspS::setJrnSize(eGB_DEVICE device) {
     if (sParam_->jrnEntry.getCurrentDevice() == device) {
         uint16_t size = *((uint16_t *) &buf[B1]);
@@ -923,7 +974,7 @@ uint8_t clProtocolBspS::getComNetAdr(posComNetAdr_t pos, const uint8_t *buf,
 uint8_t clProtocolBspS::sendReadJrnCommand(eGB_COM com) {
 	uint8_t num = 0;
 	uint8_t mask = 0;
-    uint16_t t = sParam_->jrnEntry.getCurrentEntry();
+    uint16_t t = sParam_->jrnEntry.getEntryAdress();
 
     if (sParam_->typeDevice != AVANT_R400M) {
         t = (t >> 8) + ((t & 0x00FF) << 8);
