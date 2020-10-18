@@ -1589,8 +1589,13 @@ void clMenu::lvlJournal() {
 
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
 
-	snprintf_P(&vLCDbuf[0], 21, title);
-	printPunkts();
+    snprintf_P(&vLCDbuf[0], 21, title);
+
+    if (isMessage()) {
+        printMessage();
+    } else {
+        printPunkts();
+    }
 
 	switch(key_) {
 		case KEY_UP:
@@ -1623,8 +1628,12 @@ void clMenu::lvlJournal() {
 				lvlMenu = &clMenu::lvlJournalPrd;
                 lvlCreate_ = true;
             } else if (name == punkt5) {
-                lvlMenu = &clMenu::lvlJournalSecurity;
-                lvlCreate_ = true;
+                if (sParam.security.getUser(USER_SOURCE_pi) == USER_admin) {
+                    lvlMenu = &clMenu::lvlJournalSecurity;
+                    lvlCreate_ = true;
+                } else {
+                    setMessage(MSG_WRONG_USER);
+                }
             }
         } break;
 
@@ -2314,6 +2323,10 @@ void clMenu::lvlJournalSecurity() {
         uevent = static_cast<TSecurityEvent::event_t> (sParam.jrnEntry.getEvent());
         PGM_P event = sParam.security.sevent.getEventString(uevent);
         snprintf_P(&vLCDbuf[poz], ROW_LEN+1, event, uevent);
+    }   
+
+    if (sParam.security.getUser(USER_SOURCE_pi) != USER_admin) {
+        key_ = KEY_CANCEL;
     }
 
     switch(key_) {
