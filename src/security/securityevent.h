@@ -4,7 +4,12 @@
 #include "glbDefine.h"
 #include "fifo.h"
 
+#ifdef NDEBUG
+#define SIZE_OF_SECURITY_JRN 128
+#else
 #define SIZE_OF_SECURITY_JRN 8
+#endif
+
 
 class TSecurityEvent {
 public:
