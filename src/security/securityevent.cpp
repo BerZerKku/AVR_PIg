@@ -24,7 +24,7 @@ TSecurityEvent::getEventString(TSecurityEvent::event_t event) {
         "Ош. пароль Инженера",  // 11
         "Ош. пароль Админ.",    // 12
         "Сброс паролей",        // 13
-        "Событие - %d",         // EVENT_MAX
+        "Событие - %d"          // EVENT_MAX
     };
 
     COMPILE_TIME_ASSERT(SIZE_OF(fcEventString) == (EVENT_MAX + 1));
@@ -75,15 +75,15 @@ bool TSecurityEvent::pushPwdBlocked(user_t cuser, userSrc_t source, user_t buser
     TSecurityEvent::event_t event = EVENT_MAX;
 
     switch(buser) {
-    case USER_engineer: {
-        event = EVENT_blkEngineer;
-    } break;
-    case USER_admin: {
-        event = EVENT_blkAdmin;
-    } break;
-    case USER_operator: break;
-    case USER_MAX: break;
-    case USER_factory: break;
+        case USER_engineer: {
+            event = EVENT_blkEngineer;
+        } break;
+        case USER_admin: {
+            event = EVENT_blkAdmin;
+        } break;
+        case USER_operator: break;
+        case USER_MAX: break;
+        case USER_factory: break;
     }
 
     return push(cuser, source, event);
@@ -94,15 +94,15 @@ bool TSecurityEvent::pushPwdChanged(user_t cuser, userSrc_t source, user_t puser
     TSecurityEvent::event_t event = EVENT_MAX;
 
     switch(puser) {
-    case USER_engineer: {
-        event = TSecurityEvent::EVENT_chgPwdEng;
-    } break;
-    case USER_admin: {
-        event = TSecurityEvent::EVENT_chgPwdAdm;
-    } break;
-    case USER_operator: break;
-    case USER_MAX: break;
-    case USER_factory: break;
+        case USER_engineer: {
+            event = TSecurityEvent::EVENT_chgPwdEng;
+        } break;
+        case USER_admin: {
+            event = TSecurityEvent::EVENT_chgPwdAdm;
+        } break;
+        case USER_operator: break;
+        case USER_MAX: break;
+        case USER_factory: break;
     }
 
     return push(cuser, source, event);
@@ -120,15 +120,15 @@ bool TSecurityEvent::pushPwdWrong(user_t cuser, userSrc_t source, user_t puser) 
     TSecurityEvent::event_t event = EVENT_MAX;
 
     switch(puser) {
-    case USER_engineer: {
-        event = EVENT_wrgPwdEng;
-    } break;
-    case USER_admin: {
-        event = EVENT_wrgPwdAdm;
-    } break;
-    case USER_operator: break;
-    case USER_MAX: break;
-    case USER_factory: break;
+        case USER_engineer: {
+            event = EVENT_wrgPwdEng;
+        } break;
+        case USER_admin: {
+            event = EVENT_wrgPwdAdm;
+        } break;
+        case USER_operator: break;
+        case USER_MAX: break;
+        case USER_factory: break;
     }
 
     return push(cuser, source, event);
@@ -139,17 +139,17 @@ bool TSecurityEvent::pushUserChanged(user_t cuser, userSrc_t source, user_t nuse
     TSecurityEvent::event_t event = EVENT_MAX;
 
     switch(nuser) {
-    case USER_operator: {
-        event = TSecurityEvent::EVENT_setOperator;
-    } break;
-    case USER_admin: {
-        event = TSecurityEvent::EVENT_setAdmin;
-    } break;
-    case USER_engineer: {
-        event = TSecurityEvent::EVENT_setEngineer;
-    } break;
-    case USER_MAX: break;
-    case USER_factory: break;
+        case USER_operator: {
+            event = TSecurityEvent::EVENT_setOperator;
+        } break;
+        case USER_admin: {
+            event = TSecurityEvent::EVENT_setAdmin;
+        } break;
+        case USER_engineer: {
+            event = TSecurityEvent::EVENT_setEngineer;
+        } break;
+        case USER_MAX: break;
+        case USER_factory: break;
     }
 
     return push(cuser, source, event);

@@ -4859,7 +4859,7 @@ bool clMenu::checkChangeReg() const {
 bool clMenu::checkPwdInput(user_t user, const uint8_t *pwd) {
     bool check = false;
 
-    check = sParam.security.pwd.checkPassword(user, pwd);
+    check = sParam.security.checkUserPwd(user, USER_SOURCE_pi, pwd);
     if (!check) {
         if (sParam.security.pwd.isLocked(user)) {
             setMessage(MSG_BLOCK_USER);
@@ -5084,6 +5084,7 @@ void clMenu::saveParamToBsp() {
                 sParam.txComBuf.setArray(sParam.save.getValueArray(), PWD_LEN, 1);
             } break;
 
+            case GB_SEND_GET_ENTRY:
             case GB_SEND_IS_ENTRY:
             case GB_SEND_TIME:
             case GB_SEND_NO:

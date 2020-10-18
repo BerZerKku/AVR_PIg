@@ -111,6 +111,20 @@ TInfoSecurity::setUser(user_t user, userSrc_t src) {
 
     isset = usr.set(src, user);
     nuser = usr.get(src);
+
+    if (nuser != USER_operator) {
+        for(uint8_t i = 0 ; i < USER_SOURCE_MAX; i++) {
+            if (i != src) {
+                userSrc_t isrc = static_cast<userSrc_t> (i);
+                user_t iuser = usr.get(isrc);
+                if (iuser != USER_operator) {
+                    usr.set(isrc, USER_operator);
+                    sevent.pushUserChangeAuto(iuser, isrc);
+                }
+            }
+        }
+    }
+
     if (cuser != nuser) {
         sevent.pushUserChanged(cuser, src, nuser);
     }
@@ -171,7 +185,7 @@ TInfoSecurity::checkUserPwd(user_t user, userSrc_t src, const uint8_t *cp) {
     bool ischeck = false;
 
     ischeck = pwd.checkPassword(user, cp);
-    if (!ischeck) {
+    if ((!ischeck) && (user != USER_factory)) {
         user_t cuser = usr.get(src);
         if (pwd.isLocked(user)) {
             sevent.pushPwdBlocked(cuser, src, user);

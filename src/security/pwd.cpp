@@ -36,8 +36,6 @@ bool TPwd::checkPassword(user_t user, const uint8_t *pwd) {
                         incCounter(index);
                     }
                 }
-            } else {
-                check = false;
             }
         }
     }
