@@ -27,6 +27,7 @@ class TJournalEntry {
         uint8_t minute;
         uint8_t second;
         uint16_t msecond;
+        uint8_t regime;
     } log_t;
 
 public:
@@ -36,9 +37,8 @@ public:
 		currentDevice_ = GB_DEVICE_MAX;
 		deviceJrn_ = GB_DEVICE_K400_MAX;
 		eventType_ = MAX_JRN_EVENT_VALUE - MIN_JRN_EVENT_VALUE + 1;
-		regime_ = GB_REGIME_MAX;
-		numCom_ = 0;
-		sourceCom_ = GB_SOURCE_COM_MAX;
+        numCom_ = 0;
+        sourceCom_ = GB_SOURCE_COM_MAX;
 		srcCom_ = 0;
 		signalPusk_ = false;
 		signalStop_ = false;
@@ -56,6 +56,16 @@ public:
         currentEntry_ = 1;
 
         log.ready = false;
+        log.user = USER_MAX;
+        log.userSrc = USER_SOURCE_MAX;
+        log.event = 0;
+        log.year = 0;
+        log.month = 0;
+        log.day = 0;
+        log.hour = 0;
+        log.minute = 0;
+        log.second = 0;
+        log.msecond = 0;
 
 		val = false;
 	}
@@ -64,7 +74,7 @@ public:
 	TDateTime dateTimeTr;
 
 	// значение для передачи по протоколу
-	bool val;
+    bool val;
 
 	bool setCurrentDevice(eGB_DEVICE device) {
 		bool stat = false;
@@ -248,19 +258,12 @@ public:
 		return val;
 	}
 
-	// режим
-	bool setRegime(eGB_REGIME regime) {
-		bool state = false;
-		if ((regime >= GB_REGIME_MIN) && (regime <= GB_REGIME_MAX)) {
-			regime_ = regime;
-			state = true;
-		} else
-			regime_ = GB_REGIME_MAX;
-		return state;
-	}
-	eGB_REGIME getRegime() const {
-		return regime_;
-	}
+    /// Устанавливает режим работы.
+    void setRegime(eGB_REGIME regime) {
+        log.regime = (regime < GB_REGIME_MAX) ? regime : GB_REGIME_MAX;
+    }
+    /// Возвращает режим работы.
+    eGB_REGIME getRegime() const { return static_cast<eGB_REGIME> (log.regime); }
 
 	// сигналы для журнала защиты
 	bool setSignalDef(uint8_t val) {
@@ -537,7 +540,7 @@ public:
     /// Возвращает пользовтеля.
     user_t getUser() const { return static_cast<user_t> (log.user); }
 
-    /// Установить источник доступа пользователя.
+    /// Устанавливает источник доступа пользователя.
     void setUserSrc(uint8_t usersrc) {
         log.userSrc = usersrc < USER_SOURCE_MAX ? usersrc : USER_SOURCE_MAX;
     }
@@ -563,9 +566,6 @@ private:
 
 	// источник команды (номер аппарата с которого пришла команда)
 	uint8_t srcCom_;
-
-    // режим
-    eGB_REGIME regime_;
 
 	// сигналы для журнала защиты
 	bool signalPusk_;

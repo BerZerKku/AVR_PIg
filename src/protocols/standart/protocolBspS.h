@@ -29,7 +29,6 @@ private:
     void hdlrComGetComPrdKeep();
     void hdlrComGetDeviceNum();
     void hdlrComGetFault();
-    void hdlrComGetJrnEntry(bool pc);
     void hdlrComGetMeas();
     void hdlrComGetNetAdr();
     void hdlrComSetNetAdr();
@@ -57,6 +56,24 @@ private:
      *  @param[in] pc Флаг запроса с ПК.
      */
     void setJrnEntry(eGB_DEVICE device, bool pc);
+
+    /// Устанавливает запись для журнала защиты.
+    void setJrnEntryDef();
+    /// Устанавливает запись для журнала событий.
+    void setJrnEntryGlb();
+    /// Устанавливает запись для журнала передатчика.
+    void setJrnEntryPrd();
+    /// Устанавливает запись для журнала приемника.
+    void setJrnEntryPrm();
+    /// Устанавливает запись для журнала безопасности.
+    void setJrnEntrySec();
+
+    /** Устанавлиает запись журнала для оптического варианта.
+     *
+     *  @param[in] device Устройство для которого получена запись.
+     *  @param[in] pc Флаг запроса с ПК.
+     */
+    void setJrnEntryOpto(eGB_DEVICE device , bool pc);
 
     /** Устанавливает размер журнала.
      *

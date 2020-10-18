@@ -267,19 +267,8 @@ void clProtocolBspS::getDefCommand(eGB_COM com, bool pc) {
 		sParam_->def.setTimeToAC(*((uint32_t *) &buf[B2]));
 	} else if (com == GB_COM_DEF_GET_JRN_CNT) {
         setJrnSize(GB_DEVICE_DEF);
-	} else if (com == GB_COM_DEF_GET_JRN_ENTRY) {
-		if ((sParam_->jrnEntry.getCurrentDevice() == GB_DEVICE_DEF) && (!pc)){
-			if (sParam_->typeDevice == AVANT_OPTO) {
-				sParam_->jrnEntry.setSignalDef((buf[B1] << 4) + (buf[B2] & 0x0F));
-				setJrnDateTime(B3, true);
-				sParam_->jrnEntry.setReady();
-			} else {
-				setJrnDateTime(B8, false);
-				sParam_->jrnEntry.setSignalDef((buf[B2] << 4) + (buf[B4] & 0x0F));
-				sParam_->jrnEntry.setEventType(buf[B3]);
-				sParam_->jrnEntry.setReady();
-			}
-		}
+    } else if (com == GB_COM_DEF_GET_JRN_ENTRY) {
+        setJrnEntry(GB_DEVICE_DEF, pc);
 	}
 }
 
@@ -307,23 +296,9 @@ void clProtocolBspS::getPrmCommand(eGB_COM com, bool pc) {
             setJrnSize(GB_DEVICE_PRM);
         } break;
 
-		case GB_COM_PRM_GET_JRN_ENTRY: {
-			if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_PRM)&& (!pc)){
-				if (sParam_->typeDevice == AVANT_OPTO) {
-					setJrnDateTime(B5, true);
-					sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B1]);
-					sParam_->jrnEntry.setReady();
-				} else {
-					setJrnDateTime(B8, false);;
-					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
-					sParam_->jrnEntry.setNumCom(buf[B2]);
-					sParam_->jrnEntry.setEventType(buf[B3]);
-					sParam_->jrnEntry.setSrcCom(buf[B4]);
-					sParam_->jrnEntry.setReady();
-				}
-			}
-		}
-		break;
+        case GB_COM_PRM_GET_JRN_ENTRY: {
+            setJrnEntry(GB_DEVICE_PRM, pc);
+        } break;
 
 		default:
 			break;
@@ -353,26 +328,8 @@ void clProtocolBspS::getPrdCommand(eGB_COM com, bool pc) {
             setJrnSize(GB_DEVICE_PRD);
         } break;
 
-		case GB_COM_PRD_GET_JRN_ENTRY: {
-			if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_PRD)&& (!pc)) {
-				if (sParam_->typeDevice == AVANT_OPTO) {
-					setJrnDateTime(B5, true);
-					sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B1]);
-
-					if (buf[NUM] >= 16) {
-						// В ОПТИКЕ передаются флаги ЦПП
-						sParam_->jrnEntry.setOpticEntryDR((uint8_t *) &buf[B13]);
-					}
-					sParam_->jrnEntry.setReady();
-				} else {
-					setJrnDateTime(B8, false);
-					sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
-					sParam_->jrnEntry.setNumCom(buf[B2]);
-					sParam_->jrnEntry.setEventType(buf[B3]);
-					sParam_->jrnEntry.setSourceCom((eGB_SOURCE_COM) buf[B4]);
-					sParam_->jrnEntry.setReady();
-				}
-			}
+        case GB_COM_PRD_GET_JRN_ENTRY: {
+            setJrnEntry(GB_DEVICE_PRD, pc);
 		}
 		break;
 
@@ -433,7 +390,7 @@ void clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
         } break;
 
         case GB_COM_GET_JRN_ENTRY: {
-            hdlrComGetJrnEntry(pc);
+            setJrnEntry(GB_DEVICE_GLB, pc);
         } break;
 
         case GB_COM_GET_JRN_IS_CNT: {
@@ -496,25 +453,7 @@ void clProtocolBspS::hdlrComGetFault() {
     sParam_->glb.status.setWarning(TO_INT16(buf[B15],buf[B16]));
 }
 
-void clProtocolBspS::hdlrComGetJrnEntry(bool pc) {
-    if ((sParam_->jrnEntry.getCurrentDevice()==GB_DEVICE_GLB) && (!pc)) {
-        sParam_->jrnEntry.val = true;
-        if (sParam_->typeDevice == AVANT_OPTO) {
-        	setJrnDateTime(B6, true);
-            sParam_->jrnEntry.setRegime((eGB_REGIME) buf[B1]);
-            sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B2]);
-            sParam_->jrnEntry.setReady();
-        } else {
-            setJrnDateTime(B8, false);
-            // ! B1 - тип устройства, на данный момент игнорируется
-            sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
-            sParam_->jrnEntry.setEventType(buf[B2]);
-            sParam_->jrnEntry.setRegime((eGB_REGIME) buf[B3]);
-            sParam_->jrnEntry.setReady();
-        }
-    }
-}
-
+//
 void clProtocolBspS::hdlrComGetMeas() {
     // обработаем посылку, если стоит флаг опроса всех параметров
     if (buf[B1] == 0) {
@@ -539,12 +478,6 @@ void clProtocolBspS::hdlrComGetNetAdr() {
     uint8_t index = 1;
     uint8_t nbytes = 0;
 
-//    QString pkg;
-//    for(uint8_t i = 0;  i < buf[3] + 5; i++) {
-//        pkg += QString("%1 ").arg(buf[i], 2, 16, QLatin1Char('0'));
-//    }
-//    qDebug() << pkg;
-
     while(nbytes < buf[NUM]) {
         nbytes += getComNetAdr(static_cast<posComNetAdr_t> (index),
                                &buf[B1 + nbytes], buf[NUM] - nbytes);
@@ -553,10 +486,6 @@ void clProtocolBspS::hdlrComGetNetAdr() {
 }
 
 void clProtocolBspS::hdlrComSetNetAdr() {    
-//    QString pkg;
-//    for(uint8_t i = 0;  i < buf[3] + 5; i++) {
-//        pkg += QString("%1 ").arg(buf[i], 2, 16, QLatin1Char('0'));
-//    }
     getComNetAdr(static_cast<posComNetAdr_t> (buf[B1]), &buf[B2], buf[NUM]);
 }
 
@@ -783,19 +712,108 @@ clProtocolBspS::setJrnDateTime(uint8_t pos, bool yearfirst) {
 //
 void clProtocolBspS::setJrnEntry(eGB_DEVICE device, bool pc) {
     if (!pc && (sParam_->jrnEntry.getCurrentDevice() == device)) {
-        uint8_t pos = B1;
-        TJournalEntry *entry = &sParam_->jrnEntry;
-
         switch(device) {
-            case GB_DEVICE_SEC: {
-                entry->setUser(buf[B1]);
-                entry->setUserSrc(buf[B2]);
-                entry->setEvent(buf[B3]);
-                setJrnDateTime(B4, true);
-                entry->setReady();
-            } break;
+            case GB_DEVICE_DEF: setJrnEntryDef(); break;
+            case GB_DEVICE_GLB: setJrnEntryGlb(); break;
+            case GB_DEVICE_PRD: setJrnEntryPrd(); break;
+            case GB_DEVICE_PRM: setJrnEntryPrm(); break;
+            case GB_DEVICE_SEC: setJrnEntrySec(); break;
+            case GB_DEVICE_MAX: break;
         }
     }
+}
+
+//
+void
+clProtocolBspS::setJrnEntryDef() {
+    TJournalEntry *entry = &sParam_->jrnEntry;
+
+    if (sParam_->typeDevice == AVANT_OPTO) {
+        entry->setSignalDef((buf[B1] << 4) + (buf[B2] & 0x0F));
+        setJrnDateTime(B3, true);
+        entry->setReady();
+    } else {
+        entry->setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
+        entry->setSignalDef((buf[B2] << 4) + (buf[B4] & 0x0F));
+        entry->setEventType(buf[B3]);
+        setJrnDateTime(B8, false);
+        entry->setReady();
+    }
+}
+
+//
+void
+clProtocolBspS::setJrnEntryGlb() {
+    TJournalEntry *entry = &sParam_->jrnEntry;
+
+    entry->val = true;
+    if (sParam_->typeDevice == AVANT_OPTO) {
+        entry->setRegime((eGB_REGIME) buf[B1]);
+        entry->setOpticEntry((uint8_t *) &buf[B2]);
+        setJrnDateTime(B6, true);
+        entry->setReady();
+    } else {
+        entry->setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
+        entry->setEventType(buf[B2]);
+        entry->setRegime((eGB_REGIME) buf[B3]);
+        setJrnDateTime(B8, false);
+        entry->setReady();
+    }
+}
+
+//
+void
+clProtocolBspS::setJrnEntryPrd() {
+    TJournalEntry *entry = &sParam_->jrnEntry;
+
+    if (sParam_->typeDevice == AVANT_OPTO) {
+        entry->setOpticEntry((uint8_t *) &buf[B1]);
+        setJrnDateTime(B5, true);
+
+        if (buf[NUM] >= 16) {
+            // В ОПТИКЕ передаются флаги ЦПП
+            entry->setOpticEntryDR((uint8_t *) &buf[B13]);
+        }
+        entry->setReady();
+    } else {
+        entry->setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
+        entry->setNumCom(buf[B2]);
+        entry->setEventType(buf[B3]);
+        entry->setSourceCom((eGB_SOURCE_COM) buf[B4]);
+        setJrnDateTime(B8, false);
+        entry->setReady();
+    }
+}
+
+//
+void
+clProtocolBspS::setJrnEntryPrm() {
+    TJournalEntry *entry = &sParam_->jrnEntry;
+
+    if (sParam_->typeDevice == AVANT_OPTO) {
+        entry->setOpticEntry((uint8_t *) &buf[B1]);
+        setJrnDateTime(B5, true);
+        entry->setReady();
+    } else {
+        entry->setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
+        entry->setNumCom(buf[B2]);
+        entry->setEventType(buf[B3]);
+        entry->setSrcCom(buf[B4]);
+        setJrnDateTime(B8, false);
+        entry->setReady();
+    }
+}
+
+//
+void
+clProtocolBspS::setJrnEntrySec() {
+    TJournalEntry *entry = &sParam_->jrnEntry;
+
+    entry->setUser(buf[B1]);
+    entry->setUserSrc(buf[B2]);
+    entry->setEvent(buf[B3]);
+    setJrnDateTime(B4, true);
+    entry->setReady();
 }
 
 //
