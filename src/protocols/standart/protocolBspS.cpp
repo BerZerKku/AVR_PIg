@@ -915,9 +915,8 @@ uint8_t clProtocolBspS::sendReadJrnCommand(eGB_COM com) {
 	uint8_t mask = 0;
     uint16_t t = sParam_->jrnEntry.getEntryAdress();
 
-    if (sParam_->typeDevice != AVANT_R400M) {
-        t = (t >> 8) + ((t & 0x00FF) << 8);
-    }
+    uint8_t byte1 = (sParam_->typeDevice != AVANT_R400M) ? t : t >> 8;
+    uint8_t byte2 = (sParam_->typeDevice != AVANT_R400M) ? t >> 8 : t;
 
 	// команды работы с журналом
 	mask = com & GB_COM_MASK_DEVICE;
@@ -925,29 +924,29 @@ uint8_t clProtocolBspS::sendReadJrnCommand(eGB_COM com) {
 		if (com == GB_COM_DEF_GET_JRN_CNT) {
 			num = addCom(com);
         } else if (com == GB_COM_DEF_GET_JRN_ENTRY) {
-            num = addCom(com, t, t >> 8);
+            num = addCom(com, byte1, byte2);
 		}
 	} else if (mask == GB_COM_MASK_DEVICE_PRM) {
 		if (com == GB_COM_PRM_GET_JRN_CNT) {
 			num = addCom(com);
 		} else if (com == GB_COM_PRM_GET_JRN_ENTRY) {
-            num = addCom(com, t, t >> 8);
+            num = addCom(com, byte1, byte2);
 		}
 	} else if (mask == GB_COM_MASK_DEVICE_PRD) {
 		if (com == GB_COM_PRD_GET_JRN_CNT) {
 			num = addCom(com);
         } else if (com == GB_COM_PRD_GET_JRN_ENTRY) {
-            num = addCom(com, t, t >> 8);
+            num = addCom(com, byte1, byte2);
         }
     } else {
 		if (com == GB_COM_GET_JRN_CNT) {
 			num = addCom(com);
         } else if (com == GB_COM_GET_JRN_ENTRY) {
-            num = addCom(com, t, t >> 8);
+            num = addCom(com, byte1, byte2);
         } else if (com == GB_COM_GET_JRN_IS_CNT) {
             num = addCom(com);
         } else if (com == GB_COM_GET_JRN_IS_ENTRY) {
-            num = addCom(com, t, t >> 8);
+            num = addCom(com, byte1, byte2);
         }
     }
 
