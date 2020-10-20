@@ -812,7 +812,7 @@ clProtocolBspS::setJrnEntrySec() {
     entry->setUser(buf[B1]);
     entry->setUserSrc(buf[B2]);
     entry->setEvent(buf[B3]);
-    setJrnDateTime(B4, true);
+    setJrnDateTime(B8, false);
     entry->setReady();
 }
 
@@ -915,8 +915,8 @@ uint8_t clProtocolBspS::sendReadJrnCommand(eGB_COM com) {
 	uint8_t mask = 0;
     uint16_t t = sParam_->jrnEntry.getEntryAdress();
 
-    uint8_t byte1 = (sParam_->typeDevice != AVANT_R400M) ? t : t >> 8;
-    uint8_t byte2 = (sParam_->typeDevice != AVANT_R400M) ? t >> 8 : t;
+    uint8_t byte1 = (sParam_->typeDevice == AVANT_R400M) ? t : t >> 8;
+    uint8_t byte2 = (sParam_->typeDevice == AVANT_R400M) ? t >> 8 : t;
 
 	// команды работы с журналом
 	mask = com & GB_COM_MASK_DEVICE;
@@ -946,7 +946,8 @@ uint8_t clProtocolBspS::sendReadJrnCommand(eGB_COM com) {
         } else if (com == GB_COM_GET_JRN_IS_CNT) {
             num = addCom(com);
         } else if (com == GB_COM_GET_JRN_IS_ENTRY) {
-            num = addCom(com, byte1, byte2);
+            // В журнале безопасности всегда старшим вперед
+            num = addCom(com, t >> 8, t);
         }
     }
 
