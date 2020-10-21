@@ -14,8 +14,6 @@
 
 #include <avr/io.h>
 
-#warning "Включен режим отладки!!!"
-
 // вывод отладочной информации на экран
 //#define VIEW_DEBUG_PARAM
 //#define IEC101
@@ -61,6 +59,8 @@
 #define QDINFO(x) (void(0))
 #define QWARNING(x) (void(0))
 #define QCRITICAL(x) (void(0))
+
+#warning "Включен режим отладки!!!"
 #endif // defined(QT_CORE_LIB)
 
 // отладочная информация
