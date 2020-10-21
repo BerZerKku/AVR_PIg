@@ -6,11 +6,9 @@
 class TUser {
 // Время до сброса пользователя в секундах
 #ifdef NDEBUG
-#define kTimeToResetPi 1800
-#define kTimeToResetPc 900
+#define kTimeToReset 900
 #else
-#define kTimeToResetPi 300
-#define kTimeToResetPc 150
+#define kTimeToReset 150
 #endif
 
     /// Структура пользователя для источника доступа.

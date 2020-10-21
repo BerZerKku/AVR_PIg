@@ -948,6 +948,8 @@ uint8_t clProtocolBspS::sendReadJrnCommand(eGB_COM com) {
         } else if (com == GB_COM_GET_JRN_IS_ENTRY) {
             // ¬ журнале безопасности всегда старшим вперед
             num = addCom(com, t >> 8, t);
+        } else if (com == GB_COM_JRN_IS_CLR) {
+            num = addCom(com);
         }
     }
 

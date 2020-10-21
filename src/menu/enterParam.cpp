@@ -84,13 +84,19 @@ uint16_t TEnterParam::incValue(uint8_t velocity) {
     if (s == MENU_ENTER_PASSWORD) {
         uint8_t val = pwd_[PWD_LEN - digit_];
         pwd_[PWD_LEN - digit_] = (val < '9') ? val + 1 : '0';
+    } else if ((s == MENU_ENTER_PARAM_LIST) || (s == MENU_ENTER_PARAM_LIST_2)) {
+        if ((getValueMax() - val_) >= step[digit_ - 1]) {
+            val_ += step[digit_ - 1];
+        } else {
+            val_ = getValueMin();
+        }
     } else {
-        if ((getValueMax() - step[digit_ - 1]) >= val_) {
+        if ((getValueMax() - val_) >= step[digit_ - 1]) {
             val_ += step[digit_ - 1];
         }
     }
 
-	return val_;
+    return static_cast<uint16_t> (val_);
 }
 
 // Уменьшение текущего значения.
@@ -100,13 +106,19 @@ uint16_t TEnterParam::decValue(uint8_t velocity) {
     if (s == MENU_ENTER_PASSWORD) {
         uint8_t val = pwd_[PWD_LEN - digit_];
         pwd_[PWD_LEN - digit_] = (val > '0') ? val - 1 : '9';
-    } else if (getValueMin() >= 0){
-        if ((getValueMin() + step[digit_ - 1]) <= val_) {
+    } else if ((s == MENU_ENTER_PARAM_LIST) || (s == MENU_ENTER_PARAM_LIST_2)) {
+        if ((val_ - getValueMin()) >= step[digit_ - 1]) {
+            val_ -= step[digit_ - 1];
+        } else {
+            val_ = getValueMax();
+        }
+    }else if (getValueMin() >= 0){
+        if ((val_ - getValueMin()) >= step[digit_ - 1]) {
             val_ -= step[digit_ - 1];
         }
     }
 
-    return val_;
+    return static_cast<uint16_t> (val_);
 }
 
 //

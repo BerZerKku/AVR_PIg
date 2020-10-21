@@ -54,10 +54,10 @@ void
 TUser::resetTimer(userSrc_t src) {
     switch(src) {
         case USER_SOURCE_pi: {
-            stuser[src].time = kTimeToResetPi;
+            stuser[src].time = kTimeToReset;
         } break;
         case USER_SOURCE_pc: {
-            stuser[src].time = kTimeToResetPc;
+            stuser[src].time = kTimeToReset;
         } break;
         case USER_SOURCE_MAX: break;
     }

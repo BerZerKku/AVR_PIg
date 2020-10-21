@@ -1164,6 +1164,10 @@ void clMenu::lvlStart() {
     static const char fcCompType[] PROGMEM = "Совместим. %s";
 #endif
 
+    eGB_COM com = GB_COM_NO;
+    eGB_SEND_TYPE type = GB_SEND_NO;
+    uint8_t signal = 0;
+
 	if (lvlCreate_) {
 		lvlCreate_ = false;
 
@@ -1272,38 +1276,41 @@ void clMenu::lvlStart() {
 
         case KEY_PUSK_UD: {
 			if (sParam.def.status.isEnable()) {
+                com = GB_COM_SET_CONTROL;
+                type = GB_SEND_INT8;
 				if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
-					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_ALL);
+                    signal = GB_CONTROL_PUSK_UD_ALL;
 				} else {
-					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
-				}
-                sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL, GB_SEND_INT8);
+                    signal = GB_CONTROL_PUSK_UD_1;
+				}                
 			}
         } break;
 
         case KEY_AC_PUSK_UD: {
 			if (sParam.def.status.isEnable()) {
-				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_AC_UD);
-                sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL, GB_SEND_INT8);
+                com = GB_COM_SET_CONTROL;
+                type = GB_SEND_INT8;
+                signal = GB_CONTROL_PUSK_AC_UD;
 			}
         } break;
 
         case KEY_PUSK_NALAD: {
 			if (sParam.def.status.isEnable()) {
+                com = GB_COM_SET_CONTROL;
+                type = GB_SEND_INT8;
 				if (sParam.def.status.getState() == 7) {
-					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_OFF);
-                    sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL, GB_SEND_INT8);
+                    signal = GB_CONTROL_PUSK_OFF;
 				} else {
-					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_ON);
-                    sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL, GB_SEND_INT8);
+                    signal = GB_CONTROL_PUSK_ON;
 				}
 			}
         } break;
 
         case KEY_AC_RESET: {
 			if (sParam.def.status.isEnable()) {
-				sParam.txComBuf.setInt8(GB_CONTROL_RESET_AC);
-                sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL, GB_SEND_INT8);
+                com = GB_COM_SET_CONTROL;
+                type = GB_SEND_INT8;
+                signal = GB_CONTROL_RESET_AC;
 			}
         } break;
 
@@ -1312,13 +1319,14 @@ void clMenu::lvlStart() {
 				if (sParam.typeDevice == AVANT_R400M) {
 					eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
 					if (comp != GB_COMPATIBILITY_LINER) {
+                        com = GB_COM_DEF_SET_TYPE_AC;
+                        type = GB_SEND_INT8;
 						if ((comp == GB_COMPATIBILITY_AVZK80) ||
 								(comp == GB_COMPATIBILITY_PVZ90)) {
-							sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK);
+                            signal = GB_TYPE_AC_PUSK;
 						} else {
-							sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
-						}
-                        sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC, GB_SEND_INT8);
+                            signal = GB_TYPE_AC_PUSK_SELF;
+                        }
 					}
 				}
 			}
@@ -1326,31 +1334,41 @@ void clMenu::lvlStart() {
 
         case KEY_AC_REGIME: {
 			if (sParam.def.status.isEnable()) {
-				sParam.txComBuf.setInt8(GB_CONTROL_REG_AC);
-                sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL, GB_SEND_INT8);
+                com = GB_COM_SET_CONTROL;
+                type = GB_SEND_INT8;
+                signal = GB_CONTROL_REG_AC;
 			}
         } break;
 
         case KEY_RESET_IND: {
 			if (sParam.prd.status.isEnable() || sParam.prm.status.isEnable()) {
-                sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND, GB_SEND_NO_DATA);
+                com = GB_COM_PRM_RES_IND;
+                type = GB_SEND_NO_DATA;
 			}
         } break;
 
         case KEY_PUSK: {
 			if (sParam.prm.status.isEnable()) {
-                sParam.txComBuf.addFastCom(GB_COM_PRM_ENTER, GB_SEND_NO_DATA);
+                com = GB_COM_PRM_ENTER;
+                type = GB_SEND_NO_DATA;
 			}
         } break;
 
         case KEY_RESET: {
-			sParam.txComBuf.setInt8(GB_CONTROL_RESET_SELF);
-            sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL, GB_SEND_INT8);
+            com = GB_COM_SET_CONTROL;
+            type = GB_SEND_INT8;
+            signal = GB_CONTROL_RESET_SELF;
         } break;
 
 		default:
 			break;
 	}
+
+    if ((com != GB_COM_NO) && (type != GB_SEND_NO)) {
+        if (sParam.txComBuf.addFastCom(com, type)) {
+            sParam.txComBuf.setInt8(signal);
+        }
+    }
 }
 
 /** Уровень меню первый
