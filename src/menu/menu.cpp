@@ -1004,7 +1004,7 @@ bool clMenu::printMessage() {
             clrMessages();
         } break;
 
-        case MSG_WRONG_USER: {
+        case MSG_WRONG_USER_EDIT: {
             static const char message[][ROW_LEN+1] PROGMEM = {
                 //2345678901234567890
                 " Недостаточно прав  ",
@@ -1012,6 +1012,16 @@ bool clMenu::printMessage() {
             };
             pmsg = (PGM_P) message;
             nrows = SIZE_OF(message);
+        } break;
+
+        case MSG_WRONG_USER_READ: {
+        	static const char message[][ROW_LEN+1] PROGMEM = {
+        			//2345678901234567890
+        			" Недостаточно прав  ",
+					"   для просмотра    "
+        	};
+        	pmsg = (PGM_P) message;
+        	nrows = SIZE_OF(message);
         } break;
 
         case MSG_WRONG_REGIME: {
@@ -1650,7 +1660,7 @@ void clMenu::lvlJournal() {
                     lvlMenu = &clMenu::lvlJournalSecurity;
                     lvlCreate_ = true;
                 } else {
-                    setMessage(MSG_WRONG_USER);
+                    setMessage(MSG_WRONG_USER_READ);
                 }
             }
         } break;
@@ -2958,7 +2968,7 @@ void clMenu::lvlRegime() {
 
 		case KEY_ENTER: {
             if (!sParam.security.checkUserAccess(USER_engineer, USER_SOURCE_pi)) {
-                    setMessage(MSG_WRONG_USER);
+                    setMessage(MSG_WRONG_USER_EDIT);
             } else {
                 uint8_t min = GB_REGIME_ENTER_DISABLED;
                 uint8_t max = GB_REGIME_ENTER_DISABLED;
@@ -3704,7 +3714,7 @@ void clMenu::lvlSetupDT() {
 
         case KEY_ENTER: {
             if (!sParam.security.checkUserAccess(USER_engineer, USER_SOURCE_pi)) {
-                setMessage(MSG_WRONG_USER);
+                setMessage(MSG_WRONG_USER_EDIT);
             } else {
                 enterFunc = &clMenu::inputValue;
                 if (name == punkt1) {
@@ -4926,7 +4936,7 @@ void clMenu::enterParameter() {
     if (!checkChangeReg()) {
         setMessage(MSG_WRONG_REGIME);
     } else if (!sParam.security.checkUserAccess(getChangeUser(param), USER_SOURCE_pi)) {
-        setMessage(MSG_WRONG_USER);
+        setMessage(MSG_WRONG_USER_EDIT);
     } else {
         switch(getParamType(param)) {
 			case Param::PARAM_BITES: // DOWN
