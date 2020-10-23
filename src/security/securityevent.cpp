@@ -10,20 +10,23 @@ PGM_P
 TSecurityEvent::getEventString(TSecurityEvent::event_t event) {
     static const char fcEventString[][21] PROGMEM = {
         //2345678901234567890
-        "Авто. заверш. сеанса", // 0
-        "Изменение настроек",   // 1
-        "Изменение даты/врем",  // 2
-        "Изменение режима",     // 3
-        "Изменен. на Оператор", // 4
-        "Изменен. на Инженер",  // 5
-        "Изменен. на Админ.",   // 6
-        "Блокировка Инженера",  // 7
-        "Блокировка Админ.",    // 8
-        "Изм. пароля Инженера", // 9
-        "Изм. пароля Админ.",   // 10
-        "Ош. пароль Инженера",  // 11
-        "Ош. пароль Админ.",    // 12
-        "Сброс паролей",        // 13
+        "Авто. заверш. сеанса", // EVENT_autoEnd
+        "Изменение настроек",   // EVENT_chgSettings
+        "Изменение даты/врем",  // EVENT_chgTime
+        "Изменен. на Оператор", // EVENT_setOperator
+        "Изменен. на Инженер",  // EVENT_setEngineer
+        "Изменен. на Админ.",   // EVENT_setAdmin
+        "Блокировка Инженера",  // EVENT_blkEngineer
+        "Блокировка Админ.",    // EVENT_blkAdmin
+        "Изм. пароля Инженера", // EVENT_chgPwdEng
+        "Изм. пароля Админ.",   // EVENT_chgPwdAdm
+        "Ош. пароль Инженера",  // EVENT_wrgPwdEng
+        "Ош. пароль Админ.",    // EVENT_wrgPwdAdm
+        "Сброс паролей",        // EVENT_resetPwd
+		"Режим Ввееден",		// EVENT_regEnable
+		"Режим Выведен",		// EVENT_regDisable
+		"Режим Тест ПРД",		// EVENT_regTestPrd
+		"Режим Тест ПРМ",		// EVENT_regTestPrm
         "Событие - %d"          // EVENT_MAX
     };
 
