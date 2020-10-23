@@ -68,10 +68,11 @@ public:
      */
     bool checkUserAccess(user_t user, userSrc_t src);
 
-    /// —брос пользовател€.
-    void rstUser(userSrc_t src) {
-        usr.reset(src);
-    }
+    /** —брос пользовател€.
+     *
+     * 	@param[in] src »сточник доступа.
+     */
+    void rstUser(userSrc_t src);
 
     /** —брос таймера активности пользовател€.
      *

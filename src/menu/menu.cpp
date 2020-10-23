@@ -5156,11 +5156,7 @@ void clMenu::security() {
         cntSecurity++;
     }
 
-    if (!isConnectionBsp()) {
-        sParam.security.pwd.reset();
-        sParam.security.rstUser(USER_SOURCE_pc);
-        sParam.security.rstUser(USER_SOURCE_pi);
-    } else if (!isConnectionPc()) {
+    if (!isConnectionPc()) {
 #ifdef NDEBUG
         sParam.security.rstUser(USER_SOURCE_pc);
 #endif
@@ -5170,44 +5166,50 @@ void clMenu::security() {
         setMessage(MSG_RESET_PWD);
     }
 
-    if (cntSecurity == TIME_SECURITY) {
-        eGB_COM com = GB_COM_NO;
-        sParam.security.tick(sParam.glb.status.getRegime(), com);
+    if (!isConnectionBsp()) {
+        sParam.security.pwd.reset();
+        sParam.security.rstUser(USER_SOURCE_pc);
+        sParam.security.rstUser(USER_SOURCE_pi);
+    } else {
+    	if (cntSecurity == TIME_SECURITY) {
+    		eGB_COM com = GB_COM_NO;
+    		sParam.security.tick(sParam.glb.status.getRegime(), com);
 
-        if (com != GB_COM_NO) {
-            sParam.txComBuf.addFastCom(com, GB_SEND_NO_DATA);
-        }
+    		if (com != GB_COM_NO) {
+    			sParam.txComBuf.addFastCom(com, GB_SEND_NO_DATA);
+    		}
 
-        for(uint8_t i = USER_operator + 1; i < USER_MAX; i++) {
-            user_t user = static_cast<user_t> (i);
-            if (sParam.security.pwd.isCounterChanged(user)) {
-                sParam.save.param = sParam.security.pwd.getCounterParam(user);
-                sParam.save.number = 1;
-                sParam.save.set(sParam.security.pwd.getCounter(user));
-                saveParam();
-            }
+    		for(uint8_t i = USER_operator + 1; i < USER_MAX; i++) {
+    			user_t user = static_cast<user_t> (i);
+    			if (sParam.security.pwd.isCounterChanged(user)) {
+    				sParam.save.param = sParam.security.pwd.getCounterParam(user);
+    				sParam.save.number = 1;
+    				sParam.save.set(sParam.security.pwd.getCounter(user));
+    				saveParam();
+    			}
 
-            if (sParam.security.pwd.isChangedPwd(user)) {
-                sParam.save.param = sParam.security.getPwdParam(user);
-                sParam.save.number = 1;
-                sParam.save.set(sParam.security.pwd.getPwd(user));
-                saveParam();
-            }
-        }
+    			if (sParam.security.pwd.isChangedPwd(user)) {
+    				sParam.save.param = sParam.security.getPwdParam(user);
+    				sParam.save.number = 1;
+    				sParam.save.set(sParam.security.pwd.getPwd(user));
+    				saveParam();
+    			}
+    		}
 
-        cntSecurity = 0;
-    }
+    		cntSecurity = 0;
+    	}
 
-    if (!sParam.security.sevent.isEmpty()) {
-        user_t user = USER_MAX;
-        userSrc_t source = USER_SOURCE_MAX;
-        TSecurityEvent::event_t event = TSecurityEvent::EVENT_MAX;
-        sParam.security.sevent.pop(user, source, event);
-        if (sParam.txComBuf.addFastCom(GB_COM_JRN_IS_SET_ENTRY, GB_SEND_IS_ENTRY)) {
-            sParam.txComBuf.setInt8(user, 0);
-            sParam.txComBuf.setInt8(source, 1);
-            sParam.txComBuf.setInt8(event, 2);
-        }
+		if (!sParam.security.sevent.isEmpty()) {
+			user_t user = USER_MAX;
+			userSrc_t source = USER_SOURCE_MAX;
+			TSecurityEvent::event_t event = TSecurityEvent::EVENT_MAX;
+			sParam.security.sevent.pop(user, source, event);
+			if (sParam.txComBuf.addFastCom(GB_COM_JRN_IS_SET_ENTRY, GB_SEND_IS_ENTRY)) {
+				sParam.txComBuf.setInt8(user, 0);
+				sParam.txComBuf.setInt8(source, 1);
+				sParam.txComBuf.setInt8(event, 2);
+			}
+		}
     }
 }
 

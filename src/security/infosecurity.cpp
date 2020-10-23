@@ -138,6 +138,16 @@ TInfoSecurity::checkUserAccess(user_t user, userSrc_t src) {
     return isaccess;
 }
 
+//
+void
+TInfoSecurity::rstUser(userSrc_t src) {
+	user_t user = usr.get(src);
+	if (user != USER_operator) {
+		usr.set(src, USER_operator);
+		sevent.pushUserChangeAuto(user, src);
+	}
+}
+
 bool
 TInfoSecurity::setUser(user_t user, userSrc_t src) {
     bool isset;
