@@ -23,7 +23,7 @@ TSecurityEvent::getEventString(TSecurityEvent::event_t event) {
         "Ош. пароль Инженера",  // EVENT_wrgPwdEng
         "Ош. пароль Админ.",    // EVENT_wrgPwdAdm
         "Сброс паролей",        // EVENT_resetPwd
-		"Режим Ввееден",		// EVENT_regEnable
+		"Режим Введен",			// EVENT_regEnable
 		"Режим Выведен",		// EVENT_regDisable
 		"Режим Тест ПРД",		// EVENT_regTestPrd
 		"Режим Тест ПРМ",		// EVENT_regTestPrm
