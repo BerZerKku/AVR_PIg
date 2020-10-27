@@ -1,4 +1,4 @@
-#include "gtest\gtest.h"
+#include "gtest/gtest.h"
 #include "protocolModbus.h"
 #include <cstdio>
 #include <iostream>

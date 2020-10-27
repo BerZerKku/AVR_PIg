@@ -27,7 +27,10 @@
 
 #include <climits>
 #include <cstdint>
+
+#if defined(QT_CORE_LIB)
 #include "wrapper.hpp"
+#endif
 
 #define PGM_P const char *
 #define PSTR
