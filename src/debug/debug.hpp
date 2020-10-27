@@ -44,6 +44,10 @@
 #define QWARNING(x) (void(0))
 #define QCRITICAL(x) (void(0))
 
+#if !defined(Q_ASSERT)
+#define Q_ASSERT(x) (void(0))
+#endif
+
 #else // defined(NDEBUG)
 
 #if defined(QT_CORE_LIB)

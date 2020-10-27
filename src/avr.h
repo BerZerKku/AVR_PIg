@@ -27,6 +27,7 @@
 
 #include <climits>
 #include <cstdint>
+#include <cstddef>
 
 #if defined(QT_CORE_LIB)
 #include "wrapper.hpp"

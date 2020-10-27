@@ -198,7 +198,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/debug"/>
 						<entry excluding="protocolPcI.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/protocols/iec101"/>
 						<entry excluding="protocolPcM.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/protocols/modbus"/>
-						<entry excluding="securityevent.cpp|pwd.cpp|infosecurity.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/security"/>
+						<entry excluding="infosecurity.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/security"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
