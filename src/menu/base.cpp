@@ -43,7 +43,7 @@ static void setProtocol(TProtocol::PROTOCOL protocol, uint16_t baud);
 
 void bspRead() {
     // кол-во неполученных сообщений с БСП
-    static uint8_t cntLostCom = 0;
+    static uint8_t cntLostCom = MAX_LOST_COM_FROM_BSP;
 
     if (cntLostCom < MAX_LOST_COM_FROM_BSP) {
         cntLostCom++;
@@ -78,7 +78,7 @@ void bspRead() {
 
 void pcRead() {
     // кол-во неполученных сообщений с БСП
-    static uint8_t cntLostCom = 0;
+    static uint8_t cntLostCom = MAX_LOST_COM_FROM_PC;
 
     if (cntLostCom < MAX_LOST_COM_FROM_PC) {
         cntLostCom++;
