@@ -4,12 +4,7 @@
 #include "glbDefine.h"
 #include "fifo.h"
 
-#ifdef NDEBUG
 #define SIZE_OF_SECURITY_JRN 128
-#else
-#define SIZE_OF_SECURITY_JRN 8
-#endif
-
 
 class TSecurityEvent {
 public:
@@ -28,10 +23,10 @@ public:
         EVENT_wrgPwdEng,    ///< Ввод неверного пароля для роли Инженер
         EVENT_wrgPwdAdm,    ///< Ввод неверного пароля для роли Администратор
         EVENT_resetPwd,     ///< Сброс паролей до заводских настроек
-		EVENT_regEnable,	///< (БСП) Изменение режима на Введен
-		EVENT_regDisable,	///< (БСП) Изменение режима на Выведен
-		EVENT_regTestPrd,	///< (БСП) Изменение режима не Тест ПРД
-		EVENT_regTestPrm,	///< (БСП) Изменение режима на Тест ПРМ
+        EVENT_regEnable,    ///< (БСП) Изменение режима на Введен
+        EVENT_regDisable,   ///< (БСП) Изменение режима на Выведен
+        EVENT_regTestPrd,   ///< (БСП) Изменение режима не Тест ПРД
+        EVENT_regTestPrm,   ///< (БСП) Изменение режима на Тест ПРМ
         //
         EVENT_MAX
     };
