@@ -177,6 +177,10 @@ void clMenu::proc(void) {
         key_ = KEY_NO;
     }
 
+    if (!checkUserReq(lvlMenu)) {
+        key_ = KEY_CANCEL;
+    }
+
     security();
 
     // вывод в буфер содержимого текущего меню
@@ -1656,11 +1660,9 @@ void clMenu::lvlJournal() {
                 lvlMenu = &clMenu::lvlJournalPrd;
                 lvlCreate_ = true;
             } else if (name == punkt5) {
-                if (sParam.security.getUser(USER_SOURCE_pi) == USER_admin) {
+                if (checkUserReq(&clMenu::lvlJournalSecurity)) {
                     lvlMenu = &clMenu::lvlJournalSecurity;
                     lvlCreate_ = true;
-                } else {
-                    setMessage(MSG_WRONG_USER_READ);
                 }
             }
         } break;
@@ -2351,10 +2353,6 @@ void clMenu::lvlJournalSecurity() {
         uevent = static_cast<TSecurityEvent::event_t> (sParam.jrnEntry.getEvent());
         PGM_P event = sParam.security.sevent.getEventString(uevent);
         snprintf_P(&vLCDbuf[poz], ROW_LEN+1, event, uevent);
-    }   
-
-    if (sParam.security.getUser(USER_SOURCE_pi) != USER_admin) {
-        key_ = KEY_CANCEL;
     }
 
     switch(key_) {
@@ -3881,29 +3879,33 @@ void clMenu::lvlTest() {
 
         case KEY_ENTER:
             if (name == punkt1) {
-                if ((reg == GB_REGIME_DISABLED) || (reg == GB_REGIME_TEST_2)) {
-                    //
-                    sParam.txComBuf.setInt8(0, 0);
-                    sParam.txComBuf.setInt8(0, 0);
-                    sParam.txComBuf.addFastCom(GB_COM_SET_REG_TEST_1, GB_SEND_NO_DATA);
-                    lvlMenu = &clMenu::lvlTest1;
-                    lvlCreate_ = true;
-                } else if (reg == GB_REGIME_TEST_1) {
-                    lvlMenu = &clMenu::lvlTest1;
-                    lvlCreate_ = true;
-                } else {
-                    setMessage(MSG_DISABLE);
+                if (checkUserReq(&clMenu::lvlTest1)) {
+                    if ((reg == GB_REGIME_DISABLED) || (reg == GB_REGIME_TEST_2)) {
+                        //
+                        sParam.txComBuf.setInt8(0, 0);
+                        sParam.txComBuf.setInt8(0, 0);
+                        sParam.txComBuf.addFastCom(GB_COM_SET_REG_TEST_1, GB_SEND_NO_DATA);
+                        lvlMenu = &clMenu::lvlTest1;
+                        lvlCreate_ = true;
+                    } else if (reg == GB_REGIME_TEST_1) {
+                        lvlMenu = &clMenu::lvlTest1;
+                        lvlCreate_ = true;
+                    } else {
+                        setMessage(MSG_DISABLE);
+                    }
                 }
             } else if (name == punkt2) {
-                if ((reg == GB_REGIME_DISABLED) || (reg == GB_REGIME_TEST_1)) {
-                    sParam.txComBuf.addFastCom(GB_COM_SET_REG_TEST_2, GB_SEND_NO_DATA);
-                    lvlMenu = &clMenu::lvlTest2;
-                    lvlCreate_ = true;
-                } else if (reg == GB_REGIME_TEST_2) {
-                    lvlMenu = &clMenu::lvlTest2;
-                    lvlCreate_ = true;
-                } else {
-                    setMessage(MSG_DISABLE);
+                if (checkUserReq(&clMenu::lvlTest2)) {
+                    if ((reg == GB_REGIME_DISABLED) || (reg == GB_REGIME_TEST_1)) {
+                        sParam.txComBuf.addFastCom(GB_COM_SET_REG_TEST_2, GB_SEND_NO_DATA);
+                        lvlMenu = &clMenu::lvlTest2;
+                        lvlCreate_ = true;
+                    } else if (reg == GB_REGIME_TEST_2) {
+                        lvlMenu = &clMenu::lvlTest2;
+                        lvlCreate_ = true;
+                    } else {
+                        setMessage(MSG_DISABLE);
+                    }
                 }
             }
             break;
@@ -3911,7 +3913,6 @@ void clMenu::lvlTest() {
         default:
             break;
     }
-
 }
 
 /** Уровень меню. Тест 1.
@@ -4907,6 +4908,28 @@ bool clMenu::checkPwdInput(user_t user, const uint8_t *pwd) {
         } else {
             setMessage(MSG_WRONG_PWD);
         }
+    }
+
+    return check;
+}
+
+//
+bool clMenu::checkUserReq(void (clMenu::*lvl)()) {
+    bool check;
+    user_t user = sParam.security.getUser(USER_SOURCE_pi);
+
+    if (lvl == &clMenu::lvlJournalSecurity) {
+        check = (user == USER_admin);
+    } else if (lvl == &clMenu::lvlTest1) {
+        check = (user == USER_engineer) || (user == USER_admin);
+    } else if (lvl == &clMenu::lvlTest2) {
+        check = (user == USER_engineer) || (user == USER_admin);
+    } else {
+        check = true;
+    }
+
+    if (!check) {
+        setMessage(MSG_WRONG_USER_READ);
     }
 
     return check;
