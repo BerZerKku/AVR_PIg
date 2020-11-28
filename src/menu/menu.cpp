@@ -2743,7 +2743,7 @@ void clMenu::lvlControl() {
                 signal = GB_CONTROL_PUSK_AC_UD;
             } else if (name == punkt14) {
                 com = GB_COM_SET_CONTROL;
-                signal = GB_CONTROL_PUSK_UD_1;
+                signal = GB_CONTROL_PUSK_UD_ALL;
             } else if (name == punkt15) {
                 com = GB_COM_DEF_SET_TYPE_AC;
                 signal = GB_TYPE_AC_AUTO_NORM;

@@ -300,11 +300,11 @@ void bspPushByteFrom(uint8_t byte, bool error) {
 }
 
 void timer50us() {
-	if (protPCm.isEnable()) {
-		protPCm.tick();
-	} else if (protPCi.isEnable()) {
-		protPCi.tick();
-	}
+    if (protPCm.isEnable()) {
+        protPCm.tick();
+    } else if (protPCi.isEnable()) {
+        protPCi.tick();
+    }
 }
 
 

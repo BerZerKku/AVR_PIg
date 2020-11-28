@@ -9,14 +9,14 @@
 #include "securityevent.h"
 
 clProtocolPcS::clProtocolPcS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
-clProtocolS(buf, size, sParam) {
+                                                                              clProtocolS(buf, size, sParam) {
 
 }
 
 bool clProtocolPcS::getData() {
     bool send = false;
     TInfoSecurity::state_t state;
-	eGB_COM com = (eGB_COM) buf[2];
+    eGB_COM com = (eGB_COM) buf[2];
 
     state = sParam_->security.isComAccess(com);
     if (state == TInfoSecurity::STATE_OK) {
@@ -36,26 +36,26 @@ bool clProtocolPcS::getData() {
 
 //
 bool clProtocolPcS::modifyVersionCom() {
-	bool state = false;
+    bool state = false;
     eGB_COM com = static_cast<eGB_COM> (getCurrentCom());
 
     if (com == GB_COM_GET_VERS) {
-		uint8_t crc = buf[maxLen_ - 1];
-		uint8_t len = buf[3];
-		if ( len < 19) {
-			for(uint8_t i = len + 4; len < 19; i++, len++) {
-				buf[i] = 0x00;
-			}
-			crc += 19 - buf[3];
-			buf[3] = len;
-			maxLen_ = len + 5;
-		} else {
-			crc -= buf[B18];
-			crc -= buf[B19];
-		}
-		uint16_t vers = sParam_->glb.getVersProgIC(GB_IC_PI_MCU);
-		crc += (buf[B18] = (vers >> 8));
-		crc += (buf[B19] = (vers & 0xFF));
+        uint8_t crc = buf[maxLen_ - 1];
+        uint8_t len = buf[3];
+        if ( len < 19) {
+            for(uint8_t i = len + 4; len < 19; i++, len++) {
+                buf[i] = 0x00;
+            }
+            crc += 19 - buf[3];
+            buf[3] = len;
+            maxLen_ = len + 5;
+        } else {
+            crc -= buf[B18];
+            crc -= buf[B19];
+        }
+        uint16_t vers = sParam_->glb.getVersProgIC(GB_IC_PI_MCU);
+        crc += (buf[B18] = (vers >> 8));
+        crc += (buf[B19] = (vers & 0xFF));
         buf[maxLen_ - 1] = crc;
     }
 
