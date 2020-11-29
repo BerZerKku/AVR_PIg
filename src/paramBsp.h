@@ -26,6 +26,11 @@ struct stGBparam {
 	// false - означает что надо настроить меню под текущий тип аппарата
 	bool device;
 
+    // Флаг наличия связи с БСП.
+    bool connectionBsp;
+    // Флаг наличия связи с ПК.
+    bool connectionPc;
+
 	// тип аппарата
 	eGB_TYPE_DEVICE typeDevice;
 

@@ -11,6 +11,13 @@
 #include "protocolS.h"
 
 class clProtocolPcS : public clProtocolS {
+
+    /// Коды для команды неисправности
+    enum error_t {
+        ERROR_noAccess = 1,     ///< Нет доступа (информационная безопасность).
+        ERROR_noConnectionBsp,  ///< Нет связи с БСП.
+    };
+
 public:
 	clProtocolPcS(uint8_t *buf, uint8_t size, stGBparam *sParam);
 

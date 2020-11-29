@@ -350,7 +350,9 @@ enum eGB_COM {
     GB_COM_GET_JRN_IS_ENTRY     = 0xF4, //
     GB_COM_JRN_IS_CLR           = 0xF5, //
     GB_COM_JRN_IS_SET_ENTRY     = 0xF6, //
-    GB_COM_JRN_CLR              = 0xFA  // ! стирание журнала событий, только с ПК
+    GB_COM_JRN_CLR              = 0xFA, // ! стирание журнала событий, только с ПК
+    //
+    GB_COM_ERROR                = 0xFF  // Код с ошибкой передаваемый на ПК
 };
 
 /// Маски команд

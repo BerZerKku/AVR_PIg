@@ -120,44 +120,12 @@ public:
      */
     eGB_COM getTxCommand();
 
-    /** Возвращает текущее состояние связи с БСП.
-     *
-     *  @return true если есть связь с БСП, иначе false.
-     */
-    bool isConnectionBsp() const {
-        return connectionBsp_;
-    }
 
-    /** Установливает флаг наличия связи с БСП.
-     *
-     *  @param[in] connection Флаг наличия связи.
-     */
-    void setConnectionBsp(bool connection) {
-        connectionBsp_ = connection;
-    }
-
-    /** Возвращает текущее состояние связи с ПК.
-     *
-     *  @return true если есть связь с ПК, иначе false.
-     */
-    bool isConnectionPc() const {
-        return connectionPc_;
-    }
-
-    /** Установливает флага наличия связи с ПК.
-     *
-     *  @param[in] connection Флаг наличия связи.
-     */
-    void setConnectionPc(bool connection) {
-        connectionPc_ = connection;
-    }
-
-    /** Параметры
-     */
+    /// Параметры
     stGBparam sParam;
 
 private:
-        // код кнопки
+    // код кнопки
     eKEY key_;
 
     // флаг мигания надписей

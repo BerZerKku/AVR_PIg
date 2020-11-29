@@ -73,7 +73,7 @@ void bspRead() {
         cntLostCom = 0;
     }
 
-    menu.setConnectionBsp(cntLostCom < MAX_LOST_COM_FROM_BSP);
+    menu.sParam.connectionBsp = (cntLostCom < MAX_LOST_COM_FROM_BSP);
 }
 
 void pcRead() {
@@ -118,7 +118,7 @@ void pcRead() {
         }
     }
 
-    menu.setConnectionPc(cntLostCom < MAX_LOST_COM_FROM_PC);
+    menu.sParam.connectionPc = (cntLostCom < MAX_LOST_COM_FROM_PC);
 }
 
 uint8_t pcWrite() {

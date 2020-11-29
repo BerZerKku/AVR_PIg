@@ -207,8 +207,7 @@ void clMenu::proc(void) {
 #endif
 
     // вывод сообщения в случае отсутствия связи с БСП
-    bool connection = isConnectionBsp();
-    if (!connection) {
+    if (!sParam.connectionBsp) {
         if (blink_) {
             // если связи нет, периодически вместо измеряемых параметров
             // выводится предупреждающая надпись
@@ -219,7 +218,7 @@ void clMenu::proc(void) {
         // дважды пошлем команду опроса версии
         sParam.txComBuf.addFastCom(GB_COM_GET_VERS, GB_SEND_NO_DATA);
     }
-    lastConnection = connection;
+    lastConnection = sParam.connectionBsp;
 
     // преобразование строки символов в данные для вывода на экран
     vLCDputchar(vLCDbuf, lineParam_);
@@ -5179,7 +5178,7 @@ void clMenu::security() {
         cntSecurity++;
     }
 
-    if (!isConnectionPc()) {
+    if (!sParam.connectionPc) {
 #ifdef NDEBUG
         sParam.security.rstUser(USER_SOURCE_pc);
 #endif
@@ -5189,7 +5188,7 @@ void clMenu::security() {
         setMessage(MSG_RESET_PWD);
     }
 
-    if (!isConnectionBsp()) {
+    if (!sParam.connectionBsp) {
         sParam.security.pwd.reset();
         sParam.security.rstUser(USER_SOURCE_pc);
         sParam.security.rstUser(USER_SOURCE_pi);
@@ -5333,13 +5332,9 @@ void clMenu::setupParam() {
 bool clMenu::checkLedOn() {
     bool ledOn = false;
 
-    if (sParam.glb.status.getRegime() != GB_REGIME_ENABLED) {
-        ledOn = true;
-    }
-
-    if (sParam.glb.status.isFault() || sParam.glb.status.isWarning()) {
-        ledOn = true;
-    }
+    ledOn = ledOn || (sParam.glb.status.getRegime() != GB_REGIME_ENABLED);
+    ledOn = ledOn || sParam.glb.status.isFault();
+    ledOn = ledOn || sParam.glb.status.isWarning();
 
     if (sParam.def.status.isEnable()) {
         if (sParam.def.status.getState() != 1) {
@@ -5375,17 +5370,9 @@ bool clMenu::checkLedOn() {
         }
     }
 
-    if (!isConnectionBsp()) {
-        ledOn = true;
-    }
-
-    if (sParam.security.getUser(USER_SOURCE_pc) != USER_operator) {
-        ledOn = true;
-    }
-
-    if (sParam.security.getUser(USER_SOURCE_pi) != USER_operator) {
-        ledOn = true;
-    }
+    ledOn = ledOn || !sParam.connectionBsp;
+    ledOn = ledOn || (sParam.security.getUser(USER_SOURCE_pc) != USER_operator);
+    ledOn = ledOn || (sParam.security.getUser(USER_SOURCE_pi) != USER_operator);
 
     if (sParam.glb.isLedOn()) {
         ledOn = true;

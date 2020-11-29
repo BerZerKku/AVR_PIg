@@ -18,18 +18,23 @@ bool clProtocolPcS::getData() {
     TInfoSecurity::state_t state;
     eGB_COM com = (eGB_COM) buf[2];
 
-    state = sParam_->security.isComAccess(com);
-    if (state == TInfoSecurity::STATE_OK) {
-        if (com == GB_COM_GET_USER)	{
-            send = hdlrComGetUser(com);
-        } else if (com == GB_COM_SET_USER) {
-            send = hdlrComSetUser(com);
+    if (sParam_->connectionBsp) {
+        state = sParam_->security.isComAccess(com);
+        if (state == TInfoSecurity::STATE_OK) {
+            if (com == GB_COM_GET_USER)	{
+                send = hdlrComGetUser(com);
+            } else if (com == GB_COM_SET_USER) {
+                send = hdlrComSetUser(com);
+            }
+        } else {
+            addCom(GB_COM_ERROR, ERROR_noAccess);
+            send = true;
         }
     } else {
-        // FIXME Разобраться с командой ошибки!
-        addCom(0xFF, state);
+        addCom(GB_COM_ERROR, ERROR_noConnectionBsp);
         send = true;
     }
+
 
     return send;
 }
