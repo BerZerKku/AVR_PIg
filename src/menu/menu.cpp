@@ -3881,9 +3881,7 @@ void clMenu::lvlTest() {
                 if (checkUserReq(&clMenu::lvlTest1)) {
                     if ((reg == GB_REGIME_DISABLED) || (reg == GB_REGIME_TEST_2)) {
                         //
-                        sParam.txComBuf.setInt8(0, 0);
-                        sParam.txComBuf.setInt8(0, 0);
-                        sParam.txComBuf.addFastCom(GB_COM_SET_REG_TEST_1, GB_SEND_NO_DATA);
+                        sParam.txComBuf.addFastCom(GB_COM_SET_REG_TEST_1, GB_SEND_NO_DATA);                    
                         lvlMenu = &clMenu::lvlTest1;
                         lvlCreate_ = true;
                     } else if (reg == GB_REGIME_TEST_1) {
@@ -3943,7 +3941,7 @@ void clMenu::lvlTest1() {
         if (device != AVANT_OPTO) {
             sParam.txComBuf.addCom2(GB_COM_GET_MEAS);   // измерения
         }
-        sParam.txComBuf.addCom2(GB_COM_GET_TEST);   // сигналы
+        sParam.txComBuf.setLocalCom(GB_COM_GET_TEST);
 
         // сигналы для тестов
         sParam.test.clear();
@@ -4023,7 +4021,6 @@ void clMenu::lvlTest1() {
 
     // сброс нулевого байта, для выбора отправки команды запроса
     // далее он может быть изменен для команды установки
-    sParam.txComBuf.setInt8(0, 0);
     if (EnterParam.isEnable()) {
         // ввод нового значения параметра
         eMENU_ENTER_PARAM stat = inputValue();
@@ -4040,13 +4037,14 @@ void clMenu::lvlTest1() {
             // добавим в буфере команду для каждой из групп
             // !!! при передаче команды надо проверять данные в буфере
             // РЗ
-            sParam.txComBuf.setInt8(2, 0);              // группа РЗ
-            sParam.txComBuf.setInt8(rz, 1);             // текущий сигнал РЗ
-            sParam.txComBuf.addFastCom(EnterParam.com, GB_SEND_MAX);
+            sParam.txComBuf.addFastCom(EnterParam.com, GB_SEND_DOP_INT8);
+            sParam.txComBuf.setFastComDopByte(2);
+            sParam.txComBuf.setInt8(rz);
+
             // КЧ
-            sParam.txComBuf.setInt8(1, 0);              // группа КЧ
-            sParam.txComBuf.setInt8(cf, 1);             // текущий сигнал КЧ
-            sParam.txComBuf.addFastCom(EnterParam.com, GB_SEND_MAX);
+            sParam.txComBuf.addFastCom(EnterParam.com, GB_SEND_DOP_INT8);
+            sParam.txComBuf.setFastComDopByte(1);
+            sParam.txComBuf.setInt8(cf);
 
             EnterParam.setDisable();
         }
@@ -4131,7 +4129,7 @@ void clMenu::lvlTest2() {
         if (device != AVANT_OPTO) {
             sParam.txComBuf.addCom2(GB_COM_GET_MEAS);   // измерения
         }
-        sParam.txComBuf.addCom2(GB_COM_GET_TEST);   // сигналы
+        sParam.txComBuf.setLocalCom(GB_COM_GET_TEST);
     }
 
     // вывод на экран измеряемых параметров, если это не оптика
