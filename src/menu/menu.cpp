@@ -4323,10 +4323,10 @@ eMENU_ENTER_PARAM clMenu::inputValue() {
 
     switch(key_) {
         case KEY_UP: {
-            EnterParam.incValue(timePressKey());
+            EnterParam.incValue();
         } break;
         case KEY_DOWN: {
-            EnterParam.decValue(timePressKey());
+            EnterParam.decValue();
         } break;
         case KEY_LEFT: {
             EnterParam.incDigit();

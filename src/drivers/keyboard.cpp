@@ -89,14 +89,8 @@ static const eKEY fcKeyOPTO[18] PROGMEM = { 			//
 
 /// код нажатой кнопки
 static eBUT keyPressed;
-/// время нажатия на кнопку (0..10)
-static uint_fast8_t timePress = 0;
 /// текущая расскладка клаавиатуры
 static PGM_P keyboard = (PGM_P) fcKeyR400M;
-
-//
-#define PRESS_TIME_STEP 5
-#define PRESS_TIME_MAX 10
 
 /**	Возвращает значение нажатой кнопки
  * 	@param Нет
@@ -137,16 +131,6 @@ void vKEYset(eGB_TYPE_DEVICE type) {
 	} else if (type == AVANT_OPTO) {
 		keyboard = (PGM_P) fcKeyOPTO;
 	}
-}
-
-/**	Возвращает флаг длительного нажатия.
- * 	После опроса, флаг обнуляется.
- * 	@retval True - длительное нажатие кнопки.
- * 	@retval False - НЕ длительное нажатие кнопки
- *
- */
-uint8_t timePressKey() {
-	return (timePress / PRESS_TIME_STEP);
 }
 
 /**	Функция определения нажатой кнопки
@@ -200,28 +184,27 @@ void vKEYmain(void) {
 	// Если кнопки не нажаты, антидребезг не считается
 	// Если кнопка удерживается длительное время,
 	// срабатывание определяется с периодом TIME_DELAY_REPEAT
+	// NOTE Периодический повтор нажатия убран!
 	if (tmpKey != keyPrev) {
 		keyPrev = tmpKey;
 		tmpKey = BUT_NO;
 		delay = TIME_DELAY;
-		timePress = 0;
 	} else {
-		if (delay > 0) {
-			if (tmpKey != BUT_NO) {
+		if ((tmpKey != BUT_NO) && (delay > 0)) {
+			delay--;
+
+			if (delay > 0) {
 				tmpKey = BUT_NO;
-				delay--;
 			}
 		} else {
-			delay = TIME_DELAY_REPEAT;
-			if (timePress < PRESS_TIME_MAX) {
-				timePress++;
-			}
+			tmpKey = BUT_NO;
 		}
 	}
 
 	// Если предыдущее нажатие уже обработано, вернем новое нажатие
 	// Нажатие одной кнопки функция - игнорируется
-	if (keyPressed == BUT_NO)
+	if (keyPressed == BUT_NO) {
 		keyPressed = (eBUT) tmpKey;
+	}
 }
 
