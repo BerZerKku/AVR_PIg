@@ -250,7 +250,7 @@ T  buf<T, size, defvalue, isend>::get() {
     } else {
         cnt = 0;
         if (!isend) {
-            value = buffer[cnt];
+            value = buffer[cnt++];
         }
     }
     return value;

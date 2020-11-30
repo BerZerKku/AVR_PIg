@@ -216,6 +216,8 @@ void clMenu::proc(void) {
     } else if (!lastConnection) {
         // если связь с БСП только восстановилась
         // дважды пошлем команду опроса версии
+        // FIXME Зачем два раза ?!
+        sParam.txComBuf.addFastCom(GB_COM_GET_VERS, GB_SEND_NO_DATA);
         sParam.txComBuf.addFastCom(GB_COM_GET_VERS, GB_SEND_NO_DATA);
     }
     lastConnection = sParam.connectionBsp;
@@ -941,14 +943,18 @@ eGB_COM clMenu::getTxCommand() {
 
         if (com == GB_COM_NO) {
             com = sParam.txComBuf.getCom2();
+
+            // В командах группы 2 не должно быть команд записи параметров и изменения режима.
+            Q_ASSERT((com & GB_COM_MASK_GROUP) != GB_COM_MASK_GROUP_WRITE_REGIME);
+            Q_ASSERT((com & GB_COM_MASK_GROUP) != GB_COM_MASK_GROUP_WRITE_PARAM);
         }
 
         if (com == GB_COM_NO) {
             com = sParam.txComBuf.getCom1();
-            cnt = MAX_NUM_COM_SEND_IN_CYLCE;
-        }
 
-        if (com == GB_COM_NO) {
+            // В командах группы 1 не должно быть команд записи параметров и изменения режима.
+            Q_ASSERT((com & GB_COM_MASK_GROUP) != GB_COM_MASK_GROUP_WRITE_REGIME);
+            Q_ASSERT((com & GB_COM_MASK_GROUP) != GB_COM_MASK_GROUP_WRITE_PARAM);
             cnt = MAX_NUM_COM_SEND_IN_CYLCE;
         }
     }
@@ -1283,8 +1289,9 @@ void clMenu::lvlStart() {
         } break;
 
         case KEY_CALL: {
-            sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL, GB_SEND_INT8);
-            sParam.txComBuf.setInt8(GB_CONTROL_CALL);
+            com = GB_COM_SET_CONTROL;
+            type = GB_SEND_INT8;
+            signal = GB_CONTROL_CALL;
         } break;
 
         case KEY_PUSK_UD: {
@@ -1710,7 +1717,6 @@ void clMenu::lvlJournalEvent() {
         sParam.txComBuf.clear();
         sParam.txComBuf.setLocalCom(GB_COM_GET_JRN_CNT);
         sParam.txComBuf.addCom2(GB_COM_GET_JRN_ENTRY);
-        sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
     }
 
     eGB_TYPE_DEVICE device = sParam.typeDevice;
@@ -1797,13 +1803,11 @@ void clMenu::lvlJournalEvent() {
     switch(key_) {
         case KEY_UP:
             if (sParam.jrnEntry.setPreviousEntry()) {
-                sParam.txComBuf.addFastCom(GB_COM_GET_JRN_ENTRY, GB_SEND_MAX);
                 curCom_ = 1;
             }
             break;
         case KEY_DOWN:
             if (sParam.jrnEntry.setNextEntry()) {
-                sParam.txComBuf.addFastCom(GB_COM_GET_JRN_ENTRY, GB_SEND_MAX);
                 curCom_ = 1;
             }
             break;
@@ -1839,11 +1843,6 @@ void clMenu::lvlJournalEvent() {
         default:
             break;
     }
-
-    // поместим в сообщение для БСП адрес необходимой записи
-    // размещен в конце, чтобы не терять время до следующего обращения к
-    // данному пункту меню
-    sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 }
 
 /** Уровень меню. Журнал защиты.
@@ -1879,7 +1878,6 @@ void clMenu::lvlJournalDef() {
         sParam.txComBuf.clear();
         sParam.txComBuf.setLocalCom(GB_COM_DEF_GET_JRN_CNT);
         sParam.txComBuf.addCom2(GB_COM_DEF_GET_JRN_ENTRY);
-        sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
     }
 
     // номер текущей записи в архиве и максимальное кол-во записей
@@ -1926,12 +1924,10 @@ void clMenu::lvlJournalDef() {
 
     switch(key_) {
         case KEY_UP:
-            if (sParam.jrnEntry.setPreviousEntry())
-                sParam.txComBuf.addFastCom(GB_COM_DEF_GET_JRN_ENTRY, GB_SEND_MAX);
+            sParam.jrnEntry.setPreviousEntry();
             break;
         case KEY_DOWN:
-            if (sParam.jrnEntry.setNextEntry())
-                sParam.txComBuf.addFastCom(GB_COM_DEF_GET_JRN_ENTRY, GB_SEND_MAX);
+            sParam.jrnEntry.setNextEntry();
             break;
 
         case KEY_CANCEL:
@@ -1945,11 +1941,6 @@ void clMenu::lvlJournalDef() {
         default:
             break;
     }
-
-    // поместим в сообщение для БСП адрес необходимой записи
-    // размещен в конце, чтобы не терять время до следующего обращения к
-    // данному пункту меню
-    sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 }
 
 /** Уровень меню. Журнал приемника.
@@ -1986,7 +1977,6 @@ void clMenu::lvlJournalPrm() {
         sParam.txComBuf.setLocalCom(GB_COM_PRM_GET_JRN_CNT);
         sParam.txComBuf.addCom2(GB_COM_PRM_GET_JRN_ENTRY);
         sParam.txComBuf.addCom2(GB_COM_GET_DEVICE_NUM);
-        sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
     }
 
     eGB_TYPE_DEVICE device = sParam.typeDevice;
@@ -2068,13 +2058,11 @@ void clMenu::lvlJournalPrm() {
     switch(key_) {
         case KEY_UP:
             if (sParam.jrnEntry.setPreviousEntry()) {
-                sParam.txComBuf.addFastCom(GB_COM_PRM_GET_JRN_ENTRY, GB_SEND_MAX);
                 curCom_ = 1;
             }
             break;
         case KEY_DOWN:
             if (sParam.jrnEntry.setNextEntry()) {
-                sParam.txComBuf.addFastCom(GB_COM_PRM_GET_JRN_ENTRY, GB_SEND_MAX);
                 curCom_ = 1;
             }
             break;
@@ -2110,11 +2098,6 @@ void clMenu::lvlJournalPrm() {
         default:
             break;
     }
-
-    // поместим в сообщение для БСП адрес необходимой записи
-    // размещен в конце, чтобы не терять время до следующего обращения к
-    // данному пункту меню
-    sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 }
 
 /** Уровень меню. Журнал передатчика.
@@ -2151,7 +2134,6 @@ void clMenu::lvlJournalPrd() {
         sParam.txComBuf.clear();
         sParam.txComBuf.setLocalCom(GB_COM_PRD_GET_JRN_CNT);
         sParam.txComBuf.addCom2(GB_COM_PRD_GET_JRN_ENTRY);
-        sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
     }
 
     eGB_TYPE_DEVICE device = sParam.typeDevice;
@@ -2231,13 +2213,11 @@ void clMenu::lvlJournalPrd() {
     switch(key_) {
         case KEY_UP:
             if (sParam.jrnEntry.setPreviousEntry()) {
-                sParam.txComBuf.addFastCom(GB_COM_PRD_GET_JRN_ENTRY, GB_SEND_MAX);
                 curCom_ = 1;
             }
             break;
         case KEY_DOWN:
             if (sParam.jrnEntry.setNextEntry()) {
-                sParam.txComBuf.addFastCom(GB_COM_PRD_GET_JRN_ENTRY, GB_SEND_MAX);
                 curCom_ = 1;
             }
             break;
@@ -2273,12 +2253,6 @@ void clMenu::lvlJournalPrd() {
         default:
             break;
     }
-
-    // FIXME ПРоверить формирование команды для считывания журналов!!!
-    // поместим в сообщение для БСП адрес необходимой записи
-    // размещен в конце, чтобы не терять время до следующего обращения к
-    // данному пункту меню
-    sParam.txComBuf.setInt16(sParam.jrnEntry.getEntryAdress());
 }
 
 
@@ -2299,7 +2273,6 @@ void clMenu::lvlJournalSecurity() {
         lvlCreate_ = false;
         cursorEnable_ = false;
         lineParam_ = 1;
-        curCom_ = 1;
 
         vLCDclear();
         vLCDdrawBoard(lineParam_);
@@ -2356,16 +2329,10 @@ void clMenu::lvlJournalSecurity() {
 
     switch(key_) {
         case KEY_UP: {
-            if (sParam.jrnEntry.setPreviousEntry()) {
-                sParam.txComBuf.addFastCom(comEntry , GB_SEND_GET_ENTRY);
-                curCom_ = 1;
-            }
+            sParam.jrnEntry.setPreviousEntry();
         } break;
         case KEY_DOWN: {
-            if (sParam.jrnEntry.setNextEntry()) {
-                sParam.txComBuf.addFastCom(comEntry , GB_SEND_GET_ENTRY);
-                curCom_ = 1;
-            }
+            sParam.jrnEntry.setNextEntry();
         } break;
 
         case KEY_CANCEL:
@@ -3662,38 +3629,38 @@ void clMenu::lvlSetupDT() {
         snprintf_P(&vLCDbuf[20 * lineParam_], 21, name, cursorLine_);
         eMENU_ENTER_PARAM stat = inputValue();
 
-        if (stat == MENU_ENTER_PARAM_READY) {           
-            sParam.txComBuf.addFastCom(EnterParam.com, GB_SEND_TIME);
+        if (stat == MENU_ENTER_PARAM_READY) {
+            if (sParam.txComBuf.addFastCom(EnterParam.com, GB_SEND_TIME)) {
 
-            sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getYear()), 0);
-            sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMonth()), 1);
-            sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getDay()), 2);
-            sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getHour()), 3);
-            sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMinute()), 4);
-            sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getSecond()), 5);
-            sParam.txComBuf.setInt8(0, 6);  // мс всегда 0
-            sParam.txComBuf.setInt8(0, 7);  //
-            sParam.txComBuf.setInt8(0, 8);    // 0 - установка с меню, 1 - с асутп
+                sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getYear()), 0);
+                sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMonth()), 1);
+                sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getDay()), 2);
+                sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getHour()), 3);
+                sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getMinute()), 4);
+                sParam.txComBuf.setInt8(BIN_TO_BCD(sParam.DateTime.getSecond()), 5);
+                sParam.txComBuf.setInt8(0, 6);  // мс всегда 0
+                sParam.txComBuf.setInt8(0, 7);  //
+                sParam.txComBuf.setInt8(0, 8);    // 0 - установка с меню, 1 - с асутп
 
-            uint8_t val = static_cast<uint8_t> (EnterParam.getValue());
-            uint8_t pos = static_cast<uint8_t> (EnterParam.getDopValue());
-            sParam.txComBuf.setInt8(BIN_TO_BCD(val), pos);
+                uint8_t val = static_cast<uint8_t> (EnterParam.getValue());
+                uint8_t pos = static_cast<uint8_t> (EnterParam.getDopValue());
+                sParam.txComBuf.setInt8(BIN_TO_BCD(val), pos);
 
-            if (pos == 0) {
-                // ввод года, проверим дату, т.к. может быть високосный
-                uint8_t month = BCD_TO_BIN(sParam.txComBuf.getUInt8(1));
-                uint8_t day = BCD_TO_BIN(sParam.txComBuf.getUInt8(2));
-                if (day > sParam.DateTime.getNumDaysInMonth(month, val)) {
-                    sParam.txComBuf.setInt8(BIN_TO_BCD(1), 2);
-                }
-            } else if (pos == 1) {
-                // ввод месяца, проверим кол-во установленных дней
-                uint8_t day = BCD_TO_BIN(sParam.txComBuf.getUInt8(2));
-                if (day > sParam.DateTime.getNumDaysInMonth(val)) {
-                    sParam.txComBuf.setInt8(BIN_TO_BCD(1), 2);
+                if (pos == 0) {
+                    // ввод года, проверим дату, т.к. может быть високосный
+                    uint8_t month = BCD_TO_BIN(sParam.txComBuf.getUInt8(1));
+                    uint8_t day = BCD_TO_BIN(sParam.txComBuf.getUInt8(2));
+                    if (day > sParam.DateTime.getNumDaysInMonth(month, val)) {
+                        sParam.txComBuf.setInt8(BIN_TO_BCD(1), 2);
+                    }
+                } else if (pos == 1) {
+                    // ввод месяца, проверим кол-во установленных дней
+                    uint8_t day = BCD_TO_BIN(sParam.txComBuf.getUInt8(2));
+                    if (day > sParam.DateTime.getNumDaysInMonth(val)) {
+                        sParam.txComBuf.setInt8(BIN_TO_BCD(1), 2);
+                    }
                 }
             }
-
             EnterParam.setDisable();
         }
     } else {
@@ -4037,14 +4004,16 @@ void clMenu::lvlTest1() {
             // добавим в буфере команду для каждой из групп
             // !!! при передаче команды надо проверять данные в буфере
             // РЗ
-            sParam.txComBuf.addFastCom(EnterParam.com, GB_SEND_DOP_INT8);
-            sParam.txComBuf.setFastComDopByte(2);
-            sParam.txComBuf.setInt8(rz);
+            if (sParam.txComBuf.addFastCom(EnterParam.com, GB_SEND_DOP_INT8)) {
+                sParam.txComBuf.setFastComDopByte(2);
+                sParam.txComBuf.setInt8(rz);
+            }
 
             // КЧ
-            sParam.txComBuf.addFastCom(EnterParam.com, GB_SEND_DOP_INT8);
-            sParam.txComBuf.setFastComDopByte(1);
-            sParam.txComBuf.setInt8(cf);
+            if (sParam.txComBuf.addFastCom(EnterParam.com, GB_SEND_DOP_INT8)) {
+                sParam.txComBuf.setFastComDopByte(1);
+                sParam.txComBuf.setInt8(cf);
+            }
 
             EnterParam.setDisable();
         }
@@ -5058,101 +5027,100 @@ void clMenu::saveParamToBsp() {
         uint8_t wrcom = sParam.save.com | GB_COM_MASK_GROUP_WRITE_PARAM;
         sParam.save.com = static_cast<eGB_COM> (wrcom);
 
-        sParam.txComBuf.addFastCom(sParam.save.com, sParam.save.sendType);
+        if (sParam.txComBuf.addFastCom(sParam.save.com, sParam.save.sendType)) {
+            switch(sParam.save.sendType) {
+                case GB_SEND_INT8: {
+                    sParam.txComBuf.setInt8(sParam.save.getValue());
+                } break;
 
-        switch(sParam.save.sendType) {
-            case GB_SEND_INT8: {
-                sParam.txComBuf.setInt8(sParam.save.getValue());
-            } break;
+                case GB_SEND_INT8_DOP: {
+                    sParam.txComBuf.setInt8(sParam.save.getValue(), 0);
+                    sParam.txComBuf.setFastComDopByte(pos + sParam.save.dopByte);
+                } break;
 
-            case GB_SEND_INT8_DOP: {
-                sParam.txComBuf.setInt8(sParam.save.getValue(), 0);
-                sParam.txComBuf.setFastComDopByte(pos + sParam.save.dopByte);
-            } break;
+                case GB_SEND_DOP_INT8: {
+                    sParam.txComBuf.setFastComDopByte(pos + sParam.save.dopByte);
+                    sParam.txComBuf.setInt8(sParam.save.getValue(), 0);
+                } break;
 
-            case GB_SEND_DOP_INT8: {
-                sParam.txComBuf.setFastComDopByte(pos + sParam.save.dopByte);
-                sParam.txComBuf.setInt8(sParam.save.getValue(), 0);
-            } break;
+                case GB_SEND_INT16_BE: {
+                    sParam.txComBuf.setInt16BE(sParam.save.getValue());
+                } break;
 
-            case GB_SEND_INT16_BE: {
-                sParam.txComBuf.setInt16BE(sParam.save.getValue());
-            } break;
+                case GB_SEND_BITES_DOP: {
+                    // FIXME Убрать привязку к локальному параметру!
+                    uint8_t val = sParam.local.getValueB();
+                    if (sParam.save.getValue() > 0) {
+                        val |= (1 << (pos % 8));
+                    } else {
+                        val &= ~(1 << (pos % 8));
+                    }
+                    sParam.txComBuf.setInt8(val, 0);
+                    sParam.txComBuf.setFastComDopByte(pos/8 + sParam.save.dopByte);
+                } break;
 
-            case GB_SEND_BITES_DOP: {
-                // FIXME Убрать привязку к локальному параметру!
-                uint8_t val = sParam.local.getValueB();
-                if (sParam.save.getValue() > 0) {
-                    val |= (1 << (pos % 8));
-                } else {
-                    val &= ~(1 << (pos % 8));
-                }
-                sParam.txComBuf.setInt8(val, 0);
-                sParam.txComBuf.setFastComDopByte(pos/8 + sParam.save.dopByte);
-            } break;
+                case GB_SEND_DOP_BITES: {
+                    // FIXME Убрать привязку к локальному параметру!
+                    uint8_t val = sParam.local.getValueB();
+                    if (sParam.save.getValue() > 0) {
+                        val |= (1 << (pos % 8));
+                    } else {
+                        val &= ~(1 << (pos % 8));
+                    }
+                    sParam.txComBuf.setFastComDopByte(pos/8 + sParam.save.dopByte);
+                    sParam.txComBuf.setInt8(val, 0);
+                } break;
 
-            case GB_SEND_DOP_BITES: {
-                // FIXME Убрать привязку к локальному параметру!
-                uint8_t val = sParam.local.getValueB();
-                if (sParam.save.getValue() > 0) {
-                    val |= (1 << (pos % 8));
-                } else {
-                    val &= ~(1 << (pos % 8));
-                }
-                sParam.txComBuf.setFastComDopByte(pos/8 + sParam.save.dopByte);
-                sParam.txComBuf.setInt8(val, 0);
-            } break;
+                case GB_SEND_COR_U: {
+                    // FIXME Убрать привязку к локальному параметру!
+                    // если текущее значение коррекции тока равно 0
+                    // то передается сообщение с под.байтом равным 4
+                    // означающим сброс коррекции
+                    int16_t t = sParam.save.getValue();
+                    if (t == 0)
+                        sParam.save.dopByte = 4;
+                    else {
+                        // новая коррекция =
+                        // напряжение прибора - (напряжение с БСП - коррекция)
+                        t -= (int16_t) (sParam.measParam.getVoltageOut());
+                        t += sParam.local.getValue();
+                    }
+                    sParam.txComBuf.setInt8(sParam.save.dopByte, 0);
+                    sParam.txComBuf.setInt8(t / 10, 1);
+                    sParam.txComBuf.setInt8((t % 10) * 10, 2);
+                } break;
 
-            case GB_SEND_COR_U: {
-                // FIXME Убрать привязку к локальному параметру!
-                // если текущее значение коррекции тока равно 0
-                // то передается сообщение с под.байтом равным 4
-                // означающим сброс коррекции
-                int16_t t = sParam.save.getValue();
-                if (t == 0)
-                    sParam.save.dopByte = 4;
-                else {
-                    // новая коррекция =
-                    // напряжение прибора - (напряжение с БСП - коррекция)
-                    t -= (int16_t) (sParam.measParam.getVoltageOut());
-                    t += sParam.local.getValue();
-                }
-                sParam.txComBuf.setInt8(sParam.save.dopByte, 0);
-                sParam.txComBuf.setInt8(t / 10, 1);
-                sParam.txComBuf.setInt8((t % 10) * 10, 2);
-            } break;
+                case GB_SEND_COR_I: {
+                    // FIXME Убрать привязку к локальному параметру!
+                    // если текущее значение коррекции тока равно 0
+                    // то передается сообщение с под.байтом равным 5
+                    // означающим сброс коррекции
+                    int16_t t = sParam.save.getValue();
+                    if (t == 0)
+                        sParam.save.dopByte = 5;
+                    else {
+                        // новая коррекция = ток прибора - (ток с БСП - коррекция)
+                        t -= static_cast<int16_t>(sParam.measParam.getCurrentOut());
+                        t += sParam.local.getValue();
+                    }
+                    sParam.txComBuf.setInt8(sParam.save.dopByte, 0);
+                    sParam.txComBuf.setInt8((t >> 8), 1);
+                    sParam.txComBuf.setInt8((t), 2);
+                } break;
 
-            case GB_SEND_COR_I: {
-                // FIXME Убрать привязку к локальному параметру!
-                // если текущее значение коррекции тока равно 0
-                // то передается сообщение с под.байтом равным 5
-                // означающим сброс коррекции
-                int16_t t = sParam.save.getValue();
-                if (t == 0)
-                    sParam.save.dopByte = 5;
-                else {
-                    // новая коррекция = ток прибора - (ток с БСП - коррекция)
-                    t -= static_cast<int16_t>(sParam.measParam.getCurrentOut());
-                    t += sParam.local.getValue();
-                }
-                sParam.txComBuf.setInt8(sParam.save.dopByte, 0);
-                sParam.txComBuf.setInt8((t >> 8), 1);
-                sParam.txComBuf.setInt8((t), 2);
-            } break;
+                case GB_SEND_DOP_PWD: {
+                    sParam.txComBuf.setInt8(sParam.save.dopByte, 0);
+                    sParam.txComBuf.setArray(sParam.save.getValueArray(), PWD_LEN, 1);
+                } break;
 
-            case GB_SEND_DOP_PWD: {
-                sParam.txComBuf.setInt8(sParam.save.dopByte, 0);
-                sParam.txComBuf.setArray(sParam.save.getValueArray(), PWD_LEN, 1);
-            } break;
+                case GB_SEND_IS_ENTRY:
+                case GB_SEND_TIME:
+                case GB_SEND_NO:
+                case GB_SEND_NO_DATA:
+                case GB_SEND_MAX: {
 
-            case GB_SEND_GET_ENTRY:
-            case GB_SEND_IS_ENTRY:
-            case GB_SEND_TIME:
-            case GB_SEND_NO:
-            case GB_SEND_NO_DATA:
-            case GB_SEND_MAX: {
-
-            } break;
+                } break;
+            }
         }
     }
 }

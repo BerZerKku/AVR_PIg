@@ -185,7 +185,6 @@ enum eGB_SEND_TYPE {
     GB_SEND_DOP_PWD,    ///< Передается пароль.
     GB_SEND_TIME,       ///< Передать время.
     GB_SEND_IS_ENTRY,   ///< Передать запись в журнал безопасности.
-    GB_SEND_GET_ENTRY,  ///< Передать запрос записи журнала.
     //
     GB_SEND_MAX
 };

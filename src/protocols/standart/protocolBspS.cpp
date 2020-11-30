@@ -136,6 +136,8 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
     if ((mask == GB_COM_MASK_GROUP_WRITE_PARAM) ||
         (mask == GB_COM_MASK_GROUP_WRITE_REGIME)) {
 
+        Q_ASSERT(com == sParam_->txComBuf.getFastCom());
+
         eGB_SEND_TYPE sendType = sParam_->txComBuf.getFastComType();
 
         if ((sendType > GB_SEND_NO) && (sendType < GB_SEND_MAX)) {
@@ -200,12 +202,14 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
             num = addCom(com);
         }
     } else if (mask == GB_COM_MASK_GROUP_READ_JOURNAL) {
-        // команды считывания журналов, в том числе и кол-ва записей
-        if (sParam_->txComBuf.getFastComType() == GB_SEND_IS_ENTRY) {
-            // FIXME Избаиться от числа 3, сделать define или enum.
-            num = 3;
-            uint8_t *array = sParam_->txComBuf.getBuferAddress();            
-            num = addCom(com, num, array);
+        if (sParam_->txComBuf.getFastCom() == com) {
+            Q_ASSERT(com == GB_COM_JRN_IS_SET_ENTRY);
+            if (sParam_->txComBuf.getFastComType() == GB_SEND_IS_ENTRY) {
+                // FIXME Избаиться от числа 3, сделать define или enum.
+                num = 3;
+                uint8_t *array = sParam_->txComBuf.getBuferAddress();
+                num = addCom(com, num, array);
+            }
         } else {
             num = sendReadJrnCommand(com);
         }

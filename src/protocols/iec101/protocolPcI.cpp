@@ -341,24 +341,25 @@ bool TProtocolPcI::procInterrog(uint16_t &adr, bool &val) {
 // Установка времени
 bool TProtocolPcI::procSetTime() {
 	// Заполнение команды для передачи нового времени в БСП
-	uint8_t i = 0;
-	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.years), i++);
-	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.months), i++);
-	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.dayOfMonth), i++);
-	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.hours), i++);
-	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.minutes), i++);
-	sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.milliseconds / 1000), i++);
+    if (sParam_->txComBuf.addFastCom(GB_COM_SET_TIME, GB_SEND_MAX)) {
+        uint8_t i = 0;
+        sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.years), i++);
+        sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.months), i++);
+        sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.dayOfMonth), i++);
+        sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.hours), i++);
+        sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.minutes), i++);
+        sParam_->txComBuf.setInt8(BIN_TO_BCD(stTime.milliseconds / 1000), i++);
 
-	uint16_t ms = stTime.milliseconds % 1000 + getDelay();
-	sParam_->txComBuf.setInt8((uint8_t) ms, i++);
-	sParam_->txComBuf.setInt8((uint8_t) (ms >> 8), i++);
-	sParam_->txComBuf.setInt8(1, i++);
-    sParam_->txComBuf.addFastCom(GB_COM_SET_TIME, GB_SEND_MAX);
+        uint16_t ms = stTime.milliseconds % 1000 + getDelay();
+        sParam_->txComBuf.setInt8((uint8_t) ms, i++);
+        sParam_->txComBuf.setInt8((uint8_t) (ms >> 8), i++);
+        sParam_->txComBuf.setInt8(1, i++);
 
-    // FIXME Исправить сохранение времени по АСУТП!!!
+        // FIXME Исправить сохранение времени по АСУТП!!!
 
-	// сброс флага наличия ответа на команду установки времени в БСП
-	sParam_->DateTimeReq.setTimeBsp_ = false;
+        // сброс флага наличия ответа на команду установки времени в БСП
+        sParam_->DateTimeReq.setTimeBsp_ = false;
+    }
 
 	return true;
 }
