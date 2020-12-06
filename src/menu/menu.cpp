@@ -2609,18 +2609,18 @@ void clMenu::lvlControl() {
                     if (num == 1) {
                         Punkts_.change(punkt24, GB_COM_NO, 2);
                         Punkts_.change(punkt25, GB_COM_NO, 3);
-                        Punkts_.change(punkt28, GB_COM_NO, 5);
-                        Punkts_.change(punkt29, GB_COM_NO, 6);
+                        Punkts_.change(punkt28, GB_COM_NO, 4);
+                        Punkts_.change(punkt29, GB_COM_NO, 5);
                     } else if (num == 2) {
                         Punkts_.change(punkt23, GB_COM_NO, 2);
                         Punkts_.change(punkt25, GB_COM_NO, 3);
-                        Punkts_.change(punkt27, GB_COM_NO, 5);
-                        Punkts_.change(punkt29, GB_COM_NO, 6);
+                        Punkts_.change(punkt27, GB_COM_NO, 4);
+                        Punkts_.change(punkt29, GB_COM_NO, 5);
                     } else if (num == 3) {
                         Punkts_.change(punkt23, GB_COM_NO, 2);
                         Punkts_.change(punkt24, GB_COM_NO, 3);
-                        Punkts_.change(punkt27, GB_COM_NO, 5);
-                        Punkts_.change(punkt28, GB_COM_NO, 6);
+                        Punkts_.change(punkt27, GB_COM_NO, 4);
+                        Punkts_.change(punkt28, GB_COM_NO, 5);
                     }
                 } else if (comp == GB_COMPATIBILITY_LINER) {
                     if (num == 1) {

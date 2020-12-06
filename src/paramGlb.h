@@ -179,6 +179,8 @@ public:
 	/**	Возвращает кол-во аппаратов в линии (2-х, 3-х концевая).
 	 *
 	 * 	@return Кол-во аппаратов в линии.
+     *  @retval 2
+     *  @retval 3
 	 */
 	eGB_NUM_DEVICES getNumDevices() const {
 		return numDevices_;
