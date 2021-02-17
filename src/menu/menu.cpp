@@ -147,7 +147,7 @@ void clMenu::proc(void) {
 
     // Считаем код с клавиатуры
     // Если нажата любая кнопка - включится кратковременная подсветка
-    eKEY tmp = eKEYget();
+    eKEY tmp = vKEYgetButton(eKEYget());
     if (tmp != KEY_NO) {
         if (tmp == KEY_EMPTY)
             tmp = KEY_NO;
