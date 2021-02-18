@@ -12,6 +12,6 @@
 #include "kbdLayout.h"
 
 void vKEYmain	(void);
-eKEY eKEYget	(void);
+uint8_t eKEYget	(void);
 
 #endif /* KEYBOARD_H_ */

@@ -1,4 +1,5 @@
 //#include "protocolModbus.h"
+#include "avr.h"
 #include "protocolModbus.h"
 #include "debug.hpp"
 

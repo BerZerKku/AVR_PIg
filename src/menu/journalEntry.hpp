@@ -34,24 +34,24 @@ public:
     TJournalEntry() { clear(); }
 
 	void clear() {
-		currentDevice_ = GB_DEVICE_MAX;
-		deviceJrn_ = GB_DEVICE_K400_MAX;
-		eventType_ = MAX_JRN_EVENT_VALUE - MIN_JRN_EVENT_VALUE + 1;
+        currentDevice_ = GB_DEVICE_MAX;
+        deviceJrn_ = GB_DEVICE_K400_MAX;
+        eventType_ = MAX_JRN_EVENT_VALUE - MIN_JRN_EVENT_VALUE + 1;
         numCom_ = 0;
         sourceCom_ = GB_SOURCE_COM_MAX;
-		srcCom_ = 0;
-		signalPusk_ = false;
-		signalStop_ = false;
-		signalMan_ = false;
-		signalPrm_ = false;
-		signalPrd_ = false;
-		signalOut_ = false;
-		signals_ = 0;
+        srcCom_ = 0;
+        signalPusk_ = false;
+        signalStop_ = false;
+        signalMan_ = false;
+        signalPrm_ = false;
+        signalPrd_ = false;
+        signalOut_ = false;
+        signals_ = 0;
 
-		numJrnEntries_ = 0;
-		maxNumJrnEntry_ = 0;
-		overflow_ = false;
-		addressFirstEntry_ = 0;
+        numJrnEntries_ = 0;
+        maxNumJrnEntry_ = 0;
+        overflow_ = false;
+        addressFirstEntry_ = 0;
 
         currentEntry_ = 1;
 
@@ -67,8 +67,8 @@ public:
         log.second = 0;
         log.msecond = 0;
 
-		val = false;
-	}
+        val = false;
+    }
 
 	// время для передачи по протоколам
 	TDateTime dateTimeTr;

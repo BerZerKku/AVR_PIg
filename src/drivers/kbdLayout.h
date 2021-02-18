@@ -40,5 +40,6 @@ enum eKEY: uint8_t {
 
 void vKEYset(eGB_TYPE_DEVICE type);
 eKEY vKEYgetButton(uint8_t number);
+eKEY vKEYgetButtonLayout(uint8_t number);
 
 #endif /* KBD_LAYOUT_H_ */

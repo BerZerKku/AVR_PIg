@@ -56,6 +56,8 @@
 #define QINFO(x) (qInfo() << x)
 #define QWARNING(x) (qWarning() << x)
 #define QCRITICAL(x) (qCritical() << x)
+#define COMPILE_TIME_ASSERT(expression) \
+    Q_STATIC_ASSERT_X(expression, "Error")
 
 #else // defined(QT_CORE_LIB)
 
@@ -63,6 +65,7 @@
 #define QDINFO(x) (void(0))
 #define QWARNING(x) (void(0))
 #define QCRITICAL(x) (void(0))
+#define COMPILE_TIME_ASSERT(expression) switch(0) { case 0 : case (expression) : ; }
 
 #warning "Включен режим отладки!!!"
 #endif // defined(QT_CORE_LIB)
@@ -80,8 +83,6 @@ struct stDebug {
 };
 
 extern stDebug sDebug;
-
-#define COMPILE_TIME_ASSERT(expression) switch(0) { case 0 : case (expression) : ; }
 
 #endif // defined(NDEBUG)
 

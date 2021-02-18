@@ -3,11 +3,11 @@
 /// Массив кнопок Р400м
 static const eKEY fcKeyR400M[2*NUM_KEY_IN_LAYOUT] PROGMEM = {
     //		основные функции
-    KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
+    KEY_FUNC, 		KEY_UP, 		KEY_EMPTY, 		//
     KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
     KEY_EMPTY, 		KEY_DOWN, 		KEY_CANCEL,		//
     //		дополнительные функции
-    KEY_EMPTY,		KEY_CALL,		KEY_PUSK_UD,	//
+    KEY_FUNC,		KEY_CALL,		KEY_PUSK_UD,	//
     KEY_AC_PUSK, 	KEY_MENU,		KEY_AC_PUSK_UD,	//
     KEY_AC_RESET,	KEY_AC_REGIME,	KEY_PUSK_NALAD	//
 };
@@ -15,11 +15,11 @@ static const eKEY fcKeyR400M[2*NUM_KEY_IN_LAYOUT] PROGMEM = {
 /// Массив кнопок К400
 static const eKEY fcKeyK400[2*NUM_KEY_IN_LAYOUT] PROGMEM = {
     //		основные функции
-    KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
+    KEY_FUNC, 		KEY_UP, 		KEY_EMPTY, 		//
     KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
     KEY_CANCEL, 	KEY_DOWN, 		KEY_EMPTY,		//
     //		дополнительные функции
-    KEY_EMPTY,		KEY_EMPTY,		KEY_RESET_IND,	//
+    KEY_FUNC,		KEY_EMPTY,		KEY_RESET_IND,	//
     KEY_PUSK, 		KEY_MENU,		KEY_EMPTY,		//
     KEY_EMPTY,		KEY_EMPTY,		KEY_RESET		//
 };
@@ -27,11 +27,11 @@ static const eKEY fcKeyK400[2*NUM_KEY_IN_LAYOUT] PROGMEM = {
 /// Массив кнопок РЗСК
 static const eKEY fcKeyRZSK[2*NUM_KEY_IN_LAYOUT] PROGMEM = {
     //		основные функции
-    KEY_EMPTY, 		KEY_UP, 		KEY_EMPTY, 		//
+    KEY_FUNC, 		KEY_UP, 		KEY_EMPTY, 		//
     KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
     KEY_EMPTY, 		KEY_DOWN, 		KEY_CANCEL,		//
     //		дополнительные функции
-    KEY_EMPTY,		KEY_CALL,		KEY_PUSK_UD,	//
+    KEY_FUNC,		KEY_CALL,		KEY_PUSK_UD,	//
     KEY_PUSK, 		KEY_MENU,		KEY_PUSK_NALAD,	//
     KEY_RESET_IND,	KEY_EMPTY,		KEY_EMPTY		//
 };
@@ -56,13 +56,22 @@ void vKEYset(eGB_TYPE_DEVICE type)
     }
 }
 
+eKEY vKEYgetButtonLayout(uint8_t number) {
+    eKEY key = KEY_NO;
+
+    if ((number > 0) && (number <= 2*NUM_KEY_IN_LAYOUT)) {
+        key = static_cast<eKEY> (pgm_read_byte(((PGM_P) keyboard) + number - 1));
+    }
+
+     return key;
+}
+
 eKEY vKEYgetButton(uint8_t number)
 {
     eKEY key = KEY_NO;
 
     if ((number > 0) && (number <= 2*NUM_KEY_IN_LAYOUT)) {
         key = static_cast<eKEY> (pgm_read_byte(((PGM_P) keyboard) + number - 1));
-//        QDEBUG("number = " << number << ", key = " << key);
     }
 
     if (key == KEY_EMPTY) {

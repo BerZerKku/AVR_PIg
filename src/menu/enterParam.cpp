@@ -112,7 +112,7 @@ uint16_t TEnterParam::decValue(uint8_t velocity) {
         } else {
             val_ = getValueMax();
         }
-    }else if (getValueMin() >= 0){
+    } else if (getValueMin() >= 0) {
         if ((val_ - getValueMin()) >= step[digit_ - 1]) {
             val_ -= step[digit_ - 1];
         }
