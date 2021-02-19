@@ -17,7 +17,7 @@
 
 #include <stdint.h>
 #include "avr.h"
-#include "debug.hpp"
+#include "debug/debug.hpp"
 
 /// размер массива
 #define SIZE_OF(mas) (sizeof(mas) / sizeof(mas[0]))
@@ -111,9 +111,6 @@ enum eMENU_ENTER_PARAM {
     MENU_ENTER_PARAM_LIST_2,    ///< изменение параметра, выбор из списка значений
     MENU_ENTER_PARAM_U_COR,     ///< изменение параметра, коррекция напряжения
     MENU_ENTER_PASSWORD,        ///< ввод пароля
-    MENU_ENTER_PASSWORD_NEW,    ///< ввод нового пароля
-    MENU_ENTER_PASSWORD_READY,  ///< введен верный пароль
-    MENU_ENTER_PASSWORD_N_READY,///< новый пароль введен корректно
     MENU_ENTER_PARAM_READY,     ///< необходимо изменить параметр
     //
     MENU_ENTER_PARAM_MAX

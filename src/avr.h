@@ -29,7 +29,7 @@
 #include <cstdint>
 #include <cstddef>
 
-#if defined(QT_CORE_LIB)
+#if defined(QT_CORE_LIB) && !defined(MY_TESTS)
 #include "wrapper.hpp"
 #endif
 

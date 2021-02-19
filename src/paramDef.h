@@ -8,7 +8,7 @@
 #ifndef PARAMDEF_H_
 #define PARAMDEF_H_
 
-#include "deviceStatus.hpp"
+#include "menu/deviceStatus.hpp"
 #include "glbDefine.h"
 
 /// Минимальные, максимальные значения параметров приемника и их дискретность

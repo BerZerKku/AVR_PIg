@@ -9,7 +9,7 @@
 #define PARAMGLB_H_
 
 #include "glbDefine.h"
-#include "deviceStatus.hpp"
+#include "menu/deviceStatus.hpp"
 
 /// ОБЩИЕ
 /// номер аппарата

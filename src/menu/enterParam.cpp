@@ -10,14 +10,16 @@
 static const uint16_t step[] = {1, 10, 100, 1000, 10000};
 
 //
-TEnterParam::TEnterParam() {
+TEnterParam::TEnterParam()
+{
     COMPILE_TIME_ASSERT(SIZE_OF(pwd_) == (PWD_LEN+1));
 
     setDisable();
 }
 
 // Проверка текущего статуса работы с параметром.
-bool TEnterParam::isEnable() {
+bool TEnterParam::isEnable()
+{
     // проверка текущего статуса на достоверное значение
     if ((status_ < MENU_ENTER_PARAM_NO) || (status_ > MENU_ENTER_PARAM_MAX)) {
 		status_ = MENU_ENTER_PARAM_NO;
@@ -27,9 +29,10 @@ bool TEnterParam::isEnable() {
 }
 
 // Старт ввода нового значения параметра.
-void TEnterParam::setEnable(eMENU_ENTER_PARAM s) {
+void TEnterParam::setEnable(eMENU_ENTER_PARAM s)
+{
 
-	if ((s >= MENU_ENTER_PARAM_INT) && (s <= MENU_ENTER_PASSWORD_NEW)) {
+    if ((s >= MENU_ENTER_PARAM_INT) && (s <= MENU_ENTER_PASSWORD)) {
         clearPwd();
         digit_ = 1;
         digitMin_ = 1;
@@ -39,7 +42,8 @@ void TEnterParam::setEnable(eMENU_ENTER_PARAM s) {
 }
 
 // Окончание ввода нового значения параметра.
-void TEnterParam::setDisable() {
+void TEnterParam::setDisable()
+{
 	status_ = MENU_ENTER_PARAM_NO;
 	com = GB_COM_NO;
 	param_ = GB_PARAM_NULL_PARAM;
@@ -48,7 +52,8 @@ void TEnterParam::setDisable() {
 }
 
 //
-void TEnterParam::setValueRange(int16_t min, int16_t max) {
+void TEnterParam::setValueRange(int16_t min, int16_t max)
+{
     max_ = max;
     min_ = min;
 
@@ -58,27 +63,32 @@ void TEnterParam::setValueRange(int16_t min, int16_t max) {
 }
 
 //
-int16_t TEnterParam::getValueMin() const {
+int16_t TEnterParam::getValueMin() const
+{
     return min_;
 }
 
 //
-int16_t TEnterParam::getValueMax() const {
+int16_t TEnterParam::getValueMax() const
+{
     return max_;
 }
 
 //
-void TEnterParam::setValue(int16_t val) {
+void TEnterParam::setValue(int16_t val)
+{
     val_ = (val < min_) || (val > max_) ? min_ : val;
 }
 
 //
-uint8_t *TEnterParam::getValuePwd() {
+uint8_t *TEnterParam::getValuePwd()
+{
     return pwd_;
 }
 
 // Увеличение текущего значения.
-uint16_t TEnterParam::incValue(uint8_t velocity) {
+uint16_t TEnterParam::incValue(uint8_t velocity)
+{
     eMENU_ENTER_PARAM s = status_;
 
     if (s == MENU_ENTER_PASSWORD) {
@@ -100,7 +110,8 @@ uint16_t TEnterParam::incValue(uint8_t velocity) {
 }
 
 // Уменьшение текущего значения.
-uint16_t TEnterParam::decValue(uint8_t velocity) {
+uint16_t TEnterParam::decValue(uint8_t velocity)
+{
 	eMENU_ENTER_PARAM s = status_;
 
     if (s == MENU_ENTER_PASSWORD) {
@@ -122,28 +133,32 @@ uint16_t TEnterParam::decValue(uint8_t velocity) {
 }
 
 //
-void TEnterParam::decDigit() {
+void TEnterParam::decDigit()
+{
     if (digit_ > 1) {
         digit_--;
     }
 }
 
 //
-uint8_t TEnterParam::getDigit() const {
+uint8_t TEnterParam::getDigit() const
+{
     return digit_;
 }
 
 
 
 //
-void TEnterParam::incDigit() {
+void TEnterParam::incDigit()
+{
     if (digit_ < digitMax_) {
         digit_++;
     }
 }
 
 //
-uint8_t TEnterParam::getDigitMax() const{
+uint8_t TEnterParam::getDigitMax() const
+{
     return digitMax_;
 }
 
@@ -156,7 +171,7 @@ uint8_t TEnterParam::getMaxDigitNumber(eMENU_ENTER_PARAM s) const
 
     if ((s == MENU_ENTER_PARAM_LIST) || (s == MENU_ENTER_PARAM_LIST_2)) {
         num = 1;
-    } else if ((s == MENU_ENTER_PASSWORD) || (s == MENU_ENTER_PASSWORD_NEW)) {
+    } else if (s == MENU_ENTER_PASSWORD) {
         num = static_cast<uint8_t> (max_);
     } else {
         int16_t max = max_ / 10;

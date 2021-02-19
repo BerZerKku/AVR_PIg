@@ -6,7 +6,7 @@
  */
 
 #include "CIec101.h"
-#include "debug.hpp"
+#include "glbDefine.h"
 
 // Контструктор.
 CIec101::CIec101(uint8_t *pBuf, uint8_t u8Size) :

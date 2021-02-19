@@ -11,7 +11,6 @@
 #include "protocolModbus.h"
 #include "glbDefine.h"
 #include "paramBsp.h"
-#include "debug.hpp"
 
 class TProtocolPcM : public TProtocolModbus
 {

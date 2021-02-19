@@ -1,7 +1,6 @@
 //#include "protocolModbus.h"
-#include "avr.h"
+#include "glbDefine.h"
 #include "protocolModbus.h"
-#include "debug.hpp"
 
 const uint8_t TProtocolModbus::CRC_HI[256] PROGMEM = {
 		0x00, 0xC1, 0x81, 0x40, 0x01,

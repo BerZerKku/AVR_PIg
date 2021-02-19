@@ -149,6 +149,7 @@ public:
      *  ƒл€ TUser::MAX или ошибочном значении возвращаетс€ true.
      *
      *  @param[in] user ѕользователь
+     *  @return true если пользователь заблокирован, иначе false.
      */
     bool isLocked(user_t user) const;
 

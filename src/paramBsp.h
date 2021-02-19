@@ -8,18 +8,18 @@
 #ifndef PARAMBSP_H_
 #define PARAMBSP_H_
 
-#include "dateTime.hpp"
 #include "glbDefine.h"
-#include "journalEntry.hpp"
-#include "jrnScada.hpp"
-#include "LocalParams.h"
 #include "paramPrm.h"
 #include "paramPrd.h"
 #include "paramDef.h"
 #include "paramGlb.h"
 #include "paramUart.h"
-#include "txCom.hpp"
-#include "infosecurity.h"
+#include "menu/dateTime.hpp"
+#include "menu/journalEntry.hpp"
+#include "menu/jrnScada.hpp"
+#include "menu/txCom.hpp"
+#include "parameter/LocalParams.h"
+#include "security/infosecurity.h"
 
 /// Структура параметров БСП
 struct stGBparam {
