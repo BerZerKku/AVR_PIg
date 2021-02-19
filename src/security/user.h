@@ -1,7 +1,7 @@
 #ifndef USER_H
 #define USER_H
 
-#include "glbDefine.h"
+#include "src/glbDefine.h"
 
 class TUser {
 // Время до сброса пользователя в секундах

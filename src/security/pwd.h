@@ -1,7 +1,7 @@
 #ifndef TPWD_H
 #define TPWD_H
 
-#include "glbDefine.h"
+#include "src/glbDefine.h"
 #include "user.h"
 
 /// Пароль.

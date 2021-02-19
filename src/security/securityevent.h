@@ -1,8 +1,8 @@
 #ifndef TSECURITY_EVENT_H
 #define TSECURITY_EVENT_H
 
-#include "glbDefine.h"
-#include "fifo.h"
+#include "src/glbDefine.h"
+#include "src/fifo.h"
 
 #define SIZE_OF_SECURITY_JRN 128
 

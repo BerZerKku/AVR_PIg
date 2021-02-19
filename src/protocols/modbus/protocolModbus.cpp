@@ -1,5 +1,5 @@
 //#include "protocolModbus.h"
-#include "glbDefine.h"
+#include "src/glbDefine.h"
 #include "protocolModbus.h"
 
 const uint8_t TProtocolModbus::CRC_HI[256] PROGMEM = {
