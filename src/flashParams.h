@@ -9,9 +9,9 @@
 #define FLASHPARAMS_H_
 
 #include "glbDefine.h"
-#include "user.h"
+#include "security/user.h"
 #include "paramUart.h"
-#include "param.h"
+#include "parameter/param.h"
 
 static const char fcNullBuf[] PROGMEM= "";
 
