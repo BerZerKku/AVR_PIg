@@ -6,8 +6,8 @@
 #ifndef UART_H_
 #define UART_H_
 
-#include "paramUart.h"
-#include "debug.h"
+#include <avr/io.h>
+#include "src/paramUart.h"
 
 class TUart {
 public:

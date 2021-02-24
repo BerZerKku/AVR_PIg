@@ -8,7 +8,7 @@
 
 #ifdef DEBUG
 
-#include "debug.h"
+#include "debug.hpp"
 
 stDebug sDebug;
 
