@@ -52,6 +52,7 @@
 
 #if defined(QT_CORE_LIB)
 
+#include <QDebug>
 #define QDEBUG(x) (qDebug() << x)
 #define QINFO(x) (qInfo() << x)
 #define QWARNING(x) (qWarning() << x)

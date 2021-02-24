@@ -1,7 +1,7 @@
 #include "kbdLayout.h"
 
 /// Массив кнопок Р400м
-static const eKEY fcKeyR400M[2*NUM_KEY_IN_LAYOUT] PROGMEM = {
+static const uint8_t fcKeyR400M[2*NUM_KEY_IN_LAYOUT] PROGMEM = {
     //		основные функции
     KEY_FUNC, 		KEY_UP, 		KEY_EMPTY, 		//
     KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
@@ -13,7 +13,7 @@ static const eKEY fcKeyR400M[2*NUM_KEY_IN_LAYOUT] PROGMEM = {
 };
 
 /// Массив кнопок К400
-static const eKEY fcKeyK400[2*NUM_KEY_IN_LAYOUT] PROGMEM = {
+static const uint8_t fcKeyK400[2*NUM_KEY_IN_LAYOUT] PROGMEM = {
     //		основные функции
     KEY_FUNC, 		KEY_UP, 		KEY_EMPTY, 		//
     KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
@@ -25,7 +25,7 @@ static const eKEY fcKeyK400[2*NUM_KEY_IN_LAYOUT] PROGMEM = {
 };
 
 /// Массив кнопок РЗСК
-static const eKEY fcKeyRZSK[2*NUM_KEY_IN_LAYOUT] PROGMEM = {
+static const uint8_t fcKeyRZSK[2*NUM_KEY_IN_LAYOUT] PROGMEM = {
     //		основные функции
     KEY_FUNC, 		KEY_UP, 		KEY_EMPTY, 		//
     KEY_LEFT, 		KEY_ENTER, 		KEY_RIGHT, 		//
