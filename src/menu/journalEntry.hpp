@@ -8,8 +8,8 @@
 #ifndef JOURNAL_ENTRY_HPP_
 #define JOURNAL_ENTRY_HPP_
 
-#include "dateTime.hpp"
-#include "glbDefine.h"
+#include "src/glbDefine.h"
+#include "src/menu/dateTime.hpp"
 
 class TJournalEntry {
 #define MAX_LOG_SIZE 16

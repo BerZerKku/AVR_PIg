@@ -8,8 +8,8 @@
 #ifndef DEVICE_STATUS_HPP_
 #define DEVICE_STATUS_HPP_
 
-#include "glbDefine.h"
 #include <stdint.h>
+#include "src/glbDefine.h"
 
 /// Класс для текущего состояния аппарата
 class TDeviceStatus {

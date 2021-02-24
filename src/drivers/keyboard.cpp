@@ -5,9 +5,7 @@
  *      Author: Хозяин
  */
 
-#include <avr/io.h>
 #include "keyboard.h"
-#include "debug.hpp"
 
 /// Время антидребезга * 10мс
 #define TIME_DELAY 10
@@ -52,9 +50,8 @@ static eBUT keyPressed;
  * 	@param Нет
  * 	@return eKEY Код нажатой кнопки
  */
-eKEY eKEYget(void) {
+uint8_t eKEYget(void) {
 	uint_fast8_t but = keyPressed;
-	eKEY key = KEY_NO;
 
 	if ((but >= BUT_1R1C) && (but <= BUT_3R3C)) {
 		but = 1 + (but - BUT_1R1C);
@@ -64,13 +61,8 @@ eKEY eKEYget(void) {
 		but = 0;
 	}
 
-	if (but != 0) {
-		but -= 1;
-//		key = (eKEY) pgm_read_byte((PGM_P) keyboard + but);
-	}
-
 	keyPressed = BUT_NO;
-	return key;
+	return but;
 }
 
 /**	Функция определения нажатой кнопки

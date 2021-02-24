@@ -2,9 +2,9 @@
 #define PARAM_H_
 
 #include <stdint.h>
-#include "avr.h"
-#include "glbDefine.h"
-#include "security/user.h"
+#include "src/avr.h"
+#include "src/glbDefine.h"
+#include "src/security/user.h"
 
 struct Param {
 	/// Размернось параметра (связана с fcDimension)

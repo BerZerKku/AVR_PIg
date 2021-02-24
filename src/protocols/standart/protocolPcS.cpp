@@ -5,8 +5,8 @@
  *  Created on: 15.07.2013
  *      Author: Shcheblykin
  */
-#include "protocolPcS.h"
-#include "securityevent.h"
+#include "src/protocols/standart/protocolPcS.h"
+#include "src/security/securityevent.h"
 
 clProtocolPcS::clProtocolPcS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
                                                                               clProtocolS(buf, size, sParam) {

@@ -5,11 +5,10 @@
  *      Author: ’оз€ин
  */
 #include <stdio.h>
-#include "debug.hpp"
 
 #include "menu.h"
-#include "ks0108.h"
-#include "flash.h"
+#include "src/flash.h"
+#include "src/drivers/ks0108.h"
 
 /// режим подсветки по умолчанию
 #define LED_REGIME LED_SWITCH

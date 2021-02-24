@@ -2,8 +2,8 @@
 #define BASE_HPP
 
 #include <stdint.h>
-#include "menu.h"
-#include "paramUart.h"
+#include "src/menu/menu.h"
+#include "src/paramUart.h"
 
 /// Размер буфера для общения с БСП
 #define BUFF_SIZE_BSP 128

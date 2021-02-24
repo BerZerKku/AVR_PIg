@@ -8,7 +8,7 @@
 #ifndef TX_COM_HPP_
 #define TX_COM_HPP_
 
-#include "glbDefine.h"
+#include "src/glbDefine.h"
 
 /// максимальное кол-во команд в первом буфере
 #define MAX_NUM_COM_BUF1 10

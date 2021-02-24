@@ -8,9 +8,9 @@
 #ifndef PROTOCOLPCM_H_
 #define PROTOCOLPCM_H_
 
-#include "protocolModbus.h"
-#include "glbDefine.h"
-#include "paramBsp.h"
+#include "src/glbDefine.h"
+#include "src/paramBsp.h"
+#include "src/protocols/modbus/protocolModbus.h"
 
 class TProtocolPcM : public TProtocolModbus
 {

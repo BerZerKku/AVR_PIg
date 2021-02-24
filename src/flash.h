@@ -5,11 +5,11 @@
  *      Author: ’оз€ин
  */
 
-#include "glbDefine.h"
-#include "paramDef.h"
-#include "paramGlb.h"
-#include "flashParams.h"
-#include "securityevent.h"
+#include "src/glbDefine.h"
+#include "src/flashParams.h"
+#include "src/paramDef.h"
+#include "src/paramGlb.h"
+#include "src/security/securityevent.h"
 
 /// ѕуста€ строка.
 static const char fcNull[] PROGMEM = "";

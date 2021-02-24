@@ -17,7 +17,7 @@
 
 #include <stdint.h>
 #include "avr.h"
-#include "debug/debug.hpp"
+#include "src/debug/debug.hpp"
 
 /// размер массива
 #define SIZE_OF(mas) (sizeof(mas) / sizeof(mas[0]))

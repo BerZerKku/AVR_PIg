@@ -8,9 +8,8 @@
 #ifndef JRN_SCADA_HPP_
 #define JRN_SCADA_HPP_
 
-#include "dateTime.hpp"
-#include "glbDefine.h"
-
+#include "src/glbDefine.h"
+#include "src/menu/dateTime.hpp"
 
 class TJrnSCADA {
 public:

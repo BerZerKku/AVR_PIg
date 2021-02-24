@@ -8,12 +8,12 @@
 #ifndef KBD_LAYOUT_H_
 #define KBD_LAYOUT_H_
 
-#include "glbDefine.h"
+#include "src/glbDefine.h"
 
 #define NUM_KEY_IN_LAYOUT 9
 
 /// Функции кнопок
-enum eKEY: uint8_t {
+enum eKEY {
   KEY_NO = 0x00,  // нет нажатых кнопок
   KEY_EMPTY,      // была нажата кнопка, но без какой-либо функции
   KEY_FUNC,       // Функция

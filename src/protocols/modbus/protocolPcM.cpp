@@ -1,12 +1,12 @@
 /*
- * protocolBspS.cpp
+ * protocolPcM.cpp
  *
  *  Created on: 15.07.2013
  *      Author: Shcheblykin
  */
 #include <stdio.h>
 #include "protocolPcM.h"
-#include "glbDefine.h"
+#include "src/glbDefine.h"
 
 // Конструктор
 TProtocolPcM::TProtocolPcM(stGBparam *sParam, uint8_t *buf, uint8_t size) :

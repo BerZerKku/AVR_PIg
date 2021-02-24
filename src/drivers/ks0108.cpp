@@ -1,9 +1,8 @@
 #include <math.h>
 #include <stdio.h>
-#include "avr.h"
-#include "debug.hpp"
 #include "ks0108.h"
-#include "symbols.h"
+#include "src/glbDefine.h"
+#include "src/drivers/symbols.h"
 
 #define PORT_RST PORTC
 #define PIN_RST (1 << 5)

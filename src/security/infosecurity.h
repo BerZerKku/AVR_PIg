@@ -1,9 +1,9 @@
 #ifndef TINFOSECURITY_H
 #define TINFOSECURITY_H
 
-#include "glbDefine.h"
-#include "pwd.h"
-#include "securityevent.h"
+#include "src/glbDefine.h"
+#include "src/security/pwd.h"
+#include "src/security/securityevent.h"
 
 /// структура параметров работы с информационной безопасностью
 class TInfoSecurity {

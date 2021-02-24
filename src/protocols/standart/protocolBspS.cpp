@@ -5,8 +5,8 @@
  *      Author: Shcheblykin
  */
 #include "protocolBspS.h"
-#include "glbDefine.h"
-#include "paramBsp.h"
+#include "src/glbDefine.h"
+#include "src/paramBsp.h"
 
 clProtocolBspS::clProtocolBspS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
                                                                                 clProtocolS(buf, size, sParam) {

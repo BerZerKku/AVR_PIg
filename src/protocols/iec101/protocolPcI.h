@@ -8,11 +8,10 @@
 #ifndef PROTOCOLPCI_H_
 #define PROTOCOLPCI_H_
 
-#include "CIec101.h"
-#include "glbDefine.h"
-#include "paramBsp.h"
-#include "avr.h"
-#include "debug.hpp"
+#include "src/avr.h"
+#include "src/glbDefine.h"
+#include "src/paramBsp.h"
+#include "src/protocols/iec101/CIec101.h"
 
 /**	\defgroup Notation Стиль оформления.
  *

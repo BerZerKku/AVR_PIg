@@ -12,3 +12,4 @@
 *.o
 makefile
 *.mk
+/Debug/

@@ -8,8 +8,8 @@
 #ifndef KEYBOARD_H_
 #define KEYBOARD_H_
 
-#include "glbDefine.h"
-#include "kbdLayout.h"
+#include "src/glbDefine.h"
+#include "src/drivers/kbdLayout.h"
 
 void vKEYmain	(void);
 uint8_t eKEYget	(void);

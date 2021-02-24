@@ -9,9 +9,8 @@
 #define PROTOCOLS_H_
 
 #include <stdint.h>
-#include "glbDefine.h"
-#include "paramBsp.h"
-#include "debug.hpp"
+#include "src/glbDefine.h"
+#include "src/paramBsp.h"
 
 // состояния протокола
 enum ePRTS_STATUS {

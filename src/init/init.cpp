@@ -5,8 +5,8 @@
  *      Author: ’оз€ин
  */
 
-#include "avr.h"
-#include "debug.hpp"
+#include "src/avr.h"
+#include "src/debug/debug.hpp"
 
 void
 low_level_init() __attribute__((__naked__)) __attribute__((section(".init3")));

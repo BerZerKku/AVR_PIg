@@ -1,12 +1,10 @@
-#include "avr.h"
 #include "base.hpp"
-
-#include "protocols/standart/protocolBspS.h"
-#include "protocols/standart/protocolPcS.h"
-#include "protocols/modbus/protocolPcM.h"
-#include "protocols/iec101/protocolPcI.h"
-
-#include "drivers/ks0108.h"
+#include "src/avr.h"
+#include "src/drivers/ks0108.h"
+#include "src/protocols/standart/protocolBspS.h"
+#include "src/protocols/standart/protocolPcS.h"
+#include "src/protocols/modbus/protocolPcM.h"
+#include "src/protocols/iec101/protocolPcI.h"
 
 /// Время работы одного цикла (зависит от настройки таймеров), мс
 #define TIME_CYLCE 100
