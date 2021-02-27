@@ -8,12 +8,12 @@
 #ifndef MENU_H_
 #define MENU_H_
 
-#include "keyboard.h"
-#include "glbDefine.h"
-#include "paramBsp.h"
-#include "LocalParams.h"
-#include "menuPunkt.h"
-#include "enterParam.h"
+#include "src/glbDefine.h"
+#include "src/paramBsp.h"
+#include "src/drivers/keyboard.h"
+#include "src/menu/enterParam.h"
+#include "src/menu/menuPunkt.h"
+#include "src/parameter/LocalParams.h"
 
 /// время до первой инициализации дисплея, мс
 #define TIME_TO_INIT_LCD (200 / MENU_TIME_CYLCE)
@@ -74,7 +74,7 @@ public:
 
 	/**	Работа с меню.
 	 */
-	void main();
+    void proc();
 
 	/** Установка типа аппарата и настройка меню с его учетом.
 	 * 	По умолчанию будет сделан выбор исходя из меющейся информации в

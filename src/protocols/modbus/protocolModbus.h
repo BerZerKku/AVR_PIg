@@ -8,14 +8,8 @@
 #ifndef __PROTOCOL_MODBUS_H_
 #define __PROTOCOL_MODBUS_H_
 
-#include <stdint.h> 
-
-#ifdef AVR
-#include <avr/pgmspace.h>
-#else
-#define PROGMEM
-#define pgm_read_byte(a) (*a)
-#endif
+#include <stdint.h>
+#include "src/glbDefine.h"
 
 /**	\brief Класс работы с протоколом MODBUS.
  *

@@ -8,8 +8,8 @@
 #ifndef ENTERPARAM_H_
 #define ENTERPARAM_H_
 
-#include "glbDefine.h"
-#include "paramGlb.h"
+#include "src/glbDefine.h"
+#include "src/paramGlb.h"
 
 // Настройки необходимые для ввода нового значения параметра.
 class TEnterParam {

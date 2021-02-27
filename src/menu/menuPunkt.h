@@ -8,7 +8,7 @@
 #ifndef MENUPUNKT_H_
 #define MENUPUNKT_H_
 
-#include "glbDefine.h"
+#include "src/glbDefine.h"
 
 /// Структура пункта меню
 class TMenuPunkt {

@@ -9,13 +9,10 @@
 #define PROTOCOLS_H_
 
 #include <stdint.h>
-#include "glbDefine.h"
-#include "paramBsp.h"
-#include "debug.h"
-
+#include "src/glbDefine.h"
+#include "src/paramBsp.h"
 
 //#define MAX_CYCLE_TO_REST_SOST 10
-
 
 // состояния протокола
 enum ePRTS_STATUS {

@@ -8,6 +8,9 @@
 #ifndef PARAMGLB_H_
 #define PARAMGLB_H_
 
+#include "src/glbDefine.h"
+#include "menu/deviceStatus.hpp"
+
 /// ОБЩИЕ
 /// номер аппарата
 #define GLB_DEV_NUM_MIN		1
@@ -156,33 +159,14 @@ public:
 		return typeOpto_;
 	}
 
-	/**	Установка типа аппарата.
-		 *
-		 * 	В случае ошибки, значение не поменяется.
-		 *
-		 * 	@param Тип аппарата.
-		 * 	@return Статус установки.
-		 */
-		uint8_t setTypeOpto(eGB_TYPE_OPTO val) {
-			uint8_t act = GB_ACT_NO;
-
-			if (val > TYPE_OPTO_MAX) {
-				act = GB_ACT_ERROR;
-			} else {
-				if (typeLine_ == GB_TYPE_LINE_OPTO) {
-					if (typeOpto_ == val) {
-						act = GB_ACT_OLD;
-					} else {
-						typeOpto_ = val;
-						act = GB_ACT_NEW;
-					}
-				}
-			}
-
-			return act;
-		}
-
-
+    /**	Установка типа аппарата.
+         *
+         * 	В случае ошибки, значение не поменяется.
+         *
+         * 	@param Тип аппарата.
+         * 	@return Статус установки.
+         */
+    uint8_t setTypeOpto(eGB_TYPE_OPTO val);
 
 	/**	Возвращает максимальное кол-во аппаратов в линии.
 	 *

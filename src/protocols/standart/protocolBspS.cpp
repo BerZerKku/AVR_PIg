@@ -5,8 +5,8 @@
  *      Author: Shcheblykin
  */
 #include "protocolBspS.h"
-#include "glbDefine.h"
-#include "paramBsp.h"
+#include "src/glbDefine.h"
+#include "src/paramBsp.h"
 
 clProtocolBspS::clProtocolBspS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
 clProtocolS(buf, size, sParam) {
@@ -65,11 +65,13 @@ bool clProtocolBspS::getData(bool pc) {
 
 		LocalParams *lp = &sParam_->local;
 
-		if (com == lp->getCom()) {
+        if (com == getCom(lp->getParam())) {
+            const eGB_PARAM pn = lp->getParam();
+
 			// по умолчанию загружается значение первого байта,
 			// на отличные от этого параметры далее ведется проверка
 			int16_t val = -1000;
-			switch(lp->getParam()) {
+            switch(pn) {
 				case GB_PARAM_IN_DEC:
 					val = buf[B2 + lp->getNumOfCurrSameParam() - 1];
 					break;
@@ -87,20 +89,20 @@ bool clProtocolBspS::getData(bool pc) {
 					uint8_t pos = B1;
 
 					// смещение в зависимости от номера однотипного параметра
-					if (lp->getParamType() == Param::PARAM_BITES) {
+                    if (getParamType(pn) == Param::PARAM_BITES) {
 						pos += (lp->getNumOfCurrSameParam() - 1) / 8;
 					} else {
 						pos += lp->getNumOfCurrSameParam() - 1;
 					}
 
-					if (lp->getSendDop() != 0) {
-						pos += lp->getSendDop() - 1;
+                    const uint8_t dop = getSendDop(pn);
+                    if (dop != 0) {
+                        pos += dop - 1;
 					}
 
 					// приведение к знаковому типу, в случае если возможно
 					// отрицательное значение параметра
-					val = (lp->getMin() < 0) ? (int8_t) buf[pos] : buf[pos];
-
+                    val = (getAbsMin(pn) < 0) ? (int8_t) buf[pos] : buf[pos];
 
 					break;
 			}

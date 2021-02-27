@@ -7,9 +7,8 @@
 #include <stdio.h>
 
 #include "menu.h"
-#include "debug.h"
-#include "ks0108.h"
-#include "flash.h"
+#include "src/flash.h"
+#include "src/drivers/ks0108.h"
 
 /// режим подсветки по умолчанию
 #define LED_REGIME LED_SWITCH
@@ -20,7 +19,7 @@ static char vLCDbuf[SIZE_BUF_STRING + 1];
 /// кол-во строк данных отображаемых на экране
 #define NUM_TEXT_LINES (SIZE_BUF_STRING / 20)
 
-
+//
 clMenu::clMenu() {
 
 	// Сравнение размера массива команд переназначения и максимального кол-ва транзитных команд
@@ -110,11 +109,9 @@ clMenu::clMenu() {
 	// установка режима работы подсветки
 	vLCDsetLed(LED_REGIME);
 #endif
-
-	sParam.local.setFlashParams(fParams);
 }
 
-void clMenu::main(void) {
+void clMenu::proc(void) {
 
 	static const char fcNoConnectBsp[] PROGMEM = " Нет связи с БСП!!! ";
 
@@ -147,16 +144,16 @@ void clMenu::main(void) {
 		setDevice(sParam.typeDevice);
 	}
 
-	// Считаем код с клавиатуры
-	// Если нажата любая кнопка - включится кратковременная подсветка
-	eKEY tmp = eKEYget();
-	if (tmp != KEY_NO) {
-		if (tmp == KEY_EMPTY)
-			tmp = KEY_NO;
-		key_ = tmp;
+    // Считаем код с клавиатуры
+    // Если нажата любая кнопка - включится кратковременная подсветка
+    eKEY tmp = vKEYgetButton(eKEYget());
+    if (tmp != KEY_NO) {
+        if (tmp == KEY_EMPTY)
+            tmp = KEY_NO;
+        key_ = tmp;
 
-		vLCDsetLed(LED_SWITCH);
-	}
+        vLCDsetLed(LED_SWITCH);
+    }
 
 	if (checkLedOn()) {
 		vLCDsetLed(LED_SWITCH);
@@ -191,8 +188,7 @@ void clMenu::main(void) {
 #endif
 
 	// вывод сообщения в случае отсутствия связи с БСП
-	bool connection = isConnectionBsp();
-	if (!connection) {
+    if (!sParam.connectionBsp) {
 		if (blink_) {
 			// если связи нет, периодически вместо измеряемых параметров
 			// выводится предупреждающая надпись
@@ -200,11 +196,9 @@ void clMenu::main(void) {
 		}
 	} else if (!lastConnection) {
 		// если связь с БСП только восстановилась
-		// дважды пошлем команду опроса версии
 		sParam.txComBuf.addFastCom(GB_COM_GET_VERS);
-		//		sParam.txComBuf.addFastCom(GB_COM_GET_VERS);
 	}
-	lastConnection = connection;
+    lastConnection = sParam.connectionBsp;
 
 	// преобразование строки символов в данные для вывода на экран
 	vLCDputchar(vLCDbuf, lineParam_);
@@ -984,7 +978,11 @@ void clMenu::lvlError() {
  */
 void clMenu::lvlStart() {
 	static const char fcTimeToAc[] PROGMEM = "%02d:%02d:%02d";
-	static const char fcCompType[] PROGMEM = "Совместим. %S";
+#ifdef AVR
+    static const char fcCompType[] PROGMEM = "Совместим. %S";
+#else
+    static const char fcCompType[] PROGMEM = "Совместим. %s";
+#endif
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -1296,7 +1294,11 @@ void clMenu::lvlFirst() {
  */
 void clMenu::lvlInfo() {
 	static char title[] PROGMEM = "Меню\\Информация";
-	static char versProg[] PROGMEM = "%S: %02X.%02X";
+#ifdef AVR
+    static char versProg[] PROGMEM = "%S: %02X.%02X";
+#else
+    static char versProg[] PROGMEM = "%s: %02X.%02X";
+#endif
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3339,6 +3341,7 @@ void clMenu::lvlSetupParamRing() {
  */
 void clMenu::lvlSetupInterface() {
 	static char title[] PROGMEM = "Настройка\\Интерфейс";
+    static TInterface::INTERFACE interface = TInterface::MAX;
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3369,26 +3372,11 @@ void clMenu::lvlSetupInterface() {
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
-	LocalParams *lp = &sParam.local;
-	if (lp->getCom() == GB_COM_NO) {
-		// Для считывания текущего значения параметра хранящегося в ЕЕПРОМ
-		eGB_PARAM param = lp->getParam();
-		if (param == GB_PARAM_INTF_INTERFACE) {
-			lp->setValue(sParam.Uart.Interface.get());
-		} else if (param == GB_PARAM_INTF_PROTOCOL) {
-			lp->setValue(sParam.Uart.Protocol.get());
-		} else if (param == GB_PARAM_INTF_BAUDRATE) {
-			lp->setValue(sParam.Uart.BaudRate.get());
-		} else if (param == GB_PARAM_INTF_DATA_BITS) {
-			lp->setValue(sParam.Uart.DataBits.get());
-		} else if (param == GB_PARAM_INTF_PARITY) {
-			lp->setValue(sParam.Uart.Parity.get());
-		} else if (param == GB_PARAM_INTF_STOP_BITS) {
-			lp->setValue(sParam.Uart.StopBits.get());
-		}
-	}
-
 	setupParam();
+
+    if (interface != sParam.Uart.Interface.get()) {
+        lvlCreate_ = true;
+    }
 
 	switch(key_) {
 		case KEY_CANCEL:
@@ -4055,12 +4043,12 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 			EnterParam.setDisable();
 			break;
 
-		case KEY_UP:
-			EnterParam.incValue(timePressKey());
-			break;
-		case KEY_DOWN:
-			EnterParam.decValue(timePressKey());
-			break;
+        case KEY_UP: {
+            EnterParam.incValue();
+        } break;
+        case KEY_DOWN: {
+            EnterParam.decValue();
+        } break;
 
 		case KEY_ENTER:
 			EnterParam.setEnterValueReady();
@@ -4431,14 +4419,15 @@ void clMenu::printDevicesRegime(uint8_t poz, TDeviceStatus *device) {
 // Вывод на экран текущего номера и их колчиество для однотипных пар-ов.
 void clMenu::printParam() {
 	static prog_uint8_t MAX_CHARS = 21;
+    const eGB_PARAM pn = sParam.local.getParam();
 
 	snprintf_P(&vLCDbuf[20], MAX_CHARS, PSTR("Параметр:%u Всего:%u"),
 			sParam.local.getNumOfCurrParam(), sParam.local.getNumOfParams());
 
-	snprintf_P(&vLCDbuf[40], MAX_CHARS, sParam.local.getNameOfParam());
+    snprintf_P(&vLCDbuf[40], MAX_CHARS, getNameOfParam(pn));
 
 	printSameNumber(60);
-	printRange(80);
+    printRange(80);
 	printValue(100);
 }
 
@@ -4468,14 +4457,14 @@ void clMenu::printSameNumber(uint8_t pos) {
 void clMenu::printRange(uint8_t pos) {
 	static prog_uint8_t MAX_CHARS = 11;
 
-	LocalParams *lp = &sParam.local;
-	int16_t min = lp->getMin();
-	int16_t max = lp->getMax();
+    const eGB_PARAM pn = sParam.local.getParam();
+    int16_t min = sParam.local.getMin();
+    int16_t max = sParam.local.getMax();
 	PGM_P str = fcNullBuf;
 
 	pos += snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Диапазон: "));
 
-	switch(lp->getRangeType()) {
+    switch(getRangeType(pn)) {
 		case Param::RANGE_LIST:
 			str = PSTR("список");
 			break;
@@ -4504,7 +4493,7 @@ void clMenu::printRange(uint8_t pos) {
 			break;
 	}
 
-	PGM_P dim = fcDimension[lp->getDim()];
+    PGM_P dim = fcDimension[getDim(pn)];
 	snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, min, max, dim);
 }
 
@@ -4512,8 +4501,9 @@ void clMenu::printRange(uint8_t pos) {
 void clMenu::printValue(uint8_t pos) {
 	static prog_uint8_t MAX_CHARS = 11;
 
+    const eGB_PARAM pn = sParam.local.getParam();
 	int16_t val = sParam.local.getValue();
-	PGM_P dim = fcDimension[sParam.local.getDim()];
+    PGM_P dim = fcDimension[getDim(pn)];
 	PGM_P str = fcNullBuf;
 
 	pos += snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Значение: "));
@@ -4535,25 +4525,37 @@ void clMenu::printValue(uint8_t pos) {
 		}
 	} else {
 		// вывод корректного значения
-		switch(sParam.local.getParamType()) {
+        switch(getParamType(pn)) {
 			case Param::PARAM_BITES: // DOWN
 			case Param::PARAM_LIST:
 				val -= sParam.local.getMin();
-				str = sParam.local.getListOfValues() + (val * STRING_LENGHT);
+                str = getListOfValues(pn) + (val * STRING_LENGHT);
 				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str);
 				break;
 			case Param::PARAM_I_COR: // DOWN
 			case Param::PARAM_INT:
-				str = PSTR("%d%S");
+#ifdef AVR
+                str = PSTR("%d%S");
+#else
+                str = PSTR("%d%s");
+#endif
 				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val, dim);
 				break;
 			case Param::PARAM_U_COR:
-				if (val >= 0) {
-					str = PSTR("%d.%d%S");
-				} else {
-					val = -val;
-					str = PSTR("-%d.%d%S");
-				}
+                if (val >= 0) {
+#ifdef AVR
+                    str = PSTR("%d.%d%S");
+#else
+                    str = PSTR("%d.%d%s");
+#endif
+                } else {
+                    val = -val;
+#ifdef AVR
+                    str = PSTR("-%d.%d%S");
+#else
+                    str = PSTR("-%d.%d%s");
+#endif
+                }
 				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val / 10, val % 10,
 						dim);
 				break;
@@ -4563,17 +4565,16 @@ void clMenu::printValue(uint8_t pos) {
 	}
 }
 
-
 // Настройка параметров для ввода значения с клавиатуры.
 void clMenu::enterParameter() {
-	LocalParams *lp = &sParam.local;
+    const eGB_PARAM pn = sParam.local.getParam();
 
-	if ((lp->getChangeCond() == Param::CHANGE_COND_REG_DISABLE) &&
+    if ((getChangeReg(pn) == Param::CHANGE_REG_DISABLE) &&
 			(sParam.glb.status.getRegime() != GB_REGIME_DISABLED)) {
 		printMessage();
 	} else {
 
-		switch(lp->getParamType()) {
+        switch(getParamType(pn)) {
 			case Param::PARAM_BITES: // DOWN
 			case Param::PARAM_LIST:
 				EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
@@ -4590,9 +4591,10 @@ void clMenu::enterParameter() {
 		}
 
 		if (EnterParam.isEnable()) {
-			int16_t min = lp->getMin();
-			int16_t val = lp->getValue();
-			int16_t max = lp->getMax();
+            const LocalParams *lp = &sParam.local;
+            int16_t min = lp->getMin();
+            int16_t val = lp->getValue();
+            int16_t max = lp->getMax();
 
 			// Для ввода значений коррекции тока и напряжения
 			// минимальное значение делаем 0 , а начальное значение
@@ -4602,7 +4604,7 @@ void clMenu::enterParameter() {
 			//
 			// Для остальных параметров в случае ошибки текущего значения,
 			// устанавливается минимум.
-			if (lp->getParamType() == Param::PARAM_I_COR) {
+            if (getParamType(pn) == Param::PARAM_I_COR) {
 				min = 0;
 				val = sParam.measParam.getCurrentOut();
 				if ((val < min) || (val > max)) {
@@ -4612,7 +4614,7 @@ void clMenu::enterParameter() {
 					val = 0;
 					max = 0;
 				}
-			} else if (lp->getParamType() == Param::PARAM_U_COR) {
+            } else if (getParamType(pn) == Param::PARAM_U_COR) {
 				min = 0;
 				val = sParam.measParam.getVoltageOut();
 				if ((val < min) || (val > max)) {
@@ -4630,9 +4632,9 @@ void clMenu::enterParameter() {
 			EnterParam.setParam(lp->getParam());
 			EnterParam.setValueRange(min, max);
 			EnterParam.setValue(val);
-			EnterParam.list = lp->getListOfValues();
-			EnterParam.setFract(lp->getFract());
-			EnterParam.setDisc(lp->getDisc());
+            EnterParam.list = getListOfValues(pn);
+            EnterParam.setFract(getFract(pn));
+            EnterParam.setDisc(getDisc(pn));
 //			EnterParam.setDopValue(lp->getSendDop());
 		}
 	}
@@ -4640,6 +4642,7 @@ void clMenu::enterParameter() {
 
 // Работа в меню настройки параметров.
 void clMenu::setupParam() {
+    const eGB_PARAM pn = sParam.local.getParam();
 
 	if (isMessage()) {
 		// Вывод на экран сообщения о невозможности изменения параметра,
@@ -4663,18 +4666,18 @@ void clMenu::setupParam() {
 	if (EnterParam.isEnable()) {
 		eMENU_ENTER_PARAM stat = enterValue();
 
-		if (stat == MENU_ENTER_PARAM_READY) {
-			eGB_COM com = sParam.local.getCom();
+		if (stat == MENU_ENTER_PARAM_READY) {            
+            eGB_COM com = getCom(pn);
 
 			// Если у параметра есть команда обмена с блоком БСП, идет
 			// работа по записи в БСП.
 			// Иначе идет запись в ЕЕПРОМ.
 			if (com != GB_COM_NO) {
 				// Подготовка данных для записи в БСП.
-				uint8_t dop = sParam.local.getSendDop();
+                uint8_t dop = getSendDop(pn);
 				uint8_t pos = sParam.local.getNumOfCurrSameParam() - 1;
 
-				switch(sParam.local.getSendType()) {
+                switch(getSendType(pn)) {
 					case GB_SEND_INT8:
 						sParam.txComBuf.setInt8(EnterParam.getValueEnter());
 						break;
@@ -4748,7 +4751,7 @@ void clMenu::setupParam() {
 				if (com != GB_COM_NO) {
 					com = (eGB_COM) (com + GB_COM_MASK_GROUP_WRITE_PARAM);
 					sParam.txComBuf.addFastCom(com);
-					sParam.txComBuf.setSendType(sParam.local.getSendType());
+                    sParam.txComBuf.setSendType(getSendType(pn));
 				}
 			} else {
 				eGB_PARAM param= sParam.local.getParam();
@@ -4806,7 +4809,7 @@ void clMenu::setupParam() {
 	// подмена команды, на команду текущего уровня меню + быстрая команда
 	if (sParam.local.getState() == LocalParams::STATE_READ_PARAM) {
 
-		eGB_COM com = sParam.local.getCom();
+        eGB_COM com = getCom(pn);
 		sParam.txComBuf.addFastCom(com);
 		sParam.txComBuf.addCom1(com, 1);
 	}
@@ -4820,13 +4823,9 @@ void clMenu::setupParam() {
 bool clMenu::checkLedOn() {
 	bool ledOn = false;
 
-	if (sParam.glb.status.getRegime() != GB_REGIME_ENABLED) {
-		ledOn = true;
-	}
-
-	if (sParam.glb.status.isFault() || sParam.glb.status.isWarning()) {
-		ledOn = true;
-	}
+    ledOn = ledOn || (sParam.glb.status.getRegime() != GB_REGIME_ENABLED);
+    ledOn = ledOn || sParam.glb.status.isFault();
+    ledOn = ledOn || sParam.glb.status.isWarning();
 
 	if (sParam.def.status.isEnable()) {
 		if (sParam.def.status.getState() != 1) {
@@ -4861,6 +4860,8 @@ bool clMenu::checkLedOn() {
 			ledOn = true;
 		}
 	}
+
+    ledOn = ledOn || !sParam.connectionBsp;
 
 	if (sParam.glb.isLedOn()) {
 		ledOn = true;

@@ -8,17 +8,9 @@
 #ifndef PROTOCOLPCI_H_
 #define PROTOCOLPCI_H_
 
-#include "CIec101.h"
-#include "glbDefine.h"
-#include "paramBsp.h"
-#include "debug.h"
-
-#ifdef AVR
-	#include <avr/pgmspace.h>
-#else
-	#define PROGMEM
-	#define pgm_read_byte(a) (*a)
-#endif
+#include "src/glbDefine.h"
+#include "src/paramBsp.h"
+#include "src/protocols/iec101/CIec101.h"
 
 /**	\defgroup Notation Стиль оформления.
  *

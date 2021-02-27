@@ -9,9 +9,8 @@
 #define PROTOCOLPCM_H_
 
 #include "protocolModbus.h"
-#include "glbDefine.h"
-#include "paramBsp.h"
-#include "debug.h"
+#include "src/glbDefine.h"
+#include "src/paramBsp.h"
 
 class TProtocolPcM : public TProtocolModbus
 {

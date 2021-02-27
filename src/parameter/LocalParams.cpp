@@ -72,8 +72,9 @@ bool LocalParams::addParam(eGB_PARAM newParam) {
 
 // ”становка нового значени€ параметра и его проверка на корректность.
 void LocalParams::setValue(int16_t val) {
-	uint8_t fract = pgm_read_byte(&getPtrParam()->fract);
-	uint8_t disc = getDisc();
+    const eGB_PARAM pn = getParam();
+    uint8_t fract = getFract(pn);
+    uint8_t disc = getDisc(pn);
 
 	val = val * fract;
 	val = (val / disc) * disc;
@@ -84,14 +85,15 @@ void LocalParams::setValue(int16_t val) {
 
 // ¬озвращает текущее значение параметра.
 int16_t LocalParams::getValue() const {
-	int16_t v = val;
+    const eGB_PARAM pn = getParam();
+    int16_t v = val;
 
-	if (getParamType() == Param::PARAM_BITES) {
-		uint8_t cur = getNumOfCurrSameParam() - 1;
-		uint8_t bite = cur % 8;
+    if (getParamType(pn) == Param::PARAM_BITES) {
+        uint8_t cur = getNumOfCurrSameParam() - 1;
+        uint8_t bite = cur % 8;
 
-		v = ((val & (1 << bite)) != 0) ? 1 : 0;
-	}
+        v = ((val & (1 << bite)) != 0) ? 1 : 0;
+    }
 
 	return v;
 }
@@ -111,13 +113,18 @@ void LocalParams::clearParams() {
 	state = STATE_READ_PARAM;
 }
 
+int16_t LocalParams::getMin() const {
+    return getAbsMin(getParam());
+}
+
 //	¬озвращает максимальное значение параметра.
 int16_t LocalParams::getMax() const {
-	uint16_t max = 0;
+    uint16_t max = 0;
+    const eGB_PARAM pn = getParam();
 
-	switch(getDependMax()) {
+    switch(getDependMax(pn)) {
 		case Param::DEPEND_MAX_NO:
-			max = pgm_read_word(&getPtrParam()->max);
+            max = getAbsMax(pn);
 			break;
 		case Param::DEPEND_MAX_ON_NUM_DEVS:
 			max = numDevices;
@@ -128,8 +135,7 @@ int16_t LocalParams::getMax() const {
 
 	// дл€ строковых параметров  в максимуме записано макс.количество элементов
 	// списка, поэтому скорректируем максимальное значение
-
-	Param::PARAM_TYPE type = getParamType();
+    Param::PARAM_TYPE type = getParamType(pn);
 	if ((type == Param::PARAM_LIST) || (type == Param::PARAM_BITES)) {
 		max = getMin() + max - 1;
 	}
@@ -148,45 +154,25 @@ uint8_t LocalParams::getNumOfCurrSameParam() const {
 
 //	¬озвращает количество однотипных парметров.
 uint8_t LocalParams::getNumOfSameParams() const {
-	uint8_t num = 1;
+    uint8_t num = 1;
+    const eGB_PARAM pn = getParam();
 
-	switch(getDependSame()) {
-		case Param::DEPEND_SAME_NO:
-			num = pgm_read_byte(&getPtrParam()->num);
-			break;
-		case Param::DEPEND_SAME_ON_NUM_DEVS:
-			num = numDevices - 1;
-			break;
-		case Param::DEPEND_SAME_ON_COM_PRD:
-			num = numComPrd;
-			break;
-		case Param::DEPEND_SAME_ON_COM_PRM:
-			num = numComPrm;
-			break;
-	}
+    switch(getDependSame(pn)) {
+        case Param::DEPEND_SAME_NO:
+            num = getAbsMaxNumOfSameParams(pn);
+            break;
+        case Param::DEPEND_SAME_ON_NUM_DEVS:
+            num = numDevices - 1;
+            break;
+        case Param::DEPEND_SAME_ON_COM_PRD:
+            num = numComPrd;
+            break;
+        case Param::DEPEND_SAME_ON_COM_PRM:
+            num = numComPrm;
+            break;
+    }
 
-	return num;
-}
-
-//	¬озвращает значение байта доп. информации дл€ сохранени€ нового значени€.
-uint8_t LocalParams::getSendDop() const {
-	uint8_t dop = 0;
-
-	dop = pgm_read_byte(&getPtrParam()->sendDop);
-
-//	switch(getDependSame()) {
-//		case Param::DEPEND_SAME_NO:
-//			break;
-//		case Param::DEPEND_SAME_ON_NUM_DEVS: // DOWN
-//		case Param::DEPEND_SAME_ON_COM_PRD:	 // DOWN
-//		case Param::DEPEND_SAME_ON_COM_PRM:
-//			if (getParamType() != Param::PARAM_BITES) {
-//				dop += getNumOfCurrSameParam();
-//			}
-//			break;
-//	}
-
-	return dop;
+    return num;
 }
 
 //	ѕроверка установленного значени€ параметра на корректность.

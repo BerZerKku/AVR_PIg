@@ -5,9 +5,10 @@
  *      Author: ’оз€ин
  */
 
-#include <avr/pgmspace.h>
-#include "glbDefine.h"
-#include "flashParams.h"
+#include "src/glbDefine.h"
+#include "src/flashParams.h"
+#include "src/paramDef.h"
+#include "src/paramGlb.h"
 
 /// ѕуста€ строка.
 static const char fcNull[] PROGMEM = "";
