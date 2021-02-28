@@ -1,10 +1,3 @@
-/*
- * dateTime.cpp
- *
- *  Created on: 2 окт. 2020 г.
- *      Author: Shcheblykin
- */
-
 #include "dateTime.hpp"
 
 //

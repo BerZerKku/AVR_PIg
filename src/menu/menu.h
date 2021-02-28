@@ -63,6 +63,10 @@ enum eMENU_MEAS_PARAM {
 
 // класс меню
 class clMenu {
+#ifdef TEST_FRIENDS
+    TEST_FRIENDS;
+#endif
+
 public:
 
 	/**	Конструктор.
@@ -228,17 +232,29 @@ private:
 
 	eMENU_ENTER_PARAM enterPassword();
 
-	// перемещение курсора вверх
-	void cursorLineUp() {
-		cursorLine_=(cursorLine_>1)? cursorLine_-1 : Punkts_.getMaxNumPunkts();
-	}
+    /// перемещение курсора вверх
+    void cursorLineUp();
 
-	// пермещение курсора вниз
-	void cursorLineDown() {
-		cursorLine_=(cursorLine_<Punkts_.getMaxNumPunkts())? cursorLine_+1 : 1;
-	}
+    /// пермещение курсора вниз
+    void cursorLineDown();
 
-	// вывод на экран текущих пунктов меню и курсора
+    /** Переносит строку из FLASH в RAM.
+     *
+     *  Используется в случае вывода на экран параметра из flash.
+     *  Необходим для замены типа переменной %S на %s, т.к. %S имеет разное
+     *  значение в МК и ПК.
+     *
+     *  !!!
+     *  Значения параметров похоже вычисляются до начала вывода строки,
+     *  поэтому нельзя использовать со строкой в которой более 1 параметра
+     *  значение которого надо взять из flash.
+     *  !!!
+     *
+     *  @param[in] str Строка во FLASH.
+     */
+    char *strFromFlash(PGM_P str);
+
+    /// вывод на экран текущих пунктов меню и курсора
 	void printPunkts();
 
 	/// Вывод на экран текущего параметра.

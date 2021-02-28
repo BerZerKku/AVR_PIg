@@ -20,8 +20,8 @@ static char vLCDbuf[SIZE_BUF_STRING + 1];
 #define NUM_TEXT_LINES (SIZE_BUF_STRING / 20)
 
 //
-clMenu::clMenu() {
-
+clMenu::clMenu()
+{
 	// Сравнение размера массива команд переназначения и максимального кол-ва транзитных команд
 	COMPILE_TIME_ASSERT(SIZE_OF(fcRingRenumber) > MAX_NUM_COM_RING);
 
@@ -933,7 +933,8 @@ void clMenu::clearLine(uint8_t line) {
  * 	@param Нет
  * 	@return Нет
  */
-void clMenu::lvlError() {
+void clMenu::lvlError()
+{
 	static uint8_t time = 0;
 
 	static const char fcNoTypeDevice0[] PROGMEM = "    Тип аппарата    ";
@@ -957,11 +958,11 @@ void clMenu::lvlError() {
 	printMeasParam(1, measParam[1]);
 
 	// Проверка времени нахождения в неизвестном состоянии типа аппарата
-	if (time >= 25) {
-		snprintf_P(&vLCDbuf[40], 21, fcNoTypeDevice0);
-		snprintf_P(&vLCDbuf[60], 21, fcNoTypeDevice1);
-	} else {
-		snprintf_P(&vLCDbuf[40], 21, fcNoTypeDevice3);
+    if (time >= 25) {
+        snprintf_P(&vLCDbuf[40], 21, fcNoTypeDevice0);
+        snprintf_P(&vLCDbuf[60], 21, fcNoTypeDevice1);
+    } else {
+        snprintf_P(&vLCDbuf[40], 21, fcNoTypeDevice3);
 	}
 	time++;
 
@@ -978,11 +979,7 @@ void clMenu::lvlError() {
  */
 void clMenu::lvlStart() {
 	static const char fcTimeToAc[] PROGMEM = "%02d:%02d:%02d";
-#ifdef AVR
-    static const char fcCompType[] PROGMEM = "Совместим. %S";
-#else
     static const char fcCompType[] PROGMEM = "Совместим. %s";
-#endif
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -1036,8 +1033,6 @@ void clMenu::lvlStart() {
 			printMeasParam(i, measParam[i + MAX_NUM_MEAS_PARAM]);
 	}
 
-//	uint16_t val = sParam.glb.status.getWarnings();
-
 	uint8_t poz = lineParam_ * 20;
 	if (sParam.def.status.isEnable()) {
 		printDevicesStatus(poz, &sParam.def.status);
@@ -1051,8 +1046,8 @@ void clMenu::lvlStart() {
 
 			// если работает в совместимости, выведем это на экран
 			if (comp != GB_COMPATIBILITY_AVANT) {
-				snprintf_P(&vLCDbuf[poz], 21, fcCompType,
-						fcCompatibility[static_cast<uint8_t>(comp)]);
+                PGM_P svalue = fcCompatibility[static_cast<uint8_t>(comp)];
+                snprintf(&vLCDbuf[poz], 21, fcCompType, strFromFlash(svalue));
 			}
 
 			if (comp == GB_COMPATIBILITY_LINER) {
@@ -1072,9 +1067,10 @@ void clMenu::lvlStart() {
 					ac = GB_TYPE_AC_CHECK_1;
 				}
 			}
-			uint8_t t = poz + 20;
-			t += snprintf_P(&vLCDbuf[t], 11,
-					fcAcType[static_cast<uint8_t>(ac)]);
+
+            uint8_t t = poz + 20;
+            t += snprintf_P(&vLCDbuf[t], 11,
+                            fcAcType[static_cast<uint8_t>(ac)]);
 
 			// время до АК
 			// выводится если соблюдаются условия:
@@ -1087,8 +1083,9 @@ void clMenu::lvlStart() {
 						uint8_t hour = time / 3600;
 						uint8_t min = (time % 3600) / 60;
 						uint8_t sec = time % 60;
-						snprintf_P(&vLCDbuf[t + 1], 11, fcTimeToAc, hour, min,
-								sec);
+
+                        snprintf(&vLCDbuf[t + 1], 11, fcTimeToAc,
+                                 hour, min, sec);
 					}
 				}
 			}
@@ -1202,12 +1199,12 @@ void clMenu::lvlStart() {
  */
 void clMenu::lvlFirst() {
 	static char title[] PROGMEM = "Меню";
-	static char punkt1[] PROGMEM = "%d. Журнал";
-	static char punkt2[] PROGMEM = "%d. Управление";
-	static char punkt3[] PROGMEM = "%d. Настройка";
-	static char punkt4[] PROGMEM = "%d. Тесты";
-	static char punkt5[] PROGMEM = "%d. Информация";
-	static char punkt6[] PROGMEM = "%d. Измерения";
+    static char punkt1[] PROGMEM = "Журнал";
+    static char punkt2[] PROGMEM = "Управление";
+    static char punkt3[] PROGMEM = "Настройка";
+    static char punkt4[] PROGMEM = "Тесты";
+    static char punkt5[] PROGMEM = "Информация";
+    static char punkt6[] PROGMEM = "Измерения";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -1294,11 +1291,7 @@ void clMenu::lvlFirst() {
  */
 void clMenu::lvlInfo() {
 	static char title[] PROGMEM = "Меню\\Информация";
-#ifdef AVR
-    static char versProg[] PROGMEM = "%S: %02X.%02X";
-#else
     static char versProg[] PROGMEM = "%s: %02X.%02X";
-#endif
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -1346,8 +1339,8 @@ void clMenu::lvlInfo() {
 	uint8_t cntPunkts = cursorLine_;
 	for (uint_fast8_t line = lineParam_; line < NUM_TEXT_LINES; line++) {
 		uint8_t ic = Punkts_.getNumber(cntPunkts);
-		uint16_t vers = sParam.glb.getVersProgIC((eGB_IC) ic);
-		snprintf_P(&vLCDbuf[20 * line], 21, versProg, fcIC[ic],
+        uint16_t vers = sParam.glb.getVersProgIC((eGB_IC) ic);
+        snprintf_P(&vLCDbuf[20 * line], 21, versProg, strFromFlash(fcIC[ic]),
 				(uint8_t) (vers >> 8), (uint8_t) vers);
 
 		if (++cntPunkts >= Punkts_.getMaxNumPunkts()) {
@@ -1388,10 +1381,10 @@ void clMenu::lvlInfo() {
  */
 void clMenu::lvlJournal() {
 	static char title[] PROGMEM = "Меню\\Журнал";
-	static char punkt1[] PROGMEM = "%d. События";
-	static char punkt2[] PROGMEM = "%d. Защита";
-	static char punkt3[] PROGMEM = "%d. Приемник";
-	static char punkt4[] PROGMEM = "%d. Передатчик";
+    static char punkt1[] PROGMEM = "События";
+    static char punkt2[] PROGMEM = "Защита";
+    static char punkt3[] PROGMEM = "Приемник";
+    static char punkt4[] PROGMEM = "Передатчик";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -1575,8 +1568,8 @@ void clMenu::lvlJournalEvent() {
 		} else if (device == AVANT_K400) {
 			if (event <= MAX_JRN_EVENT_VALUE) {
 				uint8_t dev = (uint8_t) sParam.jrnEntry.getDeviceJrn();
-				snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event],
-						fcDevicesK400[dev]);
+                snprintf_P(&vLCDbuf[poz], 21, fcJrnEventK400[event],
+                           strFromFlash(fcDevicesK400[dev]));
 			} else {
 				snprintf_P(&vLCDbuf[poz], 21,
 						fcJrnEventK400[MAX_JRN_EVENT_VALUE], event);
@@ -1584,8 +1577,8 @@ void clMenu::lvlJournalEvent() {
 		} else if (device == AVANT_RZSK) {
 			if (event < MAX_JRN_EVENT_VALUE) {
 				uint8_t dev = (uint8_t) sParam.jrnEntry.getDeviceJrn();
-				snprintf_P(&vLCDbuf[poz], 21, fcJrnEventRZSK[event],
-						fcDevicesK400[dev]);
+                snprintf_P(&vLCDbuf[poz], 21, fcJrnEventRZSK[event],
+                           strFromFlash(fcDevicesK400[dev]));
 			} else {
 				snprintf_P(&vLCDbuf[poz], 21,
 						fcJrnEventRZSK[MAX_JRN_EVENT_VALUE], event);
@@ -1851,11 +1844,14 @@ void clMenu::lvlJournalPrm() {
 			uint8_t src = sParam.jrnEntry.getSrcCom();
 			uint8_t devnum = sParam.glb.getDeviceNum();
 			if (devnum == 1) {
-				snprintf_P(&vLCDbuf[poz], 21, fcNumComJrnPrm, com, fcSrcPrm1[src]);
+                snprintf_P(&vLCDbuf[poz], 21, fcNumComJrnPrm, com,
+                           strFromFlash(fcSrcPrm1[src]));
 			} else if (devnum == 2) {
-				snprintf_P(&vLCDbuf[poz], 21, fcNumComJrnPrm, com, fcSrcPrm2[src]);
+                snprintf_P(&vLCDbuf[poz], 21, fcNumComJrnPrm, com,
+                           strFromFlash(fcSrcPrm2[src]));
 			} else if (devnum == 3) {
-				snprintf_P(&vLCDbuf[poz], 21, fcNumComJrnPrm, com, fcSrcPrm3[src]);
+                snprintf_P(&vLCDbuf[poz], 21, fcNumComJrnPrm, com,
+                           strFromFlash(fcSrcPrm3[src]));
 			} else {
 				snprintf_P(&vLCDbuf[poz], 21, fcNumComJrn, com);
 			}
@@ -2126,41 +2122,41 @@ void clMenu::lvlControl() {
 	static char title[] PROGMEM = "Меню\\Управление";
 	// %d - может быть двухзначным, учесть для макс. кол-ва символов !
 	//							   	"01234567890123456789"
-	static char punkt02[] PROGMEM = "%d. Пуск удаленного";
-	static char punkt03[] PROGMEM = "%d. Сброс своего";
-	static char punkt04[] PROGMEM = "%d. Сброс удаленного";
-	static char punkt05[] PROGMEM = "%d. Вызов";
-	static char punkt06[] PROGMEM = "%d. Пуск налад. вкл.";
-	static char punkt07[] PROGMEM = "%d. Пуск налад. выкл";
-	static char punkt08[] PROGMEM = "%d. АК пуск";
-	static char punkt09[] PROGMEM = "%d. Пуск удален. МАН";
-	static char punkt10[] PROGMEM = "%d. АК контр.провер.";
-	static char punkt11[] PROGMEM = "%d. Сброс АК";
-	static char punkt12[] PROGMEM = "%d. Пуск АК свой";
-	static char punkt13[] PROGMEM = "%d. Пуск АК удаленн.";
-	static char punkt14[] PROGMEM = "%d. Пуск ПРД";
-	static char punkt15[] PROGMEM = "%d. АК автоматическ.";
-	static char punkt16[] PROGMEM = "%d. АК ускоренный";
-	static char punkt17[] PROGMEM = "%d. АК выключен";
-	static char punkt18[] PROGMEM = "%d. АК испытания";
-	static char punkt19[] PROGMEM = "%d. АК нормальный";
-	static char punkt20[] PROGMEM = "%d. АК беглый";
-	//	static char punkt21[] PROGMEM = "%d. АК односторонний";
-	static char punkt22[] PROGMEM = "%d. Сброс удаленных";
-	static char punkt23[] PROGMEM = "%d. Пуск удаленн. 1";
-	static char punkt24[] PROGMEM = "%d. Пуск удаленн. 2";
-	static char punkt25[] PROGMEM = "%d. Пуск удаленн. 3";
-	static char punkt26[] PROGMEM = "%d. Пуск удаленных";
-	static char punkt27[] PROGMEM = "%d. Пуск удал. МАН 1";
-	static char punkt28[] PROGMEM = "%d. Пуск удал. МАН 2";
-	static char punkt29[] PROGMEM = "%d. Пуск удал. МАН 3";
-	static char punkt30[] PROGMEM = "%d. Пуск удал-ых МАН";
-	static char punkt31[] PROGMEM = "%d. АК включен";
-	static char punkt32[] PROGMEM = "%d. Сброс удален. 1";
-	static char punkt33[] PROGMEM = "%d. Сброс удален. 2";
-	static char punkt34[] PROGMEM = "%d. Сброс удален. 3";
-	static char punkt35[] PROGMEM = "%d. Сброс индикации";
-	static char punkt36[] PROGMEM = "%d. Сброс всех";
+    static char punkt02[] PROGMEM = "Пуск удаленного";
+    static char punkt03[] PROGMEM = "Сброс своего";
+    static char punkt04[] PROGMEM = "Сброс удаленного";
+    static char punkt05[] PROGMEM = "Вызов";
+    static char punkt06[] PROGMEM = "Пуск налад. вкл.";
+    static char punkt07[] PROGMEM = "Пуск налад. выкл";
+    static char punkt08[] PROGMEM = "АК пуск";
+    static char punkt09[] PROGMEM = "Пуск удален. МАН";
+    static char punkt10[] PROGMEM = "АК контр.провер.";
+    static char punkt11[] PROGMEM = "Сброс АК";
+    static char punkt12[] PROGMEM = "Пуск АК свой";
+    static char punkt13[] PROGMEM = "Пуск АК удаленн.";
+    static char punkt14[] PROGMEM = "Пуск ПРД";
+    static char punkt15[] PROGMEM = "АК автоматическ.";
+    static char punkt16[] PROGMEM = "АК ускоренный";
+    static char punkt17[] PROGMEM = "АК выключен";
+    static char punkt18[] PROGMEM = "АК испытания";
+    static char punkt19[] PROGMEM = "АК нормальный";
+    static char punkt20[] PROGMEM = "АК беглый";
+    //	static char punkt21[] PROGMEM = "АК односторонний";
+    static char punkt22[] PROGMEM = "Сброс удаленных";
+    static char punkt23[] PROGMEM = "Пуск удаленн. 1";
+    static char punkt24[] PROGMEM = "Пуск удаленн. 2";
+    static char punkt25[] PROGMEM = "Пуск удаленн. 3";
+    static char punkt26[] PROGMEM = "Пуск удаленных";
+    static char punkt27[] PROGMEM = "Пуск удал. МАН 1";
+    static char punkt28[] PROGMEM = "Пуск удал. МАН 2";
+    static char punkt29[] PROGMEM = "Пуск удал. МАН 3";
+    static char punkt30[] PROGMEM = "Пуск удал-ых МАН";
+    static char punkt31[] PROGMEM = "АК включен";
+    static char punkt32[] PROGMEM = "Сброс удален. 1";
+    static char punkt33[] PROGMEM = "Сброс удален. 2";
+    static char punkt34[] PROGMEM = "Сброс удален. 3";
+    static char punkt35[] PROGMEM = "Сброс индикации";
+    static char punkt36[] PROGMEM = "Сброс всех";
 
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
@@ -2555,11 +2551,11 @@ void clMenu::lvlControl() {
  */
 void clMenu::lvlSetup() {
 	static char title[] PROGMEM = "Меню\\Настройка";
-	static char punkt1[] PROGMEM = "%d. Режим";
-	static char punkt2[] PROGMEM = "%d. Время и дата";
-	static char punkt3[] PROGMEM = "%d. Параметры";
-	static char punkt4[] PROGMEM = "%d. Пароль";
-	static char punkt5[] PROGMEM = "%d. Интерфейс";
+    static char punkt1[] PROGMEM = "Режим";
+    static char punkt2[] PROGMEM = "Время и дата";
+    static char punkt3[] PROGMEM = "Параметры";
+    static char punkt4[] PROGMEM = "Пароль";
+    static char punkt5[] PROGMEM = "Интерфейс";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -2730,59 +2726,59 @@ void clMenu::lvlRegime() {
 		}
 	}
 
-	switch(key_) {
-		case KEY_CANCEL:
-			lvlMenu = &clMenu::lvlSetup;
-			lvlCreate_ = true;
-			break;
-		case KEY_MENU:
-			lvlMenu = &clMenu::lvlStart;
-			lvlCreate_ = true;
-			break;
+    switch(key_) {
+        case KEY_CANCEL:
+            lvlMenu = &clMenu::lvlSetup;
+            lvlCreate_ = true;
+            break;
+        case KEY_MENU:
+            lvlMenu = &clMenu::lvlStart;
+            lvlCreate_ = true;
+            break;
 
-		case KEY_ENTER: {
-			uint8_t min = GB_REGIME_ENTER_DISABLED;
-			uint8_t max = GB_REGIME_ENTER_DISABLED;
-			uint8_t val = GB_REGIME_ENTER_DISABLED;
+        case KEY_ENTER: {
+            uint8_t min = GB_REGIME_ENTER_DISABLED;
+            uint8_t max = GB_REGIME_ENTER_DISABLED;
+            uint8_t val = GB_REGIME_ENTER_DISABLED;
 
-			// "Введен" 	-> "Выведен"
-			// "Выведен" 	-> "Введен"
-			// "Готов" 		-> "Введен"	 / "Выведен"
-			// остальные 	-> "Выведен" / "Введен"
-			enterFunc = &clMenu::enterValue;
-			EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
-			switch(reg) {
-				case GB_REGIME_ENABLED:
-					min = GB_REGIME_ENTER_DISABLED;
-					max = GB_REGIME_ENTER_DISABLED;
-					val = GB_REGIME_ENTER_DISABLED;
-					break;
-				case GB_REGIME_ENTER_DISABLED:
-					min = GB_REGIME_ENTER_ENABLED;
-					max = GB_REGIME_ENTER_ENABLED;
-					val = GB_REGIME_ENTER_ENABLED;
-					break;
-				case GB_REGIME_READY:
-					min = GB_REGIME_ENTER_DISABLED;
-					max = GB_REGIME_ENTER_ENABLED;
-					val = GB_REGIME_ENTER_ENABLED;
-					break;
-				default:
-					min = GB_REGIME_ENTER_DISABLED;
-					max = GB_REGIME_ENTER_ENABLED;
-					val = GB_REGIME_ENTER_DISABLED;
-					break;
-			}
-			EnterParam.setValueRange(min, max);
-			EnterParam.setValue(val);
-			EnterParam.list = fcRegimeEnter[min];
-			EnterParam.com = GB_COM_NO;
-		}
-			break;
+            // "Введен" 	-> "Выведен"
+            // "Выведен" 	-> "Введен"
+            // "Готов" 		-> "Введен"	 / "Выведен"
+            // остальные 	-> "Выведен" / "Введен"
+            enterFunc = &clMenu::enterValue;
+            EnterParam.setEnable(MENU_ENTER_PARAM_LIST);
+            switch(reg) {
+                case GB_REGIME_ENABLED:
+                    min = GB_REGIME_ENTER_DISABLED;
+                    max = GB_REGIME_ENTER_DISABLED;
+                    val = GB_REGIME_ENTER_DISABLED;
+                    break;
+                case GB_REGIME_DISABLED:
+                    min = GB_REGIME_ENTER_ENABLED;
+                    max = GB_REGIME_ENTER_ENABLED;
+                    val = GB_REGIME_ENTER_ENABLED;
+                    break;
+                case GB_REGIME_READY:
+                    min = GB_REGIME_ENTER_DISABLED;
+                    max = GB_REGIME_ENTER_ENABLED;
+                    val = GB_REGIME_ENTER_ENABLED;
+                    break;
+                default:
+                    min = GB_REGIME_ENTER_DISABLED;
+                    max = GB_REGIME_ENTER_ENABLED;
+                    val = GB_REGIME_ENTER_DISABLED;
+                    break;
+            }
+            EnterParam.setValueRange(min, max);
+            EnterParam.setValue(val);
+            EnterParam.list = fcRegimeEnter[min];
+            EnterParam.com = GB_COM_NO;
+        }
+        break;
 
-		default: {
-		}
-			break;
+        default: {
+        }
+        break;
 	}
 }
 
@@ -2792,11 +2788,11 @@ void clMenu::lvlRegime() {
  */
 void clMenu::lvlSetupParam() {
 	static char title[] PROGMEM = "Настройка\\Параметры";
-	static char punkt1[] PROGMEM = "%d. Защита";
-	static char punkt2[] PROGMEM = "%d. Приемник";
-	static char punkt3[] PROGMEM = "%d. Передатчик";
-	static char punkt4[] PROGMEM = "%d. Общие";
-	static char punkt5[] PROGMEM = "%d. Кольцо";
+    static char punkt1[] PROGMEM = "Защита";
+    static char punkt2[] PROGMEM = "Приемник";
+    static char punkt3[] PROGMEM = "Передатчик";
+    static char punkt4[] PROGMEM = "Общие";
+    static char punkt5[] PROGMEM = "Кольцо";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3399,12 +3395,12 @@ void clMenu::lvlSetupInterface() {
  */
 void clMenu::lvlSetupDT() {
 	static char title[] PROGMEM = "Настройка\\Время&дата";
-	static char punkt1[] PROGMEM = "%d. Год";
-	static char punkt2[] PROGMEM = "%d. Месяц";
-	static char punkt3[] PROGMEM = "%d. День";
-	static char punkt4[] PROGMEM = "%d. Часы";
-	static char punkt5[] PROGMEM = "%d. Минуты";
-	static char punkt6[] PROGMEM = "%d. Секунды";
+    static char punkt1[] PROGMEM = "Год";
+    static char punkt2[] PROGMEM = "Месяц";
+    static char punkt3[] PROGMEM = "День";
+    static char punkt4[] PROGMEM = "Часы";
+    static char punkt5[] PROGMEM = "Минуты";
+    static char punkt6[] PROGMEM = "Секунды";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3479,9 +3475,10 @@ void clMenu::lvlSetupDT() {
 			sParam.txComBuf.setInt8(0, 6);	// мс всегда 0
 			sParam.txComBuf.setInt8(0, 7);	//
 			EnterParam.setDisable();
-		}
-	} else
-		printPunkts();
+        }
+    } else {
+        printPunkts();
+    }
 
 	switch(key_) {
 		case KEY_UP:
@@ -3605,13 +3602,13 @@ void clMenu::lvlMeasure() {
  */
 void clMenu::lvlTest() {
 	static char title[] PROGMEM = "Настройка\\Тесты";
-	static char punkt1[] PROGMEM = "%d. Тест передатчика";
-	static char punkt2[] PROGMEM = "%d. Тест приемника";
-	static char message[][21] PROGMEM = {
-	//12345678901234567890
-			"    Перейдите в     ",//
-			"   режим ВЫВЕДЕН    " 		//
-			};
+    static char punkt1[] PROGMEM = "Тест передатчика";
+    static char punkt2[] PROGMEM = "Тест приемника";
+    static char message[][21] PROGMEM = {
+        //2345678901234567890
+        "    Перейдите в     ",
+        "   режим ВЫВЕДЕН    "
+    };
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -3643,15 +3640,17 @@ void clMenu::lvlTest() {
 	PGM_P name = Punkts_.getName(cursorLine_ - 1);
 
 	snprintf_P(&vLCDbuf[0], 20, title);
-	if (isMessage()) {
-		for (uint_fast8_t i = lineParam_ + 1; i <= NUM_TEXT_LINES; i++)
-			clearLine(i);
+    if (isMessage()) {
+        for (uint_fast8_t i = lineParam_ + 1; i <= NUM_TEXT_LINES; i++) {
+            clearLine(i);
+        }
 
 		uint8_t poz = 40;
 		for (uint_fast8_t i = 0; i < 2; i++, poz += 20)
-			snprintf_P(&vLCDbuf[poz], 21, message[i]);
-	} else
-		printPunkts();
+            snprintf_P(&vLCDbuf[poz], 21, message[i]);
+    } else {
+        printPunkts();
+    }
 
 	eGB_REGIME reg = sParam.glb.status.getRegime();
 	switch(key_) {
@@ -4006,7 +4005,7 @@ void clMenu::lvlTest2() {
  * 	@return True - по окончанию
  */
 eMENU_ENTER_PARAM clMenu::enterValue() {
-	static char enterList[] PROGMEM = "Ввод: %S";
+    static char enterList[] PROGMEM = "Ввод: %s";
 	static char enterInt[] PROGMEM = "Ввод: %01d";
 	static char enterUcor[] PROGMEM = "Ввод: %01u.%01u";
 
@@ -4027,14 +4026,15 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 		uint16_t val = EnterParam.getValue();
 		clearLine(NUM_TEXT_LINES);
 		uint8_t poz = 100;
-		val = (val - EnterParam.getValueMin()) * STRING_LENGHT;
-		snprintf_P(&vLCDbuf[poz], 21, enterList, EnterParam.list + val);
+        val = (val - EnterParam.getValueMin()) * STRING_LENGHT;
+        snprintf_P(&vLCDbuf[poz], 21, enterList,
+                   strFromFlash(EnterParam.list + val));
 	} else if (status == MENU_ENTER_PARAM_LIST_2) {
 		uint16_t val = EnterParam.listValue[EnterParam.getValue()];
 		clearLine(NUM_TEXT_LINES);
 		uint8_t poz = 100;
-		snprintf_P(&vLCDbuf[poz], 21, enterList,
-				EnterParam.list + STRING_LENGHT * val);
+        snprintf_P(&vLCDbuf[poz], 21, enterList,
+                   strFromFlash(EnterParam.list + STRING_LENGHT * val));
 	} else
 		key_ = KEY_CANCEL;
 
@@ -4084,8 +4084,8 @@ eMENU_ENTER_PARAM clMenu::enterPassword() {
 			key_ = KEY_NO;
 
 			uint8_t poz = 40;
-			for (uint_fast8_t i = 0; i < 3; i++, poz += 20)
-				snprintf_P(&vLCDbuf[poz], 21, message[i]);
+            for (uint_fast8_t i = 0; i < 3; i++, poz += 20)
+                snprintf_P(&vLCDbuf[poz], 21, message[i]);
 		} else {
 			key_ = KEY_CANCEL;
 		}
@@ -4146,6 +4146,38 @@ eMENU_ENTER_PARAM clMenu::enterPassword() {
 	return EnterParam.getStatus();
 }
 
+/// Перемещение курсора вверх
+void clMenu::cursorLineUp() {
+    cursorLine_= (cursorLine_ > 1) ? cursorLine_-1 : Punkts_.getMaxNumPunkts();
+}
+
+/// Перемещение курсора вниз
+void clMenu::cursorLineDown() {
+    cursorLine_= (cursorLine_ < Punkts_.getMaxNumPunkts()) ? cursorLine_+1 : 1;
+}
+
+/// Переносит строку из FLASH в RAM.
+char *clMenu::strFromFlash(PGM_P str)
+{
+    static char strram[31] = {0};
+
+    Q_ASSERT(strlen(str) < ((sizeof(strram) / sizeof(strram[0])) - 1));
+
+    uint8_t len = 0;
+    while(len < (sizeof(strram) / sizeof(strram[0])) - 1) {
+        uint8_t byte = pgm_read_byte(&str[len]);
+
+        if (byte == '\0') {
+            break;
+        }
+
+        strram[len++] = byte;
+    }
+    strram[len] = '\0';
+
+    return strram;
+}
+
 /**	Вывод на экран текущих пунктов меню и курсора
  *	@param Нет
  *	@return Нет
@@ -4163,8 +4195,9 @@ void clMenu::printPunkts() {
 	uint8_t cntPunkts = (cursorLine_ > numLines) ? cursorLine_ - numLines : 0;
 
 	for (uint_fast8_t line = lineParam_; line < NUM_TEXT_LINES; line++) {
-		snprintf_P(&vLCDbuf[20 * line], 21, Punkts_.getName(cntPunkts),
-				cntPunkts + 1);
+        PGM_P svalue = Punkts_.getName(cntPunkts);
+        snprintf_P(&vLCDbuf[20 * line], 21, "%d. %s",
+                   cntPunkts + 1, strFromFlash(svalue));
 
 		if (++cntPunkts >= Punkts_.getMaxNumPunkts())
 			break;
@@ -4208,96 +4241,100 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 	static const char fcFreqDev[] PROGMEM = "dF=%02dГц";		// Отклонение часоты КС на ПРМ
 
 	// проверка на максимальную позицию
-		// 10 - кол-во символов отведенное на экране под 1 параметр
+    // 10 - кол-во символов отведенное на экране под 1 параметр
 	if (poz < 12) {
 		poz = (poz * 10) + 1;
 
 		switch(par) {
-			case MENU_MEAS_PARAM_DATE:
-				snprintf_P(&vLCDbuf[poz], 11, fcDate, sParam.DateTime.getDay(),
-						sParam.DateTime.getMonth(), sParam.DateTime.getYear());
+            case MENU_MEAS_PARAM_DATE:
+                snprintf_P(&vLCDbuf[poz], 11, fcDate,
+                         sParam.DateTime.getDay(),
+                         sParam.DateTime.getMonth(),
+                         sParam.DateTime.getYear());
 				break;
-			case MENU_MEAS_PARAM_TIME:
-				snprintf_P(&vLCDbuf[poz], 11, fcTime, sParam.DateTime.getHour(),
-						sParam.DateTime.getMinute(),
-						sParam.DateTime.getSecond());
+            case MENU_MEAS_PARAM_TIME:
+                snprintf_P(&vLCDbuf[poz], 11, fcTime,
+                           sParam.DateTime.getHour(),
+                           sParam.DateTime.getMinute(),
+                           sParam.DateTime.getSecond());
 				break;
-			case MENU_MEAS_PARAM_UZ:
-				snprintf_P(&vLCDbuf[poz], 11, fcUz,
-						sParam.measParam.getVoltageDef());
+            case MENU_MEAS_PARAM_UZ:
+                snprintf_P(&vLCDbuf[poz], 11, fcUz,
+                         sParam.measParam.getVoltageDef());
 				break;
 
 				// в 3-х концевой может быть Uz1 == Uz, Uz2
-			case MENU_MEAS_PARAM_UZ1:
-				snprintf_P(&vLCDbuf[poz], 11, fcUz1,
-						sParam.measParam.getVoltageDef());
+            case MENU_MEAS_PARAM_UZ1:
+                snprintf_P(&vLCDbuf[poz], 11, fcUz1,
+                           sParam.measParam.getVoltageDef());
 				break;
-			case MENU_MEAS_PARAM_UZ2:
-				snprintf_P(&vLCDbuf[poz], 11, fcUz2,
-						sParam.measParam.getVoltageDef2());
+            case MENU_MEAS_PARAM_UZ2:
+                snprintf_P(&vLCDbuf[poz], 11, fcUz2,
+                           sParam.measParam.getVoltageDef2());
 				break;
 
-			case MENU_MEAS_PARAM_UC:
-				snprintf_P(&vLCDbuf[poz], 11, fcUcf,
-						sParam.measParam.getVoltageCf());
+            case MENU_MEAS_PARAM_UC:
+                snprintf_P(&vLCDbuf[poz], 11, fcUcf,
+                           sParam.measParam.getVoltageCf());
 				break;
 
 				// в 3-х концевой может быть Uk1 == Uk, Uk2
-			case MENU_MEAS_PARAM_UC1:
-				snprintf_P(&vLCDbuf[poz], 11, fcUcf1,
-						sParam.measParam.getVoltageCf());
+            case MENU_MEAS_PARAM_UC1:
+                snprintf_P(&vLCDbuf[poz], 11, fcUcf1,
+                           sParam.measParam.getVoltageCf());
 				break;
-			case MENU_MEAS_PARAM_UC2:
-				snprintf_P(&vLCDbuf[poz], 11, fcUcf2,
-						sParam.measParam.getVoltageCf2());
-				break;
-
-			case MENU_MEAS_PARAM_UOUT:
-				snprintf_P(&vLCDbuf[poz], 11, fcUout,
-						sParam.measParam.getVoltageOutInt(),
-						sParam.measParam.getVoltageOutFract());
+            case MENU_MEAS_PARAM_UC2:
+                snprintf_P(&vLCDbuf[poz], 11, fcUcf2,
+                           sParam.measParam.getVoltageCf2());
 				break;
 
-			case MENU_MEAS_PARAM_IOUT:
-				snprintf_P(&vLCDbuf[poz], 11, fcIout,
-						sParam.measParam.getCurrentOut());
+            case MENU_MEAS_PARAM_UOUT:
+                snprintf_P(&vLCDbuf[poz], 11, fcUout,
+                           sParam.measParam.getVoltageOutInt(),
+                           sParam.measParam.getVoltageOutFract());
 				break;
 
-			case MENU_MEAS_PARAM_ROUT:
-				snprintf_P(&vLCDbuf[poz], 11, fcRout,
-						sParam.measParam.getResistOut());
+            case MENU_MEAS_PARAM_IOUT:
+                snprintf_P(&vLCDbuf[poz], 11, fcIout,
+                           sParam.measParam.getCurrentOut());
 				break;
 
-			case MENU_MEAS_PARAM_UN:
-				snprintf_P(&vLCDbuf[poz], 11, fcUn,
-						sParam.measParam.getVoltageNoise());
+            case MENU_MEAS_PARAM_ROUT:
+                snprintf_P(&vLCDbuf[poz], 11, fcRout,
+                           sParam.measParam.getResistOut());
+				break;
+
+            case MENU_MEAS_PARAM_UN:
+                snprintf_P(&vLCDbuf[poz], 11, fcUn,
+                           sParam.measParam.getVoltageNoise());
 				break;
 				// в 3-х концевой может быть Uш1 == Uш, Uш2
-			case MENU_MEAS_PARAM_UN1:
-				snprintf_P(&vLCDbuf[poz], 11, fcUn1,
-						sParam.measParam.getVoltageNoise());
+            case MENU_MEAS_PARAM_UN1:
+                snprintf_P(&vLCDbuf[poz], 11, fcUn1,
+                           sParam.measParam.getVoltageNoise());
 				break;
-			case MENU_MEAS_PARAM_UN2:
-				snprintf_P(&vLCDbuf[poz], 11, fcUn2,
-						sParam.measParam.getVoltageNoise2());
-				break;
-
-			case MENU_MEAS_PARAM_SD:
-				snprintf_P(&vLCDbuf[poz], 11, fcSd,
-						sParam.measParam.getPulseWidth());
+            case MENU_MEAS_PARAM_UN2:
+                snprintf_P(&vLCDbuf[poz], 11, fcUn2,
+                           sParam.measParam.getVoltageNoise2());
 				break;
 
-			case MENU_MEAS_PARAM_D:
-				snprintf_P(&vLCDbuf[poz], 11, fcD, sParam.measParam.getD());
+            case MENU_MEAS_PARAM_SD:
+                snprintf_P(&vLCDbuf[poz], 11, fcSd,
+                           sParam.measParam.getPulseWidth());
 				break;
 
-			case MENU_MEAS_PARAM_TEMPERATURE:
-				snprintf_P(&vLCDbuf[poz], 11, fcTemper,
+            case MENU_MEAS_PARAM_D:
+                snprintf_P(&vLCDbuf[poz], 11, fcD,
+                           sParam.measParam.getD());
+				break;
+
+            case MENU_MEAS_PARAM_TEMPERATURE:
+                snprintf_P(&vLCDbuf[poz], 11, fcTemper,
 						sParam.measParam.getTemperature());
 				break;
 
-			case MENU_MEAS_PARAM_DF:
-				snprintf_P(&vLCDbuf[poz], 11, fcFreqDev,
+            case MENU_MEAS_PARAM_DF:
+                snprintf_P(&vLCDbuf[poz], 11, fcFreqDev,
 						sParam.measParam.getFreqDev());
 				break;
 
@@ -4328,78 +4365,57 @@ void clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device) {
 	static const char fcWarnings[] 	PROGMEM = "Предупр. %c-%04X";
 
 	PGM_P *text;
-	uint_fast8_t x = 0;
-	uint_fast16_t y = 0;
+    uint8_t x = 0;
+    uint16_t y = 0;
 
-	snprintf_P(&vLCDbuf[poz], 4, device->name);
-	poz += 3;
-	snprintf(&vLCDbuf[poz], 2, ":");
-	poz += 1;
+    poz += snprintf(&vLCDbuf[poz], 5, "%s:", strFromFlash(device->name));
 
-	if (sParam.glb.status.getNumFaults() != 0)
-	{
-		if (blink_)
-		{
+    if (sParam.glb.status.getNumFaults() != 0) {
+        if (blink_) {
 			text = sParam.glb.status.faultText;
-			x = sParam.glb.status.getFault();
-			snprintf_P(&vLCDbuf[poz], 17, text[x]);
+            x = sParam.glb.status.getFault();
+            snprintf_P(&vLCDbuf[poz], 17, text[x]);
+        } else {
+            y = sParam.glb.status.getFaults();
+            snprintf_P(&vLCDbuf[poz], 17, fcFaults, 'g', y);
 		}
-		else
-		{
-			y = sParam.glb.status.getFaults();
-			snprintf_P(&vLCDbuf[poz], 17, fcFaults, 'g', y);
-		}
-	}
-	else if (device->getNumFaults() != 0)
-	{
-		if (blink_)
-		{
+    } else if (device->getNumFaults() != 0) {
+        if (blink_) {
 			text = device->faultText;
 			x = device->getFault();
-			y = device->getRemoteNumber();
-			snprintf_P(&vLCDbuf[poz], 17, text[x], fcRemoteNum[y]);
+            y = device->getRemoteNumber();
+            snprintf_P(&vLCDbuf[poz], 17, text[x],
+                       strFromFlash(fcRemoteNum[y]));
+        } else {
+            y = device->getFaults();
+            snprintf_P(&vLCDbuf[poz], 17, fcFaults, 'l', y);
 		}
-		else
-		{
-			y = device->getFaults();
-			snprintf_P(&vLCDbuf[poz], 17, fcFaults, 'l', y);
-		}
-	}
-	else if ( (sParam.glb.status.getNumWarnings() != 0) && (blink_) )
-	{
-		if (sParam.glb.status.getNumWarnings() == 1)
-		{
+    } else if ((sParam.glb.status.getNumWarnings() != 0) && (blink_)) {
+        if (sParam.glb.status.getNumWarnings() == 1) {
 			text = sParam.glb.status.warningText;
-			x = sParam.glb.status.getWarning();
-			snprintf_P(&vLCDbuf[poz], 17, text[x]);
-		}
-		else
-		{
-			y = sParam.glb.status.getWarnings();
-			snprintf_P(&vLCDbuf[poz], 17, fcWarnings, 'g', y);
-		}
-	}
-	else if ( (device->getNumWarnings()!= 0) && (blink_) )
-	{
-		if (device->getNumWarnings() == 1)
-		{
+            x = sParam.glb.status.getWarning();
+            snprintf_P(&vLCDbuf[poz], 17, text[x]);
+        } else {
+            y = sParam.glb.status.getWarnings();
+            snprintf_P(&vLCDbuf[poz], 17, fcWarnings, 'g', y);
+        }
+    } else if ((device->getNumWarnings()!= 0) && (blink_)) {
+        if (device->getNumWarnings() == 1) {
 			text = device->warningText;
 			x = device->getWarning();
-			y = device->getRemoteNumber();
-			snprintf_P(&vLCDbuf[poz], 17, text[x], fcRemoteNum[y]);
+            y = device->getRemoteNumber();
+            snprintf_P(&vLCDbuf[poz], 17, text[x],
+                     strFromFlash(fcRemoteNum[y]));
+        } else {
+            y = device->getWarnings();
+            snprintf_P(&vLCDbuf[poz], 17, fcWarnings, 'l', y);
 		}
-		else
-		{
-			y = device->getWarnings();
-			snprintf_P(&vLCDbuf[poz], 17, fcWarnings, 'l', y);
-		}
-	}
-	else
-	{
+    } else {
 		text = device->stateText;
-		poz += 1 + snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
-		snprintf_P(&vLCDbuf[poz], 9,
-				text[device->getState()], device->getDopByte());
+        poz += snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
+        poz += 1;
+        snprintf_P(&vLCDbuf[poz], 9, text[device->getState()],
+                 device->getDopByte());
 	}
 }
 
@@ -4409,11 +4425,8 @@ void clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device) {
  *	@return Нет
  */
 void clMenu::printDevicesRegime(uint8_t poz, TDeviceStatus *device) {
-	snprintf_P(&vLCDbuf[poz], 4, device->name);
-	poz += 3;
-	snprintf(&vLCDbuf[poz], 2, ":");
-	poz += 1;
-	snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
+    poz += snprintf_P(&vLCDbuf[poz], 5, "%s:", strFromFlash(device->name));
+    snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
 }
 
 // Вывод на экран текущего номера и их колчиество для однотипных пар-ов.
@@ -4433,7 +4446,7 @@ void clMenu::printParam() {
 
 // Вывод на экран текущего номера и их колчиество для однотипных пар-ов.
 void clMenu::printSameNumber(uint8_t pos) {
-	static prog_uint8_t MAX_CHARS = 21;
+    uint8_t maxlen = ROW_LEN + 1;
 
 	if (sParam.local.getNumOfSameParams() > 1) {
 		eGB_PARAM p = sParam.local.getParam();
@@ -4445,24 +4458,32 @@ void clMenu::printSameNumber(uint8_t pos) {
 			// доступ к массиву значений осуществляется через параметр GB_PARAM_RING_COM_REC
 			Param* param = (Param*) pgm_read_word(&fParams[GB_PARAM_RING_COM_REC]);
 			PGM_P pval =  (PGM_P) pgm_read_word(&param->listValues) + (val * STRING_LENGHT);
-			PGM_P pmax =  (PGM_P) pgm_read_word(&param->listValues) + (max * STRING_LENGHT);
-			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Номер: %S/%S"), pval, pmax);
+            PGM_P pmax =  (PGM_P) pgm_read_word(&param->listValues) + (max * STRING_LENGHT);
+            uint8_t nbytes = 0;
+            nbytes = snprintf_P(&vLCDbuf[pos], maxlen, PSTR("Номер: "));
+            maxlen -= nbytes;
+            nbytes += snprintf_P(&vLCDbuf[pos + nbytes], maxlen, pval);
+            maxlen -= nbytes;
+            nbytes += snprintf_P(&vLCDbuf[pos + nbytes], maxlen, "/");
+            maxlen -= nbytes;
+            pos += snprintf_P(&vLCDbuf[pos + nbytes], maxlen, pmax);
+            maxlen -= nbytes;
 		} else {
-			snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Номер: %u/%u"), val, max);
+            snprintf_P(&vLCDbuf[pos], maxlen, PSTR("Номер: %u/%u"), val, max);
 		}
 	}
 }
 
 //	Вывод на экран диапазона значений параметра.
 void clMenu::printRange(uint8_t pos) {
-	static prog_uint8_t MAX_CHARS = 11;
+    const uint8_t maxlen = 11;
 
     const eGB_PARAM pn = sParam.local.getParam();
     int16_t min = sParam.local.getMin();
     int16_t max = sParam.local.getMax();
 	PGM_P str = fcNullBuf;
 
-	pos += snprintf_P(&vLCDbuf[pos], MAX_CHARS, PSTR("Диапазон: "));
+    pos += snprintf_P(&vLCDbuf[pos], maxlen, PSTR("Диапазон: "));
 
     switch(getRangeType(pn)) {
 		case Param::RANGE_LIST:
@@ -4474,9 +4495,10 @@ void clMenu::printRange(uint8_t pos) {
 			break;
 
 		case Param::RANGE_INT:
-			str = PSTR("%d..%d%S");
-			break;
+            str = PSTR("%d..%d%s");
+            break;
 
+        case Param::RANGE_PWD:
 		case Param::RANGE_INT_NO_DIM:
 			str = PSTR("%d..%d");
 			break;
@@ -4484,17 +4506,17 @@ void clMenu::printRange(uint8_t pos) {
 		case Param::RANGE_U_COR:
 			min = 0;
 			max /= 10;
-			str = PSTR("%d..±%d%S");
+            str = PSTR("%d..±%d%s");
 			break;
 
 		case Param::RANGE_I_COR:
 			min = 0;
-			str= PSTR("%d..±%d%S");
-			break;
+            str= PSTR("%d..±%d%s");
+            break;
 	}
 
     PGM_P dim = fcDimension[getDim(pn)];
-	snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, min, max, dim);
+    snprintf_P(&vLCDbuf[pos], maxlen, str, min, max, strFromFlash(dim));
 }
 
 // Вывод на экран текущего значения параметра.
@@ -4534,30 +4556,19 @@ void clMenu::printValue(uint8_t pos) {
 				break;
 			case Param::PARAM_I_COR: // DOWN
 			case Param::PARAM_INT:
-#ifdef AVR
-                str = PSTR("%d%S");
-#else
                 str = PSTR("%d%s");
-#endif
-				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val, dim);
+                snprintf_P(&vLCDbuf[pos], MAX_CHARS, str,
+                           val, strFromFlash(dim));
 				break;
 			case Param::PARAM_U_COR:
                 if (val >= 0) {
-#ifdef AVR
-                    str = PSTR("%d.%d%S");
-#else
                     str = PSTR("%d.%d%s");
-#endif
                 } else {
                     val = -val;
-#ifdef AVR
-                    str = PSTR("-%d.%d%S");
-#else
                     str = PSTR("-%d.%d%s");
-#endif
                 }
-				snprintf_P(&vLCDbuf[pos], MAX_CHARS, str, val / 10, val % 10,
-						dim);
+                snprintf_P(&vLCDbuf[pos], MAX_CHARS, str,
+                           val / 10, val % 10, strFromFlash(dim));
 				break;
 			case Param::PARAM_NO:
 				break;

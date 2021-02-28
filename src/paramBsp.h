@@ -14,6 +14,9 @@
 #include "src/paramPrm.h"
 #include "src/paramPrd.h"
 #include "src/paramUart.h"
+#include "src/menu/dateTime.hpp"
+#include "src/menu/journalEntry.hpp"
+#include "src/menu/jrnScada.hpp"
 #include "src/menu/txCom.hpp"
 #include "src/parameter/LocalParams.h"
 
@@ -37,10 +40,10 @@ struct stGBparam {
 	TPassword password;
 
 	// дата/время
-	TDataTime DateTime;
+    TDateTime DateTime;
 
 	// дата/время БСП в момент установки новго времени
-	TDataTime DateTimeReq;
+    TDateTime DateTimeReq;
 
 	// дата/время
 
