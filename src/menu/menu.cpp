@@ -4196,7 +4196,7 @@ void clMenu::printPunkts() {
 
 	for (uint_fast8_t line = lineParam_; line < NUM_TEXT_LINES; line++) {
         PGM_P svalue = Punkts_.getName(cntPunkts);
-        snprintf_P(&vLCDbuf[20 * line], 21, "%d. %s",
+        snprintf_P(&vLCDbuf[20 * line], 21, PSTR("%d. %s"),
                    cntPunkts + 1, strFromFlash(svalue));
 
 		if (++cntPunkts >= Punkts_.getMaxNumPunkts())
@@ -4425,8 +4425,9 @@ void clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device) {
  *	@return Нет
  */
 void clMenu::printDevicesRegime(uint8_t poz, TDeviceStatus *device) {
-    poz += snprintf_P(&vLCDbuf[poz], 5, "%s:", strFromFlash(device->name));
-    snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
+    poz += snprintf_P(&vLCDbuf[poz], 4, device->name);
+    poz += snprintf_P(&vLCDbuf[poz], 2, PSTR(":"));
+    poz += snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
 }
 
 // Вывод на экран текущего номера и их колчиество для однотипных пар-ов.
