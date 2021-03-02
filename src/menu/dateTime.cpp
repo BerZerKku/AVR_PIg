@@ -1,72 +1,125 @@
 #include "dateTime.hpp"
 
 //
-bool TDateTime::setSecond(uint8_t val) {
-	bool stat = false;
-
-	val = BCD_TO_BIN(val);
-
-	if (val < 60) {
-		second_ = val;
-		stat = true;
-	} else {
-		second_ = 61;
-	}
-
-	return stat;
+uint8_t TDateTime::getSecond() const
+{
+    return second_;
 }
 
 //
-bool TDateTime::setMinute(uint8_t val) {
-	bool stat = false;
+bool TDateTime::setSecond(uint8_t val, bool bcd)
+{
+    const uint8_t max = 59;
+    bool error = false;
 
-	val = BCD_TO_BIN(val);
+    if (bcd) {
+        error = !bcdToBin(val);
+    }
 
-	if (val < 60) {
-		minute_ = val;
-		stat = true;
-	} else {
-		minute_ = 61;
-	}
+    if (val > max) {
+        error = true;
+    }
 
-	return stat;
+    if (error) {
+        val = max + 1;
+    }
+
+    second_ = val;
+
+    return !error;
 }
 
 //
-bool TDateTime::setHour(uint8_t val) {
-	bool stat = false;
-
-	val = BCD_TO_BIN(val);
-
-	if (val < 24) {
-		hour_ = val;
-		stat = true;
-	} else {
-		hour_ = 25;
-	}
-
-	return stat;
+uint8_t TDateTime::getMinute() const
+{
+    return minute_;
 }
 
 //
-bool TDateTime::setDay(uint8_t val) {
-	bool stat = false;
+bool TDateTime::setMinute(uint8_t val, bool bcd)
+{
+    const uint8_t max = 59;
+    bool error = false;
 
-	val = BCD_TO_BIN(val);
+    if (bcd) {
+        error = !bcdToBin(val);
+    }
 
-	if ((val > 0) && (val <= getNumDaysInMonth())) {
-		day_ = val;
-		stat = true;
-	} else {
-		day_ = 32;
-	}
+    if (val > max) {
+        error = true;
+    }
 
-	return stat;
+    if (error) {
+        val = max + 1;
+    }
+
+    minute_ = val;
+
+    return !error;
 }
 
 //
-uint8_t TDateTime::getNumDaysInMonth(uint8_t month, uint8_t year) const {
-	uint8_t num = 0;
+uint8_t TDateTime::getHour() const
+{
+    return hour_;
+}
+
+//
+bool TDateTime::setHour(uint8_t val, bool bcd)
+{
+    const uint8_t max = 23;
+    bool error = false;
+
+    if (bcd) {
+        error = !bcdToBin(val);
+    }
+
+    if (val > max) {
+        error = true;
+    }
+
+    if (error) {
+        val = max + 1;
+    }
+
+    hour_ = val;
+
+    return !error;
+}
+
+//
+uint8_t TDateTime::getDay() const
+{
+    return day_;
+}
+
+//
+bool TDateTime::setDay(uint8_t val, bool bcd)
+{
+    const uint8_t max = 31;
+    bool error = false;
+
+    if (bcd) {
+        error = !bcdToBin(val);
+    }
+
+    if ((val == 0) || (val > getNumDaysInMonth())) {
+        error = true;
+    }
+
+    if (error) {
+        val = max + 1;
+    }
+
+    day_ = val;
+
+    return !error;
+}
+
+//
+uint8_t TDateTime::getNumDaysInMonth(uint8_t month, uint8_t year) const
+{
+    uint8_t num = 31;
 
 	if (month == 0) {
 		month = month_;
@@ -80,78 +133,145 @@ uint8_t TDateTime::getNumDaysInMonth(uint8_t month, uint8_t year) const {
 		num = 30;
 	} else if (month == 2) {
         num = 28;
-        if ((year % 400) == 0) {
+        // “.к. значени€ года от 0 до 255, то проверка упрощаетс€.
+        if (year == 0) {
             num += 1;
-        } else {
-            if (((year % 4) == 0) && ((year % 100) != 0))  {
+        } else if ((year % 4) == 0) {
+            if ((year != 100) && (year != 200)) {
                 num += 1;
             }
         }
-	} else if ((month != 0) && (month < 13)) {
-		num = 31;
-	}
+    }
 
 	return num;
 }
 
 //
-bool TDateTime::setMonth(uint8_t val) {
-	bool stat = false;
-
-	val = BCD_TO_BIN(val);
-
-	if ((val > 0) && (val <= 12)) {
-		month_ = val;
-		stat = true;
-	} else {
-		month_ = 13;
-	}
-
-	return stat;
+uint8_t TDateTime::getMonth() const
+{
+    return month_;
 }
 
 //
-bool TDateTime::setYear(uint8_t val) {
-	bool stat = false;
+bool TDateTime::setMonth(uint8_t val, bool bcd)
+{
+    const uint8_t max = 12;
+    bool error = false;
 
-	val = BCD_TO_BIN(val);
+    if (bcd) {
+        error = !bcdToBin(val);
+    }
 
-	if (val < 100) {
-		year_ = val;
-		stat = true;
-	} else {
-		year_ = 0;
-	}
+    if ((val == 0) || (val > max)) {
+        error = true;
+    }
 
-	return stat;
+    if (error) {
+        val = max + 1;
+    }
+
+    month_ = val;
+
+    return !error;
 }
 
 //
-bool TDateTime::setMsSecond(uint16_t val) {
-	bool stat = false;
-
-	if (val < 1000) {
-		msSecond_ = val;
-		stat = true;
-	} else {
-		msSecond_ = 1000;
-	}
-
-	return stat;
+uint8_t TDateTime::getYear() const
+{
+    return year_;
 }
 
 //
-bool TDateTime::setDayWeek(uint8_t val) {
-	bool stat = false;
+bool TDateTime::setYear(uint8_t val, bool bcd)
+{
+    const uint8_t min = 20;
+    const uint8_t max = 99;
+    bool error = false;
 
-	val = BCD_TO_BIN(val);
+    if (bcd) {
+        error = !bcdToBin(val);
+    }
 
-    if ((val >= 1) && (val <= 7)) {
-		dayWeek_ = val;
-		stat = true;
-	} else {
-		dayWeek_ = 8;
-	}
+    if ((val < min) || (val > max)) {
+        error = true;
+    }
 
-	return stat;
+    if (error) {
+        val = 0;
+    }
+
+    year_ = val;
+
+    return !error;
+}
+
+//
+uint16_t TDateTime::getMsSecond() const
+{
+    return msSecond_;
+}
+
+//
+bool TDateTime::setMsSecond(uint16_t val)
+{
+    const uint16_t max = 999;
+    bool error = false;
+
+
+    if (val > max) {
+        error = true;
+    }
+
+    if (error) {
+        val = max + 1;
+    }
+
+    msSecond_ = val;
+
+    return !error;
+}
+
+//
+uint8_t TDateTime::getDayOfWeek() const
+{
+    return dayWeek_;
+}
+
+//
+bool TDateTime::setDayOfWeek(uint8_t val)
+{
+    const uint16_t max = 7;
+    bool error = false;
+
+
+    if ((val == 0) || (val > max)) {
+        error = true;
+    }
+
+    if (error) {
+        val = max + 1;
+    }
+
+    dayWeek_ = val;
+
+    return !error;
+}
+
+//
+uint8_t TDateTime::binToBcd(uint8_t val) const
+{
+    return static_cast<uint8_t> (((val / 10) << 4) + (val % 10));
+}
+
+bool TDateTime::bcdToBin(uint8_t &val) const
+{
+    uint8_t digit1 = (val >> 4) & 0x0F;
+    uint8_t digit2 = val & 0x0F;
+
+    if ((digit1 > 9) || (digit2 > 9)) {
+        return false;
+    }
+
+    val = digit1*10 + digit2;
+    return true;
 }
