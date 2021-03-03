@@ -181,15 +181,16 @@ enum eGB_TYPE_LINE {
 
 /// Тип параметра, в плане сохранения нового значения.
 enum eGB_SEND_TYPE {
-	GB_SEND_NO,			///< Команды стандартного протокола нет
-	GB_SEND_INT8,		///< Передается один байт данных.
-	GB_SEND_INT8_DOP,	///< Передается два байта данных (значение, доп.байт).
-	GB_SEND_DOP_INT8,	///< Передается два байта данных (доп.байт, значение).
-	GB_SEND_INT16_BE,	///< Передается два байта данных (in16>>8, int16&0xFF).
-	GB_SEND_DOP_BITES,	///< Передается битовая переменная (доп.байт, значение).
-	GB_SEND_BITES_DOP,	///< Передается битовая переменная (значение, доп.байт).
-	GB_SEND_COR_U,		///< Передается коррекция напряжения.
-	GB_SEND_COR_I		///< Передается коррекция тока.
+    GB_SEND_NO,             ///< Команды стандартного протокола нет
+    GB_SEND_INT8,           ///< Передается один байт данных.
+    GB_SEND_INT8_DOP,       ///< Передается два байта данных (значение, доп.байт).
+    GB_SEND_DOP_INT8,       ///< Передается два байта данных (доп.байт, значение).
+    GB_SEND_DOP_INT16_LE,   ///< Передается три байта данных (доп.байт, int16&0xFF, in16>>8).
+    GB_SEND_INT16_BE,       ///< Передается два байта данных (in16>>8, int16&0xFF).
+    GB_SEND_DOP_BITES,      ///< Передается битовая переменная (доп.байт, значение).
+    GB_SEND_BITES_DOP,      ///< Передается битовая переменная (значение, доп.байт).
+    GB_SEND_COR_U,          ///< Передается коррекция напряжения.
+    GB_SEND_COR_I           ///< Передается коррекция тока.
 };
 
 /// Кол-во аппаратов в линии
@@ -251,6 +252,7 @@ enum eGB_COM {
 	GB_COM_PRM_GET_RING_COM_REC	= 0x1B,	// +
 	GB_COM_PRM_GET_COM			= 0x1C, // +
 	GB_COM_PRM_GET_COM_SIGN		= 0x1D,	// +
+    GB_COM_PRM_GET_BLOCK_ALL    = 0x1E, //
 	GB_COM_PRD_GET_TIME_ON 		= 0x21,	// +
 	GB_COM_PRD_GET_DURATION 	= 0x22,	// +
 	GB_COM_PRD_GET_FREQ_CORR	= 0x23,	// +
@@ -312,6 +314,7 @@ enum eGB_COM {
 	GB_COM_PRM_SET_RING_COM_REC	= 0x9B,	// +
 	GB_COM_PRM_SET_COM			= 0x9C,	// +
 	GB_COM_PRM_SET_COM_SIGN		= 0x9D,	// +
+    GB_COM_PRM_SET_BLOCK_ALL    = 0x9E, //
 	GB_COM_PRD_SET_TIME_ON 		= 0xA1,	// +
 	GB_COM_PRD_SET_DURATION 	= 0xA2,	// +
 	GB_COM_PRD_SET_FREQ_CORR	= 0xA3,	// +
@@ -366,6 +369,17 @@ enum eGB_COM_MASK {
 	GB_COM_MASK_GROUP_WRITE_REGIME = 0x40,
 	GB_COM_MASK_GROUP_WRITE_PARAM = 0x80,
 	GB_COM_MASK_GROUP_READ_JOURNAL = 0xC0
+};
+
+/// Последовательность параметров в команде Сетевой адрес (0х38)
+enum posComNetAdr_t {
+    POS_COM_NET_ADR_netAdr = 1,
+    POS_COM_NET_ADR_protocol,
+    POS_COM_NET_ADR_baudrate,
+    POS_COM_NET_ADR_dataBits,
+    POS_COM_NET_ADR_parity,
+    POS_COM_NET_ADR_stopBits,
+    POS_COM_NET_ADR_password
 };
 
 /// Параметры (связаны с fParams)
@@ -451,7 +465,8 @@ typedef enum {
 	// параметры приемника
 	GB_PARAM_PRM_TIME_ON,		///< задержка на фиксацию команды (время включения)
 	GB_PARAM_PRM_TIME_ON_K400,	///< задержка на фиксацию команды (время включения) в К400
-	GB_PARAM_PRM_COM_BLOCK,		///< блокированные команды
+    GB_PARAM_PRM_COM_BLOCK_ALL, ///< блокировка всех команд
+    GB_PARAM_PRM_COM_BLOCK,		///< блокированные команды
 	GB_PARAM_PRM_TIME_OFF,		///< задержка на выключение
 	GB_PARAM_PRM_DR_ENABLE,		///< трансляция ЦП
 	GB_PARAM_PRM_DR_COM_BLOCK,	///< блокированные команды ЦП
@@ -462,7 +477,6 @@ typedef enum {
 	GB_PARAM_PRM_COM_SIGNAL,	///< сигнализация команд ПРМ
 	GB_PARAM_PRM_INC_SAFETY,	///< Повышение безопасности
 	// параметры интерфейса
-	GB_PARAM_INTF_INTERFACE,	///< интерфейс связи
 	GB_PARAM_INTF_PROTOCOL,		///< протокол
 	GB_PARAM_INTF_BAUDRATE,		///< скорость передачи
 	GB_PARAM_INTF_DATA_BITS,	///< биты данных
@@ -473,6 +487,8 @@ typedef enum {
 	GB_PARAM_RING_COM_TRANSIT,	///< транзитные команды
 	GB_PARAM_RING_COM_REC,		///< переназначение команд приемника
     GB_PARAM_RING_COM_TR,		///< переназначение команд дискретных входов
+    // другое
+    GB_PARAM_USER_PASSWORD,     ///< пароль пользователя
     //
     GB_PARAM_MAX
 } eGB_PARAM;
@@ -700,9 +716,10 @@ enum eGB_K400_NUM_COM {
 
 /// Класс для пароля
 class TPassword {
+
 public:
 	TPassword() {
-		password_ = 10000;
+        password_ = 10000;
 		admin_ = PASSWORD_ADMIN;
 	}
 
@@ -714,7 +731,7 @@ public:
 	// устанавливает пароль пользователя
 	bool set(uint16_t pas) {
 		bool stat = false;
-		if (pas < 10000) {
+        if (pas < 10000) {
 			password_ = pas;
 			stat = true;
 		}

@@ -220,6 +220,7 @@ private:
 	void lvlSetupParamPrd();
 	void lvlSetupParamGlb();
 	void lvlSetupParamRing();
+    void lvlSetupParamVP();
 	void lvlSetupDT();
 	void lvlMeasure();
 	void lvlTest();

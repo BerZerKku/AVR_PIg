@@ -48,9 +48,11 @@ bool clProtocolBspS::getData(bool pc) {
 			} else {
 				stat = true;
 			}
-		} else {
-			stat = true;
-		}
+        } else if (com == GB_COM_SET_NET_ADR) {
+            stat = hdlrComSetNetAdr();
+        } else {
+            stat = true;
+        }
 	} else {
 		mask = com & GB_COM_MASK_DEVICE;
 
@@ -164,6 +166,9 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 				case GB_SEND_DOP_BITES:
 					num = addCom(com, dop, val);
 					break;
+                case GB_SEND_DOP_INT16_LE:
+                    num = addCom(com, 3, sParam_->txComBuf.getBuferAddress());
+                    break;
 				case GB_SEND_INT16_BE:
 					num = addCom(com, val, dop);
 					break;
@@ -741,7 +746,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 		break;
 
 		case GB_COM_GET_NET_ADR: {
-			stat = sParam_->glb.setNetAddress(buf[B1]);
+            stat = hdlrComGetNetAdr();
 		}
 		break;
 
@@ -859,5 +864,85 @@ uint8_t clProtocolBspS::sendReadJrnCommand(eGB_COM com) {
 		}
 	}
 
-	return num;
+    return num;
+}
+
+bool clProtocolBspS::hdlrComGetNetAdr()
+{
+    uint8_t index = 1;
+    uint8_t nbytes = 0;
+
+    while(nbytes < buf[NUM]) {
+        nbytes += getComNetAdr(static_cast<posComNetAdr_t> (index),
+                               &buf[B1 + nbytes], buf[NUM] - nbytes);
+        index++;
+    }
+
+    return true;
+}
+
+bool clProtocolBspS::hdlrComSetNetAdr()
+{
+    getComNetAdr(static_cast<posComNetAdr_t> (buf[B1]), &buf[B2], buf[NUM]);
+
+    return true;
+}
+
+uint8_t clProtocolBspS::getComNetAdr(
+        posComNetAdr_t pos, const uint8_t *buf, uint8_t len)
+{
+    uint8_t numbytes = len;
+
+        switch(pos) {
+            case POS_COM_NET_ADR_netAdr: {
+                numbytes = 1;
+                if (len >= numbytes) {
+                    numbytes = 1;
+                    sParam_->Uart.NetAddress.set(*buf);
+                }
+            } break;
+            case POS_COM_NET_ADR_protocol: {
+                numbytes = 1;
+                if (len >= numbytes) {
+                    numbytes = 1;
+                    sParam_->Uart.Protocol.set((TProtocol::PROTOCOL) *buf);
+                }
+            } break;
+            case POS_COM_NET_ADR_baudrate: {
+                numbytes = 1;
+                if (len >= numbytes) {
+                    numbytes = 1;
+                    sParam_->Uart.BaudRate.set((TBaudRate::BAUD_RATE) *buf);
+                }
+            } break;
+            case POS_COM_NET_ADR_dataBits: {
+                numbytes = 1;
+                if (len >= numbytes) {
+                    numbytes = 1;
+                    sParam_->Uart.DataBits.set((TDataBits::DATA_BITS) *buf);
+                }
+            } break;
+            case POS_COM_NET_ADR_parity: {
+                numbytes = 1;
+                if (len >= numbytes) {
+                    numbytes = 1;
+                    sParam_->Uart.Parity.set((TParity::PARITY) *buf);
+                }
+            } break;
+            case POS_COM_NET_ADR_stopBits: {
+                numbytes = 1;
+                if (len >= numbytes) {
+                    numbytes = 1;
+                    sParam_->Uart.StopBits.set((TStopBits::STOP_BITS) *buf);
+                }
+            } break;
+            case POS_COM_NET_ADR_password: {
+                numbytes = 2;
+                if (len >= numbytes) {
+                    sParam_->password.set(*buf);
+                }
+            } break;
+        }
+
+        return numbytes;
 }
