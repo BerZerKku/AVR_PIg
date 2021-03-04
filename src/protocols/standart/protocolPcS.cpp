@@ -15,22 +15,45 @@ clProtocolS(buf, size, sParam) {
 bool clProtocolPcS::getData() {
 
 	bool stat = false;
-	eGB_COM com = (eGB_COM) buf[2];
+    eGB_COM com = static_cast<eGB_COM> (buf[2]);
+
+    switch(static_cast<eGB_COM> (buf[2])) {
+        case GB_COM_GET_PASSWORD: {
+            uint16_t password = sParam_->password.get();
+            buf[NUM] = 2;
+            buf[B1] = static_cast<uint8_t> (password >> 8);
+            buf[B2] = static_cast<uint8_t> (password);
+            stat = (addCom() > 0);
+        } break;
+
+        case GB_COM_SET_PASSWORD: {
+            if (buf[NUM] == 2) {
+                // Если в команде 2 байта, то
+                // сформируем команду установки нового значения пароля.
+                // Иначе завернем команду обратно.
+                uint8_t bytehi = buf[B1];
+                uint8_t bytelo = buf[B2];
+
+                buf[COM] = GB_COM_SET_NET_ADR;
+                buf[NUM] = 3;
+                buf[B1] = POS_COM_NET_ADR_password;
+                buf[B2] = bytelo;
+                buf[B3] = bytehi;
+                buf[B4] = getCRC();
+            } else {
+                stat = (addCom() > 0);
+            }
+        } break;
+
+        default: {
+
+        }
+    }
 
 	if (com == GB_COM_GET_PASSWORD)	{
-		uint16_t tmp = sParam_->password.get();
-		buf[3] = 2;
-		buf[4] = tmp >> 8;
-		buf[5] = tmp;
-		addCom();
-		stat = true;
+
 	} else if (com == GB_COM_SET_PASSWORD) {
-		if (buf[3] == 2) {
-			uint16_t tmp = ((uint16_t) buf[4] << 8) + buf[5];
-			sParam_->password.set(tmp);
-		}
-		addCom(); // эхо
-		stat = true;
+
 	}
 
 	return stat;

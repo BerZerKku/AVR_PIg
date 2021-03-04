@@ -939,7 +939,9 @@ uint8_t clProtocolBspS::getComNetAdr(
             case POS_COM_NET_ADR_password: {
                 numbytes = 2;
                 if (len >= numbytes) {
-                    sParam_->password.set(*buf);
+                    uint16_t value = *buf++;
+                    value += (static_cast<uint16_t> (*buf)) << 8;
+                    sParam_->password.set(value);
                 }
             } break;
         }

@@ -1952,7 +1952,7 @@ static const Param fRingComTr PROGMEM = {
 
 static const Param fUserPassword PROGMEM = {
     "Пароль",               // название параметра
-    GB_COM_GET_NET_ADR ,	// команда стандартного протокола
+    GB_COM_GET_NET_ADR,     // команда стандартного протокола
     Param::PARAM_PWD,		// тип параметра
     Param::RANGE_PWD,		// диапазон измнения
     Param::DIM_NO,			// размерность

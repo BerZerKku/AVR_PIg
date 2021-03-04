@@ -2593,12 +2593,23 @@ void clMenu::lvlSetup() {
 
             if (sParam.password.check(val)) {
                 EnterParam.setEnable(MENU_ENTER_PASSWORD_NEW);
-            } else
+                EnterParam.setParam(GB_PARAM_USER_PASSWORD);
+            } else {
                 EnterParam.setDisable();
+            }
         } else if (stat == MENU_ENTER_PASSWORD_N_READY) {
-            uint16_t val = EnterParam.getValue();
+            eGB_PARAM pn = GB_PARAM_USER_PASSWORD;
+            uint16_t val = static_cast<uint16_t> (EnterParam.getValue());            
 
-            sParam.password.set(val);
+            // FIXME Проверить что вводился именно пароль!
+
+            sParam.txComBuf.setInt8(getSendDop(pn), 0);
+            sParam.txComBuf.setInt8(static_cast<uint8_t> (val), 1);
+            sParam.txComBuf.setInt8(static_cast<uint8_t> (val >> 8), 2);
+            sParam.txComBuf.addFastCom(getCom(pn));
+            sParam.txComBuf.setSendType(getSendType(pn));
+
+            QDEBUG("com = " << getCom(pn) << ", type = " << getSendType(pn));
         }
     }
 
@@ -2632,7 +2643,7 @@ void clMenu::lvlSetup() {
             } else if (name == punkt4) {
                 enterFunc = &clMenu::enterPassword;
                 EnterParam.setEnable(MENU_ENTER_PASSWORD);
-                EnterParam.com = GB_COM_NO;
+                EnterParam.setParam(GB_PARAM_USER_PASSWORD);
             } else if (name == punkt5) {
                 lvlMenu = &clMenu::lvlSetupInterface;
                 lvlCreate_ = true;
@@ -4147,12 +4158,13 @@ eMENU_ENTER_PARAM clMenu::enterPassword() {
             break;
 
         case KEY_ENTER:
-            if (status == MENU_ENTER_PASSWORD)
+            if (status == MENU_ENTER_PASSWORD) {
                 EnterParam.setEnterValueReady(MENU_ENTER_PASSWORD_READY);
-            else if (status == MENU_ENTER_PASSWORD_NEW)
+            } else if (status == MENU_ENTER_PASSWORD_NEW) {
                 EnterParam.setEnterValueReady(MENU_ENTER_PASSWORD_N_READY);
-            else
+            } else {
                 EnterParam.setDisable();
+            }
             break;
 
         case KEY_UP:
@@ -4735,14 +4747,14 @@ void clMenu::setupParam() {
                         break;
 
                     case GB_SEND_INT16_BE:
-                        sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
-                        sParam.txComBuf.setInt8(EnterParam.getValue() >> 8, 1);
-                        sParam.txComBuf.setInt8(EnterParam.getValue(), 2);
+                        sParam.txComBuf.setInt8(EnterParam.getValue() >> 8, 0);
+                        sParam.txComBuf.setInt8(EnterParam.getValue(), 1);
                         break;
 
                     case GB_SEND_DOP_INT16_LE:
-                        sParam.txComBuf.setInt8(EnterParam.getValue(), 0);
-                        sParam.txComBuf.setInt8(EnterParam.getValue() >> 8, 1);
+                        sParam.txComBuf.setInt8(EnterParam.getDopValue(), 0);
+                        sParam.txComBuf.setInt8(EnterParam.getValue(), 1);
+                        sParam.txComBuf.setInt8(EnterParam.getValue() >> 8, 2);
                         break;
 
                     case GB_SEND_BITES_DOP:	// DOWN
