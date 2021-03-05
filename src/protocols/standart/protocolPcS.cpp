@@ -8,7 +8,7 @@
 
 clProtocolPcS::clProtocolPcS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
 clProtocolS(buf, size, sParam) {
-
+	lastCom = GB_COM_NO;
 }
 
 

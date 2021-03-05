@@ -12,13 +12,18 @@
 
 class clProtocolPcS : public clProtocolS
 {
-    eGB_COM lastCom = GB_COM_NO;
+    eGB_COM lastCom;
 
 public:
 	clProtocolPcS(uint8_t *buf, uint8_t size, stGBparam *sParam);
 
-	/// Обработка принятого сообщения. В случае неудачи возвращает False.
-    bool getData() override;
+	/** Обработка принятого сообщения.
+	 *
+	 * 	!!! override не понимает WinAVR.
+	 *
+	 * 	@return true если сообщение обработано, иначе false.
+	 */
+    bool getData();
 
     /**	Изменение команды при передаче ее на ПК.
      *
