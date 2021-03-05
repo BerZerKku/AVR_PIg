@@ -130,7 +130,6 @@ uint8_t clProtocolBspS::sendData(eGB_COM com) {
 	uint8_t num = 0;
 	uint8_t mask = 0;
 
-
 	mask = com & GB_COM_MASK_GROUP;
 
 	if (mask == GB_COM_MASK_GROUP_WRITE_PARAM) {

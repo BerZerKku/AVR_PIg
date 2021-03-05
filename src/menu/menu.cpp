@@ -2602,14 +2602,14 @@ void clMenu::lvlSetup() {
             uint16_t val = static_cast<uint16_t> (EnterParam.getValue());            
 
             // FIXME Проверить что вводился именно пароль!
+            eGB_COM com = getCom(pn);
+            com = static_cast<eGB_COM> (com + GB_COM_MASK_GROUP_WRITE_PARAM);
 
             sParam.txComBuf.setInt8(getSendDop(pn), 0);
             sParam.txComBuf.setInt8(static_cast<uint8_t> (val), 1);
             sParam.txComBuf.setInt8(static_cast<uint8_t> (val >> 8), 2);
-            sParam.txComBuf.addFastCom(getCom(pn));
+            sParam.txComBuf.addFastCom(com);
             sParam.txComBuf.setSendType(getSendType(pn));
-
-            QDEBUG("com = " << getCom(pn) << ", type = " << getSendType(pn));
         }
     }
 

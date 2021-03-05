@@ -63,7 +63,7 @@ void bspRead() {
             if (lastPcCom == protBSPs.getCurrentCom()) {
                 if (protPCs.isEnable()) {
                     if (protPCs.copyCommandFrom(protBSPs.buf))
-                        protPCs.modifyVersionCom();
+                        protPCs.modifyCommand();
                 }
             }
         }

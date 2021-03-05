@@ -15,15 +15,14 @@ clProtocolS(buf, size, sParam) {
 bool clProtocolPcS::getData() {
 
 	bool stat = false;
-    eGB_COM com = static_cast<eGB_COM> (buf[2]);
+    lastCom = static_cast<eGB_COM> (buf[2]);
 
-    switch(static_cast<eGB_COM> (buf[2])) {
+    switch(getCurrentCom()) {
         case GB_COM_GET_PASSWORD: {
             uint16_t password = sParam_->password.get();
-            buf[NUM] = 2;
-            buf[B1] = static_cast<uint8_t> (password >> 8);
-            buf[B2] = static_cast<uint8_t> (password);
-            stat = (addCom() > 0);
+            uint8_t bytehi = static_cast<uint8_t> (password >> 8);
+            uint8_t bytelo = static_cast<uint8_t> (password);
+            stat = (addCom(GB_COM_GET_PASSWORD, bytehi, bytelo) > 0);
         } break;
 
         case GB_COM_SET_PASSWORD: {
@@ -50,37 +49,45 @@ bool clProtocolPcS::getData() {
         }
     }
 
-	if (com == GB_COM_GET_PASSWORD)	{
-
-	} else if (com == GB_COM_SET_PASSWORD) {
-
-	}
-
 	return stat;
 }
 
-bool clProtocolPcS::modifyVersionCom() {
+bool clProtocolPcS::modifyCommand() {
 	bool state = false;
 
-	if (getCurrentCom() == GB_COM_GET_VERS) {
-		uint8_t crc = buf[maxLen_ - 1];
-		uint8_t len = buf[3];
-		if ( len < 19) {
-			for(uint8_t i = len + 4; len < 19; i++, len++) {
-				buf[i] = 0x00;
-			}
-			crc += 19 - buf[3];
-			buf[3] = len;
-			maxLen_ = len + 5;
-		} else {
-			crc -= buf[B18];
-			crc -= buf[B19];
-		}
-		uint16_t vers = sParam_->glb.getVersProgIC(GB_IC_PI_MCU);
-		crc += (buf[B18] = (vers >> 8));
-		crc += (buf[B19] = (vers & 0xFF));
-		buf[maxLen_ - 1] = crc;
-	}
+    switch(getCurrentCom()) {
+        case GB_COM_GET_VERS: {
+            uint8_t crc = buf[maxLen_ - 1];
+            uint8_t len = buf[3];
+            if ( len < 19) {
+                for(uint8_t i = len + 4; len < 19; i++, len++) {
+                    buf[i] = 0x00;
+                }
+                crc += 19 - buf[3];
+                buf[3] = len;
+                maxLen_ = len + 5;
+            } else {
+                crc -= buf[B18];
+                crc -= buf[B19];
+            }
+            uint16_t vers = sParam_->glb.getVersProgIC(GB_IC_PI_MCU);
+            crc += (buf[B18] = (vers >> 8));
+            crc += (buf[B19] = (vers & 0xFF));
+            buf[maxLen_ - 1] = crc;
+        } break;
+
+        case GB_COM_SET_NET_ADR: {
+            if ((lastCom == GB_COM_SET_PASSWORD) &&
+                (buf[B1] == POS_COM_NET_ADR_password) &&
+                (buf[NUM] == 3)) {
+                uint8_t bytehi = buf[B3];
+                uint8_t bytelo = buf[B2];
+                state = addCom(GB_COM_SET_PASSWORD, bytehi, bytelo) > 0;
+            }
+        } break;
+    }
+
+    lastCom = GB_COM_NO;
 
 	return state;
 }
