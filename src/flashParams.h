@@ -178,9 +178,16 @@ static char fcStopBits[TStopBits::MAX][STRING_LENGHT] PROGMEM = {
 
 /// Скорость ТМ
 static char fcTMSpeed[][STRING_LENGHT] PROGMEM = {
-    //		 1234567890
+    //234567890
     "200",
     "400"
+};
+
+/// Режим сброса сигнализации
+static char fcAlarmResetMode[][STRING_LENGHT] PROGMEM = {
+    //234567890
+    "ручной",
+    "автомат"
 };
 
 /// Сигналы КС

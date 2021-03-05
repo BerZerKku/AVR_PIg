@@ -382,6 +382,21 @@ enum posComNetAdr_t {
     POS_COM_NET_ADR_password
 };
 
+enum posComPrdKeep_t {
+    POS_COM_PRD_KEEP_prdKeep = 1,
+    POS_COM_PRD_KEEP_compK400,
+    POS_COM_PRD_KEEP_tmK400,
+    POS_COM_PRD_KEEP_warnD,
+    POS_COM_PRD_KEEP_alarmD,
+    POS_COM_PRD_KEEP_tempMonitor,
+    POS_COM_PRD_KEEP_tempThrHi,
+    POS_COM_PRD_KEEP_tempThrLow,
+    POS_COM_PRD_KEEP_tmSpeed,
+    POS_COM_PRD_KEEP_ringTimeWait,
+    POS_COM_PRD_KEEP_ringComTransit,    // number = MAX_NUM_COM_RING / 8
+    POS_COM_PRD_KEEP_alarmResetMode = 23
+};
+
 /// Параметры (связаны с fParams)
 typedef enum {
 	GB_PARAM_NULL_PARAM = 0,	///< параметр заглушка
@@ -422,6 +437,7 @@ typedef enum {
 	GB_PARAM_TEMP_THR_HI,		///< верхнее значение температуры
 	GB_PARAM_TEMP_THR_LOW,		///< нижнее значение температуры
 	GB_PARAM_TM_SPEED,			///< скорость ТМ
+    GB_PARAM_ALARM_RESET_MODE,  ///< режим работы сигнализации
 	// параметры защиты
 	GB_PARAM_DEF_TYPE,			///< тип защиты
 	GB_PARAM_TIME_NO_MAN,		///< дополнительное время без манипуляции

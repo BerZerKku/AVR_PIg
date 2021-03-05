@@ -3268,6 +3268,7 @@ void clMenu::lvlSetupParamGlb() {
             if (sParam.glb.getTypeOpto() == TYPE_OPTO_STANDART) {
                 sParam.local.addParam(GB_PARAM_BACKUP);
             }
+            sParam.local.addParam(GB_PARAM_ALARM_RESET_MODE);
         }
     }
 
