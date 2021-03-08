@@ -379,7 +379,8 @@ enum posComNetAdr_t {
     POS_COM_NET_ADR_dataBits,
     POS_COM_NET_ADR_parity,
     POS_COM_NET_ADR_stopBits,
-    POS_COM_NET_ADR_password
+    POS_COM_NET_ADR_password,
+    POS_COM_NET_ADR_vpSac2 = POS_COM_NET_ADR_password + 2
 };
 
 enum posComPrdKeep_t {
@@ -393,8 +394,8 @@ enum posComPrdKeep_t {
     POS_COM_PRD_KEEP_tempThrLow,
     POS_COM_PRD_KEEP_tmSpeed,
     POS_COM_PRD_KEEP_ringTimeWait,
-    POS_COM_PRD_KEEP_ringComTransit,    // number = MAX_NUM_COM_RING / 8
-    POS_COM_PRD_KEEP_alarmResetMode = 23
+    POS_COM_PRD_KEEP_ringComTransit,
+    POS_COM_PRD_KEEP_alarmResetMode = POS_COM_PRD_KEEP_ringComTransit + (MAX_NUM_COM_RING / 8)
 };
 
 /// Параметры (связаны с fParams)
@@ -481,7 +482,6 @@ typedef enum {
 	// параметры приемника
 	GB_PARAM_PRM_TIME_ON,		///< задержка на фиксацию команды (время включения)
 	GB_PARAM_PRM_TIME_ON_K400,	///< задержка на фиксацию команды (время включения) в К400
-    GB_PARAM_PRM_COM_BLOCK_ALL, ///< блокировка всех команд
     GB_PARAM_PRM_COM_BLOCK,		///< блокированные команды
 	GB_PARAM_PRM_TIME_OFF,		///< задержка на выключение
 	GB_PARAM_PRM_DR_ENABLE,		///< трансляция ЦП
@@ -503,6 +503,9 @@ typedef enum {
 	GB_PARAM_RING_COM_TRANSIT,	///< транзитные команды
 	GB_PARAM_RING_COM_REC,		///< переназначение команд приемника
     GB_PARAM_RING_COM_TR,		///< переназначение команд дискретных входов
+    // виртуальная панель
+    GB_PARAM_VP_SAC1,           ///< Вывод ПРМ (SAC1)
+    GB_PARAM_VP_SAC2,           ///< Управление (SAC2)
     // другое
     GB_PARAM_USER_PASSWORD,     ///< пароль пользователя
     //

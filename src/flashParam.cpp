@@ -1562,26 +1562,6 @@ static const Param fPrmTimeOnK400 PROGMEM = {
     Param::CHANGE_REG_DISABLE 	// условие для изменения параметра
 };
 
-// блокировка всех команд
-static const Param fPrmComBlockAll PROGMEM = {
-    "Вывод ПРМ (SAC1)",     // название параметра
-    GB_COM_PRM_GET_BLOCK_ALL,// команда стандартного протокола
-    Param::PARAM_LIST,		// тип параметра
-    Param::RANGE_LIST,      // диапазон измнения
-    Param::DIM_NO,			// размерность
-    fcDisablePrm[0],		// массив значений
-    1,						// кол-во повторений параметра
-    0,						// минимальное значение
-    SIZE_OF(fcDisablePrm),	// максимальное значение
-    1,						// дискретность
-    1,						// множитель для стандартного протокола
-    GB_SEND_INT8,           // тип параметра для сохранения новго значения
-    1,						// байт дополнительной информации для сохранения
-    Param::DEPEND_MAX_NO,	// зависимость максимума
-    Param::DEPEND_SAME_NO,	// зависимость повторений
-    Param::CHANGE_REG_NO 	// условие для изменения параметра
-};
-
 // блокированные команды
 static const Param fPrmComBlock PROGMEM = {
     "Блок. команды ПРМ",	// название параметра
@@ -1970,6 +1950,46 @@ static const Param fRingComTr PROGMEM = {
     Param::CHANGE_REG_DISABLE 	// условие для изменения параметра
 };
 
+// Вывод ПРМ (SAC1)
+static const Param fVpSac1 PROGMEM = {
+    "Вывод ПРМ (SAC1)",     // название параметра
+    GB_COM_PRM_GET_BLOCK_ALL,// команда стандартного протокола
+    Param::PARAM_LIST,		// тип параметра
+    Param::RANGE_LIST,      // диапазон измнения
+    Param::DIM_NO,			// размерность
+    fcVpSac1[0],            // массив значений
+    1,						// кол-во повторений параметра
+    0,						// минимальное значение
+    SIZE_OF(fcVpSac1),      // максимальное значение
+    1,						// дискретность
+    1,						// множитель для стандартного протокола
+    GB_SEND_INT8,           // тип параметра для сохранения новго значения
+    1,						// байт дополнительной информации для сохранения
+    Param::DEPEND_MAX_NO,	// зависимость максимума
+    Param::DEPEND_SAME_NO,	// зависимость повторений
+    Param::CHANGE_REG_NO 	// условие для изменения параметра
+};
+
+// Управление (SAC2)
+static const Param fVpSac2 PROGMEM = {
+    "Управление (SAC2)",    // название параметра
+    GB_COM_GET_NET_ADR,     // команда стандартного протокола
+    Param::PARAM_LIST,		// тип параметра
+    Param::RANGE_LIST,      // диапазон измнения
+    Param::DIM_NO,			// размерность
+    fcVpSac2[0],            // массив значений
+    1,						// кол-во повторений параметра
+    0,						// минимальное значение
+    SIZE_OF(fcVpSac2),      // максимальное значение
+    1,						// дискретность
+    1,						// множитель для стандартного протокола
+    GB_SEND_DOP_INT8,       // тип параметра для сохранения новго значения
+    POS_COM_NET_ADR_vpSac2,	// байт дополнительной информации для сохранения
+    Param::DEPEND_MAX_NO,	// зависимость максимума
+    Param::DEPEND_SAME_NO,	// зависимость повторений
+    Param::CHANGE_REG_NO 	// условие для изменения параметра
+};
+
 static const Param fUserPassword PROGMEM = {
     "Пароль",               // название параметра
     GB_COM_GET_NET_ADR,     // команда стандартного протокола
@@ -2073,7 +2093,6 @@ const Param* fParams[] PROGMEM  = {
     // Параметры приемника
     &fPrmTimeOn,
     &fPrmTimeOnK400,
-    &fPrmComBlockAll,
     &fPrmComBlock,
     &fPrmTimeOff,
     &fPrmDrEnable,
@@ -2095,6 +2114,9 @@ const Param* fParams[] PROGMEM  = {
     &fRingComTransit,
     &fRingComRec,
     &fRingComTr,
+    // Виртуальная панель
+    &fVpSac1,
+    &fVpSac2,
     // Другое
     &fUserPassword
 };

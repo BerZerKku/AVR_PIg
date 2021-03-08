@@ -183,13 +183,6 @@ static char fcTMSpeed[][STRING_LENGHT] PROGMEM = {
     "400"
 };
 
-/// Режим сброса сигнализации
-static char fcAlarmResetMode[][STRING_LENGHT] PROGMEM = {
-    //234567890
-    "ручной",
-    "автомат"
-};
-
 /// Сигналы КС
 static char fcCF[][STRING_LENGHT] PROGMEM = {
     "КС1",
@@ -223,11 +216,25 @@ static char fcTymeSynch[][STRING_LENGHT] PROGMEM = {
     "АСУ ТП"
 };
 
-// Вывод ПРМ
-static char fcDisablePrm[][STRING_LENGHT] PROGMEM = {
+/// Режим сброса сигнализации
+static char fcAlarmResetMode[][STRING_LENGHT] PROGMEM = {
+    //234567890
+    "ручной",
+    "автомат"
+};
+
+// Вывод ПРМ (SAC1)
+static char fcVpSac1[][STRING_LENGHT] PROGMEM = {
     //234567890
     "Выведен",
     "Введен"
+};
+
+// Управление (SAC2)
+static char fcVpSac2[][STRING_LENGHT] PROGMEM = {
+    //234567890
+    "Местное",
+    "Дистанц."
 };
 
 #endif /* FLASHPARAMS_H_ */

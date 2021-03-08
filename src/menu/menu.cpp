@@ -3016,7 +3016,6 @@ void clMenu::lvlSetupParamPrm() {
         } else if (device == AVANT_RZSK) {
             sParam.local.addParam(GB_PARAM_PRM_TIME_ON);
             if (numcom != 0) {
-                sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK_ALL);
                 sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK);
                 sParam.local.addParam(GB_PARAM_PRM_TIME_OFF);
                 sParam.local.addParam(GB_PARAM_PRM_INC_SAFETY);
@@ -3359,14 +3358,13 @@ void clMenu::lvlSetupParamVP()
         vLCDdrawBoard(lineParam_);
 
         // заполнение массивов параметров и команд
-
-        eGB_TYPE_OPTO topto = sParam.glb.getTypeOpto();
         sParam.txComBuf.clear();
 
         sParam.local.clearParams();
         if ((sParam.typeDevice == AVANT_OPTO) ||
             (sParam.typeDevice == AVANT_K400)) {
-            sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK_ALL);
+            sParam.local.addParam(GB_PARAM_VP_SAC1);
+            sParam.local.addParam(GB_PARAM_VP_SAC2);
             sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK);
             sParam.local.addParam(GB_PARAM_PRD_COM_BLOCK);
         }
