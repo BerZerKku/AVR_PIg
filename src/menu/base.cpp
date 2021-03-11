@@ -245,6 +245,10 @@ void setProtocol(TProtocol::PROTOCOL protocol, uint16_t baud) {
 
 void mainInit() {
     protBSPs.setEnable(PRTS_STATUS_NO);
+
+    setupUart(TInterface::USB, 19200, TDataBits::_8, TParity::NONE, TStopBits::TWO);
+    setProtocol(TProtocol::STANDART, 19200);
+
     vLCDinit();
     vLCDclear();
 }
@@ -283,7 +287,6 @@ void pcPushByteFrom(uint8_t byte, bool error) {
         protPCs.setCurrentStatus(PRTS_STATUS_NO);
     } else {
         if (protPCs.isEnable()) {
-            // протокол "Стандартный"
             protPCs.checkByte(byte);
         } else if (protPCm.isEnable()) {
             // протокол MODBUS
