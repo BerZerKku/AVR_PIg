@@ -23,7 +23,7 @@ public:
 	};
 
 	TInterface () {
-        interface_ =  BVP;
+        interface_ =  MAX;
 		changed = false;
 	}
 
@@ -464,7 +464,7 @@ private:
 class TUartData {
 public:
     TUartData() {
-        Interface.set(TInterface::USB);
+        Interface.set(TInterface::BVP);
         Protocol.set(TProtocol::STANDART);
         BaudRate.set(TBaudRate::_9600);
         DataBits.set(TDataBits::_8);

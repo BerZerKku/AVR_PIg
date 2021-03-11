@@ -246,8 +246,8 @@ void setProtocol(TProtocol::PROTOCOL protocol, uint16_t baud) {
 void mainInit() {
     protBSPs.setEnable(PRTS_STATUS_NO);
 
-    setupUart(TInterface::USB, 19200, TDataBits::_8, TParity::NONE, TStopBits::TWO);
-    setProtocol(TProtocol::STANDART, 19200);
+//    setupUart(TInterface::BVP, 19200, TDataBits::_8, TParity::NONE, TStopBits::TWO);
+//    setProtocol(TProtocol::STANDART, 19200);
 
     vLCDinit();
     vLCDclear();
