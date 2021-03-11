@@ -1862,6 +1862,26 @@ static const Param fIntfStopBits PROGMEM = {
     Param::CHANGE_REG_NO 	// условие для изменения параметра
 };
 
+// число стоповых битов - интерфейс связи
+static const Param fIntfInterface PROGMEM = {
+    "Интерфейс",            // название параметра
+    GB_COM_NO,              // команда стандартного протокола
+    Param::PARAM_LIST,		// тип параметра
+    Param::RANGE_LIST,		// диапазон измнения
+    Param::DIM_NO,			// размерность
+    fcInterface[0],			// массив значений
+    1,						// кол-во повторений параметра
+    TInterface::MIN,        // минимальное значение
+    SIZE_OF(fcInterface),	// максимальное значение
+    1,						// дискретность
+    1,						// множитель для стандартного протокола
+    GB_SEND_NO,             // тип параметра для сохранения новго значения
+    1,                      // байт дополнительной информации для сохранения
+    Param::DEPEND_MAX_NO,	// заивимость максимума
+    Param::DEPEND_SAME_NO,	// зависимость повторений
+    Param::CHANGE_REG_NO 	// условие для изменения параметра
+};
+
 // время ожидания команд
 static const Param fRingTimeWait PROGMEM = {
     "Время ожидания ком.",	// название параметра
@@ -2109,6 +2129,7 @@ const Param* fParams[] PROGMEM  = {
     &fIntfDataBits,
     &fIntfParity,
     &fIntfStopBits,
+    &fIntfInterface,
     // Параметры кольца
     &fRingTimeWait,
     &fRingComTransit,

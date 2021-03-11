@@ -3420,6 +3420,11 @@ void clMenu::lvlSetupInterface() {
         sParam.local.addParam(GB_PARAM_INTF_DATA_BITS);
         sParam.local.addParam(GB_PARAM_INTF_PARITY);
         sParam.local.addParam(GB_PARAM_INTF_STOP_BITS);
+
+        // FIXME Параметр GB_PARAM_INTF_INTERFACE добавлен временно
+        // пока не будет сделано нормальное ПО для виртуальной панели
+        // Затем надо будет его полностью вычистить ?!
+        sParam.local.addParam(GB_PARAM_INTF_INTERFACE);
     }
 
     snprintf_P(&vLCDbuf[0], 21, title);
@@ -4818,8 +4823,18 @@ void clMenu::setupParam() {
                 }
             } else {
                 // TODO Добавить проверку изменения параметров без команд!
+                if (pn == GB_PARAM_INTF_INTERFACE) {
+                    int16_t value = EnterParam.getValue();
+                    sParam.Uart.Interface.set(
+                                static_cast<TInterface::INTERFACE> (value));
+                }
+
             }
             EnterParam.setDisable();
+        }
+    } else {
+        if (sParam.local.getParam() == GB_PARAM_INTF_INTERFACE) {
+            sParam.local.setValue(sParam.Uart.Interface.get());
         }
     }
 

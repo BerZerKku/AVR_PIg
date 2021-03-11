@@ -17,13 +17,13 @@ public:
 	// интерфейс связи
 	enum INTERFACE {
 		MIN = 0,	//
-		USB = 0,	// подключение через USB на передней панели
-		RS485,		// подключение через 485 интерфейс на задней панели
+        USB = MIN,	// подключение через USB на передней панели
+        BVP,		// подключение к блоку БВП
 		MAX			//
 	};
 
 	TInterface () {
-		interface_ =  MAX;
+        interface_ =  BVP;
 		changed = false;
 	}
 

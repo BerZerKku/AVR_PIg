@@ -502,6 +502,7 @@ typedef enum {
 	GB_PARAM_INTF_DATA_BITS,	///< биты данных
 	GB_PARAM_INTF_PARITY,		///< четность
 	GB_PARAM_INTF_STOP_BITS,	///< стоповые биты
+    GB_PARAM_INTF_INTERFACE,	///< интерфейс
 	// параметры кольца
 	GB_PARAM_RING_TIME_WAIT,	///< время ожидания команд
 	GB_PARAM_RING_COM_TRANSIT,	///< транзитные команды

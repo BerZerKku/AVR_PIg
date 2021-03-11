@@ -182,28 +182,28 @@ void checkInterface() {
         changed = true;
     }
 
-    if (intf != TInterface::USB) {
-        changed |= menu.sParam.Uart.Protocol.isChanged();
-        changed |= menu.sParam.Uart.BaudRate.isChanged();
-        changed |= menu.sParam.Uart.DataBits.isChanged();
-        changed |= menu.sParam.Uart.Parity.isChanged();
-        changed |= menu.sParam.Uart.StopBits.isChanged();
-    }
+//    if (intf != TInterface::USB) {
+//        changed |= menu.sParam.Uart.Protocol.isChanged();
+//        changed |= menu.sParam.Uart.BaudRate.isChanged();
+//        changed |= menu.sParam.Uart.DataBits.isChanged();
+//        changed |= menu.sParam.Uart.Parity.isChanged();
+//        changed |= menu.sParam.Uart.StopBits.isChanged();
+//    }
 
     if (changed) {
-        if (intf == TInterface::USB) {
+//        if (intf == TInterface::USB) {
             setupUart(intf, 19200, TDataBits::_8, TParity::NONE, TStopBits::TWO);
             setProtocol(TProtocol::STANDART, 19200);
-        } else {
-            TProtocol::PROTOCOL protocol = menu.sParam.Uart.Protocol.get();
-            uint16_t baudrate = menu.sParam.Uart.BaudRate.getValue();
-            TDataBits::DATA_BITS dbits = menu.sParam.Uart.DataBits.get();
-            TParity::PARITY parity = menu.sParam.Uart.Parity.get();
-            TStopBits::STOP_BITS sbits = menu.sParam.Uart.StopBits.get();
+//        } else {
+//            TProtocol::PROTOCOL protocol = menu.sParam.Uart.Protocol.get();
+//            uint16_t baudrate = menu.sParam.Uart.BaudRate.getValue();
+//            TDataBits::DATA_BITS dbits = menu.sParam.Uart.DataBits.get();
+//            TParity::PARITY parity = menu.sParam.Uart.Parity.get();
+//            TStopBits::STOP_BITS sbits = menu.sParam.Uart.StopBits.get();
 
-            setupUart(intf, baudrate, dbits, parity, sbits);
-            setProtocol(protocol, baudrate);
-        }
+//            setupUart(intf, baudrate, dbits, parity, sbits);
+//            setProtocol(protocol, baudrate);
+//        }
     }
 }
 
@@ -257,7 +257,7 @@ void mainCycle(void) {
     static uint8_t cnt_lcd = 0;
     static uint8_t cnt_1s = 0;
 
-//    checkInterface();
+    checkInterface();
 //    checkNetAddress();
 
     if (++cnt_1s >= 10) {
