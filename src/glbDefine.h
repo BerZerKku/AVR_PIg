@@ -227,7 +227,7 @@ enum eGB_REGIME_ENTER {
 
 /// Команды
 enum eGB_COM {
-										// + означает что команда задукоментирована
+    // + означает что команда задокументирована
 	GB_COM_NO = 0,
 	GB_COM_DEF_GET_DEF_TYPE 	= 0x01,	// +
 	GB_COM_DEF_GET_LINE_TYPE 	= 0x02,	// +
@@ -396,6 +396,10 @@ enum posComPrdKeep_t {
     POS_COM_PRD_KEEP_ringTimeWait,
     POS_COM_PRD_KEEP_ringComTransit,
     POS_COM_PRD_KEEP_alarmResetMode = POS_COM_PRD_KEEP_ringComTransit + (MAX_NUM_COM_RING / 8)
+};
+
+enum posComPrmBlockAll_t {
+    POS_COM_PRM_BLOCK_ALL_vpSac1 = 1
 };
 
 /// Параметры (связаны с fParams)

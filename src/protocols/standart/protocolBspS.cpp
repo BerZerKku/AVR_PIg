@@ -22,8 +22,16 @@ bool clProtocolBspS::getData(bool pc) {
 	uint8_t mask = 0;
 	eGB_COM com = (eGB_COM) buf[2];
 
+//    if ((com == GB_COM_GET_NET_ADR) || (com == GB_COM_PRM_GET_BLOCK_ALL)) {
+//        QString msg = QString("Com 0x%1:").arg(com, 2, 16, QLatin1Char('0'));
+//        for(uint8_t i = 0; i < buf[NUM] + 5; i++) {
+//            msg += QString(" 0x%1").arg(buf[i], 2, 16, QLatin1Char('0'));
+//        }
+//        qDebug() << msg;
+//    }
+
 	// сообщение обработано, выставим флаг на чтение
-	 setCurrentStatus(PRTS_STATUS_NO);
+    setCurrentStatus(PRTS_STATUS_NO);
 
 	mask = com & GB_COM_MASK_GROUP;
 	// ответ на команду изменения параметра/режима не требуется
@@ -894,54 +902,51 @@ uint8_t clProtocolBspS::getComNetAdr(
 
         switch(pos) {
             case POS_COM_NET_ADR_netAdr: {
-                numbytes = 1;
-                if (len >= numbytes) {
+                if (len >= 1) {
                     numbytes = 1;
                     sParam_->Uart.NetAddress.set(*buf);
                 }
             } break;
             case POS_COM_NET_ADR_protocol: {
-                numbytes = 1;
-                if (len >= numbytes) {
+                if (len >= 1) {
                     numbytes = 1;
                     sParam_->Uart.Protocol.set((TProtocol::PROTOCOL) *buf);
                 }
             } break;
             case POS_COM_NET_ADR_baudrate: {
-                numbytes = 1;
-                if (len >= numbytes) {
+                if (len >= 1) {
                     numbytes = 1;
                     sParam_->Uart.BaudRate.set((TBaudRate::BAUD_RATE) *buf);
                 }
             } break;
             case POS_COM_NET_ADR_dataBits: {
-                numbytes = 1;
-                if (len >= numbytes) {
+                if (len >= 1) {
                     numbytes = 1;
                     sParam_->Uart.DataBits.set((TDataBits::DATA_BITS) *buf);
                 }
             } break;
             case POS_COM_NET_ADR_parity: {
-                numbytes = 1;
-                if (len >= numbytes) {
+                if (len >= 1) {
                     numbytes = 1;
                     sParam_->Uart.Parity.set((TParity::PARITY) *buf);
                 }
             } break;
             case POS_COM_NET_ADR_stopBits: {
-                numbytes = 1;
-                if (len >= numbytes) {
+                if (len >= 1) {
                     numbytes = 1;
                     sParam_->Uart.StopBits.set((TStopBits::STOP_BITS) *buf);
                 }
             } break;
             case POS_COM_NET_ADR_password: {
-                numbytes = 2;
-                if (len >= numbytes) {
+                if (len >= 2) {
+                    numbytes = 2;
                     uint16_t value = *buf++;
                     value += (static_cast<uint16_t> (*buf)) << 8;
                     sParam_->password.set(value);
                 }
+            } break;
+            case POS_COM_NET_ADR_vpSac2: {
+                // Не сохраняется.
             } break;
         }
 

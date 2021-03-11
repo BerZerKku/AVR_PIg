@@ -142,7 +142,8 @@ uint8_t pcWrite() {
     return num;
 }
 
-uint8_t bspWrite() {
+uint8_t bspWrite()
+{
     uint8_t num = 0;
 
     // Перед передачей проверим статус протокола на залипание.
@@ -159,6 +160,14 @@ uint8_t bspWrite() {
         // если есть команда, отправляем ее в БСП
         if (com != GB_COM_NO) {
             num = protBSPs.sendData(com);
+
+//            if ((com == GB_COM_SET_NET_ADR) || (com == GB_COM_PRM_SET_BLOCK_ALL)) {
+//                QString msg = QString("Com 0x%1:").arg(com, 2, 16, QLatin1Char('0'));
+//                for(uint8_t i = 0; i < num; i++) {
+//                    msg += QString(" 0x%1").arg(uBufUartBsp[i], 2, 16, QLatin1Char('0'));
+//                }
+//                qDebug() << msg;
+//            }
         }
     }
 
@@ -244,8 +253,8 @@ void mainCycle(void) {
     static uint8_t cnt_lcd = 0;
     static uint8_t cnt_1s = 0;
 
-    checkInterface();
-    checkNetAddress();
+//    checkInterface();
+//    checkNetAddress();
 
     if (++cnt_1s >= 10) {
         cnt_1s = 0;
