@@ -876,13 +876,11 @@ uint8_t clProtocolBspS::sendReadJrnCommand(eGB_COM com) {
 
 bool clProtocolBspS::hdlrComGetNetAdr()
 {
-    uint8_t index = 1;
     uint8_t nbytes = 0;
 
     while(nbytes < buf[NUM]) {
-        nbytes += getComNetAdr(static_cast<posComNetAdr_t> (index),
+        nbytes += getComNetAdr(static_cast<posComNetAdr_t> (nbytes),
                                &buf[B1 + nbytes], buf[NUM] - nbytes);
-        index++;
     }
 
     return true;
