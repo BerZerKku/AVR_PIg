@@ -4508,6 +4508,7 @@ void clMenu::printSameNumber(uint8_t pos) {
             // для транзитных команд вместо номера выводится значение типа 16A/32C
             // доступ к массиву значений осуществляется через параметр GB_PARAM_RING_COM_REC
             Param* param = (Param*) pgm_read_word(&fParams[GB_PARAM_RING_COM_REC]);
+            // FIXME Тут программа на ПК падает! Может сделать через указатель на двумерный массив?
             PGM_P pval =  (PGM_P) pgm_read_word(&param->listValues) + (val * STRING_LENGHT);
             PGM_P pmax =  (PGM_P) pgm_read_word(&param->listValues) + (max * STRING_LENGHT);
             uint8_t nbytes = 0;
@@ -4515,7 +4516,7 @@ void clMenu::printSameNumber(uint8_t pos) {
             maxlen -= nbytes;
             nbytes += snprintf_P(&vLCDbuf[pos + nbytes], maxlen, pval);
             maxlen -= nbytes;
-            nbytes += snprintf_P(&vLCDbuf[pos + nbytes], maxlen, "/");
+            nbytes += snprintf(&vLCDbuf[pos + nbytes], maxlen, "/");
             maxlen -= nbytes;
             pos += snprintf_P(&vLCDbuf[pos + nbytes], maxlen, pmax);
             maxlen -= nbytes;

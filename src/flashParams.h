@@ -219,8 +219,8 @@ static char fcTymeSynch[][STRING_LENGHT] PROGMEM = {
 /// Режим сброса сигнализации
 static char fcAlarmResetMode[][STRING_LENGHT] PROGMEM = {
     //234567890
-    "ручной",
-    "автомат"
+    "автомат",
+    "ручной"
 };
 
 // Вывод ПРМ (SAC1)
