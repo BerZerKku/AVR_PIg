@@ -52,6 +52,10 @@ private:
      *  @retval len если в буфере не достаточно байт для параметра.
      */
     uint8_t getComNetAdr(posComNetAdr_t pos, const uint8_t *buf, uint8_t len);
+
+#ifdef TEST_FRIENDS
+    TEST_FRIENDS;
+#endif
 };
 
 

@@ -879,7 +879,7 @@ bool clProtocolBspS::hdlrComGetNetAdr()
     uint8_t nbytes = 0;
 
     while(nbytes < buf[NUM]) {
-        nbytes += getComNetAdr(static_cast<posComNetAdr_t> (nbytes),
+        nbytes += getComNetAdr(static_cast<posComNetAdr_t> (nbytes + 1),
                                &buf[B1 + nbytes], buf[NUM] - nbytes);
     }
 
@@ -898,55 +898,55 @@ uint8_t clProtocolBspS::getComNetAdr(
 {
     uint8_t numbytes = len;
 
-        switch(pos) {
-            case POS_COM_NET_ADR_netAdr: {
-                if (len >= 1) {
-                    numbytes = 1;
-                    sParam_->Uart.NetAddress.set(*buf);
-                }
-            } break;
-            case POS_COM_NET_ADR_protocol: {
-                if (len >= 1) {
-                    numbytes = 1;
-                    sParam_->Uart.Protocol.set((TProtocol::PROTOCOL) *buf);
-                }
-            } break;
-            case POS_COM_NET_ADR_baudrate: {
-                if (len >= 1) {
-                    numbytes = 1;
-                    sParam_->Uart.BaudRate.set((TBaudRate::BAUD_RATE) *buf);
-                }
-            } break;
-            case POS_COM_NET_ADR_dataBits: {
-                if (len >= 1) {
-                    numbytes = 1;
-                    sParam_->Uart.DataBits.set((TDataBits::DATA_BITS) *buf);
-                }
-            } break;
-            case POS_COM_NET_ADR_parity: {
-                if (len >= 1) {
-                    numbytes = 1;
-                    sParam_->Uart.Parity.set((TParity::PARITY) *buf);
-                }
-            } break;
-            case POS_COM_NET_ADR_stopBits: {
-                if (len >= 1) {
-                    numbytes = 1;
-                    sParam_->Uart.StopBits.set((TStopBits::STOP_BITS) *buf);
-                }
-            } break;
-            case POS_COM_NET_ADR_password: {
-                if (len >= 2) {
-                    numbytes = 2;
-                    uint16_t value = *buf++;
-                    value += (static_cast<uint16_t> (*buf)) << 8;
-                    sParam_->password.set(value);
-                }
-            } break;
-            case POS_COM_NET_ADR_vpSac2: {
-                // Не сохраняется.
-            } break;
-        }
+    switch(pos) {
+        case POS_COM_NET_ADR_netAdr: {
+            if (len >= 1) {
+                numbytes = 1;
+                sParam_->Uart.NetAddress.set(*buf);
+            }
+        } break;
+        case POS_COM_NET_ADR_protocol: {
+            if (len >= 1) {
+                numbytes = 1;
+                sParam_->Uart.Protocol.set((TProtocol::PROTOCOL) *buf);
+            }
+        } break;
+        case POS_COM_NET_ADR_baudrate: {
+            if (len >= 1) {
+                numbytes = 1;
+                sParam_->Uart.BaudRate.set((TBaudRate::BAUD_RATE) *buf);
+            }
+        } break;
+        case POS_COM_NET_ADR_dataBits: {
+            if (len >= 1) {
+                numbytes = 1;
+                sParam_->Uart.DataBits.set((TDataBits::DATA_BITS) *buf);
+            }
+        } break;
+        case POS_COM_NET_ADR_parity: {
+            if (len >= 1) {
+                numbytes = 1;
+                sParam_->Uart.Parity.set((TParity::PARITY) *buf);
+            }
+        } break;
+        case POS_COM_NET_ADR_stopBits: {
+            if (len >= 1) {
+                numbytes = 1;
+                sParam_->Uart.StopBits.set((TStopBits::STOP_BITS) *buf);
+            }
+        } break;
+        case POS_COM_NET_ADR_password: {
+            if (len >= 2) {
+                numbytes = 2;
+                uint16_t value = *buf++;
+                value += (static_cast<uint16_t> (*buf)) << 8;
+                sParam_->password.set(value);
+            }
+        } break;
+        case POS_COM_NET_ADR_vpSac2: {
+            // Не сохраняется.
+        } break;
+    }
 
-        return numbytes;
+    return numbytes;
 }
