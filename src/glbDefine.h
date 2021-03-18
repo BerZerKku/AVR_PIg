@@ -380,7 +380,8 @@ enum posComNetAdr_t {
     POS_COM_NET_ADR_parity,
     POS_COM_NET_ADR_stopBits,
     POS_COM_NET_ADR_password,
-    POS_COM_NET_ADR_vpSac2 = POS_COM_NET_ADR_password + 2
+    POS_COM_NET_ADR_vpSac2 = POS_COM_NET_ADR_password + 2,
+    POS_COM_NET_ADR_vpSam
 };
 
 enum posComPrdKeep_t {
@@ -511,8 +512,9 @@ typedef enum {
     // виртуальная панель
     GB_PARAM_VP_SAC1,           ///< Вывод ПРМ (SAC1)
     GB_PARAM_VP_SAC2,           ///< Управление (SAC2)
+    GB_PARAM_VP_SAm,            ///< Управления направлением одного выходв (SAnn.x / SA.m)
     // другое
-    GB_PARAM_USER_PASSWORD,     ///< пароль пользователя
+    GB_PARAM_USER_PASSWORD,     ///< Пароль пользователя.
     //
     GB_PARAM_MAX
 } eGB_PARAM;

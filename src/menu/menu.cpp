@@ -3367,6 +3367,7 @@ void clMenu::lvlSetupParamVP()
             sParam.local.addParam(GB_PARAM_VP_SAC2);
             sParam.local.addParam(GB_PARAM_PRM_COM_BLOCK);
             sParam.local.addParam(GB_PARAM_PRD_COM_BLOCK);
+            sParam.local.addParam(GB_PARAM_VP_SAm);
         }
     }
 

@@ -944,7 +944,16 @@ uint8_t clProtocolBspS::getComNetAdr(
             }
         } break;
         case POS_COM_NET_ADR_vpSac2: {
-            // Не сохраняется.
+            if (len >= 1) {
+                numbytes = 1;
+                // не имеет отдельной переменной
+            }
+        } break;
+        case POS_COM_NET_ADR_vpSam: {
+            if (len >= 1) {
+                numbytes = 1;
+                // не имеет отдельной переменной
+            }
         } break;
     }
 

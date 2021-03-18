@@ -2010,6 +2010,26 @@ static const Param fVpSac2 PROGMEM = {
     Param::CHANGE_REG_NO 	// условие для изменения параметра
 };
 
+// Управление направлением одного выхода (SA.m)
+static const Param fVpSam PROGMEM = {
+    "Блок. направл (SA.m)", // название параметра
+    GB_COM_GET_NET_ADR,     // команда стандартного протокола
+    Param::PARAM_BITES,		// тип параметра
+    Param::RANGE_LIST,      // диапазон измнения
+    Param::DIM_NO,			// размерность
+    fcOnOff[0],             // массив значений
+    8,						// кол-во повторений параметра
+    0,						// минимальное значение
+    SIZE_OF(fcOnOff),       // максимальное значение
+    1,						// дискретность
+    1,						// множитель для стандартного протокола
+    GB_SEND_DOP_BITES,      // тип параметра для сохранения новго значения
+    POS_COM_NET_ADR_vpSam,	// байт дополнительной информации для сохранения
+    Param::DEPEND_MAX_NO,	// зависимость максимума
+    Param::DEPEND_SAME_NO,	// зависимость повторений
+    Param::CHANGE_REG_NO 	// условие для изменения параметра
+};
+
 static const Param fUserPassword PROGMEM = {
     "Пароль",               // название параметра
     GB_COM_GET_NET_ADR,     // команда стандартного протокола
@@ -2138,6 +2158,7 @@ const Param* fParams[] PROGMEM  = {
     // Виртуальная панель
     &fVpSac1,
     &fVpSac2,
+    &fVpSam,
     // Другое
     &fUserPassword
 };
