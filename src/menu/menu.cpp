@@ -1845,7 +1845,7 @@ void clMenu::lvlJournalPrm() {
 			com = sParam.jrnEntry.getNumCom();
 		}
 
-		if (sParam.glb.getMaxNumDevices() == 3) {
+		if ((device == AVANT_RZSK) && (sParam.glb.getMaxNumDevices() == 3)) {
 			uint8_t src = sParam.jrnEntry.getSrcCom();
 			uint8_t devnum = sParam.glb.getDeviceNum();
 			if (devnum == 1) {
@@ -2980,10 +2980,9 @@ void clMenu::lvlSetupParamPrm() {
 		sParam.local.clearParams();
 
 		uint8_t numcom = sParam.prm.getNumCom();
-		if (device == AVANT_K400) {
-			// для переформирования меню добавим опрос кол-ва команд
-			sParam.txComBuf.addCom2(GB_COM_PRM_GET_COM);
+		sParam.txComBuf.addCom2(GB_COM_PRM_GET_COM);
 
+		if (device == AVANT_K400) {
 			sParam.local.addParam(GB_PARAM_PRM_COM_NUMS);
 			sParam.local.addParam(GB_PARAM_PRM_TIME_ON);
 			if (numcom != 0) {
@@ -3062,10 +3061,9 @@ void clMenu::lvlSetupParamPrd() {
 
 		sParam.local.clearParams();
 		uint8_t numcom = sParam.prd.getNumCom();
-		if (device == AVANT_K400) {
-			// для переформирования меню добавим опрос кол-ва команд
-			sParam.txComBuf.addCom2(GB_COM_PRD_GET_COM);
-			// совместимость
+		sParam.txComBuf.addCom2(GB_COM_PRD_GET_COM);
+
+		if (device == AVANT_K400) {			// совместимость
 			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
 
 			sParam.local.addParam(GB_PARAM_PRD_COM_NUMS);
