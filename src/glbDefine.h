@@ -382,6 +382,7 @@ typedef enum {
     GB_PARAM_NULL_PARAM = 0,    ///< параметр заглушка
     // общие параметры
     GB_PARAM_TIME_SYNCH,        ///< синхронизация часов
+	GB_PARAM_TIME_SYNCH_SRC,	///< синхронизация часов (выбор источника)
     GB_PARAM_NUM_OF_DEVICE,     ///< номер аппарата
     GB_PARAM_NUM_OF_DEVICE_RING,///< номер аппарата в оптическом кольце
     GB_PARAM_OUT_CHECK,         ///< контроль выходного сигнала

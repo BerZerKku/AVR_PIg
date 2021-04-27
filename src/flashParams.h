@@ -204,7 +204,7 @@ static char fcRingRenumber[][STRING_LENGHT] PROGMEM = {
 };
 
 // Синхронизация времени
-static char fcTymeSynch[][STRING_LENGHT] PROGMEM = {
+static char fcTymeSynchSrc[][STRING_LENGHT] PROGMEM = {
     //   1234567890
         "выкл.",
         "канал св.",
@@ -238,10 +238,30 @@ static const Param fTimeSynch PROGMEM = {
         Param::PARAM_LIST,      // тип параметра
         Param::RANGE_ON_OFF,    // диапазон измнения
         Param::DIM_NO,          // размерность
-        fcTymeSynch[0],         // массив значений
+		fcOnOff[0],         	// массив значений
         1,                      // кол-во повторений параметра
         0,                      // минимальное значение
-        SIZE_OF(fcTymeSynch),   // максимальное значение
+        SIZE_OF(fcOnOff),  		// максимальное значение
+        1,                      // дискретность
+        1,                      // множитель для стандартного протокола
+        GB_SEND_INT8_DOP,       // тип параметра для сохранения новго значения
+        1,                      // байт дополнительной информации для сохранения
+        Param::DEPEND_MAX_NO,   // заивимость максимума
+        Param::DEPEND_SAME_NO,  // зависимость повторений
+        Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+};
+
+// синхронизация часов (выбор источника)
+static const Param fTimeSynchSrc PROGMEM = {
+        "Синхронизация часов",  // название параметра
+        GB_COM_GET_TIME_SINCHR, // команда стандартного протокола
+        Param::PARAM_LIST,      // тип параметра
+        Param::RANGE_ON_OFF,    // диапазон измнения
+        Param::DIM_NO,          // размерность
+        fcTymeSynchSrc[0],         // массив значений
+        1,                      // кол-во повторений параметра
+        0,                      // минимальное значение
+        SIZE_OF(fcTymeSynchSrc),   // максимальное значение
         1,                      // дискретность
         1,                      // множитель для стандартного протокола
         GB_SEND_INT8_DOP,       // тип параметра для сохранения новго значения
@@ -2147,6 +2167,7 @@ static const Param* fParams[] PROGMEM  = {
         &fNullParam,
         // Общие параметры
         &fTimeSynch,
+		&fTimeSynchSrc,
         &fNumOfDevice,
         &fNumOfDeviceRing,
         &fOutCheck,

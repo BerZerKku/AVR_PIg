@@ -3212,7 +3212,7 @@ void clMenu::lvlSetupParamGlb() {
 
 			sParam.local.addParam(GB_PARAM_COMP_P400);
 			if (comp == GB_COMPATIBILITY_AVANT) {
-				sParam.local.addParam(GB_PARAM_TIME_SYNCH);
+				sParam.local.addParam(GB_PARAM_TIME_SYNCH_SRC);
 			}
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE);
 			sParam.local.addParam(GB_PARAM_OUT_CHECK);
