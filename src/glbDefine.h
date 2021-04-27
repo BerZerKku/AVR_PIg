@@ -32,7 +32,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0146
+#define VERS 0x0147
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -459,7 +459,6 @@ typedef enum {
     GB_PARAM_PRD_COM_SIGNAL,    ///< сигнализация команд ПРД
     // параметры приемника
     GB_PARAM_PRM_TIME_ON,       ///< задержка на фиксацию команды (время включения)
-    GB_PARAM_PRM_TIME_ON_K400,  ///< задержка на фиксацию команды (время включения) в К400
     GB_PARAM_PRM_COM_BLOCK,     ///< блокированные команды
     GB_PARAM_PRM_TIME_OFF,      ///< задержка на выключение
     GB_PARAM_PRM_DR_ENABLE,     ///< трансляция ЦП
