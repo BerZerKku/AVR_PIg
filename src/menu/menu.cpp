@@ -330,27 +330,27 @@ bool clMenu::setDeviceK400() {
 		}
 	}
 
-
 	// заполнение массива параметров для меню "Измерение"
 	uint8_t cnt = 0;
 	if (sParam.prd.status.isEnable()) {
 		measParamLvl[cnt++] = MENU_MEAS_PARAM_UOUT;	// 1
 		measParamLvl[cnt++] = MENU_MEAS_PARAM_IOUT;	// 2
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_ROUT;	// 3
 	}
 	if (sParam.prm.status.isEnable()) {
 		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC1;	// 3
-			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC2;	// 4
-			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN1; 	// 5
-			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN2;	// 6
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC1;	// 4
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC2;	// 5
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN1; 	// 6
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN2;	// 7
 		} else {
-			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC;	// 3
-			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN;	// 4
-			measParamLvl[cnt++] = MENU_MEAS_PARAM_D;	// 5
-			measParamLvl[cnt++] = MENU_MEAS_PARAM_DF;	// 6 TODO (для 3-х концевой
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC;	// 4
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN;	// 5
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_D;	// 6
 		}
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_DF;	// 7(8)
 	}
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_TEMPERATURE;	// 7
+	measParamLvl[cnt++] = MENU_MEAS_PARAM_TEMPERATURE;	// 8(9)
 
 	// заполнение массива общих неисправностей
 	sParam.glb.status.faultText[0] = fcGlbFault0001;
@@ -4496,7 +4496,7 @@ void clMenu::printRange(uint8_t pos) {
 			str = PSTR("%d..±%d%S");
 			break;
 
-		case Param::RANGE_I_COR:
+		case Param::RANGE_INT_PM:
 			min = 0;
 			str= PSTR("%d..±%d%S");
 			break;

@@ -596,7 +596,7 @@ static const Param fCorI PROGMEM = {
         "Коррекция тока",       // название параметра
         GB_COM_GET_COR_U_I,     // команда стандартного протокола
         Param::PARAM_I_COR,     // тип параметра
-        Param::RANGE_I_COR,     // диапазон измнения
+        Param::RANGE_INT_PM,     // диапазон измнения
         Param::DIM_MA,          // размерность
         fcNullBuf,              // массив значений
         1,                      // кол-во повторений параметра
@@ -1638,7 +1638,7 @@ static const Param fPrdFreqCorr PROGMEM = {
         "Коррекция частоты",    // название параметра
         GB_COM_PRD_GET_FREQ_CORR,// команда стандартного протокола
         Param::PARAM_INT,       // тип параметра
-        Param::RANGE_INT,       // диапазон измнения
+        Param::RANGE_INT_PM,    // диапазон измнения
         Param::DIM_HZ,          // размерность
         fcNullBuf,              // массив значений
         1,                      // кол-во повторений параметра
@@ -1898,7 +1898,7 @@ static const Param fPrmFreqCorr PROGMEM = {
         "Коррекция частоты",    // название параметра
         GB_COM_PRM_GET_FREQ_CORR,// команда стандартного протокола
         Param::PARAM_INT,       // тип параметра
-        Param::RANGE_INT,       // диапазон измнения
+        Param::RANGE_INT_PM,    // диапазон измнения
         Param::DIM_HZ,          // размерность
         fcNullBuf,              // массив значений
         1,                      // кол-во повторений параметра

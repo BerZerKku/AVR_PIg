@@ -1349,18 +1349,17 @@ public:
     }
 
     // отклонение частоты КС На ПРМ
-    int8_t getFreqDev() const {
+    uint8_t getFreqDev() const {
         return freqDev_;
     }
-    bool setFreqDev(int8_t val) {
+    bool setFreqDev(uint8_t val) {
         bool stat = false;
-        if ((val >= -100) && (val <= 100)) {
+        if (val <= 100) {
             freqDev_ = val;
             stat = true;
         }
         return stat;
     }
-
 
 private:
     // запас по защите (-99 .. 99)дБ
@@ -1387,8 +1386,8 @@ private:
     int8_t d_;
     // температуры (-100..125), -100 - ошибка
     int8_t temperature_;
-    // отклонение частоты КС на ПРМ (-100..100)Гц
-    int8_t freqDev_;
+    // отклонение частоты КС на ПРМ (0..100)Гц
+    uint8_t freqDev_;
 };
 
 

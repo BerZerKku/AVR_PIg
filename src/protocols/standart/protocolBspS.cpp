@@ -626,6 +626,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 				sParam_->measParam.setVoltageNoise(buf[B12]);
 				sParam_->measParam.setVoltageNoise2(buf[B13]);
 				sParam_->measParam.setPulseWidth(TO_INT16(buf[B14], buf[B15]));
+				// B16 - температура, она и так уже известна
 				sParam_->measParam.setFreqDev(buf[B17]);
 				stat = true;
 			}
