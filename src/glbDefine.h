@@ -32,7 +32,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0147
+#define VERS 0x0148
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -418,6 +418,7 @@ typedef enum {
     GB_PARAM_TEMP_THR_HI,       ///< верхнее значение температуры
     GB_PARAM_TEMP_THR_LOW,      ///< нижнее значение температуры
     GB_PARAM_TM_SPEED,          ///< скорость ТМ
+    GB_PARAM_COMP_RZSK,         ///< совместимость (РЗСК)
     // параметры защиты
     GB_PARAM_DEF_TYPE,          ///< тип защиты
     GB_PARAM_TIME_NO_MAN,       ///< дополнительное время без манипуляции

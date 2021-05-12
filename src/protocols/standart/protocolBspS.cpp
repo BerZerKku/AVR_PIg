@@ -676,6 +676,8 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 				eGB_COMP_K400 comp;
 				comp = static_cast<eGB_COMP_K400> (buf[B11]);
 				act |= sParam_->glb.setCompK400(comp);
+
+				sParam_->glb.setCompRZSK(eGB_COMP_RZSK(buf[B11]));
 			}
 
 			if (buf[3] >= 17) {
@@ -685,8 +687,6 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			} else {
 				glb->setTypeDevice(AVANT_NO);
 			}
-
-
 
 			// B18 - старший байт прошивки БСП-ПИ
 			// B19 - младший байт прошивки БСП-ПИ
@@ -726,6 +726,8 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			} else if (sParam_->typeDevice == AVANT_K400) {
 				// совместимость К400
 				act = sParam_->glb.setCompK400((eGB_COMP_K400) buf[B2]);
+			} else if (sParam_->typeDevice == AVANT_RZSK) {
+			    act = sParam_->glb.setCompRZSK((eGB_COMP_RZSK) buf[B2]);
 			}
 			// в случае записи нового значения, сбросим флаг конфигурации
 			if (act & GB_ACT_NEW)

@@ -96,6 +96,12 @@ static const char fcCompK400[][STRING_LENGHT] PROGMEM = {
         "АНКА ПРМ"      ///< 12
 };
 
+/// Тип совместимости (параметр РЗСК). Связан с eGB_COMP_RZSK.
+static const char fcCompRZSK[][STRING_LENGHT] PROGMEM = {
+//       1234567890
+        "РЗСК",         ///< 0
+        "РЗСКм",        ///< 1
+};
 
 /// Частота ПРД / ПРМ (параметр Защиты).
 static const char fcPvzlFreq[][STRING_LENGHT] PROGMEM = {
@@ -968,6 +974,26 @@ static const Param fTmSpeed PROGMEM = {
         1,                      // множитель для стандартного протокола
         GB_SEND_INT8_DOP,       // тип параметра для сохранения новго значения
         9,                      // байт дополнительной информации для сохранения
+        Param::DEPEND_MAX_NO,   // заивимость максимума
+        Param::DEPEND_SAME_NO,  // зависимость повторений
+        Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
+};
+
+// совместимость РЗСК
+static const Param fCompRZSK PROGMEM = {
+        "Совместимость",        // название параметра
+        GB_COM_GET_COM_PRD_KEEP,// команда стандартного протокола
+        Param::PARAM_LIST,      // тип параметра
+        Param::RANGE_LIST,      // диапазон измнения
+        Param::DIM_NO,          // размерность
+        fcCompRZSK[0],          // массив значений
+        1,                      // кол-во повторений параметра
+        0,                      // минимальное значение
+        SIZE_OF(fcCompRZSK),    // максимальное значение
+        1,                      // дискретность
+        1,                      // множитель для стандартного протокола
+        GB_SEND_INT8_DOP,       // тип параметра для сохранения новго значения
+        2,                      // байт дополнительной информации для сохранения
         Param::DEPEND_MAX_NO,   // заивимость максимума
         Param::DEPEND_SAME_NO,  // зависимость повторений
         Param::CHANGE_COND_REG_DISABLE // условие для изменения параметра
@@ -2161,7 +2187,6 @@ static const Param fRingComTr PROGMEM = {
         Param::CHANGE_COND_REG_DISABLE  // условие для изменения параметра
 };
 
-
 // Массив параметров (связан с eGB_PARAM)
 static const Param* fParams[] PROGMEM  = {
         &fNullParam,
@@ -2203,6 +2228,7 @@ static const Param* fParams[] PROGMEM  = {
         &fTempThrHi,
         &fTempThrLow,
         &fTmSpeed,
+        &fCompRZSK,
         // Параметры защиты
         &fDefType,
         &fTimeNoMan,
@@ -2267,6 +2293,5 @@ static const Param* fParams[] PROGMEM  = {
         &fRingComTransit,
         &fRingComRec,
         &fRingComTr
-
 };
 #endif /* FLASHPARAMS_H_ */

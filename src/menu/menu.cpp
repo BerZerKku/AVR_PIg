@@ -1010,10 +1010,8 @@ void clMenu::lvlStart() {
 		// в К400  + совместимость
 		sParam.txComBuf.addCom1(GB_COM_DEF_GET_LINE_TYPE);
 		sParam.txComBuf.addCom1(GB_COM_GET_NET_ADR);
-		if (sParam.typeDevice == AVANT_R400M) {
-			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
-		} else if (sParam.typeDevice == AVANT_K400) {
-			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
+		if (sParam.typeDevice != AVANT_OPTO) {
+		    sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
 		}
 		sParam.txComBuf.addCom1(GB_COM_GET_JRN_CNT);
 		if (sParam.def.status.isEnable()) {
@@ -2159,6 +2157,7 @@ void clMenu::lvlControl() {
 	static char punkt34[] PROGMEM = "%d. Сброс удален. 3";
 	static char punkt35[] PROGMEM = "%d. Сброс индикации";
 	static char punkt36[] PROGMEM = "%d. Сброс всех";
+	static char punkt37[] PROGMEM = "%d. Режим АК";
 
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
@@ -2277,8 +2276,6 @@ void clMenu::lvlControl() {
 					Punkts_.add(punkt24);// далее выбирается в зависимости от номера
 					Punkts_.add(punkt26);
 				}
-				Punkts_.add(punkt35);
-				Punkts_.add(punkt05);
 			} else {
 				// РЗСК без поста
 				Punkts_.add(punkt03);
@@ -2287,9 +2284,13 @@ void clMenu::lvlControl() {
 				} else if (numDevices == GB_NUM_DEVICES_3) {
 					Punkts_.add(punkt22);
 				}
-				Punkts_.add(punkt35);
-				Punkts_.add(punkt05);
 			}
+			Punkts_.add(punkt35);
+			Punkts_.add(punkt05);
+			Punkts_.add(punkt11);
+			Punkts_.add(punkt12);
+			Punkts_.add(punkt13);
+			Punkts_.add(punkt37);
 		} else if (device == AVANT_K400) {
 			Punkts_.add(punkt03);
 			Punkts_.add(punkt35);
@@ -2536,6 +2537,9 @@ void clMenu::lvlControl() {
 				sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
 			} else if (name == punkt36) {
 				sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD);
+				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			} else if (name == punkt37) {
+				sParam.txComBuf.setInt8(GB_CONTROL_REG_AC);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			}
 		}
@@ -3187,6 +3191,7 @@ void clMenu::lvlSetupParamGlb() {
 		} else if (device == AVANT_RZSK) {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 
+			sParam.local.addParam(GB_PARAM_COMP_RZSK);
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES);
 			sParam.local.addParam(GB_PARAM_TIME_SYNCH);
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE);

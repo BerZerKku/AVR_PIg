@@ -73,6 +73,15 @@ enum eGB_COMP_K400 {
 	GB_COMP_K400_MAX
 };
 
+/// Совместимость для РЗСК
+enum eGB_COMP_RZSK {
+    GB_COMP_RZSK_MIN    = 0,
+    GB_COMP_RZSK        = GB_COMP_RZSK_MIN,
+    GB_COMP_RZSK_M,
+    //
+    GB_COMP_RZSK_MAX
+};
+
 /// класс для общих параметров и настроек
 class TDeviceGlb {
 	/// Дискретные входы
@@ -354,6 +363,36 @@ public:
 		return compK400_;
 	}
 
+	/** Установка совместимости для RZSK (тип удаленного аппарата).
+	 *  @param val Совместимость.
+	 *  @return Статус установки (eGB_ACT - побитные значения).
+	 */
+	uint8_t setCompRZSK(eGB_COMP_RZSK val) {
+	    uint8_t act = GB_ACT_NO;
+
+	    if ((val < GB_COMP_RZSK_MIN) || (val >= GB_COMP_RZSK_MAX)) {
+	        val = GB_COMP_RZSK_MAX;
+	        act = GB_ACT_ERROR;
+	    }
+
+	    if (compRZSK_ == val) {
+	        act |= GB_ACT_OLD;
+	    } else {
+	        compRZSK_ = val;
+	        act |= GB_ACT_NEW;
+	    }
+
+	    return act;
+	}
+
+	/** Возвращает текущую совместимость в К400ю
+	 *
+	 *  @return Совместимость в К400.
+	 */
+	eGB_COMP_RZSK getCompRZSK() const {
+	    return compRZSK_;
+	}
+
 	// номер аппарата
 	bool setDeviceNum(uint8_t val) {
 		bool stat = false;
@@ -441,6 +480,9 @@ private:
 
 	// совместимость в К400
 	eGB_COMP_K400 compK400_;
+
+	// совместимость в РЗСК
+	eGB_COMP_RZSK compRZSK_;
 
 	// номер аппарата
 	uint8_t deviceNum_;
