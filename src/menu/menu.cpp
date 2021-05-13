@@ -418,10 +418,16 @@ bool clMenu::setDeviceK400() {
  * 	@retval True - всегда.
  */
 bool clMenu::setDeviceRZSK() {
+	eGB_COMP_RZSK comp = sParam.glb.getCompRZSK();
 
 	sParam.typeDevice = AVANT_RZSK;
 	sParam.glb.setTypeDevice(AVANT_RZSK);
-	vKEYset(AVANT_RZSK);
+
+	if (comp == GB_COMP_RZSK_M) {
+		vKEYset(AVANT_R400M);
+	} else {
+		vKEYset(AVANT_RZSK);
+	}
 
 	sParam.prm.status.setEnable(sParam.prm.getNumCom() != 0);
 	sParam.prd.status.setEnable(sParam.prd.getNumCom() != 0);
@@ -496,7 +502,11 @@ bool clMenu::setDeviceRZSK() {
 	sParam.def.status.faultText[0] = fcDefFault0001;
 	sParam.def.status.faultText[1] = fcDefFault0002;
 	sParam.def.status.faultText[2] = fcDefFault0004;
-	// 3-7 нет
+	// 3 : 0x0008 - нет
+	sParam.def.status.faultText[4] = fcGlbFault0400;      // 0x0010 –«— м
+	sParam.def.status.faultText[5] = fcGlbFault4000;      // 0x0020 –«— м
+	sParam.def.status.faultText[6] = fcDefFault0040rzskm; // 0x0040 –«— м
+	sParam.def.status.faultText[7] = fcDefFault0080rzskm; // 0x0080 –«— м
 	sParam.def.status.faultText[8] = fcDefFault0100;
 	sParam.def.status.faultText[9] = fcDefFault0200;
 	// 10 нет
@@ -505,10 +515,12 @@ bool clMenu::setDeviceRZSK() {
 	sParam.def.status.faultText[13] = fcDefFault2000;
 	sParam.def.status.faultText[14] = fcDefFault4000rzsk;
 	sParam.def.status.faultText[15] = fcDefFault8000rzsk;
+
 	// заполнение массива предупреждений защиты
 	sParam.def.status.warningText[0] = fcDefWarning01rzsk;
 	sParam.def.status.warningText[1] = fcDefWarning02;
-	// 2-15 нет
+	sParam.def.status.warningText[2] = fcDefWarning04rzskm; // 0x0004 –«— м
+	// 3-15 нет
 
 	// ѕ–»≈ћЌ» 
 	// заполнение массива неисправностей приемника
@@ -521,6 +533,7 @@ bool clMenu::setDeviceRZSK() {
 	sParam.prm.status.faultText[10] = fcPrmFault0400rzsk;
 	sParam.prm.status.faultText[11] = fcPrmFault0800rzsk;
 	// 12-15 нет
+
 	// заполнение массива предупреждений приемника
 	sParam.prm.status.warningText[0] = fcPrmWarning01rzsk;
 	// 1-15 нет
@@ -535,6 +548,7 @@ bool clMenu::setDeviceRZSK() {
 	sParam.prd.status.faultText[10] = fcPrdFault0400rzsk;
 	sParam.prd.status.faultText[11] = fcPrdFault0800rzsk;
 	// 12-15 нет
+
 	// заполнение массива предупреждений передатчика
 	// 0 нет
 	sParam.prd.status.warningText[1] = fcPrdWarning02k400;
