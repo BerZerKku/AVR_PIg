@@ -36,6 +36,9 @@
 /// врем€ до выхода из “ест 1 / “ест 2 и т.д. если режим != данному тесту, мс
 #define TIME_TEST_EXIT (1000 / MENU_TIME_CYLCE)
 
+/// врем€ до возврата на начальный уровень, с
+#define TIME_RETURN_LVL_START (1 * 60 * (1000 / MENU_TIME_CYLCE))
+
 /// »змер€емые параметры
 enum eMENU_MEAS_PARAM {
 	MENU_MEAS_PARAM_NO,			///< нет измер€емого параметра

@@ -118,10 +118,10 @@ void clMenu::main(void) {
 
 	static const char fcNoConnectBsp[] PROGMEM = " Нет связи с БСП!!! ";
 
-	// Счетчик времени до переинициализации ЖКИ
-	static uint8_t cntInitLcd = 0;
-	static uint8_t cntBlinkMeas = 0;
-	static uint8_t cntBlinkText = 0;
+	static uint8_t cntInitLcd = 0;    // Счетчик времени до переинициализации ЖКИ
+	static uint8_t cntBlinkMeas = 0;  // Счетчик времени смены измерений
+	static uint8_t cntBlinkText = 0;  // Счетчик времени смены надписей
+	static uint16_t cntReturn = 0;   // Счетчик времени до возврата на начальный уровень
 	// предыдущее состояние флага наличия связи с БСП
 	static bool lastConnection = false;
 
@@ -156,6 +156,20 @@ void clMenu::main(void) {
 		key_ = tmp;
 
 		vLCDsetLed(LED_SWITCH);
+		cntReturn = 0;
+	}
+
+	// Выход на начальный уровень, в случае отсутствия активности (нажатия кнопок)
+	if (lvlMenu != &clMenu::lvlStart) {
+		if (cntReturn < TIME_RETURN_LVL_START) {
+			cntReturn++;
+		}
+
+		if (cntReturn >= TIME_RETURN_LVL_START) {
+			key_ = KEY_MENU;
+		}
+	} else {
+		cntReturn = 0;
 	}
 
 	if (checkLedOn()) {
@@ -3961,7 +3975,6 @@ void clMenu::lvlTest1() {
 
 	switch(key_) {
 		case KEY_CANCEL:
-			sParam.txComBuf.addFastCom(GB_COM_SET_REG_DISABLED);
 			lvlMenu = &clMenu::lvlTest;
 			lvlCreate_ = true;
 			break;
@@ -3981,6 +3994,13 @@ void clMenu::lvlTest1() {
 
 		default:
 			break;
+	}
+
+	// Смена режима производится при выходе только если текущий режим Тест1
+	if (lvlMenu != &clMenu::lvlTest1) {
+		if (sParam.glb.status.getRegime() == GB_REGIME_TEST_1) {
+			sParam.txComBuf.addFastCom(GB_COM_SET_REG_DISABLED);
+		}
 	}
 }
 
@@ -4089,7 +4109,6 @@ void clMenu::lvlTest2() {
 
 	switch(key_) {
 		case KEY_CANCEL:
-			sParam.txComBuf.addFastCom(GB_COM_SET_REG_DISABLED);
 			lvlMenu = &clMenu::lvlTest;
 			lvlCreate_ = true;
 			break;
@@ -4100,6 +4119,13 @@ void clMenu::lvlTest2() {
 
 		default:
 			break;
+	}
+
+	// Смена режима производится при выходе только если текущий режим Тест2
+	if (lvlMenu != &clMenu::lvlTest2) {
+		if (sParam.glb.status.getRegime() == GB_REGIME_TEST_2) {
+			sParam.txComBuf.addFastCom(GB_COM_SET_REG_DISABLED);
+		}
 	}
 }
 
@@ -4137,12 +4163,20 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 		uint8_t poz = 100;
 		snprintf_P(&vLCDbuf[poz], 21, enterList,
 				EnterParam.list + STRING_LENGHT * val);
-	} else
+	} else {
 		key_ = KEY_CANCEL;
+	}
 
-	switch(key_) {
+	eKEY tkey = key_;
+	key_ = KEY_NO;
+	switch(tkey) {
 		case KEY_CANCEL:
 			EnterParam.setDisable();
+			break;
+
+		case KEY_MENU:
+			EnterParam.setDisable();
+			key_ = KEY_MENU;
 			break;
 
 		case KEY_UP:
@@ -4155,11 +4189,11 @@ eMENU_ENTER_PARAM clMenu::enterValue() {
 		case KEY_ENTER:
 			EnterParam.setEnterValueReady();
 			break;
+
 		default:
 			break;
 	}
 
-	key_ = KEY_NO;
 	return EnterParam.getStatus();
 }
 
@@ -4209,9 +4243,16 @@ eMENU_ENTER_PARAM clMenu::enterPassword() {
 		}
 	}
 
-	switch(key_) {
+	eKEY tkey = key_;
+	key_ = KEY_NO;
+	switch(tkey) {
 		case KEY_CANCEL:
 			EnterParam.setDisable();
+			break;
+
+		case KEY_MENU:
+			EnterParam.setDisable();
+			key_ = KEY_MENU;
 			break;
 
 		case KEY_ENTER:
@@ -4243,7 +4284,6 @@ eMENU_ENTER_PARAM clMenu::enterPassword() {
 		default:
 			break;
 	}
-	key_ = KEY_NO;
 
 	return EnterParam.getStatus();
 }
