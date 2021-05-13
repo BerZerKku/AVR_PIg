@@ -875,7 +875,7 @@ bool clMenu::setDevice(eGB_TYPE_DEVICE device) {
 
 	// "сброс" флага необходимости проверки типа аппарата
 	sParam.device = true;
-	// обнавление текущего уровня меню
+	// обновление текущего уровня меню
 	lvlCreate_ = true;
 
 	return status;
@@ -983,7 +983,6 @@ void clMenu::lvlError() {
  * 	@return Нет
  */
 void clMenu::lvlStart() {
-	static const char fcTimeToAc[] PROGMEM = "%02d:%02d:%02d";
 	static const char fcCompType[] PROGMEM = "Совместим. %S";
 
 	if (lvlCreate_) {
@@ -1001,7 +1000,7 @@ void clMenu::lvlStart() {
 		sParam.txComBuf.addCom2(GB_COM_GET_FAULT);
 		if (sParam.glb.getTypeLine() == GB_TYPE_LINE_UM)
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
-		if (sParam.typeDevice == AVANT_R400M) {
+		if ((sParam.typeDevice == AVANT_R400M) || isRzskM()) {
 			sParam.txComBuf.addCom2(GB_COM_DEF_GET_TYPE_AC);
 		}
  		// буфер 1
@@ -1045,8 +1044,6 @@ void clMenu::lvlStart() {
 
 		// в Р400м выводится АК и время до АК, а также тип совместимости
 		if (sParam.typeDevice == AVANT_R400M) {
-			uint16_t time = sParam.def.getTimeToAC();
-			eGB_TYPE_AC ac = sParam.def.getTypeAC();
 			eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
 
 			// если работает в совместимости, выведем это на экран
@@ -1055,49 +1052,15 @@ void clMenu::lvlStart() {
 						fcCompatibility[static_cast<uint8_t>(comp)]);
 			}
 
-			if (comp == GB_COMPATIBILITY_LINER) {
-				// в Р400м совместимость ЛинияР подменяем название ""АК-норм"
-				// на "АК-авто"
-				if  (ac == GB_TYPE_AC_AUTO_NORM) {
-					ac = GB_TYPE_AC_AUTO;
-				}
-			} else if (comp == GB_COMPATIBILITY_AVZK80) {
-				// в Р400м совместимость АВЗК-80 подменяем название ""АК-бегл"
-				// на "АК-пров"
-				if (ac == GB_TYPE_AC_CHECK) {
-					ac = GB_TYPE_AC_CHECK_1;
-				}
-			} else if (comp == GB_COMPATIBILITY_PVZ90) {
-				if (ac == GB_TYPE_AC_CHECK) {
-					ac = GB_TYPE_AC_CHECK_1;
-				}
-			}
-			uint8_t t = poz + 20;
-			t += snprintf_P(&vLCDbuf[t], 11,
-					fcAcType[static_cast<uint8_t>(ac)]);
-
-			// время до АК
-			// выводится если соблюдаются условия:
-			// 1. АК не выключен
-			// 2. Режим = введен
-			// 3. Состояние = Контроль
-			if (ac != GB_TYPE_AC_OFF) {
-				if (sParam.def.status.getRegime() == GB_REGIME_ENABLED) {
-					if (sParam.def.status.getState() == 1) {
-						uint8_t hour = time / 3600;
-						uint8_t min = (time % 3600) / 60;
-						uint8_t sec = time % 60;
-						snprintf_P(&vLCDbuf[t + 1], 11, fcTimeToAc, hour, min,
-								sec);
-					}
-				}
-			}
+			printAc(poz + 20);
 		}
 	}
+
 	if (sParam.prm.status.isEnable()) {
 		printDevicesStatus(poz, &sParam.prm.status);
 		poz += 20;
 	}
+
 	if (sParam.prd.status.isEnable()) {
 		printDevicesStatus(poz, &sParam.prd.status);
 	}
@@ -1208,6 +1171,7 @@ void clMenu::lvlFirst() {
 	static char punkt4[] PROGMEM = "%d. Тесты";
 	static char punkt5[] PROGMEM = "%d. Информация";
 	static char punkt6[] PROGMEM = "%d. Измерения";
+	static char punkt7[] PROGMEM = "%d. Режим АК";
 
 	if (lvlCreate_) {
 		lvlCreate_ = false;
@@ -1223,18 +1187,29 @@ void clMenu::lvlFirst() {
 		Punkts_.add(punkt1);
 		Punkts_.add(punkt2);
 		Punkts_.add(punkt3);
+
+		if (isRzskM()) {
+			Punkts_.add(punkt7);
+		}
+
 		Punkts_.add(punkt4);
 		Punkts_.add(punkt5);
+
 		if (sParam.glb.getTypeDevice() != AVANT_OPTO) {
 			Punkts_.add(punkt6);
 		}
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
+
+		if (sParam.typeDevice == AVANT_RZSK) {
+			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
+		}
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
+	PGM_P name = Punkts_.getName(cursorLine_ - 1);
 	printPunkts();
 
 	switch(key_) {
@@ -1246,30 +1221,27 @@ void clMenu::lvlFirst() {
 			break;
 
 		case KEY_ENTER:
-			switch(cursorLine_) {
-				case 1:
-					lvlMenu = &clMenu::lvlJournal;
-					lvlCreate_ = true;
-					break;
-				case 2:
-					lvlMenu = &clMenu::lvlControl;
-					lvlCreate_ = true;
-					break;
-				case 3:
-					lvlMenu = &clMenu::lvlSetup;
-					lvlCreate_ = true;
-					break;
-				case 4:
-					lvlMenu = &clMenu::lvlTest;
-					lvlCreate_ = true;
-					break;
-				case 5:
-					lvlMenu = &clMenu::lvlInfo;
-					lvlCreate_ = true;
-					break;
-				case 6:
-					lvlMenu = &clMenu::lvlMeasure;
-					lvlCreate_ = true;
+			if (name == punkt1) {
+				lvlMenu = &clMenu::lvlJournal;
+				lvlCreate_ = true;
+			} else if (name == punkt2) {
+				lvlMenu = &clMenu::lvlControl;
+				lvlCreate_ = true;
+			} else if (name == punkt3) {
+				lvlMenu = &clMenu::lvlSetup;
+				lvlCreate_ = true;
+			} else if (name == punkt4) {
+				lvlMenu = &clMenu::lvlTest;
+				lvlCreate_ = true;
+			} else if (name == punkt5) {
+				lvlMenu = &clMenu::lvlInfo;
+				lvlCreate_ = true;
+			} else if (name == punkt6) {
+				lvlMenu = &clMenu::lvlMeasure;
+				lvlCreate_ = true;
+			} else if (name == punkt7) {
+				lvlMenu = &clMenu::lvlRegimeAc;
+				lvlCreate_ = true;
 			}
 			break;
 
@@ -2157,7 +2129,8 @@ void clMenu::lvlControl() {
 	static char punkt34[] PROGMEM = "%d. Сброс удален. 3";
 	static char punkt35[] PROGMEM = "%d. Сброс индикации";
 	static char punkt36[] PROGMEM = "%d. Сброс всех";
-	static char punkt37[] PROGMEM = "%d. Режим АК";
+	static char punkt37[] PROGMEM = "%d. Пуск АК";
+	static char punkt38[] PROGMEM = "%d. Удал. Пуск АК";
 
 	eGB_TYPE_DEVICE device = sParam.typeDevice;
 
@@ -2276,6 +2249,8 @@ void clMenu::lvlControl() {
 					Punkts_.add(punkt24);// далее выбирается в зависимости от номера
 					Punkts_.add(punkt26);
 				}
+				Punkts_.add(punkt35);
+				Punkts_.add(punkt05);
 			} else {
 				// РЗСК без поста
 				Punkts_.add(punkt03);
@@ -2284,13 +2259,13 @@ void clMenu::lvlControl() {
 				} else if (numDevices == GB_NUM_DEVICES_3) {
 					Punkts_.add(punkt22);
 				}
+				Punkts_.add(punkt35);
 			}
-			Punkts_.add(punkt35);
-			Punkts_.add(punkt05);
-			Punkts_.add(punkt11);
-			Punkts_.add(punkt12);
-			Punkts_.add(punkt13);
-			Punkts_.add(punkt37);
+			if (sParam.glb.getCompRZSK() == GB_COMP_RZSK_M) {
+				Punkts_.add(punkt37);
+				Punkts_.add(punkt38);
+				Punkts_.add(punkt11);
+			}
 		} else if (device == AVANT_K400) {
 			Punkts_.add(punkt03);
 			Punkts_.add(punkt35);
@@ -2318,14 +2293,10 @@ void clMenu::lvlControl() {
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
-		if (sParam.typeDevice == AVANT_R400M) {
+		if ((sParam.typeDevice == AVANT_R400M) ||
+				(sParam.typeDevice == AVANT_RZSK)) {
 			// совместимость
 			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
-			// кол-во аппаратов в линии
-			sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
-			// номер текущего аппарата
-			sParam.txComBuf.addCom2(GB_COM_GET_DEVICE_NUM);
-		} else if (sParam.typeDevice == AVANT_RZSK) {
 			// кол-во аппаратов в линии
 			sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
 			// номер текущего аппарата
@@ -2464,10 +2435,10 @@ void clMenu::lvlControl() {
 			} else if (name == punkt11) {
 				sParam.txComBuf.setInt8(GB_CONTROL_RESET_AC);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt12) {
+			} else if ((name == punkt12) || (name == punkt37)) {
 				sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
 				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-			} else if (name == punkt13) {
+			} else if ((name == punkt13) || (name == punkt38)) {
 				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_AC_UD);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			} else if (name == punkt14) {
@@ -2537,9 +2508,6 @@ void clMenu::lvlControl() {
 				sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
 			} else if (name == punkt36) {
 				sParam.txComBuf.setInt8(GB_CONTROL_RESET_UD);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			} else if (name == punkt37) {
-				sParam.txComBuf.setInt8(GB_CONTROL_REG_AC);
 				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
 			}
 		}
@@ -2786,6 +2754,111 @@ void clMenu::lvlRegime() {
 		}
 			break;
 	}
+}
+
+/**	Уровень меню. Управление.
+ * 	@param Нет
+ * 	@return Нет
+ */
+void clMenu::lvlRegimeAc() {
+
+	static char title[] PROGMEM = "Меню\\Режим АК";
+	// %d - может быть двухзначным, учесть для макс. кол-ва символов !
+	//							   	"01234567890123456789"
+	static char punkt1[] PROGMEM = "%d. АК автоматическ.";
+	static char punkt2[] PROGMEM = "%d. АК ускоренный";
+	static char punkt3[] PROGMEM = "%d. АК выключен";
+	static char punkt4[] PROGMEM = "%d. АК испытания";
+	static char punkt5[] PROGMEM = "%d. АК нормальный";
+	static char punkt6[] PROGMEM = "%d. АК беглый";
+	//	static char punkt21[] PROGMEM = "%d. АК односторонний";
+
+	if (lvlCreate_) {
+		lvlCreate_ = false;
+		cursorLine_ = 1;
+		cursorEnable_ = true;
+		lineParam_ = 2;
+
+		vLCDclear();
+		vLCDdrawBoard(lineParam_);
+
+		Punkts_.clear();
+		if (isRzskM()) {
+			Punkts_.add(punkt5);
+			Punkts_.add(punkt2);
+			Punkts_.add(punkt3);
+		} else {
+			key_ = KEY_CANCEL;
+		}
+
+		// доплнительные команды
+		sParam.txComBuf.clear();
+		// совместимость
+		sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
+		sParam.txComBuf.addCom1(GB_COM_DEF_GET_TYPE_AC);
+	}
+
+	if (!isRzskM()) {
+		key_ = KEY_CANCEL;
+	}
+
+	uint8_t pos = 0;
+	snprintf_P(&vLCDbuf[pos], 21, title);
+
+	pos += 20;
+	printAc(pos);
+
+	PGM_P name = Punkts_.getName(cursorLine_ - 1);
+	printPunkts();
+
+	switch(key_) {
+		case KEY_UP:
+			cursorLineUp();
+			break;
+		case KEY_DOWN:
+			cursorLineDown();
+			break;
+
+		case KEY_CANCEL:
+			lvlMenu = &clMenu::lvlFirst;
+			lvlCreate_ = true;
+			break;
+		case KEY_MENU:
+			lvlMenu = &clMenu::lvlStart;
+			lvlCreate_ = true;
+			break;
+
+		case KEY_ENTER: {
+			if (name == punkt1) {
+				sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_NORM);
+				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+			} else if (name == punkt2) {
+				sParam.txComBuf.setInt8(GB_TYPE_AC_FAST);
+				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+			} else if (name == punkt3) {
+				sParam.txComBuf.setInt8(GB_TYPE_AC_OFF);
+				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+			} else if (name == punkt4) {
+				sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
+				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+			} else if (name == punkt5) {
+				sParam.txComBuf.setInt8(GB_TYPE_AC_AUTO_NORM);
+				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+			} else if (name == punkt6) {
+				sParam.txComBuf.setInt8(GB_TYPE_AC_CHECK);
+				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+			}
+//			else if (p == punkt21) {
+//				sParam.txComBuf.setInt8(GB_TYPE_AC_CHECK);
+//				sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+//			}
+		}
+		break;
+
+		default:
+			break;
+	}
+
 }
 
 /** Уровень меню. Настройка параметров.
@@ -4566,6 +4639,48 @@ void clMenu::printValue(uint8_t pos) {
 	}
 }
 
+// Вывод на экран режима АК и времени до следующей проверки.
+void clMenu::printAc(uint8_t pos) {
+	eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
+	eGB_TYPE_AC ac = sParam.def.getTypeAC();
+
+	if (sParam.typeDevice == AVANT_R400M) {
+		if (comp == GB_COMPATIBILITY_LINER) {
+			// в Р400м совместимость ЛинияР подменяем название ""АК-норм"
+			// на "АК-авто"
+			if  (ac == GB_TYPE_AC_AUTO_NORM) {
+				ac = GB_TYPE_AC_AUTO;
+			}
+		} else if (comp == GB_COMPATIBILITY_AVZK80) {
+			// в Р400м совместимость АВЗК-80 подменяем название ""АК-бегл"
+			// на "АК-пров"
+			if (ac == GB_TYPE_AC_CHECK) {
+				ac = GB_TYPE_AC_CHECK_1;
+			}
+		} else if (comp == GB_COMPATIBILITY_PVZ90) {
+			if (ac == GB_TYPE_AC_CHECK) {
+				ac = GB_TYPE_AC_CHECK_1;
+			}
+		}
+	}
+
+	pos += snprintf_P(&vLCDbuf[pos], 11,
+			fcAcType[static_cast<uint8_t>(ac)]);
+
+	if (ac != GB_TYPE_AC_OFF) {
+		if (sParam.def.status.getRegime() == GB_REGIME_ENABLED) {
+//			if (sParam.def.status.getState() == 1) {
+				uint16_t time = sParam.def.getTimeToAC();
+				uint8_t hour = time / 3600;
+				uint8_t min = (time % 3600) / 60;
+				uint8_t sec = time % 60;
+				snprintf_P(&vLCDbuf[pos + 1], 11, fcTimeToAc,
+						hour, min, sec);
+			}
+//		}
+	}
+}
+
 
 // Настройка параметров для ввода значения с клавиатуры.
 void clMenu::enterParameter() {
@@ -4871,4 +4986,16 @@ bool clMenu::checkLedOn() {
 	}
 
 	return ledOn;
+}
+
+//
+bool clMenu::isRzskM() const {
+	bool check = false;
+
+	if (sParam.typeDevice == sParam.typeDevice) {
+		if (sParam.glb.getCompRZSK() == GB_COMP_RZSK_M) {
+			check = true;
+		}
+	}
+	return check;
 }

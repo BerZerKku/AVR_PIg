@@ -729,6 +729,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			} else if (sParam_->typeDevice == AVANT_RZSK) {
 			    act = sParam_->glb.setCompRZSK((eGB_COMP_RZSK) buf[B2]);
 			}
+
 			// в случае записи нового значения, сбросим флаг конфигурации
 			if (act & GB_ACT_NEW)
 				sParam_->device = false;
