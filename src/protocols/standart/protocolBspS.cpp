@@ -580,8 +580,8 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 				else if (reg != regTmp)
 					reg = GB_REGIME_ENABLED;
 			}
-			sParam_->glb.status.setRegime(reg);
 
+			sParam_->glb.status.setRegime(reg);
 			stat = true;
 		}
 		break;

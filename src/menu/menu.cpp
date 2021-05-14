@@ -159,8 +159,11 @@ void clMenu::main(void) {
 		cntReturn = 0;
 	}
 
-	// Выход на начальный уровень, в случае отсутствия активности (нажатия кнопок)
-	if (lvlMenu != &clMenu::lvlStart) {
+	// Выход на начальный уровень:
+	// - если режим Введен;
+	// - нет активности (нажатия кнопок) в течении заданного времени.
+	eGB_REGIME regime = sParam.glb.status.getRegime();
+	if ((regime == GB_REGIME_ENABLED) && (lvlMenu != &clMenu::lvlStart))  {
 		if (cntReturn < TIME_RETURN_LVL_START) {
 			cntReturn++;
 		}
