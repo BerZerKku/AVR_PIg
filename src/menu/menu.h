@@ -37,7 +37,7 @@
 #define TIME_TEST_EXIT (1000 / MENU_TIME_CYLCE)
 
 /// время до возврата на начальный уровень, с
-#define TIME_RETURN_LVL_START (15 * 60 * (1000 / MENU_TIME_CYLCE))
+#define TIME_RETURN_LVL_START (5 * 60 * (1000 / MENU_TIME_CYLCE))
 
 /// Измеряемые параметры
 enum eMENU_MEAS_PARAM {
