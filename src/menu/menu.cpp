@@ -175,6 +175,11 @@ void clMenu::main(void) {
 		cntReturn = 0;
 	}
 
+	// Обработка нажатий кнопка + "Фн", если не идет ввода нового значения
+	if ((key_ != KEY_NO) && !EnterParam.isEnable()) {
+		key_ = onFnButton(key_);
+	}
+
 	if (checkLedOn()) {
 		vLCDsetLed(LED_SWITCH);
 	}
@@ -1096,97 +1101,14 @@ void clMenu::lvlStart() {
 		printDevicesStatus(poz, &sParam.prd.status);
 	}
 
-	switch(key_) {
-		case KEY_MENU:
+	// Дополнительная проверка нажатия конпка + "Фн" в начальном меню
+	if (key_ != KEY_NO) {
+		key_ = onFnButton(key_);
+
+		if (key_ == KEY_MENU) {
 			lvlMenu = &clMenu::lvlFirst;
 			lvlCreate_ = true;
-			break;
-
-		case KEY_CALL:
-			sParam.txComBuf.setInt8(GB_CONTROL_CALL);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			break;
-
-		case KEY_PUSK_UD:
-			if (sParam.def.status.isEnable()) {
-				if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
-					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_ALL);
-				} else {
-					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
-				}
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			}
-			break;
-
-		case KEY_AC_PUSK_UD:
-			if (sParam.def.status.isEnable()) {
-				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_AC_UD);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			}
-			break;
-
-		case KEY_PUSK_NALAD:
-			if (sParam.def.status.isEnable()) {
-				if (sParam.def.status.getState() == 7) {
-					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_OFF);
-					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-				} else {
-					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_ON);
-					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-				}
-			}
-			break;
-
-		case KEY_AC_RESET:
-			if (sParam.def.status.isEnable()) {
-				sParam.txComBuf.setInt8(GB_CONTROL_RESET_AC);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			}
-			break;
-
-		case KEY_AC_PUSK:
-			if (sParam.def.status.isEnable()) {
-				if (sParam.typeDevice == AVANT_R400M) {
-					eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
-					if (comp != GB_COMPATIBILITY_LINER) {
-						if ((comp == GB_COMPATIBILITY_AVZK80) ||
-								(comp == GB_COMPATIBILITY_PVZ90)) {
-							sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK);
-						} else {
-							sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
-						}
-						sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
-					}
-				}
-			}
-			break;
-
-		case KEY_AC_REGIME:
-			if (sParam.def.status.isEnable()) {
-				sParam.txComBuf.setInt8(GB_CONTROL_REG_AC);
-				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			}
-			break;
-
-		case KEY_RESET_IND:
-			if (sParam.prd.status.isEnable() || sParam.prm.status.isEnable()) {
-				sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
-			}
-			break;
-
-		case KEY_PUSK:
-			if (sParam.prm.status.isEnable()) {
-				sParam.txComBuf.addFastCom(GB_COM_PRM_ENTER);
-			}
-			break;
-
-		case KEY_RESET:
-			sParam.txComBuf.setInt8(GB_CONTROL_RESET_SELF);
-			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
-			break;
-
-		default:
-			break;
+		}
 	}
 }
 
@@ -4992,6 +4914,7 @@ void clMenu::setupParam() {
 	}
 }
 
+// Проверка необходимости в подсветке.
 bool clMenu::checkLedOn() {
 	bool ledOn = false;
 
@@ -5045,7 +4968,7 @@ bool clMenu::checkLedOn() {
 	return ledOn;
 }
 
-//
+// Проверка текущего аппарата РСЗК и совместимости РСЗКм.
 bool clMenu::isRzskM() const {
 	bool check = false;
 
@@ -5055,4 +4978,100 @@ bool clMenu::isRzskM() const {
 		}
 	}
 	return check;
+}
+
+// Обработчик дополнительных функций кнопок клавиатуры.
+eKEY clMenu::onFnButton(eKEY key) {
+	eKEY tkey = key;
+	key = KEY_NO;
+
+	switch(tkey) {
+		case KEY_CALL:
+			sParam.txComBuf.setInt8(GB_CONTROL_CALL);
+			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			break;
+
+		case KEY_PUSK_UD:
+			if (sParam.def.status.isEnable()) {
+				if (sParam.glb.getNumDevices() == GB_NUM_DEVICES_3) {
+					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_ALL);
+				} else {
+					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_UD_1);
+				}
+				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			}
+			break;
+
+		case KEY_AC_PUSK_UD:
+			if (sParam.def.status.isEnable()) {
+				sParam.txComBuf.setInt8(GB_CONTROL_PUSK_AC_UD);
+				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			}
+			break;
+
+		case KEY_PUSK_NALAD:
+			if (sParam.def.status.isEnable()) {
+				if (sParam.def.status.getState() == 7) {
+					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_OFF);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				} else {
+					sParam.txComBuf.setInt8(GB_CONTROL_PUSK_ON);
+					sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+				}
+			}
+			break;
+
+		case KEY_AC_RESET:
+			if (sParam.def.status.isEnable()) {
+				sParam.txComBuf.setInt8(GB_CONTROL_RESET_AC);
+				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			}
+			break;
+
+		case KEY_AC_PUSK:
+			if (sParam.def.status.isEnable()) {
+				if (sParam.typeDevice == AVANT_R400M) {
+					eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
+					if (comp != GB_COMPATIBILITY_LINER) {
+						if ((comp == GB_COMPATIBILITY_AVZK80) ||
+								(comp == GB_COMPATIBILITY_PVZ90)) {
+							sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK);
+						} else {
+							sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
+						}
+						sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
+					}
+				}
+			}
+			break;
+
+		case KEY_AC_REGIME:
+			if (sParam.def.status.isEnable()) {
+				sParam.txComBuf.setInt8(GB_CONTROL_REG_AC);
+				sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			}
+			break;
+
+		case KEY_RESET_IND:
+			if (sParam.prd.status.isEnable() || sParam.prm.status.isEnable()) {
+				sParam.txComBuf.addFastCom(GB_COM_PRM_RES_IND);
+			}
+			break;
+
+		case KEY_PUSK:
+			if (sParam.prm.status.isEnable()) {
+				sParam.txComBuf.addFastCom(GB_COM_PRM_ENTER);
+			}
+			break;
+
+		case KEY_RESET:
+			sParam.txComBuf.setInt8(GB_CONTROL_RESET_SELF);
+			sParam.txComBuf.addFastCom(GB_COM_SET_CONTROL);
+			break;
+
+		default:
+			key = tkey;
+	}
+
+	return key;
 }

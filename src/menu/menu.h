@@ -358,6 +358,13 @@ private:
 	 * 	@return true если РСЗК и совместимость РЗСКм, иначе false.
 	 */
 	bool isRzskM() const;
+
+	/** Обработчик дополнительных функций кнопок клавиатуры.
+	 *
+	 *	@param[in] key Нажатая кнопка или функция.
+	 *	@return Код кнопки если она не была обработана, иначе \a KEY_NO.
+	 */
+	eKEY onFnButton(eKEY key);
 };
 
 #endif /* MENU_H_ */
