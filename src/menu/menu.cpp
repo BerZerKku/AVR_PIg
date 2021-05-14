@@ -4452,7 +4452,6 @@ void clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device) {
 		poz += 1 + snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
 
 		uint8_t state = device->getState();
-		state = 1;
 		if (isRzskM() && (state == 1) && (device == &sParam.def.status)) {
 			eGB_TYPE_AC ac = sParam.def.getTypeAC();
 			snprintf_P(&vLCDbuf[poz], 9, fcAcType[static_cast<uint8_t>(ac)]);
