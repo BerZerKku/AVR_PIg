@@ -2565,7 +2565,7 @@ void clMenu::lvlSetup() {
 				lvlCreate_ = true;
 			}
 		}
-			break;
+		break;
 
 		default:
 			break;
@@ -4380,12 +4380,18 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
  * 	приоритетной и код (даже если одна).
  * 	Далее проверяется наличие неисправности устройства и если есть, выводится
  * 	по тому же алгоритму.
+ *
  * 	Если есть общее предупреждение - выводится почередно состояние и расшифровка
  * 	данного предупреждения. Если предупреждений несколько, выводится только код.
  * 	Далее проверяется наличие предупреждения для устройства и если есть,
  * 	выодится по тому же алгоритму.
+ *
  * 	Если небыло никаких неисправностей/предупреждений, то выводится текущее
  * 	состояние и режим работы устройства.
+ *
+ * 	Для РЗСК в совместимости РЗСКм в случае состояния защиты "Контроль",
+ * 	на экран выводится текущий режим АК.
+ *
  * 	@param poz Начальная позиция в буфере данных ЖКИ
  * 	@param device Данные для текущего устройства
  *	@return Нет
@@ -4403,70 +4409,56 @@ void clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device) {
 	snprintf(&vLCDbuf[poz], 2, ":");
 	poz += 1;
 
-	if (sParam.glb.status.getNumFaults() != 0)
-	{
-		if (blink_)
-		{
+	if (sParam.glb.status.getNumFaults() != 0) {
+		if (blink_) {
 			text = sParam.glb.status.faultText;
 			x = sParam.glb.status.getFault();
 			snprintf_P(&vLCDbuf[poz], 17, text[x]);
-		}
-		else
-		{
+		} else {
 			y = sParam.glb.status.getFaults();
 			snprintf_P(&vLCDbuf[poz], 17, fcFaults, 'g', y);
 		}
-	}
-	else if (device->getNumFaults() != 0)
-	{
-		if (blink_)
-		{
+	} else if (device->getNumFaults() != 0)	{
+		if (blink_)	{
 			text = device->faultText;
 			x = device->getFault();
 			y = device->getRemoteNumber();
 			snprintf_P(&vLCDbuf[poz], 17, text[x], fcRemoteNum[y]);
-		}
-		else
-		{
+		} else {
 			y = device->getFaults();
 			snprintf_P(&vLCDbuf[poz], 17, fcFaults, 'l', y);
 		}
-	}
-	else if ( (sParam.glb.status.getNumWarnings() != 0) && (blink_) )
-	{
-		if (sParam.glb.status.getNumWarnings() == 1)
-		{
+	} else if ((sParam.glb.status.getNumWarnings() != 0) && (blink_)){
+		if (sParam.glb.status.getNumWarnings() == 1) {
 			text = sParam.glb.status.warningText;
 			x = sParam.glb.status.getWarning();
 			snprintf_P(&vLCDbuf[poz], 17, text[x]);
-		}
-		else
-		{
+		} else {
 			y = sParam.glb.status.getWarnings();
 			snprintf_P(&vLCDbuf[poz], 17, fcWarnings, 'g', y);
 		}
-	}
-	else if ( (device->getNumWarnings()!= 0) && (blink_) )
-	{
-		if (device->getNumWarnings() == 1)
-		{
+	} else if ((device->getNumWarnings()!= 0) && (blink_)) {
+		if (device->getNumWarnings() == 1) {
 			text = device->warningText;
 			x = device->getWarning();
 			y = device->getRemoteNumber();
 			snprintf_P(&vLCDbuf[poz], 17, text[x], fcRemoteNum[y]);
-		}
-		else
-		{
+		} else {
 			y = device->getWarnings();
 			snprintf_P(&vLCDbuf[poz], 17, fcWarnings, 'l', y);
 		}
-	}
-	else
-	{
+	} else {
 		text = device->stateText;
 		poz += 1 + snprintf_P(&vLCDbuf[poz], 9, fcRegime[device->getRegime()]);
-		snprintf_P(&vLCDbuf[poz], 9,
-				text[device->getState()], device->getDopByte());
+
+		uint8_t state = device->getState();
+		state = 1;
+		if (isRzskM() && (state == 1) && (device == &sParam.def.status)) {
+			eGB_TYPE_AC ac = sParam.def.getTypeAC();
+			snprintf_P(&vLCDbuf[poz], 9, fcAcType[static_cast<uint8_t>(ac)]);
+		} else {
+			snprintf_P(&vLCDbuf[poz], 9, text[state], device->getDopByte());
+		}
 	}
 }
 
@@ -4643,7 +4635,7 @@ void clMenu::printAc(uint8_t pos) {
 		}
 	}
 
-	pos += snprintf_P(&vLCDbuf[pos], 11,
+	pos += snprintf_P(&vLCDbuf[pos], 9,
 			fcAcType[static_cast<uint8_t>(ac)]);
 
 	if (ac != GB_TYPE_AC_OFF) {
