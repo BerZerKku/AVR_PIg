@@ -1,5 +1,5 @@
 [Files]
-Flash=D:\Workspace\mcu\avr-gcc\PIg\Debug\PIg.hex
+Flash=D:\Workspace\mcu\avr-gcc\PIg\Release\PIg.hex
 Eeprom=[Unspecified]
 FlashInvert=0
 [Settings]

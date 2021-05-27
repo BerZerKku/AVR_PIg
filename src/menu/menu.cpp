@@ -5032,6 +5032,9 @@ eKEY clMenu::onFnButton(eKEY key) {
 						}
 						sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
 					}
+				} else if (isRzskM()) {
+					sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);
+					sParam.txComBuf.addFastCom(GB_COM_DEF_SET_TYPE_AC);
 				}
 			}
 			break;
