@@ -14,8 +14,10 @@ class LocalParams {
 	/// Максимальное количество параметров в списке.
 	static const uint8_t MAX_NUM_OF_PARAMS = 25;
 
-	/// Максимальное количество байт для битовых переменных.
-//	static const uint8_t MAX_BUF_BITS_VALUES = 12;
+	struct prop_t {
+		eGB_PARAM param;
+		bool readOnly;
+	};
 
 public:
 
@@ -98,12 +100,18 @@ public:
 	 *
 	 * 	В случае переполнения буфера параметров, будет возвращена ошибка.
 	 *
-	 * 	@param *newParam Указатель на структуру параметра.
+	 * 	@param[in] newParam Параметр.
+	 * 	@param[in] readonly true - только для чтения, иначе false.
 	 * 	@retval True Параметр добавлен.
 	 * 	@retval False Буфер переполнен, параметр небыл добавлен.
 	 *
 	 */
-	bool addParam(eGB_PARAM newParam);
+	bool addParam(eGB_PARAM newParam, bool readonly=false);
+
+	/**	Проверяет текущий параметр на возможность только чтения.
+	 * 	@return true если параметр можно только просматривать, иначе false.
+	 */
+	bool isReadOnly();
 
 	/**	Очистка списка параметров.
 	 *
@@ -260,7 +268,7 @@ public:
 	 * 	@return Текущий параметр.
 	 */
 	eGB_PARAM getParam() const {
-		return param[currParam];
+		return param[currParam].param;
 	}
 
 	/**	Возвращает зависимость повторений текущего параметра.
@@ -317,7 +325,7 @@ private:
 
 	const Param** fps;		///< Массив значений параметров.
 
-	eGB_PARAM param[MAX_NUM_OF_PARAMS]; ///< Массив параметров.
+	prop_t param[MAX_NUM_OF_PARAMS]; ///< Массив параметров.
 
 	int16_t val;			///< Значение текущего параметра.
 
@@ -358,7 +366,7 @@ private:
 	 * 	@return Указатель на массив значений текущего параметра.
 	 */
 	Param* getPtrParam() const {
-		return (Param*) pgm_read_word(&fps[param[currParam]]);
+		return (Param*) pgm_read_word(&fps[param[currParam].param]);
 	}
 };
 

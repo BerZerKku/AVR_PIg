@@ -3252,9 +3252,8 @@ void clMenu::lvlSetupParamGlb() {
 			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
 
 			sParam.local.addParam(GB_PARAM_COMP_RZSK);
-			if (sParam.glb.getCompRZSK() != GB_COMP_RZSK_3E8) {
-				sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES);
-			}
+			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES,
+					sParam.glb.getCompRZSK() == GB_COMP_RZSK_3E8);
 			sParam.local.addParam(GB_PARAM_TIME_SYNCH_SRC);
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE);
 			sParam.local.addParam(GB_PARAM_OUT_CHECK);
@@ -4710,6 +4709,10 @@ void clMenu::printAc(uint8_t pos) {
 // Настройка параметров для ввода значения с клавиатуры.
 void clMenu::enterParameter() {
 	LocalParams *lp = &sParam.local;
+
+	// Параметр только для чтения
+	if (lp->isReadOnly())
+		return;
 
 	if ((lp->getChangeCond() == Param::CHANGE_COND_REG_DISABLE) &&
 			(sParam.glb.status.getRegime() != GB_REGIME_DISABLED)) {

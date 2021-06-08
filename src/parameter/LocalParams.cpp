@@ -62,12 +62,20 @@ void LocalParams::prevSameParam() {
 }
 
 // ƒобавление в список нового параметра.
-bool LocalParams::addParam(eGB_PARAM newParam) {
+bool LocalParams::addParam(eGB_PARAM newParam, bool readonly) {
 	if (numOfParams >= (MAX_NUM_OF_PARAMS - 1))
 		return false;
 
-	param[numOfParams++] = newParam;
+	param[numOfParams].param = newParam;
+	param[numOfParams].readOnly = readonly;
+	numOfParams++;
+
 	return true;
+}
+
+// ѕровер€ет текущий параметр на возможность только чтени€.
+bool LocalParams::isReadOnly() {
+	return param[currParam].readOnly;
 }
 
 // ”становка нового значени€ параметра и его проверка на корректность.
@@ -103,8 +111,9 @@ uint8_t LocalParams::getValueB() const {
 
 // ќчистка списка параметров.
 void LocalParams::clearParams() {
-	param[0] = GB_PARAM_NULL_PARAM;
 	currParam = 0;
+	param[currParam].param = GB_PARAM_NULL_PARAM;
+	param[currParam].readOnly = true;
 	val = 0;
 	numOfParams = 0;
 	currSameParam = 0;
@@ -173,18 +182,6 @@ uint8_t LocalParams::getSendDop() const {
 	uint8_t dop = 0;
 
 	dop = pgm_read_byte(&getPtrParam()->sendDop);
-
-//	switch(getDependSame()) {
-//		case Param::DEPEND_SAME_NO:
-//			break;
-//		case Param::DEPEND_SAME_ON_NUM_DEVS: // DOWN
-//		case Param::DEPEND_SAME_ON_COM_PRD:	 // DOWN
-//		case Param::DEPEND_SAME_ON_COM_PRM:
-//			if (getParamType() != Param::PARAM_BITES) {
-//				dop += getNumOfCurrSameParam();
-//			}
-//			break;
-//	}
 
 	return dop;
 }
