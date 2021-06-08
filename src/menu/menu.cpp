@@ -140,11 +140,11 @@ void clMenu::main(void) {
 		cntInitLcd = 0;
 	}
 
-	// настройка аппарата, если произошла смена:
-	// кол-ва аппаратов в линии
-	// типа совместимости (Р400м)
+	// настройка аппарата при старте или в случае смены выжных параметров
+	// после настройки для проверки делается еще один запрос версии
 	if (!sParam.device) {
 		setDevice(sParam.typeDevice);
+		sParam.txComBuf.addFastCom(GB_COM_GET_VERS);
 	}
 
 	// Считаем код с клавиатуры
@@ -221,10 +221,8 @@ void clMenu::main(void) {
 			snprintf_P(&vLCDbuf[0], 20, fcNoConnectBsp);
 		}
 	} else if (!lastConnection) {
-		// если связь с БСП только восстановилась
-		// дважды пошлем команду опроса версии
+		// если связь с БСП только восстановилась пошлем команду опроса версии
 		sParam.txComBuf.addFastCom(GB_COM_GET_VERS);
-		//		sParam.txComBuf.addFastCom(GB_COM_GET_VERS);
 	}
 	lastConnection = connection;
 
@@ -463,41 +461,63 @@ bool clMenu::setDeviceRZSK() {
 	sParam.prm.status.stateText[1] = fcPrmSost01;
 	sParam.prm.status.stateText[3] = fcPrmSost03;
 
-	// первый столбец параметров
-	measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
-	measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
-	measParam[2] = measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UOUT;
-	measParam[4] = measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_IOUT;
-
-	// второй столбец параметров
-	if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-		measParam[1] = MENU_MEAS_PARAM_UZ1;
-		measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UZ2;
-		measParam[3] = MENU_MEAS_PARAM_UC1;
-		measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC2;
-		measParam[5] = MENU_MEAS_PARAM_UN1;
-		measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN2;
+	if (sParam.def.status.isEnable()) {
+		measParam[0] = MENU_MEAS_PARAM_TIME;	// дата <-> время
+		measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
+		// второй столбец параметров
+		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+			measParam[1] = MENU_MEAS_PARAM_UZ1;
+			measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UZ2;
+		} else {
+			measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UZ;
+		}
 	} else {
-		measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UZ;
-		measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
-		measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
+		measParam[0] = measParam[MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_TIME;
+		measParam[1] = measParam[1 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_DATE;
+	}
+
+	if (sParam.prd.status.isEnable() || sParam.def.status.isEnable()) {
+		measParam[2] = measParam[2 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UOUT;
+		measParam[4] = measParam[4 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_IOUT;
+	}
+
+	if (sParam.prm.status.isEnable() || sParam.def.status.isEnable()) {
+		// второй столбец параметров
+		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+			measParam[3] = MENU_MEAS_PARAM_UC1;
+			measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC2;
+			measParam[5] = MENU_MEAS_PARAM_UN1;
+			measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN2;
+		} else {
+			measParam[3] = measParam[3 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UC;
+			measParam[5] = measParam[5 + MAX_NUM_MEAS_PARAM] = MENU_MEAS_PARAM_UN;
+		}
 	}
 
 	// заполнение массива параметров для меню "Измерение"
 	uint8_t cnt = 0;
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_UOUT;	// 1
-	measParamLvl[cnt++] = MENU_MEAS_PARAM_IOUT;	// 2
-	if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UZ1;	// 3
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UZ2;	// 4
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UC1;	// 5
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UC2;	// 6
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UN1; 	// 7
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UN2;	// 8
-	} else {
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UZ;	// 3
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UC;	// 4
-		measParamLvl[cnt++] = MENU_MEAS_PARAM_UN;	// 5
+	if (sParam.prd.status.isEnable() || sParam.def.status.isEnable()) {
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_UOUT;	// 1
+		measParamLvl[cnt++] = MENU_MEAS_PARAM_IOUT;	// 2
+	}
+	if (sParam.def.status.isEnable()) {
+		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UZ1;	// 3
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UZ2;	// 4
+		} else {
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UZ;	// 3
+		}
+	}
+	if (sParam.prm.status.isEnable() || sParam.def.status.isEnable()) {
+		if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC1;	// 5
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC2;	// 6
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN1; 	// 7
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN2;	// 8
+		} else {
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UC;	// 4
+			measParamLvl[cnt++] = MENU_MEAS_PARAM_UN;	// 5
+		}
 	}
 	measParamLvl[cnt++] = MENU_MEAS_PARAM_TEMPERATURE;	// 9 или 6
 
@@ -924,12 +944,12 @@ eGB_COM clMenu::getTxCommand() {
 	// быстрая команда идет с самым высоким приоритетом
 	eGB_COM com = sParam.txComBuf.getFastCom();
 
-	if (com == GB_COM_NO) {
+	while(com == GB_COM_NO) {
 		if (cnt == 0) {
 			com = GB_COM_GET_SOST;
 		} else if (cnt == 1) {
 			com = GB_COM_GET_TIME;
-		} else if (cnt <= (1 + MAX_NUM_COM_BUF2)) {
+		} else {
 			// команды которые должны передаваться минимум раз в секунду
 			com = sParam.txComBuf.getCom2();
 		}
@@ -937,11 +957,10 @@ eGB_COM clMenu::getTxCommand() {
 		if (com == GB_COM_NO) {
 			// команды которые должны периодически передаваться
 			com = sParam.txComBuf.getCom1();
+			cnt = 0;
+		} else {
+			cnt++;
 		}
-	}
-
-	if ((++cnt >= MIN_NUM_COM_SEND_IN_1_SEK) || (com == GB_COM_NO)) {
-		cnt = 0;
 	}
 
 	return com;
@@ -1040,10 +1059,13 @@ void clMenu::lvlStart() {
 			sParam.txComBuf.addCom2(GB_COM_DEF_GET_TYPE_AC);
 		}
  		// буфер 1
-		// неисправности + кол-во аппаратов в линии + сетевой адрес
+		// неисправности + кол-во аппаратов в линии + номер аппарата
+		// + сетевой адрес + журналы
 		// в Р400м + АК + совместимость
-		// в К400  + совместимость
+		// в К400 + совместимость
+		// в РЗСК + совместимость
 		sParam.txComBuf.addCom1(GB_COM_DEF_GET_LINE_TYPE);
+	    sParam.txComBuf.addCom1(GB_COM_GET_DEVICE_NUM);
 		sParam.txComBuf.addCom1(GB_COM_GET_NET_ADR);
 		if (sParam.typeDevice != AVANT_OPTO) {
 		    sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
@@ -1080,10 +1102,10 @@ void clMenu::lvlStart() {
 
 		// в Р400м выводится АК и время до АК, а также тип совместимости
 		if (sParam.typeDevice == AVANT_R400M) {
-			eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
+			eGB_COMP_R400M comp = sParam.glb.getCompR400m();
 
 			// если работает в совместимости, выведем это на экран
-			if (comp != GB_COMPATIBILITY_AVANT) {
+			if (comp != GB_COMP_R400M_AVANT) {
 				snprintf_P(&vLCDbuf[poz], 21, fcCompType,
 						fcCompatibility[static_cast<uint8_t>(comp)]);
 			}
@@ -2099,13 +2121,13 @@ void clMenu::lvlControl() {
 		Punkts_.clear();
 		if (device == AVANT_R400M) {
 			eGB_NUM_DEVICES numDevices = sParam.def.getNumDevices();
-			eGB_COMPATIBILITY compatibility = sParam.glb.getCompatibility();
+			eGB_COMP_R400M compatibility = sParam.glb.getCompR400m();
 			// первым всегда идет пуск наладочный
 			Punkts_.add(punkt07);// далее выбирается в зависимости от текущего
 			// сброс своего есть во всех аппаратах и совместимостях
 			Punkts_.add(punkt03);
 			// TODO для ПВЗК
-			if (compatibility == GB_COMPATIBILITY_AVANT) {
+			if (compatibility == GB_COMP_R400M_AVANT) {
 				if (numDevices == GB_NUM_DEVICES_2) {
 					Punkts_.add(punkt04);
 					Punkts_.add(punkt02);
@@ -2128,14 +2150,14 @@ void clMenu::lvlControl() {
 					Punkts_.add(punkt17);
 				}
 				Punkts_.add(punkt05);
-			} else if (compatibility == GB_COMPATIBILITY_PVZ90) {
+			} else if (compatibility == GB_COMP_R400M_PVZ90) {
 				Punkts_.add(punkt04);
 				Punkts_.add(punkt19);
 				Punkts_.add(punkt16);
 				Punkts_.add(punkt17);
 				Punkts_.add(punkt18);
 				Punkts_.add(punkt08);
-			} else if (compatibility == GB_COMPATIBILITY_PVZUE) {
+			} else if (compatibility == GB_COMP_R400M_PVZUE) {
 				if (numDevices == GB_NUM_DEVICES_2) {
 					Punkts_.add(punkt02);
 					Punkts_.add(punkt09);
@@ -2158,13 +2180,13 @@ void clMenu::lvlControl() {
 					Punkts_.add(punkt17);
 				}
 				Punkts_.add(punkt05);
-			} else if (compatibility == GB_COMPATIBILITY_AVZK80) {
+			} else if (compatibility == GB_COMP_R400M_AVZK80) {
 				Punkts_.add(punkt19);
 				Punkts_.add(punkt16);
 				Punkts_.add(punkt17);
 				Punkts_.add(punkt18);
 				Punkts_.add(punkt08);
-			} else if (compatibility == GB_COMPATIBILITY_PVZL) {
+			} else if (compatibility == GB_COMP_R400M_PVZL) {
 				Punkts_.add(punkt11);
 				Punkts_.add(punkt12);
 				Punkts_.add(punkt13);
@@ -2172,7 +2194,7 @@ void clMenu::lvlControl() {
 				Punkts_.add(punkt31);
 				Punkts_.add(punkt17);
 				Punkts_.add(punkt05);
-			} else if (compatibility == GB_COMPATIBILITY_LINER) {
+			} else if (compatibility == GB_COMP_R400M_LINER) {
 				if (numDevices == GB_NUM_DEVICES_2) {
 					Punkts_.add(punkt04);
 					Punkts_.add(punkt02);
@@ -2246,14 +2268,11 @@ void clMenu::lvlControl() {
 
 		// доплнительные команды
 		sParam.txComBuf.clear();
-		if ((sParam.typeDevice == AVANT_R400M) ||
-				(sParam.typeDevice == AVANT_RZSK)) {
-			// совместимость
+		if (sParam.typeDevice != AVANT_OPTO) {
+			// тип линии, совместимость и номер аппарата для переформирования
+			sParam.txComBuf.addCom1(GB_COM_DEF_GET_LINE_TYPE);
 			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
-			// кол-во аппаратов в линии
-			sParam.txComBuf.addCom2(GB_COM_DEF_GET_LINE_TYPE);
-			// номер текущего аппарата
-			sParam.txComBuf.addCom2(GB_COM_GET_DEVICE_NUM);
+			sParam.txComBuf.addCom1(GB_COM_GET_DEVICE_NUM);
 		}
 	}
 
@@ -2285,9 +2304,9 @@ void clMenu::lvlControl() {
 			}
 		} else if (device == AVANT_R400M) {
 			if (sParam.def.getNumDevices() == GB_NUM_DEVICES_3) {
-				eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
+				eGB_COMP_R400M comp = sParam.glb.getCompR400m();
 				uint8_t num = sParam.glb.getDeviceNum();
-				if (comp == GB_COMPATIBILITY_AVANT) {
+				if (comp == GB_COMP_R400M_AVANT) {
 					if (num == 1) {
 						Punkts_.change(punkt24, GB_COM_NO, 3);
 						Punkts_.change(punkt25, GB_COM_NO, 4);
@@ -2298,7 +2317,7 @@ void clMenu::lvlControl() {
 						Punkts_.change(punkt23, GB_COM_NO, 3);
 						Punkts_.change(punkt24, GB_COM_NO, 4);
 					}
-				} else if (comp == GB_COMPATIBILITY_PVZUE) {
+				} else if (comp == GB_COMP_R400M_PVZUE) {
 					if (num == 1) {
 						Punkts_.change(punkt24, GB_COM_NO, 2);
 						Punkts_.change(punkt25, GB_COM_NO, 3);
@@ -2315,7 +2334,7 @@ void clMenu::lvlControl() {
 						Punkts_.change(punkt27, GB_COM_NO, 5);
 						Punkts_.change(punkt28, GB_COM_NO, 6);
 					}
-				} else if (comp == GB_COMPATIBILITY_LINER) {
+				} else if (comp == GB_COMP_R400M_LINER) {
 					if (num == 1) {
 						Punkts_.change(punkt33, GB_COM_NO, 2);
 						Punkts_.change(punkt34, GB_COM_NO, 3);
@@ -2929,6 +2948,8 @@ void clMenu::lvlSetupParamDef() {
 
 		sParam.local.clearParams();
 		if (device == AVANT_RZSK) {
+			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
+
 			sParam.local.addParam(GB_PARAM_DEF_TYPE);
 			sParam.local.addParam(GB_PARAM_TIME_NO_MAN);
 			sParam.local.addParam(GB_PARAM_OVERLAP);
@@ -2937,7 +2958,7 @@ void clMenu::lvlSetupParamDef() {
 			sParam.local.addParam(GB_PARAM_SENS_DEC_RZ);
 			sParam.local.addParam(GB_PARAM_PRM_TYPE);
 		} else if (device == AVANT_R400M) {
-			eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
+			eGB_COMP_R400M comp = sParam.glb.getCompR400m();
 			// для переформирования меню добавляется команда опроса:
 			// совместимости
 			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
@@ -2950,7 +2971,7 @@ void clMenu::lvlSetupParamDef() {
 			sParam.local.addParam(GB_PARAM_SHIFT_PRM);
 			sParam.local.addParam(GB_PARAM_SHIFT_PRD);
 			sParam.local.addParam(GB_PARAM_SENS_DEC);
-			if (comp == GB_COMPATIBILITY_AVANT) {
+			if (comp == GB_COMP_R400M_AVANT) {
 				// Снижение уровня АК есть только в совместимости АВАНТ
 				sParam.local.addParam(GB_PARAM_AC_IN_DEC);
 			}
@@ -2973,6 +2994,10 @@ void clMenu::lvlSetupParamDef() {
 	snprintf_P(&vLCDbuf[0], 21, title);
 
 	setupParam();
+
+	if (!sParam.def.status.isEnable()) {
+		key_ = KEY_CANCEL;
+	}
 
 	switch(key_) {
 		case KEY_CANCEL:
@@ -3055,6 +3080,10 @@ void clMenu::lvlSetupParamPrm() {
 	snprintf_P(&vLCDbuf[0], 21, title);
 
 	setupParam();
+
+	if (!sParam.prm.status.isEnable()) {
+		key_ = KEY_CANCEL;
+	}
 
 	switch(key_) {
 		case KEY_CANCEL:
@@ -3140,6 +3169,10 @@ void clMenu::lvlSetupParamPrd() {
 
 	setupParam();
 
+	if (!sParam.prd.status.isEnable()) {
+		key_ = KEY_CANCEL;
+	}
+
 	switch(key_) {
 		case KEY_CANCEL:
 			lvlMenu = &clMenu::lvlSetupParam;
@@ -3176,7 +3209,7 @@ void clMenu::lvlSetupParamGlb() {
 		sParam.local.clearParams();
 		if (device == AVANT_K400) {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
-			sParam.txComBuf.addCom2(GB_COM_GET_COM_PRD_KEEP);
+			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
 
 			sParam.local.addParam(GB_PARAM_COMP_K400);
 			sParam.local.addParam(GB_PARAM_TIME_SYNCH);
@@ -3216,10 +3249,13 @@ void clMenu::lvlSetupParamGlb() {
 			}
 		} else if (device == AVANT_RZSK) {
 			sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
+			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
 
 			sParam.local.addParam(GB_PARAM_COMP_RZSK);
-			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES);
-			sParam.local.addParam(GB_PARAM_TIME_SYNCH);
+			if (sParam.glb.getCompRZSK() != GB_COMP_RZSK_3E8) {
+				sParam.local.addParam(GB_PARAM_NUM_OF_DEVICES);
+			}
+			sParam.local.addParam(GB_PARAM_TIME_SYNCH_SRC);
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE);
 			sParam.local.addParam(GB_PARAM_OUT_CHECK);
 			sParam.local.addParam(GB_PARAM_WARN_THD_CF);
@@ -3232,7 +3268,7 @@ void clMenu::lvlSetupParamGlb() {
 			sParam.local.addParam(GB_PARAM_COR_U);
 			sParam.local.addParam(GB_PARAM_COR_I);
 		} else if (device == AVANT_R400M) {
-			eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
+			eGB_COMP_R400M comp = sParam.glb.getCompR400m();
 
 			// для переформирования меню добавляются команды опроса:
 			// совместимости и кол-ва аппаратов в линии
@@ -3242,7 +3278,7 @@ void clMenu::lvlSetupParamGlb() {
 			sParam.txComBuf.addCom1(GB_COM_DEF_GET_LINE_TYPE);
 
 			sParam.local.addParam(GB_PARAM_COMP_P400);
-			if (comp == GB_COMPATIBILITY_AVANT) {
+			if (comp == GB_COMP_R400M_AVANT) {
 				sParam.local.addParam(GB_PARAM_TIME_SYNCH_SRC);
 			}
 			sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE);
@@ -3250,12 +3286,12 @@ void clMenu::lvlSetupParamGlb() {
 			sParam.local.addParam(GB_PARAM_WARN_THD);
 			sParam.local.addParam(GB_PARAM_U_OUT_NOM);
 			sParam.local.addParam(GB_PARAM_FREQ);
-			if (comp == GB_COMPATIBILITY_PVZL) {
+			if (comp == GB_COMP_R400M_PVZL) {
 				sParam.local.addParam(GB_PARAM_IN_DEC_AC_ANSWER);
 			}
 			sParam.local.addParam(GB_PARAM_COR_U);
 			sParam.local.addParam(GB_PARAM_COR_I);
-			if (comp == GB_COMPATIBILITY_PVZUE) {
+			if (comp == GB_COMP_R400M_PVZUE) {
 				sParam.local.addParam(GB_PARAM_PVZUE_PROTOCOL);
 				sParam.local.addParam(GB_PARAM_PVZUE_PARITY);
 				sParam.local.addParam(GB_PARAM_PVZUE_FAIL);
@@ -3616,12 +3652,21 @@ void clMenu::lvlMeasure() {
 		sParam.txComBuf.addCom2(GB_COM_GET_MEAS);
 		// 2 команды добавлены для уменьшения частоты опроса измеряемых параметров
 		sParam.txComBuf.addCom2(GB_COM_GET_FAULT);
+
+		// тип линии, совместимость и номер аппарата для переформирования
+		sParam.txComBuf.addCom1(GB_COM_DEF_GET_LINE_TYPE);
+		sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
+	    sParam.txComBuf.addCom1(GB_COM_GET_DEVICE_NUM);
 	}
 
 	snprintf_P(&vLCDbuf[0], 21, title);
 
 	for(uint_fast8_t i = 0; i < MAX_NUM_MEAS_PARAM_LVL; i++) {
 		printMeasParam(lineParam_*2 + i, measParamLvl[i]);
+	}
+
+	if (sParam.typeDevice == AVANT_OPTO) {
+		key_ = KEY_CANCEL;
 	}
 
 	switch(key_) {
@@ -3673,10 +3718,10 @@ void clMenu::lvlTest() {
 			Punkts_.add(punkt2);
 		}
 
-		// доплнительные команды
+		// дополнительные команды
 		sParam.txComBuf.clear();
-		if (sParam.typeDevice == AVANT_R400M) {
-			// совместимость в Р400М
+		if (sParam.typeDevice != AVANT_OPTO) {
+			// совместимость
 			sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
 		}
 	}
@@ -3780,36 +3825,40 @@ void clMenu::lvlTest1() {
 		sParam.test.clear();
 		if (device == AVANT_R400M) {
 			sParam.test.addSignalToList(GB_SIGNAL_RZ);
-			if (sParam.glb.getCompatibility() == GB_COMPATIBILITY_AVANT) {
+			eGB_COMP_R400M comp = sParam.glb.getCompR400m();
+			if (comp == GB_COMP_R400M_AVANT) {
 				sParam.test.addSignalToList(GB_SIGNAL_CF);
-			} else if (sParam.glb.getCompatibility()
-					== GB_COMPATIBILITY_LINER) {
+			} else if (comp == GB_COMP_R400M_LINER) {
 				sParam.test.addSignalToList(GB_SIGNAL_CF1);
 				sParam.test.addSignalToList(GB_SIGNAL_CF2);
 				sParam.test.addSignalToList(GB_SIGNAL_CF3);
 				sParam.test.addSignalToList(GB_SIGNAL_CF4);
 			}
 		} else if (device == AVANT_RZSK) {
+			uint8_t num_com = sParam.prd.getNumCom();
+			// Ограничение количества команд
+			num_com = num_com > 8 ? 8 : num_com;
+
 			if (sParam.def.status.isEnable()) {
 				sParam.test.addSignalToList(GB_SIGNAL_CF_NO_RZ);
 				sParam.test.addSignalToList(GB_SIGNAL_CF_RZ);
 				sParam.test.addSignalToList(GB_SIGNAL_CF2_NO_RZ);
 				sParam.test.addSignalToList(GB_SIGNAL_CF2_RZ);
-				sParam.test.addSignalToList(GB_SIGNAL_COM1_NO_RZ);
-				sParam.test.addSignalToList(GB_SIGNAL_COM2_NO_RZ);
-				sParam.test.addSignalToList(GB_SIGNAL_COM3_NO_RZ);
-				sParam.test.addSignalToList(GB_SIGNAL_COM4_NO_RZ);
-				sParam.test.addSignalToList(GB_SIGNAL_COM1_RZ);
-				sParam.test.addSignalToList(GB_SIGNAL_COM2_RZ);
-				sParam.test.addSignalToList(GB_SIGNAL_COM3_RZ);
-				sParam.test.addSignalToList(GB_SIGNAL_COM4_RZ);
+				for(uint8_t i = 0; i < num_com; i++) {
+					uint8_t signal = GB_SIGNAL_COM1_NO_RZ + i;
+					sParam.test.addSignalToList(eGB_TEST_SIGNAL(signal));
+				}
+				for(uint8_t i = 0; i < num_com; i++) {
+					uint8_t signal = GB_SIGNAL_COM1_RZ + i;
+					sParam.test.addSignalToList(eGB_TEST_SIGNAL(signal));
+				}
 			} else {
 				sParam.test.addSignalToList(GB_SIGNAL_CF_NO_RZ);
 				sParam.test.addSignalToList(GB_SIGNAL_CF2_NO_RZ);
-				sParam.test.addSignalToList(GB_SIGNAL_COM1_NO_RZ);
-				sParam.test.addSignalToList(GB_SIGNAL_COM2_NO_RZ);
-				sParam.test.addSignalToList(GB_SIGNAL_COM3_NO_RZ);
-				sParam.test.addSignalToList(GB_SIGNAL_COM4_NO_RZ);
+				for(uint8_t i = 0; i < num_com; i++) {
+					uint8_t signal = GB_SIGNAL_COM1_NO_RZ + i;
+					sParam.test.addSignalToList(eGB_TEST_SIGNAL(signal));
+				}
 			}
 		} else if (device == AVANT_K400) {
 			sParam.test.addSignalToList(GB_SIGNAL_CF1);
@@ -4259,23 +4308,29 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 	static const char fcIout[] 	PROGMEM = "I=%03uмА";		// Ток выхода.
 	static const char fcRout[] 	PROGMEM = "R=%03uОм";		// Сопротивление линии.
 	static const char fcUz[] 	PROGMEM = "Uз=%02dдБ";		// Запас по защите.
-	static const char fcUz1[] 	PROGMEM = "Uз1=%02dдБ";		// Запас по защите 1.
-	static const char fcUz2[] 	PROGMEM = "Uз2=%02dдБ";		// Запас по защите 2.
+	static const char fcUzx[] 	PROGMEM = "Uз%u=%02dдБ";	// Запас по защите с номером.
 	static const char fcUcf[] 	PROGMEM = "Uк=%02dдБ";		// Запас по КC.
-	static const char fcUcf1[] 	PROGMEM = "Uк1=%02dдБ";		// Запас по КC 1.
-	static const char fcUcf2[] 	PROGMEM = "Uк2=%02dдБ";		// Запас по КC 2.
+	static const char fcUcfx[] 	PROGMEM = "Uк%u=%02dдБ";	// Запас по КC с номером.
 	static const char fcUn[] 	PROGMEM = "Uш=%02dдБ";		// Уровень шумов.
-	static const char fcUn1[] 	PROGMEM = "Uш1=%02dдБ";		// Уровень шумов 1.
-	static const char fcUn2[] 	PROGMEM = "Uш2=%02dдБ";		// Уровень шумов 2.
+	static const char fcUnx[] 	PROGMEM = "Uш%u=%02dдБ";	// Уровень шумов с номером.
 	static const char fcSd[] 	PROGMEM = "Sд=%02u°";		// Просечки в сигнале.
 	static const char fcDate[] 	PROGMEM = "%02u.%02u.%02u";	// Дата.
 	static const char fcTime[] 	PROGMEM = "%02u:%02u:%02u";	// Время.
 	static const char fcD[]		PROGMEM = "D=%02dдБ";		// Запас по тест.команде (двухчаст) или Отношение сигнал/помеха (одночаст)
 	static const char fcTemper[] PROGMEM= "T=%02d°C";		// Температура
-	static const char fcFreqDev[] PROGMEM = "dF=%02dГц";		// Отклонение часоты КС на ПРМ
+	static const char fcFreqDev[] PROGMEM = "dF=%02dГц";	// Отклонение часоты КС на ПРМ
+
+
+	// В трехконцевом аппарате РЗСК номера у измерений зависят от
+	// текущего номера аппарата:
+	// - для аппарата 1 выводятся: 2 и 3
+	// - для аппарата 2 выводятся: 1 и 3
+	// - для аппарата 3 выводятся: 1 и 2
+	uint8_t ndevice1 = (sParam.glb.getDeviceNum() == 1) ? 2 : 1;
+	uint8_t ndevice2 = (sParam.glb.getDeviceNum() == 3) ? 2 : 3;
 
 	// проверка на максимальную позицию
-		// 10 - кол-во символов отведенное на экране под 1 параметр
+	// 10 - кол-во символов отведенное на экране под 1 параметр
 	if (poz < 12) {
 		poz = (poz * 10) + 1;
 
@@ -4296,11 +4351,11 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 
 				// в 3-х концевой может быть Uz1 == Uz, Uz2
 			case MENU_MEAS_PARAM_UZ1:
-				snprintf_P(&vLCDbuf[poz], 11, fcUz1,
+				snprintf_P(&vLCDbuf[poz], 11, fcUzx, ndevice1,
 						sParam.measParam.getVoltageDef());
 				break;
 			case MENU_MEAS_PARAM_UZ2:
-				snprintf_P(&vLCDbuf[poz], 11, fcUz2,
+				snprintf_P(&vLCDbuf[poz], 11, fcUzx, ndevice2,
 						sParam.measParam.getVoltageDef2());
 				break;
 
@@ -4311,11 +4366,11 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 
 				// в 3-х концевой может быть Uk1 == Uk, Uk2
 			case MENU_MEAS_PARAM_UC1:
-				snprintf_P(&vLCDbuf[poz], 11, fcUcf1,
+				snprintf_P(&vLCDbuf[poz], 11, fcUcfx, ndevice1,
 						sParam.measParam.getVoltageCf());
 				break;
 			case MENU_MEAS_PARAM_UC2:
-				snprintf_P(&vLCDbuf[poz], 11, fcUcf2,
+				snprintf_P(&vLCDbuf[poz], 11, fcUcfx, ndevice2,
 						sParam.measParam.getVoltageCf2());
 				break;
 
@@ -4341,11 +4396,11 @@ void clMenu::printMeasParam(uint8_t poz, eMENU_MEAS_PARAM par) {
 				break;
 				// в 3-х концевой может быть Uш1 == Uш, Uш2
 			case MENU_MEAS_PARAM_UN1:
-				snprintf_P(&vLCDbuf[poz], 11, fcUn1,
+				snprintf_P(&vLCDbuf[poz], 11, fcUnx, ndevice1,
 						sParam.measParam.getVoltageNoise());
 				break;
 			case MENU_MEAS_PARAM_UN2:
-				snprintf_P(&vLCDbuf[poz], 11, fcUn2,
+				snprintf_P(&vLCDbuf[poz], 11, fcUnx, ndevice2,
 						sParam.measParam.getVoltageNoise2());
 				break;
 
@@ -4611,23 +4666,23 @@ void clMenu::printValue(uint8_t pos) {
 
 // Вывод на экран режима АК и времени до следующей проверки.
 void clMenu::printAc(uint8_t pos) {
-	eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
+	eGB_COMP_R400M comp = sParam.glb.getCompR400m();
 	eGB_TYPE_AC ac = sParam.def.getTypeAC();
 
 	if (sParam.typeDevice == AVANT_R400M) {
-		if (comp == GB_COMPATIBILITY_LINER) {
+		if (comp == GB_COMP_R400M_LINER) {
 			// в Р400м совместимость ЛинияР подменяем название ""АК-норм"
 			// на "АК-авто"
 			if  (ac == GB_TYPE_AC_AUTO_NORM) {
 				ac = GB_TYPE_AC_AUTO;
 			}
-		} else if (comp == GB_COMPATIBILITY_AVZK80) {
+		} else if (comp == GB_COMP_R400M_AVZK80) {
 			// в Р400м совместимость АВЗК-80 подменяем название ""АК-бегл"
 			// на "АК-пров"
 			if (ac == GB_TYPE_AC_CHECK) {
 				ac = GB_TYPE_AC_CHECK_1;
 			}
-		} else if (comp == GB_COMPATIBILITY_PVZ90) {
+		} else if (comp == GB_COMP_R400M_PVZ90) {
 			if (ac == GB_TYPE_AC_CHECK) {
 				ac = GB_TYPE_AC_CHECK_1;
 			}
@@ -4963,11 +5018,12 @@ bool clMenu::checkLedOn() {
 bool clMenu::isRzskM() const {
 	bool check = false;
 
-	if (sParam.typeDevice == sParam.typeDevice) {
+	if (sParam.typeDevice == AVANT_RZSK) {
 		if (sParam.glb.getCompRZSK() == GB_COMP_RZSK_M) {
 			check = true;
 		}
 	}
+
 	return check;
 }
 
@@ -5022,10 +5078,10 @@ eKEY clMenu::onFnButton(eKEY key) {
 		case KEY_AC_PUSK:
 			if (sParam.def.status.isEnable()) {
 				if (sParam.typeDevice == AVANT_R400M) {
-					eGB_COMPATIBILITY comp = sParam.glb.getCompatibility();
-					if (comp != GB_COMPATIBILITY_LINER) {
-						if ((comp == GB_COMPATIBILITY_AVZK80) ||
-								(comp == GB_COMPATIBILITY_PVZ90)) {
+					eGB_COMP_R400M comp = sParam.glb.getCompR400m();
+					if (comp != GB_COMP_R400M_LINER) {
+						if ((comp == GB_COMP_R400M_AVZK80) ||
+								(comp == GB_COMP_R400M_PVZ90)) {
 							sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK);
 						} else {
 							sParam.txComBuf.setInt8(GB_TYPE_AC_PUSK_SELF);

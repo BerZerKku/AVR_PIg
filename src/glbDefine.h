@@ -32,7 +32,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0148
+#define VERS 0x0149
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -541,10 +541,18 @@ enum eGB_TEST_SIGNAL {
     GB_SIGNAL_COM2_NO_RZ,           // РЗСК
     GB_SIGNAL_COM3_NO_RZ,           // РЗСК
     GB_SIGNAL_COM4_NO_RZ,           // РЗСК
+    GB_SIGNAL_COM5_NO_RZ,           // РЗСК
+    GB_SIGNAL_COM6_NO_RZ,           // РЗСК
+    GB_SIGNAL_COM7_NO_RZ,           // РЗСК
+    GB_SIGNAL_COM8_NO_RZ,           // РЗСК
     GB_SIGNAL_COM1_RZ,              // РЗСК
     GB_SIGNAL_COM2_RZ,              // РЗСК
     GB_SIGNAL_COM3_RZ,              // РЗСК
     GB_SIGNAL_COM4_RZ,              // РЗСК
+	GB_SIGNAL_COM5_RZ,              // РЗСК
+	GB_SIGNAL_COM6_RZ,              // РЗСК
+	GB_SIGNAL_COM7_RZ,              // РЗСК
+	GB_SIGNAL_COM8_RZ,              // РЗСК
     GB_SIGNAL_COM1,                 // vvvvvvvvvvvvvvvvvvvvvvvvvv
     GB_SIGNAL_COM2,                 // сигналы команд должны идти
     GB_SIGNAL_COM3,                 // подряд для заполнения К400
@@ -1399,20 +1407,24 @@ class TTxCom {
 public:
     TTxCom() {
         clear();
+        clearFastCom();
     }
 
     // очистка буфера
     void clear() {
         numCom1_ = numCom2_ = 0;
         cnt1_ = cnt2_ = 0;
+        com1_[0] = com2_[0] = GB_COM_NO;
+    }
+
+    void clearFastCom() {
         cntComFast = 0;
         for(uint_fast8_t j = 0; j < MAX_NUM_FAST_COM; j++) {
             for(uint_fast8_t i = 0; i < BUFFER_SIZE; i++) {
                 buf_[j] [i] = 0;
             }
         }
-        com1_[0] = com2_[0] = GB_COM_NO;
-        sendType = GB_SEND_NO;
+        sendType_ = GB_SEND_NO;
     }
 
     /** Запись команды в буфер 1.
@@ -1442,15 +1454,20 @@ public:
     }
 
     /** Последовательная выдача имеющихся в буфере 1 команд (по кругу).
+     *
+     *  Если дошли до конца буфера, то будет считано значение из начала.
+     *
      *  @return Код текущей команды.
+     *  @return GB_COM_NO если буфер пуст.
      */
     eGB_COM getCom1() {
-        eGB_COM com= GB_COM_NO;
+        eGB_COM com = GB_COM_NO;
 
-        if (cnt1_ < numCom1_) {
+        if (numCom1_ > 0) {
+            if (cnt1_ >= numCom1_) {
+                cnt1_ = 0;
+            }
             com = com1_[cnt1_++];
-        } else {
-            cnt1_ = 0;
         }
 
         return com;
@@ -1471,15 +1488,22 @@ public:
     }
 
     /** Последовательная выдача имеющихся в буфере 2 команд (по кругу).
+     *
+     *  Если достигли конца буфера, то в следующий раз будет считано значние
+     *  из начала буфера.
+     *
      *  @return Код текущей команды.
+     *  @return GB_COM_NO если буфер пуст или достигли конца буфера
      */
     eGB_COM getCom2() {
-        eGB_COM com= GB_COM_NO;
+        eGB_COM com = GB_COM_NO;
 
-        if (cnt2_ < numCom2_) {
-            com = com2_[cnt2_++];
-        } else {
-            cnt2_ = 0;
+        if (numCom2_ > 0) {
+            if (cnt2_ >= numCom2_) {
+                cnt2_ = 0;
+            } else {
+            	com = com2_[cnt2_++];
+            }
         }
 
         return com;
@@ -1516,8 +1540,8 @@ public:
         if (cntComFast > 0) {
             com = comFast_[cntComFast - 1];
 
-            // извлечение данныз для быстрой команды
-            for(uint_fast8_t i = 0; i < BUFFER_SIZE; i++) {
+            // извлечение данных для быстрой команды
+            for(uint_fast8_t i = 0; i < cntComFast; i++) {
                 buf_[0] [i] = buf_[cntComFast] [i];
             }
 
@@ -1570,12 +1594,12 @@ public:
         return &buf_[0] [0];
     }
 
-    /** Возвращает тип команды на передачу.
+    /** Возвращает тип текущей команды на передачу.
      *
      *  @return Тип команды на передачу
      */
     eGB_SEND_TYPE getSendType() const {
-        return sendType;
+        return sendType_;
     }
 
     /** Установка типа команды на передачу.
@@ -1583,14 +1607,14 @@ public:
      *  @param sendType Тип команды на передачу.
      */
     void setSendType(eGB_SEND_TYPE sendType) {
-        this->sendType = sendType;
+    	sendType_ = sendType;
     }
 
 private:
-    // тип передаваемой команды
-    eGB_SEND_TYPE sendType;
     // срочная команда (на изменение)
     eGB_COM comFast_[MAX_NUM_FAST_COM];
+    // тип срочной команды
+    eGB_SEND_TYPE sendType_;
     // номер текущей срочной команды
     uint8_t cntComFast;
     // первый буфер команд
@@ -2141,12 +2165,12 @@ public:
         } else if (sig == GB_SIGNAL_RZ) {
             rz = 1;
             cf = 0;
-        } else if ((sig >= GB_SIGNAL_COM1_RZ) && (sig <= GB_SIGNAL_COM4_RZ)) {
+        } else if ((sig >= GB_SIGNAL_COM1_RZ) && (sig <= GB_SIGNAL_COM8_RZ)) {
             rz = 2;
-            cf = 3 + sig - GB_SIGNAL_COM1_RZ; // 3 - кол-во кч ?!
-        } else if ((sig>=GB_SIGNAL_COM1_NO_RZ)&&(sig<=GB_SIGNAL_COM4_NO_RZ)) {
+            cf = 3 + sig - GB_SIGNAL_COM1_RZ; // 3 т.к. 1 и 2 это КЧ
+        } else if ((sig>=GB_SIGNAL_COM1_NO_RZ) && (sig<=GB_SIGNAL_COM8_NO_RZ)) {
             rz = 1;
-            cf = 3 + sig - GB_SIGNAL_COM1_NO_RZ; // 3 - кол-во кч ?!
+            cf = 3 + sig - GB_SIGNAL_COM1_NO_RZ; // 3 т.к. 1 и 2 это КЧ
         } else if ((sig == GB_SIGNAL_CF) || (sig == GB_SIGNAL_CS)) {
             rz = 0;
             cf = 1;

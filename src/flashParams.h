@@ -101,6 +101,7 @@ static const char fcCompRZSK[][STRING_LENGHT] PROGMEM = {
 //       1234567890
         "РЗСК",         ///< 0
         "РЗСКм",        ///< 1
+        "РЗСК-3 8к"     ///< 2
 };
 
 /// Частота ПРД / ПРМ (параметр Защиты).
@@ -2102,7 +2103,7 @@ static const Param fIntfStopBits PROGMEM = {
 // время ожидания команд
 static const Param fRingTimeWait PROGMEM = {
         "Время ожидания ком.",  // название параметра
-        GB_COM_GET_COM_PRD_KEEP,// команда стандартного протокола TODO
+        GB_COM_GET_COM_PRD_KEEP,// команда стандартного протокола
         Param::PARAM_INT,       // тип параметра
         Param::RANGE_INT,       // диапазон измнения
         Param::DIM_MSEC,        // размерность
@@ -2122,7 +2123,7 @@ static const Param fRingTimeWait PROGMEM = {
 // транзитные команды
 static const Param fRingComTransit PROGMEM = {
         "Транзитные команды",   // название параметра
-        GB_COM_GET_COM_PRD_KEEP,// команда стандартного протокола TODO
+        GB_COM_GET_COM_PRD_KEEP,// команда стандартного протокола
         Param::PARAM_BITES,     // тип параметра
         Param::RANGE_ON_OFF,    // диапазон измнения
         Param::DIM_NO,          // размерность

@@ -592,7 +592,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			// установка номера(ов) уд.аппаратов ддля Р400(М) в режиме ПВЗУ-Е
 			uint8_t n = 0;
 			if ((device == AVANT_R400) || (device == AVANT_R400M)) {
-				if (sParam_->glb.getCompatibility() == GB_COMPATIBILITY_PVZUE) {
+				if (sParam_->glb.getCompR400m() == GB_COMP_R400M_PVZUE) {
 					n = buf[B5];
 				}
 			}
@@ -656,9 +656,6 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			glb->setVersProgIC16(TO_INT16(buf[B7], buf[B8]) , GB_IC_BSP_MCU);
 			glb->setVersProgIC16(TO_INT16(buf[B9], buf[B10]), GB_IC_BSP_DSP);
 
-			// совместимость, только в Р400м
-			act |= sParam_->glb.setCompatibility((eGB_COMPATIBILITY) buf[B11]);
-
 			glb->setVersProgIC16(VERS, GB_IC_PI_MCU);
 			glb->setVersProgIC8(buf[B12], GB_IC_BSK_PLIS_PRD1);
 			glb->setVersProgIC8(buf[B13], GB_IC_BSK_PLIS_PRD2);
@@ -667,19 +664,6 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			glb->setVersProgIC8(buf[B16], GB_IC_BSZ_PLIS);
 			glb->setVersProgIC16(TO_INT16(buf[B21], buf[B22]), GB_IC_BSP_DSP_PLIS);
 
-			// совместимость, для Р400/Р400м и К400 отличаются
-			if (sParam_->def.status.isEnable()) {
-				eGB_COMPATIBILITY comp;
-				comp = static_cast<eGB_COMPATIBILITY>(buf[B11]);
-				act |= sParam_->glb.setCompatibility(comp);
-			} else {
-				eGB_COMP_K400 comp;
-				comp = static_cast<eGB_COMP_K400> (buf[B11]);
-				act |= sParam_->glb.setCompK400(comp);
-
-				sParam_->glb.setCompRZSK(eGB_COMP_RZSK(buf[B11]));
-			}
-
 			if (buf[3] >= 17) {
 				// Тип аппарата, в сентябре 2014 появился у РЗСК и Р400
 				// в ноябре 2014 появился  у К400
@@ -687,6 +671,9 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 			} else {
 				glb->setTypeDevice(AVANT_NO);
 			}
+
+			// Желательно установить тип аппарата перед совместимостью
+			act |= glb->setCompatibility(buf[B11]);
 
 			// B18 - старший байт прошивки БСП-ПИ
 			// B19 - младший байт прошивки БСП-ПИ
@@ -721,18 +708,17 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc) {
 		case GB_COM_GET_COM_PRD_KEEP: {
 			uint8_t act = GB_ACT_NO;
 			if (sParam_->typeDevice == AVANT_R400M) {
-				// в Р400м/Р400 это Своместимость (тип удаленного аппарата)
-				act = sParam_->glb.setCompatibility((eGB_COMPATIBILITY)buf[B1]);
+				act = sParam_->glb.setCompatibility(buf[B1]);
 			} else if (sParam_->typeDevice == AVANT_K400) {
-				// совместимость К400
-				act = sParam_->glb.setCompK400((eGB_COMP_K400) buf[B2]);
+				act = sParam_->glb.setCompatibility(buf[B2]);
 			} else if (sParam_->typeDevice == AVANT_RZSK) {
-			    act = sParam_->glb.setCompRZSK((eGB_COMP_RZSK) buf[B2]);
+				act = sParam_->glb.setCompatibility(buf[B2]);
 			}
 
 			// в случае записи нового значения, сбросим флаг конфигурации
-			if (act & GB_ACT_NEW)
+			if (act & GB_ACT_NEW) {
 				sParam_->device = false;
+			}
 		}
 		break;
 
