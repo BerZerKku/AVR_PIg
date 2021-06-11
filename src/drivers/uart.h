@@ -7,7 +7,6 @@
 #define UART_H_
 
 #include "paramUart.h"
-#include "debug.h"
 
 class TUart {
 public:

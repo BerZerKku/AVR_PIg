@@ -11,11 +11,6 @@
 #include <stdint.h>
 #include "glbDefine.h"
 #include "paramBsp.h"
-#include "debug.h"
-
-
-//#define MAX_CYCLE_TO_REST_SOST 10
-
 
 // состояния протокола
 enum ePRTS_STATUS {

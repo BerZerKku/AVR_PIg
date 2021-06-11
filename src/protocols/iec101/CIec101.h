@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 #ifdef AVR
-	#include "debug.h"
+	#include "debug.hpp"
 #endif
 
 #ifdef MY_TESTS

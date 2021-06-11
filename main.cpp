@@ -10,7 +10,6 @@
 #include <avr/eeprom.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "debug.h"
 #include "glbDefine.h"
 #include "ks0108.h"
 #include "menu.h"
@@ -122,7 +121,7 @@ static bool uartRead() {
 			if (lastPcCom == protBSPs.getCurrentCom()) {
 				if (protPCs.isEnable()) {
 					if (protPCs.copyCommandFrom(protBSPs.buf))
-						protPCs.modifyVersionCom();
+						protPCs.update();
 				}
 			}
 		}

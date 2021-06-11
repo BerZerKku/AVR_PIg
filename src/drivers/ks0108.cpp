@@ -1,7 +1,6 @@
 #include <math.h>
 #include <util/delay.h>
 #include <stdio.h>
-#include "debug.h"
 #include "ks0108.h"
 #include "symbols.h"
 

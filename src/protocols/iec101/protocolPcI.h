@@ -11,7 +11,6 @@
 #include "CIec101.h"
 #include "glbDefine.h"
 #include "paramBsp.h"
-#include "debug.h"
 
 #ifdef AVR
 	#include <avr/pgmspace.h>

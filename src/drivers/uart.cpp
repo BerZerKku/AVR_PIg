@@ -8,7 +8,6 @@
 #include <avr/interrupt.h>
 #include <stdlib.h>
 #include "uart.h"
-#include "debug.h"
 
 // конструктор
 TUart::TUart(TUart::ePORT port, uint8_t * const buf, uint8_t size) :

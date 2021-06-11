@@ -7,7 +7,7 @@
 
 #include "CIec101.h"
 #ifdef AVR
-	#include "debug.h"
+	#include "debug.hpp"
 #endif
 
 // Контструктор.

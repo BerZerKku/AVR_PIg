@@ -7,9 +7,10 @@
 #include <stdio.h>
 
 #include "menu.h"
-#include "debug.h"
+#include "debug.hpp"
 #include "ks0108.h"
 #include "flash.h"
+#include "txCom.h"
 
 /// режим подсветки по умолчанию
 #define LED_REGIME LED_SWITCH
