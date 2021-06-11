@@ -20,18 +20,20 @@ void TTxCom::clear()
     numCom1_ = numCom2_ = 0;
     cnt1_ = cnt2_ = 0;
     com1_[0] = com2_[0] = GB_COM_NO;
+
+    for(uint_fast8_t i = 0; i < kSizeDataBuf; i++) {
+        data_[i] = 0;
+    }
 }
 
 //
 void TTxCom::clearFastCom()
 {
-    cntComFast = 0;
-    for(uint_fast8_t j = 0; j < MAX_NUM_FAST_COM; j++) {
-        for(uint_fast8_t i = 0; i < BUFFER_SIZE; i++) {
-            buf_[j] [i] = 0;
-        }
+    cntComFast_ = 0;
+
+    for(uint_fast8_t i = 0; i < SIZE_OF(fastCom_); i++) {
+        fastCom_[i].sendType = GB_SEND_NO;
     }
-    sendType_ = GB_SEND_NO;
 }
 
 //
@@ -45,7 +47,7 @@ bool TTxCom::addCom1(eGB_COM com, uint8_t num)
         com1_[numCom1_ - 1] = com;
         stat = true;
     } else {
-        if (numCom1_ < MAX_NUM_COM_BUF1) {
+        if (numCom1_ < SIZE_OF(com1_)) {
             com1_[numCom1_++] = com;
             stat = true;
         }
@@ -74,7 +76,7 @@ bool TTxCom::addCom2(eGB_COM com)
 {
     bool stat = false;
 
-    if (numCom2_ < MAX_NUM_COM_BUF2) {
+    if (numCom2_ < SIZE_OF(com2_)) {
         com2_[numCom2_++] = com;
         stat = true;
     }
@@ -101,16 +103,16 @@ eGB_COM TTxCom::getCom2()
 //
 void TTxCom::addFastCom(eGB_COM com)
 {
-    if (cntComFast < MAX_NUM_FAST_COM) {
-        comFast_[cntComFast] = com;
+    if (cntComFast_ < SIZE_OF(fastCom_)) {
+        fastCom_[cntComFast_].command = com;
 
         // сохранение данных для быстрой команды
-        for(uint_fast8_t i = 0; i < BUFFER_SIZE; i++) {
-            buf_[1 + cntComFast] [i] = buf_[0] [i];
-            buf_[0] [i] = 0x00;
+        for(uint_fast8_t i = 0; i < kSizeDataBuf; i++) {
+            fastCom_[cntComFast_].data[i] = data_[i];
+            data_[i] = 0x00;
         }
 
-        cntComFast++;
+        cntComFast_++;
     }
 }
 
@@ -119,15 +121,36 @@ eGB_COM TTxCom::getFastCom()
 {
     eGB_COM com = GB_COM_NO;
 
-    if (cntComFast > 0) {
-        com = comFast_[cntComFast - 1];
+    if (cntComFast_ > 0) {
+        cntComFast_--;
 
-        for(uint_fast8_t i = 0; i < BUFFER_SIZE; i++) {
-            buf_[0] [i] = buf_[cntComFast] [i];
+        com = fastCom_[cntComFast_].command;
+
+        // извлечение данных для быстрой команды
+        for(uint_fast8_t i = 0; i < kSizeDataBuf; i++) {
+            data_[i] = fastCom_[cntComFast_].data[i];
         }
-
-        cntComFast--;
     }
 
     return com;
+}
+
+//
+eGB_SEND_TYPE TTxCom::getSendType() const
+{
+    eGB_SEND_TYPE sendtype = GB_SEND_NO;
+
+    if (cntComFast_ < SIZE_OF(fastCom_)) {
+        sendtype = fastCom_[cntComFast_].sendType;
+    }
+
+    return sendtype;
+}
+
+//
+void TTxCom::setSendType(eGB_SEND_TYPE sendType)
+{
+    if ((cntComFast_ > 0) && (cntComFast_ <= SIZE_OF(fastCom_))) {
+        fastCom_[cntComFast_ - 1].sendType = sendType;
+    }
 }
