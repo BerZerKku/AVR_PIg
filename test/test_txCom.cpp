@@ -165,6 +165,3 @@ TEST_F(TTxCom_Test, fastCom)
 
     ASSERT_EQ(GB_COM_NO, mTxCom->getFastCom());
 }
-
-
-
