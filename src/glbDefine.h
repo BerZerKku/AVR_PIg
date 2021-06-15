@@ -17,6 +17,7 @@
 
 #include <stdint.h>
 #include "avr.h"
+#include "menu/dateTime.h"
 
 #ifndef MY_TESTS
     #include <avr/pgmspace.h>
@@ -701,180 +702,7 @@ enum eGB_K400_NUM_COM {
 
 
 /// Класс для даты и времени
-class TDataTime {
-public:
-    // флаг установки нового времени
-    bool setTimeBsp_;
 
-    TDataTime() {
-        msSecond_ = 0;
-        second_ = 0;
-        minute_ = 0;
-        hour_ = 0;
-        day_ = 1;
-        month_ = 1;
-        year_ = 0;
-        dayWeek_ = 0;
-
-        setTimeBsp_ = false;
-    }
-
-    // Считывание и установка секунд
-    uint8_t getSecond() const {
-        return second_;
-    }
-    bool setSecond(uint8_t val) {
-        bool stat = false;
-        if (val < 60) {
-            second_ = val;
-            stat = true;
-        } else {
-            second_ = 61;
-        }
-        return stat;
-    }
-
-    // считывание и установка минут
-    uint8_t getMinute() const {
-        return minute_;
-    }
-    bool setMinute(uint8_t val) {
-        bool stat = false;
-        if (val < 60) {
-            minute_ = val;
-            stat = true;
-        } else {
-            minute_ = 61;
-        }
-        return stat;
-    }
-
-    // считывание и установка часов
-    uint8_t getHour() const {
-        return hour_;
-    }
-    bool setHour(uint8_t val) {
-        bool stat = false;
-        if (val < 24) {
-            hour_ = val;
-            stat = true;
-        } else {
-            hour_ = 25;
-        }
-        return stat;
-    }
-
-    // считывание и установка дня
-    uint8_t getDay() const {
-        return day_;
-    }
-    bool setDay(uint8_t val) {
-        bool stat = false;
-
-        if ((val > 0) && (val <= getNumDaysInMonth())) {
-            day_ = val;
-            stat = true;
-        } else {
-            day_ = 32;
-        }
-
-        return stat;
-    }
-
-    // возвращает кол-во дней в месяце
-    // если месяц или год не заданы, возвращается для текущего
-    uint8_t getNumDaysInMonth(uint8_t month = 0, uint8_t year = 0) const {
-        uint8_t num = 0;
-
-        if (month == 0) {
-            month = month_;
-        }
-
-        if (year == 0) {
-            year = year_;
-        }
-
-        if ((month == 4) || (month == 6) || (month == 9) || (month == 11)) {
-            num = 30;
-        } else if (month == 2) {
-            num = ((year % 4) == 0) ? 29 : 28;
-        } else if ((month != 0) && (month < 13)) {
-            num = 31;
-        }
-
-        return num;
-    }
-
-    // считывание и установка месяца
-    uint8_t getMonth() const {
-        return month_;
-    }
-    bool setMonth(uint8_t val) {
-        bool stat = false;
-        if ((val > 0) && (val <= 12)) {
-            month_ = val;
-            stat = true;
-        } else {
-            month_ = 13;
-        }
-        return stat;
-    }
-
-    // считывание и установка года
-    uint8_t getYear() const {
-        return year_;
-    }
-    bool setYear(uint8_t val) {
-        bool stat = false;
-        if (val < 100) {
-            year_ = val;
-            stat = true;
-        } else {
-            year_ = 0;
-        }
-        return stat;
-    }
-
-    // считывание и установка миллисекунд
-    uint16_t getMsSecond() const {
-        return msSecond_;
-    }
-    bool setMsSecond(uint16_t val) {
-        bool stat = false;
-        if (val < 1000) {
-            msSecond_ = val;
-            stat = true;
-        } else {
-            msSecond_ = 1000;
-        }
-        return stat;
-    }
-
-    // день недели
-    uint8_t getDayOfWeek() const {
-        return dayWeek_;
-    }
-    bool setDayWeek(uint8_t val) {
-        bool stat = false;
-        if ((val >= 1) || (val <= 7)) {
-            dayWeek_ = val;
-            stat = true;
-        } else {
-            dayWeek_ = 8;
-        }
-        return stat;
-    }
-
-private:
-    uint16_t msSecond_;
-    uint8_t second_;
-    uint8_t minute_;
-    uint8_t hour_;
-    uint8_t dayWeek_;
-    uint8_t day_;
-    uint8_t month_;
-    uint8_t year_;
-};
 
 /// Класс для пароля
 class TPassword {
@@ -1160,7 +988,6 @@ private:
     }
 };
 
-
 /// класс для измеряемых параметров
 class TMeasuredParameters {
 public:
@@ -1418,10 +1245,10 @@ public:
     }
 
     // время для записи журнала
-    TDataTime dateTime;
+    TDateTime dateTime;
 
     // время для передачи по протоколам
-    TDataTime dateTimeTr;
+    TDateTime dateTimeTr;
 
     // значение для передачи по протоколу
     bool val;
@@ -2292,7 +2119,7 @@ public:
         m_step = 0;
     };
 
-    TDataTime dtime;
+    TDateTime dtime;
 
     /// Установка события.
     void setEvent(uint8_t val) {

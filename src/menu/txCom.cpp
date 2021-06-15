@@ -5,7 +5,7 @@
  *      Author: Shcheblykin
  */
 
-#include <txCom.h>
+#include "txCom.h"
 
 //
 TTxCom::TTxCom()

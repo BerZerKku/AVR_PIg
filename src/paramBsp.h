@@ -33,10 +33,10 @@ struct stGBparam {
 	TPassword password;
 
 	// дата/время
-	TDataTime DateTime;
+	TDateTime DateTime;
 
 	// дата/время БСП в момент установки новго времени
-	TDataTime DateTimeReq;
+	TDateTime DateTimeReq;
 
 	// дата/время
 

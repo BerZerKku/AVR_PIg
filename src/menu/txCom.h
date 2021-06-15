@@ -5,8 +5,8 @@
  *      Author: Shcheblykin
  */
 
-#ifndef SRC_MENU_TXCOM_H_
-#define SRC_MENU_TXCOM_H_
+#ifndef TX_COM_H_
+#define TX_COM_H_
 
 #include "glbDefine.h"
 
@@ -176,4 +176,4 @@ private:
     uint8_t data_ [kSizeDataBuf];
 };
 
-#endif /* SRC_MENU_TXCOM_H_ */
+#endif /* TX_COM_H_ */
