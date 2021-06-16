@@ -15,7 +15,9 @@
 #include "paramGlb.h"
 #include "paramUart.h"
 #include "LocalParams.h"
-#include "txCom.h"
+#include "menu/test.h"
+#include "menu/txCom.h"
+
 
 
 /// Структура параметров БСП

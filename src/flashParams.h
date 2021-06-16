@@ -8,9 +8,11 @@
 #ifndef FLASHPARAMS_H_
 #define FLASHPARAMS_H_
 
-#include <avr/pgmspace.h>
 #include "glbDefine.h"
-#include "param.h"
+#include "parameter/param.h"
+#include "paramDef.h"
+#include "paramUart.h"
+#include "paramGlb.h"
 
 static const char fcNullBuf[] PROGMEM= "";
 

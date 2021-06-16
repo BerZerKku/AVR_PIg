@@ -7,13 +7,17 @@ INCLUDEPATH += \
 
 HEADERS += \
     $${PIG_PATH}/src/avr.h \
+    $${PIG_PATH}/src/flash.h \
+    $${PIG_PATH}/src/flashParams.h \
     $${PIG_PATH}/src/glbDefine.h \
     $${PIG_PATH}/src/menu/dateTime.h \
-    $${PIG_PATH}/src/menu/txCom.h \    
+    $${PIG_PATH}/src/menu/test.h \
+    $${PIG_PATH}/src/menu/txCom.h \
     $${PIG_PATH}/src/protocols/iec101/CIec101.h \
     $${PIG_PATH}/src/protocols/modbus/protocolModbus.h
 
 SOURCES += \
+    $${PIG_PATH}/src/menu/test.cpp \
     $${PIG_PATH}/src/menu/dateTime.cpp \
     $${PIG_PATH}/src/menu/txCom.cpp \    
     $${PIG_PATH}/src/protocols/iec101/CIec101.cpp \

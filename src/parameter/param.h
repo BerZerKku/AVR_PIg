@@ -2,10 +2,7 @@
 #define PARAM_H_
 
 #include <stdint.h>
-#include <avr/pgmspace.h>
 #include "glbDefine.h"
-
-//typedef struct Param Param_t PROGMEM;
 
 struct Param {
 

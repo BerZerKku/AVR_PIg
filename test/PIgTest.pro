@@ -29,4 +29,5 @@ SOURCES += \
     test_dateTime.cpp \
     test_CIec101.cpp \
     test_protocolModbus.cpp \
+    test_test.cpp \
     test_txCom.cpp
