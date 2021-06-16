@@ -26,8 +26,10 @@ HEADERS += \
 SOURCES += \
     googletest/gtest-all.cc \
     main.cpp \
-    test_dateTime.cpp \
-    test_CIec101.cpp \
-    test_protocolModbus.cpp \
-    test_test.cpp \
-    test_txCom.cpp
+    menu/test_dateTime.cpp \
+    menu/test_password.cpp \
+    menu/test_test.cpp \
+    menu/test_txCom.cpp \
+    protocols/iec101/test_CIec101.cpp \
+    protocols/modbus/test_protocolModbus.cpp
+

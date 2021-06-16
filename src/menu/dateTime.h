@@ -10,7 +10,8 @@
 
 #include <stdint.h>
 
-class TDateTime {
+class TDateTime
+{
 public:
     // флаг установки нового времени
     bool setTimeBsp_;
@@ -33,10 +34,7 @@ public:
      * @brief Возвращает секунды.
      * @return Секунды [0..60].
      */
-    uint8_t getSecond() const
-    {
-        return second_;
-    }
+    uint8_t getSecond() const { return second_; }
 
     /**
      * @brief Устанавливает минуты.
@@ -53,10 +51,7 @@ public:
      * @brief Возвращает минуты.
      * @return Минуты [0..60].
      */
-    uint8_t getMinute() const
-    {
-        return minute_;
-    }
+    uint8_t getMinute() const { return minute_; }
 
     /**
      * @brief Устанавливает часы.
@@ -73,9 +68,7 @@ public:
      * @brief Возвращает часы.
      * @return Часы [0..24].
      */
-    uint8_t getHour() const {
-        return hour_;
-    }
+    uint8_t getHour() const { return hour_; }
 
     /**
      * @brief Устанавливает день.
@@ -93,10 +86,7 @@ public:
      * @brief Возвращает день.
      * @return День [0..32].
      */
-    uint8_t getDay() const
-    {
-        return day_;
-    }
+    uint8_t getDay() const { return day_; }
 
     /**
      * @brief Устанавливает месяц.
@@ -113,9 +103,7 @@ public:
      * @brief Возвращает месяц.
      * @return День [1..13].
      */
-    uint8_t getMonth() const {
-        return month_;
-    }
+    uint8_t getMonth() const { return month_; }
 
     /**
      * @brief Устанавливает год.
@@ -132,9 +120,7 @@ public:
      * @brief Возвращает год.
      * @return День [0..99].
      */
-    uint8_t getYear() const {
-        return year_;
-    }
+    uint8_t getYear() const { return year_; }
 
     /**
      * @brief Устанавливает миллисекунды.
@@ -150,9 +136,7 @@ public:
      * @brief Возвращает миллисекунды.
      * @return День [0..1000].
      */
-    uint16_t getMsSecond() const {
-        return msSecond_;
-    }
+    uint16_t getMsSecond() const { return msSecond_; }
 
     /**
      * @brief Устанавливает день недели.
@@ -168,9 +152,7 @@ public:
      * @brief Возвращает день недели.
      * @return День [1..8].
      */
-    uint8_t getDayOfWeek() const {
-        return dayWeek_;
-    }
+    uint8_t getDayOfWeek() const { return dayWeek_; }
 
     /**
      * @brief Возвращает количество дней в месяце года.

@@ -26,12 +26,6 @@
 /// размер массива
 #define SIZE_OF(mas) (sizeof(mas) / sizeof(mas[0]))
 
-/// пароль администратора
-#define PASSWORD_ADMIN 6352
-
-/// пароль пользователя по умолчанию
-#define PASSWORD_USER 0
-
 /// версия текущей прошивки
 #define VERS 0x0149
 
@@ -697,53 +691,6 @@ enum eGB_K400_NUM_COM {
     GB_K400_NUM_COM_24  = 5,    ///<
     GB_K400_NUM_COM_32  = 6,    ///<
     GB_K400_NUM_COM_MAX         ///< кол-во пунктов в списке
-};
-
-
-/// Класс для даты и времени
-
-
-/// Класс для пароля
-class TPassword {
-public:
-    TPassword() {
-        password_ = 10000;
-        admin_ = PASSWORD_ADMIN;
-    }
-
-    // возвращает текущий пароль пользователя
-    uint16_t get() const {
-        return password_;
-    }
-
-    // устанавливает пароль пользователя
-    bool set(uint16_t pas) {
-        bool stat = false;
-        if (pas < 10000) {
-            password_ = pas;
-            stat = true;
-        }
-        return stat;
-    }
-
-    // начальная инициализация пароля пользователя
-    // если введено неверное значение, пароль будет PASSWORD_USER
-    void init(uint16_t pas) {
-        if (!set(pas))
-            set(PASSWORD_USER);
-    }
-
-    // проверка значения на совпадение с паролем пользователя и администратора
-    bool check(uint16_t pas) const {
-        return ((pas == password_) || (pas == admin_));
-    }
-
-private:
-    // пароль пользователя
-    uint16_t password_;
-
-    // пароль администратора
-    uint16_t admin_;
 };
 
 /// Класс для текущего состояния аппарата

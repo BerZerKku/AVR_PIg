@@ -17,8 +17,7 @@
 #include "LocalParams.h"
 #include "menu/test.h"
 #include "menu/txCom.h"
-
-
+#include "menu/password.h"
 
 /// Структура параметров БСП
 struct stGBparam {

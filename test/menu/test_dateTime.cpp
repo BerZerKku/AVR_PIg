@@ -9,7 +9,8 @@ using namespace std;
 // размер массива
 #define SIZE_ARRAY(arr) (sizeof(arr) / sizeof(arr[0]))
 
-class TDateTime_Test: public ::testing::Test {
+class TDateTime_Test: public ::testing::Test
+{
 public:
 
     // Структура теста
@@ -26,16 +27,13 @@ public:
     virtual ~TDateTime_Test() override = default;
 
 protected:
-    virtual void SetUp() override {
-        time = new TDateTime;
-    }
+    virtual void SetUp() override { time = new TDateTime; }
 
-    virtual void TearDown() override {
-        delete time;
-    }
+    virtual void TearDown() override { delete time; }
 };
 
-TEST_F(TDateTime_Test, binToBcd) {
+TEST_F(TDateTime_Test, binToBcd)
+{
 
     // Флаг bcd в этом тесте не участвует
     std::vector<test_t> tests = {
@@ -60,7 +58,8 @@ TEST_F(TDateTime_Test, binToBcd) {
     }
 }
 
-TEST_F(TDateTime_Test, bcdToBin) {
+TEST_F(TDateTime_Test, bcdToBin)
+{
 
     // Флаг bcd в этом тесте не участвует
     std::vector<test_t> tests = {
