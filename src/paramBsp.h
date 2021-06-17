@@ -15,9 +15,11 @@
 #include "paramGlb.h"
 #include "paramUart.h"
 #include "LocalParams.h"
+#include "menu/measure.h"
+#include "menu/password.h"
 #include "menu/test.h"
 #include "menu/txCom.h"
-#include "menu/password.h"
+
 
 /// Структура параметров БСП
 struct stGBparam {
@@ -42,7 +44,7 @@ struct stGBparam {
 	// дата/время
 
 	// измеряемые параметры
-	TMeasuredParameters measParam;
+	TMeasure measParam;
 
 	// текущее состояние устройств
 	TDeviceDef def;

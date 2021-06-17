@@ -38,47 +38,15 @@ public:
      *  @param [out] cf Код сигнала КЧ/Команды.
      *  @param [out] rz Код сигнала РЗ.
      *  @param sig Тестовый сигнал.
-     *
      */
-    void getBytes(uint8_t &cf, uint8_t &rz, eGB_TEST_SIGNAL sig) {
-        if ((sig >= GB_SIGNAL_COM1) && (sig <= GB_SIGNAL_COM32)) {
-            rz = 0;
-            cf = 3 + sig - GB_SIGNAL_COM1; // 3 - кол-во кч ?!
-        } else if ((sig >= GB_SIGNAL_CF1) && (sig <= GB_SIGNAL_CF4)) {
-            rz = 0;
-            cf = 1 + sig - GB_SIGNAL_CF1;
-        } else if (sig == GB_SIGNAL_CF_NO_RZ) {
-            rz = 1;
-            cf = 1;
-        } else if (sig == GB_SIGNAL_CF_RZ) {
-            rz = 2;
-            cf = 1;
-        } else if (sig == GB_SIGNAL_CF2_NO_RZ) {
-            rz = 1;
-            cf = 2;
-        } else if (sig == GB_SIGNAL_CF2_RZ) {
-            rz = 2;
-            cf = 2;
-        } else if (sig == GB_SIGNAL_RZ) {
-            rz = 1;
-            cf = 0;
-        } else if ((sig >= GB_SIGNAL_COM1_RZ) && (sig <= GB_SIGNAL_COM8_RZ)) {
-            rz = 2;
-            cf = 3 + sig - GB_SIGNAL_COM1_RZ; // 3 т.к. 1 и 2 это КЧ
-        } else if ((sig>=GB_SIGNAL_COM1_NO_RZ) && (sig<=GB_SIGNAL_COM8_NO_RZ)) {
-            rz = 1;
-            cf = 3 + sig - GB_SIGNAL_COM1_NO_RZ; // 3 т.к. 1 и 2 это КЧ
-        } else if ((sig == GB_SIGNAL_CF) || (sig == GB_SIGNAL_CS)) {
-            rz = 0;
-            cf = 1;
-        } else if ((sig >= GB_SIGNAL_COM1A) && (sig <= GB_SIGNAL_COM32C)) {
-            rz = 0;
-            cf = 3 + sig - GB_SIGNAL_COM1A;
-        } else {
-            rz = 0;
-            cf = 0;
-        }
-    }
+
+    /**
+     * @brief Преобразует сигнал в коды для передачи в БСП.
+     * @param[out] cf Код КЧ/Команды
+     * @param[out] rz Код РЗ.
+     * @param[in] sig Сигнал.
+     */
+    void getBytes(uint8_t &cf, uint8_t &rz, eGB_TEST_SIGNAL sig);
 
     /**
      * @brief Возвращает максимальное количество сигналов в тесте передатчика.

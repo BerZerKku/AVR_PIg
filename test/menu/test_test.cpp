@@ -602,7 +602,7 @@ TEST_F(TTest_Test, getBytes)
         {"K400 06", {0x22, 0x00}, GB_SIGNAL_COM32,       "Команда32"},
         // ВОЛС
         {"OPTO 00", {0x00, 0x00}, GB_SIGNAL_OFF,         "выкл."},
-        {"OPTO 01", {0x01, 0x00}, GB_SIGNAL_CS,          "КC"},
+        {"OPTO 01", {0x01, 0x00}, GB_SIGNAL_CS,          "КС"},
         {"OPTO 02", {0x00, 0x01}, GB_SIGNAL_RZ,          "РЗ"},
         {"OPTO 03", {0x03, 0x00}, GB_SIGNAL_COM1,        "Команда1"},
         {"OPTO 04", {0x04, 0x00}, GB_SIGNAL_COM2,        "Команда2"},
@@ -610,12 +610,12 @@ TEST_F(TTest_Test, getBytes)
         {"OPTO 06", {0x22, 0x00}, GB_SIGNAL_COM32,       "Команда32"},
         // ВОЛС кольцо
         {"RING 00", {0x00, 0x00}, GB_SIGNAL_OFF,         "выкл."},
-        {"RING 01", {0x01, 0x00}, GB_SIGNAL_CF,          "КC"},
+        {"RING 01", {0x01, 0x00}, GB_SIGNAL_CS,          "КС"},
         {"RING 02", {0x00, 0x01}, GB_SIGNAL_RZ,          "РЗ"},
-        {"RING 03", {0x03, 0x00}, GB_SIGNAL_COM1A,       "Команда1А"},
-        {"RING 04", {0x04, 0x00}, GB_SIGNAL_COM2A,       "Команда2А"},
-        {"RING 05", {0x3B, 0x00}, GB_SIGNAL_COM25B,      "Команда25В"},
-        {"RING 06", {0x62, 0x00}, GB_SIGNAL_COM32C,      "Команда32С"},
+        {"RING 03", {0x03, 0x00}, GB_SIGNAL_COM1A,       "Команда1A"},
+        {"RING 04", {0x04, 0x00}, GB_SIGNAL_COM2A,       "Команда2A"},
+        {"RING 05", {0x3B, 0x00}, GB_SIGNAL_COM25B,      "Команда25B"},
+        {"RING 06", {0x62, 0x00}, GB_SIGNAL_COM32C,      "Команда32C"},
         // Команды имеющиеся на приеме, но их нет на передаче
         {"NULL 00", {0x00, 0x00}, GB_SIGNAL_CF_RZ_R400M,  "КЧ и РЗ"},
         {"NULL 01", {0x00, 0x00}, GB_SIGNAL_CF1_RZ_R400M, "КЧ1 и РЗ"},
@@ -633,6 +633,7 @@ TEST_F(TTest_Test, getBytes)
 
         ASSERT_EQ(item.result.cf, cf);
         ASSERT_EQ(item.result.rz, rz);
+        ASSERT_STREQ(item.signalText, fcTest1K400[item.signal]);
 
         signalTested.at(item.signal) = true;
     }
@@ -652,6 +653,9 @@ TEST_F(TTest_Test, getBytes)
         ASSERT_EQ(3 + i, cf);
         ASSERT_EQ(0U, rz);
 
+        std::string text = "Команда" + std::to_string(i + 1);
+        ASSERT_STREQ(text.c_str(), fcTest1K400[signal]);
+
         signalTested.at(signal) = true;
     }
 
@@ -670,8 +674,14 @@ TEST_F(TTest_Test, getBytes)
         ASSERT_EQ(3 + i, cf);
         ASSERT_EQ(0U, rz);
 
+        std::string text = "Команда" + std::to_string(i%32 + 1);
+        text += i < 32 ? "A" : i < 64 ? "B" : "C";
+        ASSERT_STREQ(text.c_str(), fcTest1K400[signal]);
+
         signalTested.at(signal) = true;
     }
+
+    // проверка на то что все сигналы в списке были протестированы
 
     int count = 0;
     for(size_t i = 0; i < signalTested.size(); i++) {

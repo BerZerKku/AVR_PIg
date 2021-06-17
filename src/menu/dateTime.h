@@ -1,5 +1,5 @@
 /*
- * TDateTime.h
+ * dateTime.h
  *
  *  Created on: 15 июн. 2021 г.
  *      Author: Shcheblykin
@@ -10,6 +10,9 @@
 
 #include <stdint.h>
 
+/**
+ * @brief  ласс даты и времени.
+ */
 class TDateTime
 {
 public:

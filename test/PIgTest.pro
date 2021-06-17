@@ -27,6 +27,7 @@ SOURCES += \
     googletest/gtest-all.cc \
     main.cpp \
     menu/test_dateTime.cpp \
+    menu/test_measure.cpp \
     menu/test_password.cpp \
     menu/test_test.cpp \
     menu/test_txCom.cpp \
