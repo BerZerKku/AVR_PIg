@@ -2110,7 +2110,13 @@ void clMenu::lvlJournalPrm()
         }
         else
         {
-            snprintf_P(&vLCDbuf[poz], 21, fcNumComJrn, com);
+            uint8_t t = snprintf_P(&vLCDbuf[poz], 21, fcNumComJrn, com);
+
+            if (device == AVANT_K400)
+            {
+                uint8_t s = sParam.jrnEntry.getSourceCom();
+                snprintf_P(&vLCDbuf[poz + t + 1], 5, fcJrnSourcePrd[s]);
+            }
         }
 
         poz += 20;
@@ -3693,9 +3699,9 @@ void clMenu::lvlSetupParamGlb()
             sParam.local.addParam(GB_PARAM_COMP_K400);
             sParam.local.addParam(GB_PARAM_TIME_SYNCH);
             sParam.local.addParam(GB_PARAM_NUM_OF_DEVICE);
-            //			TODO На данный момент в ПО БСП проверка выходного сигнала не отключается
-            //в ПРД.
-            //Поэтому параметр есть всегда! 			if (sParam.prd.status.isEnable()) {
+            //			TODO На данный момент в ПО БСП проверка выходного сигнала не
+            //отключается в ПРД. Поэтому параметр есть всегда! 			if
+            //(sParam.prd.status.isEnable()) {
             sParam.local.addParam(GB_PARAM_OUT_CHECK);
             //			}
             if (sParam.prm.status.isEnable())

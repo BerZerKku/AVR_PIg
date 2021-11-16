@@ -316,7 +316,7 @@ bool clProtocolBspS::getDefCommand(eGB_COM com, bool pc)
                 sParam_->jrnEntry.dateTime.setMsSecond(t);
                 //
                 //				sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400)
-                //buf[B1]);
+                // buf[B1]);
                 // sParam_->jrnEntry.setNumCom(buf[B2]);
                 sParam_->jrnEntry.setSignalDef((buf[B1] << 4) + (buf[B2] & 0x0F));
                 //				sParam_->jrnEntry.setEventType(buf[B3]);
@@ -421,6 +421,14 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com, bool pc)
                     sParam_->jrnEntry.setNumCom(buf[B2]);
                     sParam_->jrnEntry.setEventType(buf[B3]);
                     sParam_->jrnEntry.setSrcCom(buf[B4]);
+
+                    eGB_SOURCE_COM source = GB_SOURCE_COM_DI;
+                    if (sParam_->typeDevice == AVANT_K400)
+                    {
+                        source = (buf[B4] == 0x80) ? GB_SOURCE_COM_DR : GB_SOURCE_COM_DI;
+                    }
+                    sParam_->jrnEntry.setSourceCom(source);
+
                     sParam_->jrnEntry.setReady();
                 }
                 stat = true;
@@ -496,7 +504,6 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc)
                         sParam_->jrnEntry.setOpticEntryDR((uint8_t *) &buf[B13]);
                     }
                     sParam_->jrnEntry.setReady();
-                    stat = true;
                 }
                 else
                 {
@@ -512,10 +519,16 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc)
                     sParam_->jrnEntry.setDeviceJrn((eGB_DEVICE_K400) buf[B1]);
                     sParam_->jrnEntry.setNumCom(buf[B2]);
                     sParam_->jrnEntry.setEventType(buf[B3]);
-                    sParam_->jrnEntry.setSourceCom((eGB_SOURCE_COM) buf[B4]);
+
+                    eGB_SOURCE_COM source = GB_SOURCE_COM_DI;
+                    if (sParam_->typeDevice == AVANT_K400)
+                    {
+                        source = (buf[B4] == 1) ? GB_SOURCE_COM_DR : GB_SOURCE_COM_DI;
+                    }
+                    sParam_->jrnEntry.setSourceCom(source);
                     sParam_->jrnEntry.setReady();
-                    stat = true;
                 }
+                stat = true;
             }
         }
         break;
