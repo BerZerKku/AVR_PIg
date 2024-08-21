@@ -481,7 +481,7 @@ void CIec101::prepareFrameVarLenght(ETypeId eId, ECot eCot, uint8_t u8SizeAsdu) 
 	m_stFrameVar.asdu.common.dataUnitId.causeOfTramsmission.cot = eCot;	// причина
 	m_stFrameVar.asdu.common.dataUnitId.causeOfTramsmission.pN = 0; 	// не используется
 	m_stFrameVar.asdu.common.dataUnitId.causeOfTramsmission.t = 0;		// всегда не тест
-	m_stFrameVar.asdu.common.dataUnitId.commonAddressOfASDU = s_u8CommonAddressOfAsdu;
+	m_stFrameVar.asdu.common.dataUnitId.commonAddressOfASDU = m_stFrameVar.linkAddress;
 
 	// Остальные данные ASDU уже должны быть на месете.
 
