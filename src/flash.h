@@ -260,6 +260,7 @@ static const char fcPrdFault0400rzsk[] PROGMEM = "Неиспр.вкл. Тест";  ///<
 static const char fcPrdFault0800rzsk[] PROGMEM = "Неиспр.вход. ком";  ///<
 
 // предупреждения передатчика
+static const char fcPrdWarning01ring[] PROGMEM = "Вывод команд ПРД";  ///<
 static const char fcPrdWarning02k400[] PROGMEM = "Ошибка работы ЦП";  ///<
 static const char fcPrdWarning04k400[] PROGMEM = "Вход RX ЦП пуст";   ///<
 
@@ -508,8 +509,8 @@ static char fcJrnEventOPTOring[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
     "Нет сигнала МАН",       ///< 16
     "Вкл.пит/Перезапуск",    ///< 17
     "Изменение режима",      ///< 18
-    "Неиспр цепи вых.",      ///< 19
-    "Восстан-е КС на ПРМ",   ///< 20
+    "Ввод команд ПРД",       ///< 19
+    "Вывод команд ПРД",      ///< 20
     "Восстан-е КС БЦК1",     ///< 21
     "Восстан-е КС БЦК2",     ///< 22
     "Нет КС БЦК1",           ///< 23

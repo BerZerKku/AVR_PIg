@@ -679,6 +679,7 @@ bool clMenu::setDeviceR400M()
  */
 bool clMenu::setDeviceOPTO()
 {
+    const eGB_TYPE_OPTO type_opto = sParam.glb.getTypeOpto();
 
     sParam.typeDevice = AVANT_OPTO;
     sParam.glb.setTypeDevice(AVANT_OPTO);
@@ -727,7 +728,7 @@ bool clMenu::setDeviceOPTO()
     // заполнение массива общих предупреждений
     sParam.glb.status.warningText[0] = fcGlbWarning01;
     sParam.glb.status.warningText[1] = fcGlbWarning02;
-    if (sParam.glb.getTypeOpto() == TYPE_OPTO_RING_UNI)
+    if (type_opto == TYPE_OPTO_RING_UNI)
     {                                                            // к400 кольцо
         sParam.glb.status.warningText[2] = fcGlbWarning04ring1;  // кольцо однонапр
         sParam.glb.status.warningText[3] = fcGlbWarning08ring1;  // кольцо однонапр
@@ -741,7 +742,7 @@ bool clMenu::setDeviceOPTO()
     sParam.glb.status.warningText[5] = fcGlbWarning20;
     sParam.glb.status.warningText[6] = fcGlbWarning40;
     // 7 нет
-    if (sParam.glb.getTypeOpto() == TYPE_OPTO_RING_UNI)
+    if (type_opto == TYPE_OPTO_RING_UNI)
     {
         sParam.glb.status.warningText[8] = fcGlbWarning100ring1;
         sParam.glb.status.warningText[9] = fcGlbWarning200ring1;
@@ -800,7 +801,12 @@ bool clMenu::setDeviceOPTO()
     sParam.prd.status.faultText[11] = fcPrdFault0800rzsk;
     // 12-15 нет
     // заполнение массива предупреждений передатчика
-    // 0-15 нет
+    if (type_opto == TYPE_OPTO_RING_UNI)
+    {
+        sParam.prd.status.warningText[0] = fcPrdWarning01ring;
+    }
+    // 1-15 нет
+
 
     return true;
 }
@@ -5022,7 +5028,7 @@ void clMenu::printDevicesStatus(uint8_t poz, TDeviceStatus *device)
     static const char fcFaults[] PROGMEM   = "Неиспр. %c-%04X";
     static const char fcWarnings[] PROGMEM = "Предупр. %c-%04X";
 
-    PGM_P *       text;
+    PGM_P        *text;
     uint_fast8_t  x = 0;
     uint_fast16_t y = 0;
 
@@ -5483,7 +5489,7 @@ void clMenu::setupParam()
                     if (param == GB_PARAM_INTF_INTERFACE)
                     {
                         TInterface::INTERFACE val;
-                        val = (TInterface::INTERFACE) (tmp);
+                        val = (TInterface::INTERFACE)(tmp);
                         // если интерфейс сменился, обновим меню
                         if (val != sParam.Uart.Interface.get())
                         {
@@ -5493,23 +5499,23 @@ void clMenu::setupParam()
                     }
                     else if (param == GB_PARAM_INTF_PROTOCOL)
                     {
-                        sParam.Uart.Protocol.set((TProtocol::PROTOCOL) (tmp));
+                        sParam.Uart.Protocol.set((TProtocol::PROTOCOL)(tmp));
                     }
                     else if (param == GB_PARAM_INTF_BAUDRATE)
                     {
-                        sParam.Uart.BaudRate.set((TBaudRate::BAUD_RATE) (tmp));
+                        sParam.Uart.BaudRate.set((TBaudRate::BAUD_RATE)(tmp));
                     }
                     else if (param == GB_PARAM_INTF_DATA_BITS)
                     {
-                        sParam.Uart.DataBits.set((TDataBits::DATA_BITS) (tmp));
+                        sParam.Uart.DataBits.set((TDataBits::DATA_BITS)(tmp));
                     }
                     else if (param == GB_PARAM_INTF_PARITY)
                     {
-                        sParam.Uart.Parity.set((TParity::PARITY) (tmp));
+                        sParam.Uart.Parity.set((TParity::PARITY)(tmp));
                     }
                     else if (param == GB_PARAM_INTF_STOP_BITS)
                     {
-                        sParam.Uart.StopBits.set((TStopBits::STOP_BITS) (tmp));
+                        sParam.Uart.StopBits.set((TStopBits::STOP_BITS)(tmp));
                     }
                 }
             }
