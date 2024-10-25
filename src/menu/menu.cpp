@@ -1215,6 +1215,12 @@ void clMenu::lvlStart()
     if (sParam.prd.status.isEnable())
     {
         printDevicesStatus(poz, &sParam.prd.status);
+
+        if (sParam.glb.getTypeDevice() == AVANT_OPTO)
+        {
+            uint8_t event = (sParam.prd.status.getWarnings() & 0x01) ? (20) : (19);
+            snprintf_P(&vLCDbuf[poz + 20 + 4], 17, fcJrnEventOPTOring[event]);
+        }
     }
 
     switch (key_)
