@@ -1216,11 +1216,13 @@ void clMenu::lvlStart()
     {
         printDevicesStatus(poz, &sParam.prd.status);
 
+#if defined(SAC2_ENABLE)
         if (sParam.glb.getTypeDevice() == AVANT_OPTO)
         {
             uint8_t event = (sParam.prd.status.getWarnings() & 0x01) ? (20) : (19);
             snprintf_P(&vLCDbuf[poz + 20 + 4], 17, fcJrnEventOPTOring[event]);
         }
+#endif
     }
 
     switch (key_)
@@ -3534,6 +3536,7 @@ void clMenu::lvlSetupParamPrm()
             sParam.local.addParam(GB_PARAM_PRM_TEST_COM);
             sParam.local.addParam(GB_PARAM_PRM_FREQ_CORR);
             sParam.local.addParam(GB_PARAM_PRM_COM_SIGNAL);
+            sParam.local.addParam(GB_PARAM_PRM_AUTO_DEBLOCK);
         }
         else if (device == AVANT_RZSK)
         {
@@ -3563,6 +3566,7 @@ void clMenu::lvlSetupParamPrm()
                     sParam.local.addParam(GB_PARAM_PRM_DR_COM_TO_HF);
                 }
                 sParam.local.addParam(GB_PARAM_PRM_COM_SIGNAL);
+                sParam.local.addParam(GB_PARAM_PRM_AUTO_DEBLOCK);
             }
         }
     }

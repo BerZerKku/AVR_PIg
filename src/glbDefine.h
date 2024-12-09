@@ -32,7 +32,10 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0149
+#define VERS 0x0150
+
+/// Отображение положения ключа SAC2
+//#define SAC2_ENABLE
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -271,6 +274,7 @@ enum eGB_COM
     GB_COM_PRM_GET_RING_COM_REC = 0x1B,  // +
     GB_COM_PRM_GET_COM          = 0x1C,  // +
     GB_COM_PRM_GET_COM_SIGN     = 0x1D,  // +
+    GB_COM_PRM_GET_AUTO_DEBLOCK = 0x1E,  // +
     GB_COM_PRD_GET_TIME_ON      = 0x21,  // +
     GB_COM_PRD_GET_DURATION     = 0x22,  // +
     GB_COM_PRD_GET_FREQ_CORR    = 0x23,  // +
@@ -484,6 +488,7 @@ typedef enum
     GB_PARAM_PRM_FREQ_CORR,     ///< коррекция частоты ПРМ
     GB_PARAM_PRM_COM_SIGNAL,    ///< сигнализация команд ПРМ
     GB_PARAM_PRM_INC_SAFETY,    ///< Повышение безопасности
+    GB_PARAM_PRM_AUTO_DEBLOCK,  ///< Автоматическая деблокировка
     // параметры интерфейса
     GB_PARAM_INTF_INTERFACE,  ///< интерфейс связи
     GB_PARAM_INTF_PROTOCOL,   ///< протокол
