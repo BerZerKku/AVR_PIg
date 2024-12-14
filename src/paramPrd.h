@@ -23,6 +23,7 @@ public:
         numJrnEntry_    = 0;
         maxNumJrnEntry_ = 0;
         overflow_       = false;
+        sac2            = false;
     }
 
     TDeviceStatus status;
@@ -162,6 +163,12 @@ public:
     }
     uint16_t getMaxNumJrnEntry() const { return maxNumJrnEntry_; }
 
+    // Возвращает текущее состояние уставки "Уравление передатчиком"
+    bool getSac2() const { return sac2; }
+
+    // Установка значения уставки "Управление передатчиком"
+    void setSac2(bool val) { sac2 = (val > 0) ? (1) : (0); }
+
 private:
     // текущее кол-во команд
     uint8_t numCom_;
@@ -177,6 +184,9 @@ private:
 
     // флаг переполнения журнала
     bool overflow_;
+
+    // управление передатчиком SAC2 (выкл(0)/вкл(1))
+    bool sac2;
 };
 
 #endif /* PARAMPRD_H_ */

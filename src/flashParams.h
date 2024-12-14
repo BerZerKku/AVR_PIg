@@ -1728,6 +1728,26 @@ static const Param fPrdComSignal PROGMEM = {
     Param::CHANGE_COND_REG_DISABLE  // условие для изменения параметра
 };
 
+// Управление передатчиком (SAC2)
+static const Param fPrdSac2 PROGMEM = {
+    "Управ. передатчиком",          // название параметра
+    GB_COM_PRD_GET_SAC2,            // команда стандартного протокола
+    Param::PARAM_LIST,              // тип параметра
+    Param::RANGE_LIST,              // диапазон измнения
+    Param::DIM_NO,                  // размерность
+    fcOnOff[0],                     // массив значений
+    1,                              // кол-во повторений параметра
+    0,                              // минимальное значение
+    SIZE_OF(fcOnOff),               // максимальное значение
+    1,                              // дискретность
+    1,                              // множитель для стандартного протокола
+    GB_SEND_INT8,                   // тип параметра для сохранения новго значения
+    1,                              // байт дополнительной информации для сохранения
+    Param::DEPEND_MAX_NO,           // зависимость максимума
+    Param::DEPEND_SAME_NO,          // зависимость повторений
+    Param::CHANGE_COND_REG_DISABLE  // условие для изменения параметра
+};
+
 // задержка на фиксацию команды (время включения)
 static const Param fPrmTimeOn PROGMEM = {
     "Задержка на фикс.ком",         // название параметра
@@ -2257,6 +2277,7 @@ static const Param* fParams[] PROGMEM = { &fNullParam,
                                           &fPrdDecTm,
                                           &fPrdDefaultCf,
                                           &fPrdComSignal,
+                                          &fPrdSac2,
                                           // Параметры приемника
                                           &fPrmTimeOn,
                                           &fPrmComBlock,

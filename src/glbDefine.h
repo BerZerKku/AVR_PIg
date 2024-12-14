@@ -32,10 +32,10 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0150
+#define VERS 0x0151
 
 /// Отображение положения ключа SAC2
-//#define SAC2_ENABLE
+#define SAC2_ENABLE
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -286,6 +286,7 @@ enum eGB_COM
     GB_COM_PRD_GET_COM_A        = 0x29,  // +
     GB_COM_PRD_GET_RING_COM_TR  = 0x2B,  // +
     GB_COM_PRD_GET_COM          = 0x2C,  // +
+    GB_COM_PRD_GET_SAC2         = 0x2A,  // +
     GB_COM_PRD_GET_CF_TM        = 0x2D,  // +
     GB_COM_PRD_GET_COM_SIGN     = 0x2E,  // +
     GB_COM_GET_SOST             = 0x30,  // +
@@ -476,6 +477,7 @@ typedef enum
     GB_PARAM_PRD_DEC_TM,        ///< снижение уровня ТМ
     GB_PARAM_PRD_DEFAULT_CF,    ///< КС по умолчанию
     GB_PARAM_PRD_COM_SIGNAL,    ///< сигнализация команд ПРД
+    GB_PARAM_PRD_SAC2,          ///< управление передатчиком SAC2
     // параметры приемника
     GB_PARAM_PRM_TIME_ON,       ///< задержка на фиксацию команды (время включения)
     GB_PARAM_PRM_COM_BLOCK,     ///< блокированные команды

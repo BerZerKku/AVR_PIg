@@ -469,6 +469,15 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc)
         }
         break;
 
+    case GB_COM_PRD_GET_SAC2:
+        {
+            if (buf[NUM] >= 1)
+            {
+                sParam_->prd.setSac2(buf[B1]);
+            }
+        }
+        break;
+
     case GB_COM_PRD_GET_JRN_CNT:
         {
             uint16_t t = *((uint16_t *) &buf[B1]);

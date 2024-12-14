@@ -417,7 +417,7 @@ bool clMenu::setDeviceK400()
     sParam.prd.status.faultText[11] = fcPrdFault0800rzsk;
     // 12-15 нет
     // заполнение массива предупреждений передатчика
-    // 0 нет
+    sParam.prd.status.warningText[0] = fcPrdWarning01ring;
     sParam.prd.status.warningText[1] = fcPrdWarning02k400;
     sParam.prd.status.warningText[2] = fcPrdWarning04k400;
     // 3-15 нет
@@ -801,12 +801,8 @@ bool clMenu::setDeviceOPTO()
     sParam.prd.status.faultText[11] = fcPrdFault0800rzsk;
     // 12-15 нет
     // заполнение массива предупреждений передатчика
-    if (type_opto == TYPE_OPTO_RING_UNI)
-    {
-        sParam.prd.status.warningText[0] = fcPrdWarning01ring;
-    }
+    sParam.prd.status.warningText[0] = fcPrdWarning01ring;
     // 1-15 нет
-
 
     return true;
 }
@@ -1100,6 +1096,7 @@ void clMenu::lvlStart()
         // в К400  + совместимость
         sParam.txComBuf.addCom1(GB_COM_DEF_GET_LINE_TYPE);
         sParam.txComBuf.addCom1(GB_COM_GET_NET_ADR);
+
         if (sParam.typeDevice == AVANT_R400M)
         {
             sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
@@ -1108,20 +1105,34 @@ void clMenu::lvlStart()
         {
             sParam.txComBuf.addCom1(GB_COM_GET_COM_PRD_KEEP);
         }
+
         sParam.txComBuf.addCom1(GB_COM_GET_JRN_CNT);
         if (sParam.def.status.isEnable())
         {
             sParam.txComBuf.addCom1(GB_COM_DEF_GET_JRN_CNT);
         }
+
         if (sParam.prd.status.isEnable())
         {
             sParam.txComBuf.addCom1(GB_COM_PRD_GET_JRN_CNT);
+
+            if (sParam.typeDevice == AVANT_K400)
+            {
+                sParam.txComBuf.addCom1(GB_COM_PRD_GET_SAC2);
+            }
+
+            if (sParam.typeDevice == AVANT_OPTO && sParam.typeOpto == TYPE_OPTO_STANDART)
+            {
+                sParam.txComBuf.addCom1(GB_COM_PRD_GET_SAC2);
+            }
         }
+
         if (sParam.prm.status.isEnable())
         {
             sParam.txComBuf.addCom1(GB_COM_PRM_GET_JRN_CNT);
         }
     }
+
 
     // вывод на экран измеряемых параметров
     for (uint_fast8_t i = 0; i < (lineParam_ * 2); i++)
@@ -1216,13 +1227,33 @@ void clMenu::lvlStart()
     {
         printDevicesStatus(poz, &sParam.prd.status);
 
-#if defined(SAC2_ENABLE)
-        if (sParam.glb.getTypeDevice() == AVANT_OPTO)
+        if (poz <= 80 && sParam.prd.status.getRegime() != GB_REGIME_DISABLED)
         {
-            uint8_t event = (sParam.prd.status.getWarnings() & 0x01) ? (20) : (19);
-            snprintf_P(&vLCDbuf[poz + 20 + 4], 17, fcJrnEventOPTOring[event]);
+            // Состояние SAC2 не выводим:
+            // - при отсутствии свободного места на экране
+            // - передатчик в режиме "Выведен"
+
+            if (sParam.typeDevice == AVANT_K400)
+            {
+                if (sParam.prd.getSac2())
+                {
+                    // Добавляем вывод состояния SAC2
+                    uint8_t event = (sParam.prd.status.getWarnings() & 0x01) ? (20) : (19);
+                    snprintf_P(&vLCDbuf[poz + 20 + 4], 17, fcJrnEventOPTOring[event]);
+                }
+            }
+
+            if (sParam.typeDevice == AVANT_OPTO)
+            {
+                // Уставка "Управление передатчиком" есть только в стандартной оптике
+                if (sParam.prd.getSac2() || sParam.typeOpto != TYPE_OPTO_STANDART)
+                {
+                    // Добавляем вывод состояния SAC2
+                    uint8_t event = (sParam.prd.status.getWarnings() & 0x01) ? (20) : (19);
+                    snprintf_P(&vLCDbuf[poz + 20 + 4], 17, fcJrnEventOPTOring[event]);
+                }
+            }
         }
-#endif
     }
 
     switch (key_)
@@ -3640,6 +3671,7 @@ void clMenu::lvlSetupParamPrd()
             //			sParam.local.addParam(GB_PARAM_PRD_DEFAULT_CF); убран за
             //ненадобностью
             sParam.local.addParam(GB_PARAM_PRD_COM_SIGNAL);
+            sParam.local.addParam(GB_PARAM_PRD_SAC2);
         }
         else if (device == AVANT_RZSK)
         {
@@ -3663,6 +3695,7 @@ void clMenu::lvlSetupParamPrd()
                     sParam.local.addParam(GB_PARAM_PRD_DR_COM_BLOCK);
                 }
                 sParam.local.addParam(GB_PARAM_PRD_COM_SIGNAL);
+                sParam.local.addParam(GB_PARAM_PRD_SAC2);
             }
         }
     }
