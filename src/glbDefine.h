@@ -32,7 +32,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0151
+#define VERS 0x0152
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -728,6 +728,16 @@ enum eGB_K400_NUM_COM
     GB_K400_NUM_COM_MAX       ///< кол-во пунктов в списке
 };
 
+
+/// Состояние управления передатчиком
+enum eGB_PRD_COM_STATE
+{
+    GB_PRD_COM_STATE_NO      = 0,  ///< Состояние отображать не нужно
+    GB_PRD_COM_STATE_ON      = 1,  ///< "Ввод команд ПРД"
+    GB_PRD_COM_STATE_BLOCKED = 2,  ///< "Блок. команд ПРД"
+    GB_PRD_COM_STATE_OFF     = 3,  ///< "Вывод команд ПРД"
+    GB_PRD_COM_STATE_MAX           ///< коли-во пунктов в списке
+};
 
 /// Класс для даты и времени
 class TDataTime

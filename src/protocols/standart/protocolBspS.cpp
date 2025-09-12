@@ -668,6 +668,30 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc)
                 sParam_->glb.setDInputState(buf[B21]);
             }
 
+            // Добавлено в 1.52
+            // Текущее состояние передатчика команд:
+            // - либо получаем из БСП
+            // - либо определяем по наличию предупреждения ПРД
+            eGB_PRD_COM_STATE prd_com_state = GB_PRD_COM_STATE_MAX;
+            if (num >= 22)
+            {
+                prd_com_state = eGB_PRD_COM_STATE(buf[B22]);
+            }
+            else
+            {
+                if (sParam_->prd.getSac2())
+                {
+                    prd_com_state = (sParam_->prd.status.getWarnings() & 0x01)
+                                        ? (GB_PRD_COM_STATE_OFF)
+                                        : (GB_PRD_COM_STATE_ON);
+                }
+                else
+                {
+                    prd_com_state = GB_PRD_COM_STATE_NO;
+                }
+            }
+            sParam_->glb.SetPrdComState(prd_com_state);
+
             eGB_REGIME reg    = GB_REGIME_MAX;
             eGB_REGIME regTmp = GB_REGIME_MAX;
             // определение общего режима аппарата
