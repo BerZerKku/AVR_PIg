@@ -1813,6 +1813,11 @@ public:
     /** Установка записей для журналов ОПТИКИ.
      *  Считываются 4 байта, старшим вперед.
      *  Каждый установленный бит в них отвечает за свое событие.
+     *
+     *  1.52
+     *  - Добавлены ещё четыре записи журнала событий. Они считываются из
+     *  байта с режимом работы устройства.
+     *
      *  @param buf Указатель на массив из 4 байт данных.
      *  @retval True - всегда.
      */
@@ -1820,11 +1825,21 @@ public:
     {
         uint8_t num = 0;
 
-        // В каждом байте записи считается кол-во установленных битов
-        for (uint_fast8_t i = 0; i <= 3; i++)
+        COMPILE_TIME_ASSERT(5 == SIZE_OF(opticEntry_));
+
+        // В старшей тертраде байта режима хранятся старшие записи журнала
+        opticEntry_[0] = ((*buf++) >> 4) & 0x0F;
+
+        // Младшие четыре байта записей журнала
+        for (uint_fast8_t i = 1; i < SIZE_OF(opticEntry_); i++)
         {
-            uint8_t byte   = *buf++;
-            opticEntry_[i] = byte;
+            opticEntry_[i] = *buf++;
+        }
+
+        // Подсчёт количества активных событий
+        for (uint_fast8_t i = 0; i < SIZE_OF(opticEntry_); i++)
+        {
+            uint8_t byte = opticEntry_[i];
             for (uint_fast8_t j = 1; j > 0; j <<= 1)
             {
                 if (byte & j)
@@ -1833,8 +1848,8 @@ public:
                 }
             }
         }
-        numOpticEntries_ = num;
 
+        numOpticEntries_ = num;
         return true;
     }
 
@@ -1858,10 +1873,11 @@ public:
         // проверка на допустимое значение
         if ((num >= 1) && (num <= numOpticEntries_))
         {
-            for (uint_fast8_t i = 0; i <= 3; i++)
+            uint_fast8_t size = SIZE_OF(opticEntry_);
+            for (uint_fast8_t i = 0; i < size; i++)
             {
                 // перебор 4-х байт, начиная с младшего
-                uint8_t byte = opticEntry_[3 - i];
+                uint8_t byte = opticEntry_[size - i - 1];
                 for (uint_fast8_t j = 0; j < 8; j++)
                 {
                     if (byte & (1 << j))
@@ -2166,7 +2182,7 @@ private:
     uint8_t signals_;
 
     // буфер записи для журналов ОПТИКИ
-    uint8_t opticEntry_[4];
+    uint8_t opticEntry_[5];
 
     // буфер записи для журналов ОПТИКИ ЦПП
     uint8_t opticEntryDR_[4];
