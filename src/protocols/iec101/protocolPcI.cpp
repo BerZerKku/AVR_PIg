@@ -357,22 +357,22 @@ bool TProtocolPcI::procSetTimeEnd()
 // Возвращает состояние элемента информации.
 bool TProtocolPcI::getValue(EInfoElement2 ei, bool &val) const
 {
-    if (ei >= IE2_DEF_ON && sParam_->def.status.isEnable())
+    if (ei >= IE2_DEF_ON)
     {
         val = getDef(ei);
-        return true;
+        return sParam_->def.status.isEnable();
     }
 
-    if (ei >= IE2_PRM_ON && sParam_->prm.status.isEnable())
+    if (ei >= IE2_PRM_ON)
     {
         val = getPrm(ei);
-        return true;
+        return sParam_->prm.status.isEnable();
     }
 
-    if (ei >= IE2_PRD_ON && sParam_->prd.status.isEnable())
+    if (ei >= IE2_PRD_ON)
     {
         val = getPrd(ei);
-        return true;
+        return sParam_->prd.status.isEnable();
     }
 
     if (ei >= IE2_GLB_ERROR_H0001)
@@ -432,7 +432,6 @@ bool TProtocolPcI::getDevice(EInfoElement2 ei) const
 
     return val;
 }
-
 // Возвращает состояние флага общей информации.
 bool TProtocolPcI::getGlb(EInfoElement2 ei) const
 {
