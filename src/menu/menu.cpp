@@ -1121,7 +1121,7 @@ void clMenu::lvlStart()
                 sParam.txComBuf.addCom1(GB_COM_PRD_GET_SAC2);
             }
 
-            if (sParam.typeDevice == AVANT_OPTO && sParam.typeOpto == TYPE_OPTO_STANDART)
+            if (sParam.typeDevice == AVANT_OPTO)
             {
                 sParam.txComBuf.addCom1(GB_COM_PRD_GET_SAC2);
             }
@@ -1218,40 +1218,26 @@ void clMenu::lvlStart()
             }
         }
     }
+
     if (sParam.prm.status.isEnable())
     {
         printDevicesStatus(poz, &sParam.prm.status);
         poz += 20;
     }
+
     if (sParam.prd.status.isEnable())
     {
         printDevicesStatus(poz, &sParam.prd.status);
 
+        // Состояние SAC2 не выводим:
+        // - при отсутствии свободного места на экране
+        // - передатчик в режиме "Выведен"
         if (poz <= 80 && sParam.prd.status.getRegime() != GB_REGIME_DISABLED)
         {
-            // Состояние SAC2 не выводим:
-            // - при отсутствии свободного места на экране
-            // - передатчик в режиме "Выведен"
-
-            if (sParam.typeDevice == AVANT_K400)
+            if (sParam.typeDevice == AVANT_K400 || sParam.typeDevice == AVANT_OPTO)
             {
-                if (sParam.prd.getSac2())
-                {
-                    // Добавляем вывод состояния SAC2
-                    uint8_t event = (sParam.prd.status.getWarnings() & 0x01) ? (20) : (19);
-                    snprintf_P(&vLCDbuf[poz + 20 + 4], 17, fcJrnEventOPTOring[event]);
-                }
-            }
-
-            if (sParam.typeDevice == AVANT_OPTO)
-            {
-                // Уставка "Управление передатчиком" есть только в стандартной оптике
-                if (sParam.prd.getSac2() || sParam.typeOpto != TYPE_OPTO_STANDART)
-                {
-                    // Добавляем вывод состояния SAC2
-                    uint8_t event = (sParam.prd.status.getWarnings() & 0x01) ? (20) : (19);
-                    snprintf_P(&vLCDbuf[poz + 20 + 4], 17, fcJrnEventOPTOring[event]);
-                }
+                eGB_PRD_COM_STATE prd_com_state = sParam.glb.GetPrdComState();
+                snprintf_P(&vLCDbuf[poz + 20], NAME_PARAM_LENGHT, fcPrdComState[prd_com_state]);
             }
         }
     }
@@ -3695,8 +3681,9 @@ void clMenu::lvlSetupParamPrd()
                     sParam.local.addParam(GB_PARAM_PRD_DR_COM_BLOCK);
                 }
                 sParam.local.addParam(GB_PARAM_PRD_COM_SIGNAL);
-                sParam.local.addParam(GB_PARAM_PRD_SAC2);
             }
+
+            sParam.local.addParam(GB_PARAM_PRD_SAC2);
         }
     }
 

@@ -231,7 +231,9 @@ TProtocolPcI::TProtocolPcI(stGBparam *sParam, uint8_t *buf, uint8_t size) :
 
     for (uint16_t i = 0; i < IE2_MAX; i++)
     {
-        m_flags[i] = getValue(static_cast<EInfoElement2>(i));
+        bool val = false;
+        getValue(static_cast<EInfoElement2>(i), val);
+        m_flags[i] = val;
     }
 }
 
@@ -244,96 +246,29 @@ uint8_t TProtocolPcI::send()
 // Проверка наличия данных класса 1 на передачу.
 bool TProtocolPcI::checkEventClass1(uint16_t &adr, bool &val, SCp56Time2a &time)
 {
-    static uint16_t ladr;  // Последний переданный адрес.
-
-    if (!sParam_->jrnScada.isReadyToSend())
-        return false;
-
-    TJrnSCADA *jrn = &sParam_->jrnScada;
-
-    uint16_t ms = jrn->dtime.getMsSecond();
-
-    if (jrn->isJrnEvent())
-    {
-        adr = c_adrIe1Event1 + jrn->getEvent() - 1;
-        // Для событий формируются сигналы начала и окончания с разницей 1 мс.
-        if (ladr != adr)
-        {
-            ladr = adr;
-            val  = true;
-            ms   = (ms < 999) ? ms : ms - 1;
-        }
-        else
-        {
-            ladr = 0;
-            val  = false;
-            ms   = (ms < 999) ? ms + 1 : ms;
-            sParam_->jrnScada.setReadyToEvent();
-        }
-    }
-    else if (jrn->isJrnPrm())
-    {
-        val = jrn->getEvent();
-        adr = c_adrIe1PrmCom1 + jrn->getCom() - 1;
-        sParam_->jrnScada.setReadyToEvent();
-    }
-    else if (jrn->isJrnPrd())
-    {
-        val = jrn->getEvent();
-        adr = (jrn->getComSource()) ? c_adrIe1PrdCCom1 : c_adrIe1PrdDCom1;
-        adr += jrn->getCom() - 1;
-        sParam_->jrnScada.setReadyToEvent();
-    }
-    else if (jrn->isJrnDef())
-    {
-        adr = jrn->getDefEvent(val);
-        if (adr == 0)
-        {
-            sParam_->jrnScada.setReadyToEvent();
-            return false;
-        }
-        adr += c_adrIe1DefSignal1 - 1;
-    }
-    else
-    {
-        sParam_->jrnScada.setReadyToEvent();
-        return false;
-    }
-
-    time.years        = jrn->dtime.getYear();
-    time.months       = jrn->dtime.getMonth();
-    time.dayOfMonth   = jrn->dtime.getDay();
-    time.hours        = jrn->dtime.getHour();
-    time.minutes      = jrn->dtime.getMinute();
-    time.milliseconds = jrn->dtime.getSecond() * 1000;
-    time.milliseconds += ms;
-
-    return true;
-}
-
-// Проверка наличия данных класса 2 на передачу.
-bool TProtocolPcI::checkEventClass2(uint16_t &adr, bool &val, SCp56Time2a &time)
-{
     for (uint8_t i = 0; i < IE2_MAX; i++)
     {
-        bool t = getValue(static_cast<EInfoElement2>(i));
+        bool t = false;
 
-        if (m_flags[i] != t)
+        if (getValue(static_cast<EInfoElement2>(i), t))
         {
-            m_flags[i] = t;
+            if (m_flags[i] != t)
+            {
+                m_flags[i] = t;
 
-            val = t;
-            adr = pgm_read_word(&c_adrIE2[i]);
+                val = t;
+                adr = pgm_read_word(&c_adrIE2[i]);
 
-            time.years        = sParam_->DateTime.getYear();
-            time.months       = sParam_->DateTime.getMonth();
-            time.dayOfMonth   = sParam_->DateTime.getDay();
-            time.hours        = sParam_->DateTime.getHour();
-            time.minutes      = sParam_->DateTime.getMinute();
-            time.milliseconds = sParam_->DateTime.getSecond() * 1000;
-            time.milliseconds += sParam_->DateTime.getMsSecond();
+                time.years        = sParam_->DateTime.getYear();
+                time.months       = sParam_->DateTime.getMonth();
+                time.dayOfMonth   = sParam_->DateTime.getDay();
+                time.hours        = sParam_->DateTime.getHour();
+                time.minutes      = sParam_->DateTime.getMinute();
+                time.milliseconds = sParam_->DateTime.getSecond() * 1000;
+                time.milliseconds += sParam_->DateTime.getMsSecond();
 
-            return true;
+                return true;
+            }
         }
     }
 
@@ -351,12 +286,21 @@ bool TProtocolPcI::procInterrog(uint16_t &adr, bool &val)
         return false;
     }
 
-    adr = pgm_read_word(&c_adrIE2[e]);
-    val = getValue(e);
+    for (uint_fast16_t i = e; i < IE2_MAX; i++)
+    {
+        bool t = false;
 
-    e = static_cast<EInfoElement2>(e + 1);
+        if (getValue(static_cast<EInfoElement2>(i), t))
+        {
+            adr = pgm_read_word(&c_adrIE2[i]);
+            val = t;
+            e   = static_cast<EInfoElement2>(i + 1);
+            return true;
+        }
+    }
 
-    return true;
+    e = IE2_ERROR;
+    return false;
 }
 
 // Установка времени
@@ -411,32 +355,39 @@ bool TProtocolPcI::procSetTimeEnd()
 }
 
 // Возвращает состояние элемента информации.
-bool TProtocolPcI::getValue(EInfoElement2 ei) const
+bool TProtocolPcI::getValue(EInfoElement2 ei, bool &val) const
 {
-    bool val = false;
-
     if (ei >= IE2_DEF_ON)
     {
         val = getDef(ei);
-    }
-    else if (ei >= IE2_PRM_ON)
-    {
-        val = getPrm(ei);
-    }
-    else if (ei >= IE2_PRD_ON)
-    {
-        val = getPrd(ei);
-    }
-    else if (ei >= IE2_GLB_ERROR_H0001)
-    {
-        val = getGlb(ei);
-    }
-    else if (ei >= IE2_ERROR)
-    {
-        val = getDevice(ei);
+        return sParam_->def.status.isEnable();
     }
 
-    return val;
+    if (ei >= IE2_PRM_ON)
+    {
+        val = getPrm(ei);
+        return sParam_->prm.status.isEnable();
+    }
+
+    if (ei >= IE2_PRD_ON)
+    {
+        val = getPrd(ei);
+        return sParam_->prd.status.isEnable();
+    }
+
+    if (ei >= IE2_GLB_ERROR_H0001)
+    {
+        val = getGlb(ei);
+        return true;
+    }
+
+    if (ei >= IE2_ERROR)
+    {
+        val = getDevice(ei);
+        return true;
+    }
+
+    return false;
 }
 
 // Возвращает состояние флага информации аппарата.
@@ -481,7 +432,6 @@ bool TProtocolPcI::getDevice(EInfoElement2 ei) const
 
     return val;
 }
-
 // Возвращает состояние флага общей информации.
 bool TProtocolPcI::getGlb(EInfoElement2 ei) const
 {

@@ -32,7 +32,7 @@
 #define PASSWORD_USER 0
 
 /// версия текущей прошивки
-#define VERS 0x0151
+#define VERS 0x0152
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -91,7 +91,7 @@
 
 /// максимальное и минимальный код типа событий в журнале событий
 #define MIN_JRN_EVENT_VALUE 1
-#define MAX_JRN_EVENT_VALUE 38
+#define MAX_JRN_EVENT_VALUE 40
 
 #define GLB_JRN_EVENT_K400_MAX  512  /// кол-во записей в журнале событый К400
 #define GLB_JRN_EVENT_R400M_MAX 512  /// кол-во записей в журнале событый Р400м
@@ -728,6 +728,16 @@ enum eGB_K400_NUM_COM
     GB_K400_NUM_COM_MAX       ///< кол-во пунктов в списке
 };
 
+
+/// Состояние управления передатчиком
+enum eGB_PRD_COM_STATE
+{
+    GB_PRD_COM_STATE_NO      = 0,  ///< Состояние отображать не нужно
+    GB_PRD_COM_STATE_ON      = 1,  ///< "Ввод команд ПРД"
+    GB_PRD_COM_STATE_BLOCKED = 2,  ///< "Блок. команд ПРД"
+    GB_PRD_COM_STATE_OFF     = 3,  ///< "Вывод команд ПРД"
+    GB_PRD_COM_STATE_MAX           ///< коли-во пунктов в списке
+};
 
 /// Класс для даты и времени
 class TDataTime
@@ -1803,6 +1813,11 @@ public:
     /** Установка записей для журналов ОПТИКИ.
      *  Считываются 4 байта, старшим вперед.
      *  Каждый установленный бит в них отвечает за свое событие.
+     *
+     *  1.52
+     *  - Добавлены ещё четыре записи журнала событий. Они считываются из
+     *  байта с режимом работы устройства.
+     *
      *  @param buf Указатель на массив из 4 байт данных.
      *  @retval True - всегда.
      */
@@ -1810,11 +1825,21 @@ public:
     {
         uint8_t num = 0;
 
-        // В каждом байте записи считается кол-во установленных битов
-        for (uint_fast8_t i = 0; i <= 3; i++)
+        COMPILE_TIME_ASSERT(5 == SIZE_OF(opticEntry_));
+
+        // В старшей тертраде байта режима хранятся старшие записи журнала
+        opticEntry_[0] = ((*buf++) >> 4) & 0x0F;
+
+        // Младшие четыре байта записей журнала
+        for (uint_fast8_t i = 1; i < SIZE_OF(opticEntry_); i++)
         {
-            uint8_t byte   = *buf++;
-            opticEntry_[i] = byte;
+            opticEntry_[i] = *buf++;
+        }
+
+        // Подсчёт количества активных событий
+        for (uint_fast8_t i = 0; i < SIZE_OF(opticEntry_); i++)
+        {
+            uint8_t byte = opticEntry_[i];
             for (uint_fast8_t j = 1; j > 0; j <<= 1)
             {
                 if (byte & j)
@@ -1823,8 +1848,8 @@ public:
                 }
             }
         }
-        numOpticEntries_ = num;
 
+        numOpticEntries_ = num;
         return true;
     }
 
@@ -1848,10 +1873,11 @@ public:
         // проверка на допустимое значение
         if ((num >= 1) && (num <= numOpticEntries_))
         {
-            for (uint_fast8_t i = 0; i <= 3; i++)
+            uint_fast8_t size = SIZE_OF(opticEntry_);
+            for (uint_fast8_t i = 0; i < size; i++)
             {
                 // перебор 4-х байт, начиная с младшего
-                uint8_t byte = opticEntry_[3 - i];
+                uint8_t byte = opticEntry_[size - i - 1];
                 for (uint_fast8_t j = 0; j < 8; j++)
                 {
                     if (byte & (1 << j))
@@ -2156,7 +2182,7 @@ private:
     uint8_t signals_;
 
     // буфер записи для журналов ОПТИКИ
-    uint8_t opticEntry_[4];
+    uint8_t opticEntry_[5];
 
     // буфер записи для журналов ОПТИКИ ЦПП
     uint8_t opticEntryDR_[4];

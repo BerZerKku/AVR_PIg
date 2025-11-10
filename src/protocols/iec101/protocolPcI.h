@@ -54,6 +54,13 @@
  *	Имена локальным переменным даются без данных префиксов.
  */
 
+/** Класс работы с протоколом МЭК 60870-5-10 в аппаратуре АВАНТ.
+ *
+ * 1.52
+ * - Убрана передача записей журналов для ускорения работы протокола.
+ * - Данные класса 2 перенесены в класс 1, для передачи спорадики во время опроса.
+ * - Из опроса убрана передача данных для отсутствующих в аппарате устройств.
+ */
 class TProtocolPcI : public CIec101
 {
 
@@ -306,16 +313,6 @@ public:
      */
     virtual bool checkEventClass1(uint16_t &adr, bool &val, SCp56Time2a &time);
 
-    /**	Проверка наличия данных класса 2 на передачу.
-     *
-     *	@param adr[out] Адрес.
-     *	@param val[out] Значение.
-     *	@param time[out] Дата и время.
-     * 	@retval False Нет данных на передачу.
-     * 	@retval True Есть данные на передачу.
-     */
-    virtual bool checkEventClass2(uint16_t &adr, bool &val, SCp56Time2a &time);
-
 private:
     /// Структура параметров.
     stGBparam *const sParam_;
@@ -365,11 +362,11 @@ private:
     /**	Возвращает состояние элемента информации.
      *
      * 	@param[in] ei Элемент информации.
-     * 	@retval True Флаг установлен.
-     * 	@retval False Флаг сброшен.
+     * 	@param[out] val Значение элемента информации.
+     * 	@return True, если есть элемент с таким адресом, иначе False.
      *
      */
-    bool getValue(EInfoElement2 ei) const;
+    bool getValue(EInfoElement2 ei, bool &val) const;
 
     /**	Возвращает состояние флага информации аппарата.
      *

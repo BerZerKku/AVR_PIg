@@ -15,6 +15,11 @@ clProtocolBspS::clProtocolBspS(uint8_t *buf, uint8_t size, stGBparam *sParam) :
 
 /**	Обработка принятого сообщения.
  *
+ * 1.52
+ * - В журналах событий для ОПТИКИ добавлены четыре записи, они передаются
+ * в байте режима работы.
+ * - Убраны запросы записей журнала для АСУ ТП.
+ *
  * 	@param pc True - команда запрошенная с ПК, False - запрошенная с ПИ-БСП.
  * 	@return True - в случае успешной обработки, False - в случае ошибки.
  */
@@ -578,44 +583,6 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc)
             }
             stat &= sParam_->DateTime.setMsSecond(ms);
             stat = true;
-
-            // новая запись журнала, для передачи в АСУ ТП
-            if (buf[NUM] >= 21)
-            {
-                TJrnSCADA *jrn = &sParam_->jrnScada;
-                if (jrn->isReadyToWrite())
-                {
-                    jrn->setJrn(buf[B9]);
-                    jrn->setEvent(buf[B10]);
-                    jrn->setCom(buf[B11]);
-                    jrn->setComSource(buf[B12]);
-                    // B13
-                    jrn->dtime.setYear(BCD_TO_BIN(buf[B14]));
-                    jrn->dtime.setMonth(BCD_TO_BIN(buf[B15]));
-                    jrn->dtime.setDay(BCD_TO_BIN(buf[B16]));
-                    jrn->dtime.setHour(BCD_TO_BIN(buf[B17]));
-                    jrn->dtime.setMinute(BCD_TO_BIN(buf[B18]));
-                    jrn->dtime.setSecond(BCD_TO_BIN(buf[B19]));
-                    jrn->dtime.setMsSecond(*((uint16_t *) &buf[B20]));
-
-                    jrn->setReadyToSend();
-                    cntTimeFrame = 0;
-                }
-            }
-            else
-            {
-                if (sParam_->jrnScada.isReadyToWrite())
-                {
-                    if (cntTimeFrame > 5)
-                    {
-                        sParam_->jrnScada.setReadyToEvent();
-                    }
-                    else
-                    {
-                        cntTimeFrame++;
-                    }
-                }
-            }
         }
         break;
 
@@ -667,6 +634,30 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc)
                 sParam_->glb.setLedOn((buf[B21] > 0));
                 sParam_->glb.setDInputState(buf[B21]);
             }
+
+            // Добавлено в 1.52
+            // Текущее состояние передатчика команд:
+            // - либо получаем из БСП
+            // - либо определяем по наличию предупреждения ПРД
+            eGB_PRD_COM_STATE prd_com_state = GB_PRD_COM_STATE_MAX;
+            if (num >= 22)
+            {
+                prd_com_state = eGB_PRD_COM_STATE(buf[B22]);
+            }
+            else
+            {
+                if (sParam_->prd.getSac2())
+                {
+                    prd_com_state = (sParam_->prd.status.getWarnings() & 0x01)
+                                        ? (GB_PRD_COM_STATE_OFF)
+                                        : (GB_PRD_COM_STATE_ON);
+                }
+                else
+                {
+                    prd_com_state = GB_PRD_COM_STATE_NO;
+                }
+            }
+            sParam_->glb.SetPrdComState(prd_com_state);
 
             eGB_REGIME reg    = GB_REGIME_MAX;
             eGB_REGIME regTmp = GB_REGIME_MAX;
@@ -919,8 +910,8 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc)
                     uint16_t t = TO_INT16(buf[B12], buf[B13]);
                     sParam_->jrnEntry.dateTime.setMsSecond(t);
                     //
-                    sParam_->jrnEntry.setRegime((eGB_REGIME) buf[B1]);
-                    sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B2]);
+                    sParam_->jrnEntry.setRegime((eGB_REGIME) (buf[B1] & 0x0F));
+                    sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B1]);
                     sParam_->jrnEntry.setReady();
                     stat = true;
                 }

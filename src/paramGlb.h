@@ -448,6 +448,15 @@ public:
         return ((dInputState & DINPUT_TM_CONTROL) > 0) ? true : false;
     }
 
+    // Устанавливает текущее состояние передатчика команды
+    void SetPrdComState(eGB_PRD_COM_STATE prd_com_state) { prdComState_ = prd_com_state; }
+
+    // Возвращает текущее состояние передатчика команд
+    eGB_PRD_COM_STATE GetPrdComState() const
+    {
+        return (prdComState_ < GB_PRD_COM_STATE_MAX) ? (prdComState_) : (GB_PRD_COM_STATE_MAX);
+    }
+
 private:
     // версии прошивок микросхем
     uint16_t versProgIC_[GB_IC_MAX];
@@ -481,6 +490,9 @@ private:
 
     // состояние дискретных входов (побитно, выкл(0)/вкл(1)).
     uint8_t dInputState;
+
+    // состояние команд передатчика
+    eGB_PRD_COM_STATE prdComState_;
 };
 
 
