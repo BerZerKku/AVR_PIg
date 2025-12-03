@@ -407,7 +407,7 @@ bool clProtocolBspS::getPrmCommand(eGB_COM com, bool pc)
                     uint16_t t = TO_INT16(buf[B11], buf[B12]);
                     sParam_->jrnEntry.dateTime.setMsSecond(t);
                     //
-                    sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B1]);
+                    sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B1], 0);
                     sParam_->jrnEntry.setReady();
                     stat = true;
                 }
@@ -510,7 +510,7 @@ bool clProtocolBspS::getPrdCommand(eGB_COM com, bool pc)
                     uint16_t t = TO_INT16(buf[B11], buf[B12]);
                     sParam_->jrnEntry.dateTime.setMsSecond(t);
                     //
-                    sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B1]);
+                    sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B1], 0);
 
                     if (buf[NUM] >= 16)
                     {
@@ -911,7 +911,7 @@ bool clProtocolBspS::getGlbCommand(eGB_COM com, bool pc)
                     sParam_->jrnEntry.dateTime.setMsSecond(t);
                     //
                     sParam_->jrnEntry.setRegime((eGB_REGIME) (buf[B1] & 0x0F));
-                    sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B1]);
+                    sParam_->jrnEntry.setOpticEntry((uint8_t *) &buf[B2], (buf[B1] >> 4) & 0x0F);
                     sParam_->jrnEntry.setReady();
                     stat = true;
                 }
