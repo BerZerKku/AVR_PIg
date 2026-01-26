@@ -3906,6 +3906,7 @@ void clMenu::lvlSetupParamRing()
         {
             if (topto == TYPE_OPTO_RING_UNI)
             {
+                sParam.local.addParam(GB_PARAM_RING_IMP_SAFETY);
                 sParam.local.addParam(GB_PARAM_RING_TIME_WAIT);
                 sParam.local.addParam(GB_PARAM_RING_COM_TRANSIT);
                 sParam.local.addParam(GB_PARAM_RING_COM_REC);

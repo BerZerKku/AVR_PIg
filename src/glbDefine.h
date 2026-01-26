@@ -32,7 +32,7 @@
 #define PASSWORD_USER 0
 
 /// верси€ текущей прошивки
-#define VERS 0x0153
+#define VERS 0x0154
 
 /// максимально кол-во команд на прием (должно быть кратно 8)
 #define MAX_NUM_COM_PRM 32
@@ -297,7 +297,7 @@ enum eGB_COM
                                          // предупреждение и авари€ по D в  400 и т.д.
     GB_COM_GET_NET_ADR          = 0x38,  // +
     GB_COM_GET_TIME_RERUN       = 0x39,  // + ! в –400ћ это параметры дл€ совместимостей
-    GB_COM_GET_FREQ             = 0x3A,  // +
+    GB_COM_GET_FREQ             = 0x3A,  // + ! в ¬„ - частота, в кольце - повышение безопасности
     GB_COM_GET_DEVICE_NUM       = 0x3B,  // +
     GB_COM_GET_CF_THRESHOLD     = 0x3C,  // + ! порог предупреждени€ и загрублени€
     GB_COM_GET_OUT_CHECK        = 0x3D,  // +
@@ -499,7 +499,8 @@ typedef enum
     GB_PARAM_RING_TIME_WAIT,    ///< врем€ ожидани€ команд
     GB_PARAM_RING_COM_TRANSIT,  ///< транзитные команды
     GB_PARAM_RING_COM_REC,      ///< переназначение команд приемника
-    GB_PARAM_RING_COM_TR        ///< переназначение команд дискретных входов
+    GB_PARAM_RING_COM_TR,       ///< переназначение команд дискретных входов
+    GB_PARAM_RING_IMP_SAFETY    ///< повышение безопасности
 } eGB_PARAM;
 
 /// «начени€ команд управлени€
