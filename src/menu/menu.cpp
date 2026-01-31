@@ -744,9 +744,11 @@ bool clMenu::setDeviceOPTO()
     // 7 нет
     if (type_opto == TYPE_OPTO_RING_UNI)
     {
-        sParam.glb.status.warningText[8] = fcGlbWarning100ring1;
-        sParam.glb.status.warningText[9] = fcGlbWarning200ring1;
-        // 10-15 нет
+        sParam.glb.status.warningText[8]  = fcGlbWarning100ring1;
+        sParam.glb.status.warningText[9]  = fcGlbWarning200ring1;
+        sParam.glb.status.warningText[10] = fcGlbWarning400ring1;
+        sParam.glb.status.warningText[11] = fcGlbWarning800ring1;
+        // 12-15 нет
     }
     else
     {
