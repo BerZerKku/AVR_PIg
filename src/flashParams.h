@@ -206,6 +206,13 @@ static char fcTymeSynchSrc[][STRING_LENGHT] PROGMEM = {
     "АСУ ТП"
 };
 
+// Протокол кольца БЦК
+static char fcRingProtBckSrc[][STRING_LENGHT] PROGMEM = {
+    //   1234567890
+    "C37.94",
+    "ВОЛС"
+};
+
 // параметр заглушка
 static const Param fNullParam PROGMEM = {
     "",                             // название параметра
@@ -2196,21 +2203,41 @@ static const Param fRingComTr PROGMEM = {
     Param::CHANGE_COND_REG_DISABLE  // условие для изменения параметра
 };
 
-// Повышение безопасности (кольцо)
-static const Param fRingImpSafety PROGMEM = {
-    "Повышение безопас-ти",         // название параметра
+// Протокол кольца БЦК1 (кольцо)
+static const Param fRingProtBck1 PROGMEM = {
+    "Протокол кольца БЦК1",         // название параметра
     GB_COM_GET_FREQ,                // команда стандартного протокола
     Param::PARAM_LIST,              // тип параметра
     Param::RANGE_LIST,              // диапазон измнения
     Param::DIM_NO,                  // размерность
-    fcOnOff[0],                     // массив значений
+    fcRingProtBckSrc[0],            // массив значений
     1,                              // кол-во повторений параметра
     0,                              // минимальное значение
-    SIZE_OF(fcOnOff),               // максимальное значение
+    SIZE_OF(fcRingProtBckSrc),      // максимальное значение
     1,                              // дискретность
     1,                              // множитель для стандартного протокола
-    GB_SEND_INT8,                   // тип параметра для сохранения новго значения
+    GB_SEND_DOP_INT8,               // тип параметра для сохранения новго значения
     1,                              // байт дополнительной информации для сохранения
+    Param::DEPEND_MAX_NO,           // зависимость максимума
+    Param::DEPEND_SAME_NO,          // зависимость повторений
+    Param::CHANGE_COND_REG_DISABLE  // условие для изменения параметра
+};
+
+// Протокол кольца БЦК2 (кольцо)
+static const Param fRingProtBck2 PROGMEM = {
+    "Протокол кольца БЦК2",         // название параметра
+    GB_COM_GET_FREQ,                // команда стандартного протокола
+    Param::PARAM_LIST,              // тип параметра
+    Param::RANGE_LIST,              // диапазон измнения
+    Param::DIM_NO,                  // размерность
+    fcRingProtBckSrc[0],            // массив значений
+    1,                              // кол-во повторений параметра
+    0,                              // минимальное значение
+    SIZE_OF(fcRingProtBckSrc),      // максимальное значение
+    1,                              // дискретность
+    1,                              // множитель для стандартного протокола
+    GB_SEND_DOP_INT8,               // тип параметра для сохранения новго значения
+    2,                              // байт дополнительной информации для сохранения
     Param::DEPEND_MAX_NO,           // зависимость максимума
     Param::DEPEND_SAME_NO,          // зависимость повторений
     Param::CHANGE_COND_REG_DISABLE  // условие для изменения параметра
@@ -2322,5 +2349,6 @@ static const Param* fParams[] PROGMEM = { &fNullParam,
                                           &fRingComTransit,
                                           &fRingComRec,
                                           &fRingComTr,
-                                          &fRingImpSafety };
+                                          &fRingProtBck1,
+                                          &fRingProtBck2 };
 #endif /* FLASHPARAMS_H_ */

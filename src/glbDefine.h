@@ -500,7 +500,8 @@ typedef enum
     GB_PARAM_RING_COM_TRANSIT,  ///< транзитные команды
     GB_PARAM_RING_COM_REC,      ///< переназначение команд приемника
     GB_PARAM_RING_COM_TR,       ///< переназначение команд дискретных входов
-    GB_PARAM_RING_IMP_SAFETY    ///< повышение безопасности
+    GB_PARAM_RING_PROT_BCK1,    ///< протокол кольца БЦК1
+    GB_PARAM_RING_PROT_BCK2,    ///< протокол кольца БЦК2
 } eGB_PARAM;
 
 /// Значения команд управления

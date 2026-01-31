@@ -211,6 +211,9 @@ static const char fcGlbWarning40[] PROGMEM       = "Удал.ПРМ неиспр";   ///< 7
 static const char fcGlbWarning100[] PROGMEM      = "Ошибка работы ЦП";  ///< 9
 static const char fcGlbWarning100ring1[] PROGMEM = "Нет КС на БЦК1";    ///< 9
 static const char fcGlbWarning200ring1[] PROGMEM = "Нет КС на БЦК2";    ///< 10
+static const char fcGlbWarning400ring1[] PROGMEM = "Ош. прот-ла БЦК1";  ///< 11
+static const char fcGlbWarning800ring1[] PROGMEM = "Ош. прот-ла БЦК2";  ///< 12
+
 
 // неисправности защиты
 static const char fcDefFault0001[] PROGMEM     = "Нет блока БСЗ";     ///<
@@ -524,7 +527,7 @@ static char fcJrnEventOPTOring[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
     "Кольцо восстановлено",  ///< 13 кольцо
     "Дистанционный сброс",   ///< 14 кольцо
     "Команда не вернулась",  ///< 15 кольцо
-    "Событие - 16",          ///< 16
+    "Ошибка прот-ла БЦК1",   ///< 16 добавлено 1.54
     "Вкл.пит/Перезапуск",    ///< 17
     "Изменение режима",      ///< 18
     "Ввод команд ПРД",       ///< 19
@@ -536,7 +539,7 @@ static char fcJrnEventOPTOring[MAX_JRN_EVENT_VALUE + 1][21] PROGMEM = {
     "Выключение питания",    ///< 25
     "Нет КС",                ///< 26
     "Нет КС 5 секунд",       ///< 27
-    "Событие - 28",          ///< 28
+    "Ошибка прот-ла БЦК2",   ///< 28 добавлено 1.54
     "Уд: ПРД неисправен",    ///< 29
     "Уд: ПРМ неисправен",    ///< 30
     "Изменение дата/время",  ///< 31

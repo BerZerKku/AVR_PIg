@@ -744,9 +744,11 @@ bool clMenu::setDeviceOPTO()
     // 7 нет
     if (type_opto == TYPE_OPTO_RING_UNI)
     {
-        sParam.glb.status.warningText[8] = fcGlbWarning100ring1;
-        sParam.glb.status.warningText[9] = fcGlbWarning200ring1;
-        // 10-15 нет
+        sParam.glb.status.warningText[8]  = fcGlbWarning100ring1;
+        sParam.glb.status.warningText[9]  = fcGlbWarning200ring1;
+        sParam.glb.status.warningText[10] = fcGlbWarning400ring1;
+        sParam.glb.status.warningText[11] = fcGlbWarning800ring1;
+        // 12-15 нет
     }
     else
     {
@@ -3906,7 +3908,8 @@ void clMenu::lvlSetupParamRing()
         {
             if (topto == TYPE_OPTO_RING_UNI)
             {
-                sParam.local.addParam(GB_PARAM_RING_IMP_SAFETY);
+                sParam.local.addParam(GB_PARAM_RING_PROT_BCK1);
+                sParam.local.addParam(GB_PARAM_RING_PROT_BCK2);
                 sParam.local.addParam(GB_PARAM_RING_TIME_WAIT);
                 sParam.local.addParam(GB_PARAM_RING_COM_TRANSIT);
                 sParam.local.addParam(GB_PARAM_RING_COM_REC);
